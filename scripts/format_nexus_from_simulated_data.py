@@ -20,7 +20,7 @@ def create_nexus_from_dict(data_dict, site_number):
     for taxon_id, state in data_dict.items():
         # Use taxon_id as the taxon label
         ### TEMP FIX TO ONLY LABEL NUMERICALLY
-        nexus_content += f"{taxon_id} {state[1]}\n"
+        nexus_content += f"{taxon_id} '{state[1]}'\n"
     
     nexus_content += ";\n"
     nexus_content += "END;\n"
