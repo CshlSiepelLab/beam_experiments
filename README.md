@@ -1,4 +1,4 @@
-#A bayesian approach to inferring anatomical tissue locations for internal nodes in a cancer phylogeny with labeled leaves.
+# A bayesian approach to inferring anatomical tissue locations for internal nodes in a cancer phylogeny with labeled leaves.
 
 ### Simulating data
 
@@ -11,7 +11,7 @@ The output should provide all that is necessary as input to the inference method
 
 ### Formatting simulated data to input to BEAST2
 
-Use simulate environment and input tree newick file and tsv of node to tissue mapping from simulated data:
+Use simulate environment and input tree newick file and tsv of node to tissue mapping from simulated data: NOT FUNCTIONAL YET
 ```
 python ./scripts/format_nexus_from_simulated_data.py simulated_data/sim_results_test_sim/test_sim_true.nwk simulated_data/sim_results_test_sim/test_sim_tissues.tsv
 ```
