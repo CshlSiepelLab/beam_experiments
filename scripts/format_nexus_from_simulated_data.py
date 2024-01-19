@@ -35,5 +35,5 @@ with open(file_path, "w") as file:
     file.write(xml_content)
 
 # Output tree in nexus file format
-nexus_file_path = newick_filepath.split(".")[0] + ".nexus"
+nexus_file_path = newick_filepath.split(".")[0] + ".tree"
 tree.write(format=9, outfile=nexus_file_path)
