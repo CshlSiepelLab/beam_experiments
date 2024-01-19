@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.base.evolution.alignment:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" required="BEAST.base v2.7.6" version="2.7">
+
+    <data
+id="test"
+spec="Alignment"
+name="alignment">
+        <sequence id="cell5" spec="Sequence" taxon="cell5" value="2"/>
+        <sequence id="cell6" spec="Sequence" taxon="cell6" value="2"/>
+        <sequence id="cell8" spec="Sequence" taxon="cell8" value="1"/>
+        <sequence id="cell11" spec="Sequence" taxon="cell11" value="1"/>
+        <sequence id="cell13" spec="Sequence" taxon="cell13" value="1"/>
+        <sequence id="cell14" spec="Sequence" taxon="cell14" value="2"/>
+        <sequence id="cell16" spec="Sequence" taxon="cell16" value="1"/>
+        <sequence id="cell17" spec="Sequence" taxon="cell17" value="1"/>
+        <sequence id="cell18" spec="Sequence" taxon="cell18" value="2"/>
+        <sequence id="cell19" spec="Sequence" taxon="cell19" value="2"/>
+
+    </data>
+
+    <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
+
+    <map name="Exponential" >beast.base.inference.distribution.Exponential</map>
+
+    <map name="LogNormal" >beast.base.inference.distribution.LogNormalDistributionModel</map>
+
+    <map name="Normal" >beast.base.inference.distribution.Normal</map>
+
+    <map name="Beta" >beast.base.inference.distribution.Beta</map>
+
+    <map name="Gamma" >beast.base.inference.distribution.Gamma</map>
+
+    <map name="LaplaceDistribution" >beast.base.inference.distribution.LaplaceDistribution</map>
+
+    <map name="prior" >beast.base.inference.distribution.Prior</map>
+
+    <map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
+
+    <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
+
+    <run id="mcmc" spec="MCMC" chainLength="1000000">
+        <state id="state" spec="State" storeEvery="5000">
+            <tree id="Tree.t:test" spec="beast.base.evolution.tree.Tree" name="stateNode">
+                <taxonset id="TaxonSet.test" spec="TaxonSet">
+                    <alignment idref="test"/>
+                </taxonset>
+            </tree>
+            <parameter id="birthRate.t:test" spec="parameter.RealParameter" lower="0.0" name="stateNode">0.5</parameter>
+            <parameter id="mutationRate.s:test" spec="parameter.RealParameter" lower="0.0" name="stateNode">1.0</parameter>
+        </state>
+        <init id="RandomTree.t:test" spec="RandomTree" estimate="false" initial="@Tree.t:test" taxa="@test">
+            <populationModel id="ConstantPopulation0.t:test" spec="ConstantPopulation">
+                <parameter id="randomPopSize.t:test" spec="parameter.RealParameter" name="popSize">1.0</parameter>
+            </populationModel>
+        </init>
+        <distribution id="posterior" spec="CompoundDistribution">
+            <distribution id="prior" spec="CompoundDistribution">
+                <distribution id="YuleModel.t:test" spec="beast.base.evolution.speciation.YuleModel" birthDiffRate="@birthRate.t:test" tree="@Tree.t:test"/>
+                <prior id="YuleBirthRatePrior.t:test" name="distribution" x="@birthRate.t:test">
+                    <Exponential id="Exponential.1" name="distr">
+                        <parameter id="RealParameter.5" spec="parameter.RealParameter" estimate="false" name="mean">1.0</parameter>
+                    </Exponential>
+                </prior>
+            </distribution>
+            <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
+                <distribution id="treeLikelihood.test" spec="ThreadedTreeLikelihood" data="@test" tree="@Tree.t:test">
+                    <siteModel id="SiteModel.s:test" spec="SiteModel" mutationRate="@mutationRate.s:test">
+                        <parameter id="gammaShape.s:test" spec="parameter.RealParameter" estimate="false" lower="0.1" name="shape">1.0</parameter>
+                        <parameter id="proportionInvariant.s:test" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
+                        <substModel id="JC69.s:test" spec="JukesCantor"/>
+                    </siteModel>
+                    <branchRateModel id="StrictClock.c:test" spec="beast.base.evolution.branchratemodel.StrictClockModel">
+                        <parameter id="clockRate.c:test" spec="parameter.RealParameter" estimate="false" lower="0.0" name="clock.rate">1.0</parameter>
+                    </branchRateModel>
+                </distribution>
+            </distribution>
+        </distribution>
+        <operator id="YuleBirthRateScaler.t:test" spec="kernel.BactrianScaleOperator" parameter="@birthRate.t:test" upper="10.0" weight="3.0"/>
+        <operator id="YuleModelTreeRootScaler.t:test" spec="kernel.BactrianScaleOperator" rootOnly="true" scaleFactor="0.5" tree="@Tree.t:test" upper="10.0" weight="3.0"/>
+        <operator id="YuleModelUniformOperator.t:test" spec="kernel.BactrianNodeOperator" tree="@Tree.t:test" weight="30.0"/>
+        <operator id="YuleModelSubtreeSlide.t:test" spec="kernel.BactrianSubtreeSlide" tree="@Tree.t:test" weight="15.0"/>
+        <operator id="YuleModelNarrow.t:test" spec="Exchange" tree="@Tree.t:test" weight="15.0"/>
+        <operator id="YuleModelWide.t:test" spec="Exchange" isNarrow="false" tree="@Tree.t:test" weight="3.0"/>
+        <operator id="YuleModelWilsonBalding.t:test" spec="WilsonBalding" tree="@Tree.t:test" weight="3.0"/>
+        <operator id="YuleModelBICEPSEpochTop.t:test" spec="EpochFlexOperator" scaleFactor="0.1" tree="@Tree.t:test" weight="2.0"/>
+        <operator id="YuleModelBICEPSEpochAll.t:test" spec="EpochFlexOperator" fromOldestTipOnly="false" scaleFactor="0.1" tree="@Tree.t:test" weight="2.0"/>
+        <operator id="YuleModelBICEPSTreeFlex.t:test" spec="TreeStretchOperator" scaleFactor="0.01" tree="@Tree.t:test" weight="2.0"/>
+        <operator id="FixMeanMutationRatesOperator" spec="operator.kernel.BactrianDeltaExchangeOperator" delta="0.75" weight="2.0">
+            <parameter idref="mutationRate.s:test"/>
+            <weightvector id="weightparameter" spec="parameter.IntegerParameter" estimate="false" lower="0" upper="0">1</weightvector>
+        </operator>
+        <logger id="tracelog" spec="Logger" fileName="$(filebase).log" logEvery="200" model="@posterior" sanitiseHeaders="true" sort="smart">
+            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+            <log idref="treeLikelihood.test"/>
+            <log id="TreeHeight.t:test" spec="beast.base.evolution.tree.TreeStatLogger" tree="@Tree.t:test"/>
+            <log idref="YuleModel.t:test"/>
+            <log idref="birthRate.t:test"/>
+            <log idref="mutationRate.s:test"/>
+        </logger>
+        <logger id="screenlog" spec="Logger" logEvery="1000">
+            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+        </logger>
+        <logger id="treelog.t:test" spec="Logger" fileName="$(filebase)-$(tree).trees" logEvery="1000" mode="tree">
+            <log id="TreeWithMetaDataLogger.t:test" spec="beast.base.evolution.TreeWithMetaDataLogger" tree="@Tree.t:test"/>
+        </logger>
+        <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+    </run>
+
+</beast>

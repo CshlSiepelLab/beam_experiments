@@ -29,6 +29,11 @@ leaf_tissues_dict = dict(zip(leaf_tissues_df['node'], leaf_tissues_df['tissue'])
 # Make nexus file for a single site of tissue label aligned across samples
 xml_content = create_nexus_from_dict(leaf_tissues_dict)
 
+# Output alignment seciton data for simulated samples
 file_path = newick_filepath.split(".")[0] + "_xml_sample.xml"
 with open(file_path, "w") as file:
     file.write(xml_content)
+
+# Output tree in nexus file format
+nexus_file_path = newick_filepath.split(".")[0] + ".nexus"
+tree.write(format=9, outfile=nexus_file_path)
