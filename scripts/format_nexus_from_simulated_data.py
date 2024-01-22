@@ -29,7 +29,7 @@ xml_content = format_tree_file(leaf_tissues_dict)
 # Output tree in nexus file format
 ### Hack to prevent beast error for extra node at root; Need to solve this another way eventually
 nexus_file_path = newick_filepath.split(".")[0] + ".tree"
-newick = tree.write(format=2)
+newick = tree.write(format=5)
 indexes = [index for index,char in enumerate(newick) if char == ":"]
 index = indexes[-1]
 newick_fixed = newick[1:index] + ";"
