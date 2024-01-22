@@ -4,36 +4,39 @@ import sys
 import ete3
 import pandas as pd
 
-def create_nexus_from_dict(data_dict):
-    xml_content = ""
+def format_tree_file(data_dict):
+    xml_content = f"#NEXUS\n\nBegin taxa;\n\tDimensions ntax={len(data_dict)};\n\t\tTaxlabels\n"
 
     for taxon_id, state in data_dict.items():
-        xml_content += f"<sequence id=\"cell{taxon_id}\" spec=\"Sequence\" taxon=\"cell{taxon_id}\" value=\"{state[1:]}\"/>\n"
-
+        # xml_content += f"<sequence id=\"{taxon_id}\" spec=\"Sequence\" taxon=\"{taxon_id}\" value=\"{state[1:]}\"/>\n"
+        xml_content += "\t\t" + str(taxon_id) + "\n"
+    xml_content = xml_content + "\t\t;\nEnd;\n"
     return xml_content
 
-# newick_filepath = str(sys.argv[1])
-# tissue_data_filepath = str(sys.argv[2])
-newick_filepath = "simulated_data/sim_results_test_sim/test_sim_true.nwk"
-tissue_data_filepath = "simulated_data/sim_results_test_sim/test_sim_tissues.tsv"
+newick_filepath = str(sys.argv[1])
+tissue_data_filepath = str(sys.argv[2])
 
 tree = ete3.Tree(newick_filepath)
 tissues_df = pd.read_csv(tissue_data_filepath, sep="\t")
 
 leaf_names = [int(leaf.name) for leaf in tree.iter_leaves()]
-
 leaf_tissues_df = tissues_df[tissues_df['node'].isin(leaf_names)]
-
 leaf_tissues_dict = dict(zip(leaf_tissues_df['node'], leaf_tissues_df['tissue']))
 
 # Make nexus file for a single site of tissue label aligned across samples
-xml_content = create_nexus_from_dict(leaf_tissues_dict)
-
-# Output alignment seciton data for simulated samples
-file_path = newick_filepath.split(".")[0] + "_xml_sample.xml"
-with open(file_path, "w") as file:
-    file.write(xml_content)
+xml_content = format_tree_file(leaf_tissues_dict)
 
 # Output tree in nexus file format
+### Hack to prevent beast error for extra node at root; Need to solve this another way eventually
 nexus_file_path = newick_filepath.split(".")[0] + ".tree"
-tree.write(format=9, outfile=nexus_file_path)
+newick = tree.write(format=2)
+indexes = [index for index,char in enumerate(newick) if char == ":"]
+index = indexes[-1]
+newick_fixed = newick[1:index] + ";"
+xml_content = xml_content + "Begin trees;\ntree TREE1 = " + newick_fixed + "\nEnd;"
+with open(nexus_file_path, "w") as file:
+    file.write(xml_content)
+
+# Output tissues data in tsv
+tissues_path = newick_filepath.split(".")[0] + ".dat"
+leaf_tissues_df[['node','tissue']].to_csv(tissues_path, sep="\t", index=False, header=False)
