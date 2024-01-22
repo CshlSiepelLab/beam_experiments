@@ -11,8 +11,8 @@ def format_tree_file(data_dict):
     for taxon_id, state in data_dict.items():
         # xml_content += f"<sequence id=\"{taxon_id}\" spec=\"Sequence\" taxon=\"{taxon_id}\" value=\"{state[1:]}\"/>\n"
         xml_content += "\t\t\tcell" + str(taxon_id) + "\n"
-        translate_content += f"\t\t\t{taxon_id} cell{taxon_id}\n"
-    xml_content = xml_content + "\t\t;\nEnd;\n" + translate_content + ";\n"
+        translate_content += f"\t\t\t{taxon_id} cell{taxon_id},\n"
+    xml_content = xml_content + "\t\t;\nEnd;\n" + translate_content[:-2] + "\n\t\t\t;\n"
 
     return xml_content
 
