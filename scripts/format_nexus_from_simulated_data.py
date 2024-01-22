@@ -49,4 +49,7 @@ with open(nexus_file_path, "w") as file:
 
 # Output tissues data in tsv
 tissues_path = newick_filepath.split(".")[0] + ".dat"
-leaf_tissues_df[['node','tissue']].to_csv(tissues_path, sep="\t", index=False, header=False)
+tissues_key = leaf_tissues_df[['node','tissue']]
+tissues_key.loc[:, 'node'] = tissues_key.loc[:, 'node'].astype(str)
+tissues_key.loc[:, 'node'] = 'cell' + tissues_key.loc[:, 'node']
+tissues_key.to_csv(tissues_path, sep="\t", index=False, header=False)
