@@ -1,1 +1,0 @@
-#NEXUSbegin taxa;	dimensions ntax=10;	taxlabelscell5cell6cell8cell11cell13cell14cell16cell17cell18cell19;end;begin trees;tree TREE1 = (((cell8,(((cell16,cell17),cell13),cell11)),((cell6,(cell14,(cell18,cell19))),cell5)));end;

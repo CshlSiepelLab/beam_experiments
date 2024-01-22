@@ -1,0 +1,14 @@
+<itsabeastystatewerein version='2.0' sample='1000000'>
+<statenode id='Tree.t:tree'>(((0:0.0010000000474974513,(1:0.0010000000474974513,(3:0.0010000000474974513,4:0.0010000000474974513)10:0.0010000000474974513)11:0.0010000000474974513)12:0.0010000000474974513,9:0.0010000000474974513)13:0.0010000000474974513,(((2:0.0010000000474974513,(5:0.0010000000474974513,6:0.0010000000474974513)14:0.0010000000474974513)15:0.0010000000474974513,8:0.0010000000474974513)16:0.0010000000474974513,7:0.0010000000474974513)17:0.0010000000474974513)18:0.0</statenode>
+<statenode id='rateIndicator.s:geo'>rateIndicator.s:geo[6 1] (null,true): false true false true true false </statenode>
+<statenode id='relativeGeoRates.s:geo'>relativeGeoRates.s:geo[6 1] (-Infinity,Infinity): 0.7656274406062998 1.7113984434585574 1.6485867897936481 0.879720045594427 2.398415782802506 0.09508694977259173 </statenode>
+<statenode id='traitClockRate.c:geo'>traitClockRate.c:geo[1 1] (0.0,Infinity): 585.1946129668839 </statenode>
+</itsabeastystatewerein>
+<!--
+{"operators":[
+{"id":"georateScaler.s:geo","p":0.5032806031682999,"accept":101450,"reject":221109,"acceptFC":92416,"rejectFC":220987,"rejectIv":0,"rejectOp":0},
+{"id":"indicatorFlip.s:geo","p":"NaN","accept":138479,"reject":183919,"acceptFC":134834,"rejectFC":178678,"rejectIv":70088,"rejectOp":0},
+{"id":"geoMuScaler.c:geo","p":0.20828273062398162,"accept":11688,"reject":20347,"acceptFC":10899,"rejectFC":20289,"rejectIv":0,"rejectOp":0},
+{"id":"BSSVSoperator.c:geo","p":"NaN","accept":106494,"reject":216515,"acceptFC":103402,"rejectFC":210317,"rejectIv":70319,"rejectOp":0}
+]}
+-->
