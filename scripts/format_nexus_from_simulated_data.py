@@ -6,11 +6,14 @@ import pandas as pd
 
 def format_tree_file(data_dict):
     xml_content = f"#NEXUS\n\nBegin taxa;\n\tDimensions ntax={len(data_dict)};\n\t\tTaxlabels\n"
+    translate_content = "Begin trees;\n\tTranslate\n"
 
     for taxon_id, state in data_dict.items():
         # xml_content += f"<sequence id=\"{taxon_id}\" spec=\"Sequence\" taxon=\"{taxon_id}\" value=\"{state[1:]}\"/>\n"
-        xml_content += "\t\t" + str(taxon_id) + "\n"
-    xml_content = xml_content + "\t\t;\nEnd;\n"
+        xml_content += "\t\t\tcell" + str(taxon_id) + "\n"
+        translate_content += f"\t\t\t{taxon_id} cell{taxon_id}\n"
+    xml_content = xml_content + "\t\t;\nEnd;\n" + translate_content + ";\n"
+
     return xml_content
 
 newick_filepath = str(sys.argv[1])
@@ -40,7 +43,7 @@ index = indexes[-1]
 newick_fixed = newick[1:index] + ";"
 
 
-xml_content = xml_content + "Begin trees;\ntree TREE1 = " + newick_fixed + "\nEnd;"
+xml_content = xml_content + "tree TREE1 = " + newick_fixed + "\nEnd;"
 with open(nexus_file_path, "w") as file:
     file.write(xml_content)
 
