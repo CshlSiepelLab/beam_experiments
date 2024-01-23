@@ -1,0 +1,32 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=10;
+		Taxlabels
+			cell5
+			cell6
+			cell8
+			cell11
+			cell13
+			cell14
+			cell16
+			cell17
+			cell18
+			cell19
+			;
+End;
+Begin trees;
+	Translate
+			5 cell5,
+			6 cell6,
+			8 cell8,
+			11 cell11,
+			13 cell13,
+			14 cell14,
+			16 cell16,
+			17 cell17,
+			18 cell18,
+			19 cell19
+			;
+tree TREE1 = ((8,(((16,17),13),11)),((6,(14,(18,19))),5));
+End;
