@@ -17,16 +17,16 @@ Begin taxa;
 End;
 Begin trees;
 	Translate
-			5 cell5,
-			6 cell6,
-			8 cell8,
-			11 cell11,
-			13 cell13,
-			14 cell14,
-			16 cell16,
-			17 cell17,
-			18 cell18,
-			19 cell19
+			1 cell5,
+			2 cell6,
+			3 cell8,
+			4 cell11,
+			5 cell13,
+			6 cell14,
+			7 cell16,
+			8 cell17,
+			9 cell18,
+			10 cell19
 			;
-tree TREE1 = ((8,(((16,17),13),11)),((6,(14,(18,19))),5));
+tree TREE1 = ((3,(((7,8),5),4)),((2,(6,(9,10))),1));
 End;
