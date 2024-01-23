@@ -13,5 +13,5 @@ The output should provide all that is necessary as input to the inference method
 
 Use simulate environment and input tree newick file and tsv of node to tissue mapping from simulated data: NOT FUNCTIONAL YET
 ```
-python ./scripts/format_fixed_tree_from_sim.py simulated_data/sim_results_test_sim/test_sim_true.nwk simulated_data/sim_results_test_sim/test_sim_tissues.tsv
+python ./scripts/format_fixed_tree_from_sim.py examples/simulated_data/sim_results_test_sim/test_sim_true.nwk examples/simulated_data/sim_results_test_sim/test_sim_tissues.tsv
 ```
