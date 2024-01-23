@@ -1,0 +1,112 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=50;
+		Taxlabels
+			cell11
+			cell13
+			cell14
+			cell24
+			cell29
+			cell32
+			cell37
+			cell40
+			cell41
+			cell43
+			cell44
+			cell45
+			cell46
+			cell47
+			cell49
+			cell50
+			cell51
+			cell55
+			cell56
+			cell58
+			cell60
+			cell61
+			cell62
+			cell65
+			cell67
+			cell68
+			cell69
+			cell70
+			cell74
+			cell76
+			cell77
+			cell78
+			cell79
+			cell80
+			cell82
+			cell83
+			cell85
+			cell86
+			cell87
+			cell89
+			cell90
+			cell91
+			cell92
+			cell93
+			cell94
+			cell95
+			cell96
+			cell97
+			cell98
+			cell99
+			;
+End;
+Begin trees;
+	Translate
+			1 cell11,
+			2 cell13,
+			3 cell14,
+			4 cell24,
+			5 cell29,
+			6 cell32,
+			7 cell37,
+			8 cell40,
+			9 cell41,
+			10 cell43,
+			11 cell44,
+			12 cell45,
+			13 cell46,
+			14 cell47,
+			15 cell49,
+			16 cell50,
+			17 cell51,
+			18 cell55,
+			19 cell56,
+			20 cell58,
+			21 cell60,
+			22 cell61,
+			23 cell62,
+			24 cell65,
+			25 cell67,
+			26 cell68,
+			27 cell69,
+			28 cell70,
+			29 cell74,
+			30 cell76,
+			31 cell77,
+			32 cell78,
+			33 cell79,
+			34 cell80,
+			35 cell82,
+			36 cell83,
+			37 cell85,
+			38 cell86,
+			39 cell87,
+			40 cell89,
+			41 cell90,
+			42 cell91,
+			43 cell92,
+			44 cell93,
+			45 cell94,
+			46 cell95,
+			47 cell96,
+			48 cell97,
+			49 cell98,
+			50 cell99
+			;
+tree TREE1 = ((((28,((47,48),40)),(11,12)),((((((38,39),(45,46)),24),((((43,44),18),(35,36)),10)),2),1)),((((4,(19,((26,27),25))),((6,((41,42),37)),(((13,14),7),(34,(49,50))))),(3,((20,(23,(29,(32,33)))),(((21,22),15),(30,31))))),(((16,17),(8,9)),5)));
+End;
