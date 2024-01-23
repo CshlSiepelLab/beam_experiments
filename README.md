@@ -9,9 +9,17 @@ To simulate data from an activated simulate conda environment:
 
 The output should provide all that is necessary as input to the inference method, which is the true tree and the tissue labels of the leaves. The barcode data is also provided in the form of a mutation matrix.
 
-### Formatting simulated data to input to BEAST2
+### Formatting simulated data to input to BEAST2 FixedTreeAnalysis
 
 Use simulate environment and input tree newick file and tsv of node to tissue mapping from simulated data: NOT FUNCTIONAL YET
 ```
 python ./scripts/format_fixed_tree_from_sim.py examples/simulated_data/sim_results_test_sim/test_sim_true.nwk examples/simulated_data/sim_results_test_sim/test_sim_tissues.tsv
 ```
+
+### Formatting simulated data to input to TideTree and running TideTree
+This still needs to be implemented dynamically from simulation output, but works manually for now...
+```
+scripts/format_tidetree_xml_from_sim.sh
+scripts/run_tidetree.sh --xml tidetree.xml
+```
+

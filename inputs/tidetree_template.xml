@@ -15,20 +15,6 @@
        :tidetree
        :beast.base.evolution.likelihood" required="" version="2.7">
 
-<!--
-This is an example xml that can be adapted to use TiDeTree on your data.
-In this example, a population of cells was grown for 54h. Editing was induced from
-time point 0 for 36h and 10 cells were sampled.
-
-Running the analysis infers the tree linking the 10 cells and the cells' division and death rate.
-
-Note that some words in this xml refer to time flowing either forward or backward.
-Forward time is used to count the hours from the start of the experiment (so some time in the past)
-toward the time when the cells were sampled. (e.g. in dateTrait, date-forward).
-Backward time or height counts the hours the other way around, i.e. the duration between when the cells where sampled
-and some time in the past. (e.g. the scarring height is the duration between sampling the cells and the time when
-scarring started.
--->
 
 <!-- syntactic sugar -->
 <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
@@ -45,16 +31,8 @@ scarring started.
 <!-- input data -->
 <data  id="s1_c1_data.txt" spec="Alignment" name="alignment">
     <userDataType spec="tidetree.evolution.datatype.EditData"
-                     nrOfStates="3" />
-<sequence id="cell_1" spec="Sequence" taxon="1" value="1,2,0,1,1,0,1,2,1,0,"/>
-<sequence id="cell_2" spec="Sequence" taxon="2" value="1,0,0,1,1,0,1,2,1,0,"/>
-<sequence id="cell_3" spec="Sequence" taxon="3" value="1,0,0,1,1,0,1,2,1,0,"/>
-<sequence id="cell_4" spec="Sequence" taxon="4" value="1,0,0,1,1,0,1,2,1,0,"/>
-<sequence id="cell_5" spec="Sequence" taxon="5" value="2,2,0,1,1,0,1,1,1,0,"/>
-<sequence id="cell_6" spec="Sequence" taxon="6" value="2,2,0,1,2,0,1,1,1,0,"/>
-<sequence id="cell_8" spec="Sequence" taxon="7" value="1,0,1,2,2,0,2,2,1,0,"/>
-<sequence id="cell_9" spec="Sequence" taxon="8" value="1,0,1,2,2,0,2,2,1,0,"/>
-<sequence id="cell_10" spec="Sequence" taxon="9" value="2,0,0,1,1,0,1,1,1,0,"/>
+                     nrOfStates="REPLACE_NUM_STATES" />
+REPLACE_SEQUENCES
 </data>
 
 <!-- define set of taxa based on alignment - cells in this context -->
@@ -62,16 +40,16 @@ scarring started.
     <alignment idref="s1_c1_data.txt"/>
 </taxa>
 
-<!-- specify tip dates, here 54h after the start of the experiment -->
+<!-- specify tip dates in hours after the start of the experiment -->
 <traitSet id="dateTrait" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet" traitname="date-forward"
-	  value="1=54,2=54,3=54,4=54,5=54,6=54,7=54,8=54,9=54"/>
+	  value="REPLACE_TIP_DATES"/>
 
 
   <substModel id="substModel"
                spec="tidetree.substitutionmodel.EditAndSilencingModel"
                editRates="@editRate" silencingRate="@silencingRate"
-               editHeight="54" editDuration="36">
-    <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0" estimate="false"/>
+               editHeight="REPLACE_TOTAL_TIME" editDuration="REPLACE_EDIT_TIME">
+    <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="REPLACE_STARTING_FREQUENCIES" estimate="false"/>
   </substModel>
 
   <siteModel spec="SiteModel" id="siteModel" mutationRate="@mutationRate" proportionInvariant="@proportionInvariant"
@@ -79,13 +57,13 @@ scarring started.
   </siteModel>
 
 
-<run id="mcmc" spec="MCMC" chainLength="1000000000">
+<run id="mcmc" spec="MCMC" chainLength="REPLACE_CHAIN_LENGTH">
 
     <!-- here the parameter of the model are defined that will be operated on (i.e. estimated) during the MCMC -->
     <state id="state" spec="State" storeEvery="5000">
-            <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="54"
-                       taxa="@s1_c1_data.txt" editHeight="54"
-                       editDuration="36" sequencesAreClustered="false">
+            <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="REPLACE_TOTAL_TIME"
+                       taxa="@s1_c1_data.txt" editHeight="REPLACE_TOTAL_TIME"
+                       editDuration="REPLACE_EDIT_TIME" sequencesAreClustered="false">
                 <trait idref="dateTrait"/>
                 <taxonset idref="TaxonSet"/>
             </stateNode>
@@ -93,7 +71,7 @@ scarring started.
         <!-- find the definition of the scarring, loss rate and clock rate in the TiDeTree manuscript -->
           <parameter id="editRate" spec="parameter.RealParameter"
 		     dimension="1" lower="0.0" name="stateNode"
-		     upper="1000"> 0.9 0.1
+		     upper="1000"> REPLACE_EDIT_RATES
           </parameter>
         <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1"
                    lower="0.0" name="stateNode" upper="1000"> 0.0</parameter>
@@ -118,8 +96,8 @@ scarring started.
         <parameter id="rho" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0"> 1.0</parameter>
 
         <!-- The origin is the start of the population process (see Stadler2013), i.e. in most applications the time that passed
-         from the start of the experiment until the cells are sequenced. Here this is 54h. -->
-        <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="54.0001">54.001</parameter>
+         from the start of the experiment until the cells are sequenced in total hours. -->
+        <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="REPLACE_TOTAL_TIME.0001">REPLACE_TOTAL_TIME.001</parameter>
 
     </state>
 

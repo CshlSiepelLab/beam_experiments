@@ -17,9 +17,9 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-TIDETREE_JAR="../../tidetree/bin/tidetree.jar"
+TIDETREE_JAR="../tidetree/bin/tidetree.jar"
 
-if [ ! -f $tidetree_jar ]
+if [ ! -f $TIDETREE_JAR ]
 then
     echo "Script ../../tidetree/bin/tidetree.jar not found. Please install tidetree repo upstream of this repo or correct path in this file to tidetree.jar. Exiting!"
     exit
