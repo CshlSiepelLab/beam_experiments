@@ -17,8 +17,8 @@ python ./scripts/format_fixed_tree_from_sim.py examples/simulated_data/sim_resul
 ```
 
 ### Formatting simulated data to input to TideTree and running TideTree
-This still needs to be implemented dynamically from simulation output, but works manually for now...
 ```
+python scripts/format_tidetree_sequences_sim_matrix.py examples/simulated_data/sim_results_ten_samples/ten_samples_indel_character_matrix.tsv
 scripts/format_tidetree_xml_from_sim.sh
 scripts/run_tidetree.sh --xml tidetree.xml
 ```

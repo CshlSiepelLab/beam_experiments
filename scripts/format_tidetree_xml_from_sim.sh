@@ -5,27 +5,37 @@
 
 # This can be automated to read in lines from a file, but leaving manual for testing
 # Need some whitespace between sequences, ideally would be newlines for formatting but space is used here for testing
+#seq_file=$1
+#total_time=$2
+#edit_time=$3
+#output_path=$4
+
+seq_file="inputs/tidetree_seqs_example.xml"
+total_time=54
+edit_time=36
+output_path="tidetree.xml"
+
 REPLACE_SEQUENCES=""
-REPLACE_SEQUENCES+="<sequence id='cell_1' spec='Sequence' taxon='1' value='1,2,0,1,1,0,1,2,1,0,'/> "
-REPLACE_SEQUENCES+="<sequence id='cell_2' spec='Sequence' taxon='2' value='1,0,0,1,1,0,1,2,1,0,'/> "
-REPLACE_SEQUENCES+="<sequence id='cell_3' spec='Sequence' taxon='3' value='1,0,0,1,1,0,1,2,1,0,'/> "
-REPLACE_SEQUENCES+="<sequence id='cell_4' spec='Sequence' taxon='4' value='1,0,0,1,1,0,1,2,1,0,'/> "
-REPLACE_SEQUENCES+="<sequence id='cell_5' spec='Sequence' taxon='5' value='2,2,0,1,1,0,1,1,1,0,'/> "
-REPLACE_SEQUENCES+="<sequence id='cell_6' spec='Sequence' taxon='6' value='2,2,0,1,2,0,1,1,1,0,'/> "
-REPLACE_SEQUENCES+="<sequence id='cell_8' spec='Sequence' taxon='7' value='1,0,1,2,2,0,2,2,1,0,'/> "
-REPLACE_SEQUENCES+="<sequence id='cell_9' spec='Sequence' taxon='8' value='1,0,1,2,2,0,2,2,1,0,'/> "
-REPLACE_SEQUENCES+="<sequence id='cell_10' spec='Sequence' taxon='9' value='2,0,0,1,1,0,1,1,1,0,'/>"
+states_array=()
+while IFS= read -r line; do
+    REPLACE_SEQUENCES+="$line "
+    values=$(echo "$line" | grep -oE "value='([^']+)" | sed 's/,$//' | awk -F"'" '{print $2}')
+    IFS=',' read -ra values_array <<< "$values"
+    states_array+=(${values_array[@]})
+done < "$seq_file"
+max=$(IFS=$'\n'; echo "${states_array[*]}" | sort -nr | head -n1)
+
+REPLACE_NUM_STATES=$((max + 1))
 
 # Hack to calculate num sequences, but could also be user manual input if needed
 NUM_CELLS=$(echo "$REPLACE_SEQUENCES" | grep -o '<' | wc -l)
 
-REPLACE_NUM_STATES=3
 
 # This is an integer number of hours
-REPLACE_TOTAL_TIME=54
+REPLACE_TOTAL_TIME=${total_time}
 
 # This is an integer number of hours
-REPLACE_EDIT_TIME=36
+REPLACE_EDIT_TIME=${edit_time}
 
 # This is the MCMC chain length for beast. Tidetree default is 1000000000
 REPLACE_CHAIN_LENGTH=1000000
@@ -55,7 +65,7 @@ done
 OUTDIR=""
 
 # Copy tidetree template to modify
-XML_FILE="tidetree.xml"
+XML_FILE=${output_path}
 cp inputs/tidetree_template.xml $XML_FILE
 
 # Replace key words
