@@ -17,9 +17,18 @@ python ./scripts/format_fixed_tree_from_sim.py examples/simulated_data/sim_resul
 ```
 
 ### Formatting simulated data to input to TideTree and running TideTree
+Takes in a mutation matrix and formats xml sequences section:
 ```
 python scripts/format_tidetree_sequences_sim_matrix.py examples/simulated_data/sim_results_ten_samples/ten_samples_indel_character_matrix.tsv
-scripts/format_tidetree_xml_from_sim.sh
+```
+
+Takes in xml sequences formatted and experimental parameters to fill in full xml template for TideTree:
+```
+scripts/format_tidetree_xml_from_sim.sh --seqs inputs/tidetree_seqs_example.xml --total 54 --edit 36 --chain 1000000
+```
+
+Runs TideTree from a fully formatted xml:
+```
 scripts/run_tidetree.sh --xml tidetree.xml
 ```
 
