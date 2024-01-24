@@ -23,11 +23,19 @@ done
 
 REPLACE_SEQUENCES=""
 states_array=()
+cell_ids=()
 while IFS= read -r line; do
     REPLACE_SEQUENCES+="$line "
+    
+    # Append values to array to define future variables on number of states and edit rates
     values=$(echo "$line" | grep -oE "value='([^']+)" | sed 's/,$//' | awk -F"'" '{print $2}')
     IFS=',' read -ra values_array <<< "$values"
     states_array+=(${values_array[@]})
+    
+    # Append cell id's to array to use later with defining tip dates
+    name=$(echo "$line" | grep -oE "id='([^']+)" | awk -F"'" '{print $2}')
+    cell_ids+=(${name})
+    
 done < "$seq_file"
 max=$(IFS=$'\n'; echo "${states_array[*]}" | sort -nr | head -n1)
 
@@ -61,11 +69,11 @@ done
 
 # this is the number of taxon/cells and total time for each cell
 REPLACE_TIP_DATES=""
-for ((iterator=1; iterator<=NUM_CELLS; iterator++)); do
-    REPLACE_TIP_DATES+="$iterator=$REPLACE_TOTAL_TIME"
+for ((iterator=0; iterator<NUM_CELLS; iterator++)); do
+    REPLACE_TIP_DATES+="${cell_ids[iterator]}=$REPLACE_TOTAL_TIME"
 
     # Add a comma if it's not the last iteration
-    if [ $iterator -lt $NUM_CELLS ]; then
+    if [ $((iterator+1)) -lt $NUM_CELLS ]; then
         REPLACE_TIP_DATES+=","
     fi
 done

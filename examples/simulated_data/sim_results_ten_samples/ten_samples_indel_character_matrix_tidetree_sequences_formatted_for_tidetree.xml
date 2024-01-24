@@ -32,7 +32,7 @@
 <data  id="s1_c1_data.txt" spec="Alignment" name="alignment">
     <userDataType spec="tidetree.evolution.datatype.EditData"
                      nrOfStates="9" />
-<sequence id='cell5' spec='Sequence' taxon='1' value='3,3,2,0,0,1,2,1,0,2,'/> <sequence id='cell6' spec='Sequence' taxon='2' value='0,0,2,0,0,4,0,1,0,0,'/> <sequence id='cell8' spec='Sequence' taxon='3' value='2,0,2,0,5,2,0,1,0,2,'/> <sequence id='cell11' spec='Sequence' taxon='4' value='2,6,2,0,5,2,0,1,1,2,'/> <sequence id='cell13' spec='Sequence' taxon='5' value='2,0,2,0,5,2,0,1,0,2,'/> <sequence id='cell14' spec='Sequence' taxon='6' value='4,7,2,5,0,0,0,1,0,8,'/> <sequence id='cell16' spec='Sequence' taxon='7' value='2,0,2,2,5,2,0,1,0,2,'/> <sequence id='cell17' spec='Sequence' taxon='8' value='2,0,2,2,5,2,0,1,0,2,'/> <sequence id='cell18' spec='Sequence' taxon='9' value='4,7,2,5,0,0,0,1,0,8,'/> <sequence id='cell19' spec='Sequence' taxon='10' value='4,7,2,5,0,0,0,1,0,8,'/> 
+<sequence id='cell5' spec='Sequence' taxon='cell5' value='3,3,2,0,0,1,2,1,0,2,'/> <sequence id='cell6' spec='Sequence' taxon='cell6' value='0,0,2,0,0,4,0,1,0,0,'/> <sequence id='cell8' spec='Sequence' taxon='cell8' value='2,0,2,0,5,2,0,1,0,2,'/> <sequence id='cell11' spec='Sequence' taxon='cell11' value='2,6,2,0,5,2,0,1,1,2,'/> <sequence id='cell13' spec='Sequence' taxon='cell13' value='2,0,2,0,5,2,0,1,0,2,'/> <sequence id='cell14' spec='Sequence' taxon='cell14' value='4,7,2,5,0,0,0,1,0,8,'/> <sequence id='cell16' spec='Sequence' taxon='cell16' value='2,0,2,2,5,2,0,1,0,2,'/> <sequence id='cell17' spec='Sequence' taxon='cell17' value='2,0,2,2,5,2,0,1,0,2,'/> <sequence id='cell18' spec='Sequence' taxon='cell18' value='4,7,2,5,0,0,0,1,0,8,'/> <sequence id='cell19' spec='Sequence' taxon='cell19' value='4,7,2,5,0,0,0,1,0,8,'/> 
 </data>
 
 <!-- define set of taxa based on alignment - cells in this context -->
@@ -42,7 +42,7 @@
 
 <!-- specify tip dates in hours after the start of the experiment -->
 <traitSet id="dateTrait" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet" traitname="date-forward"
-	  value="1=54,2=54,3=54,4=54,5=54,6=54,7=54,8=54,9=54,10=54"/>
+	  value="cell5=54,cell6=54,cell8=54,cell11=54,cell13=54,cell14=54,cell16=54,cell17=54,cell18=54,cell19=54"/>
 
 
   <substModel id="substModel"
