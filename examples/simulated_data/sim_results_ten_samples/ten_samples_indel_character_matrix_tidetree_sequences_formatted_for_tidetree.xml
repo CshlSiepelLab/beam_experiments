@@ -31,8 +31,8 @@
 <!-- input data -->
 <data  id="s1_c1_data.txt" spec="Alignment" name="alignment">
     <userDataType spec="tidetree.evolution.datatype.EditData"
-                     nrOfStates="3" />
-<sequence id='cell_1' spec='Sequence' taxon='1' value='1,2,0,1,1,0,1,2,1,0,'/> <sequence id='cell_2' spec='Sequence' taxon='2' value='1,0,0,1,1,0,1,2,1,0,'/> <sequence id='cell_3' spec='Sequence' taxon='3' value='1,0,0,1,1,0,1,2,1,0,'/> <sequence id='cell_4' spec='Sequence' taxon='4' value='1,0,0,1,1,0,1,2,1,0,'/> <sequence id='cell_5' spec='Sequence' taxon='5' value='2,2,0,1,1,0,1,1,1,0,'/> <sequence id='cell_6' spec='Sequence' taxon='6' value='2,2,0,1,2,0,1,1,1,0,'/> <sequence id='cell_8' spec='Sequence' taxon='7' value='1,0,1,2,2,0,2,2,1,0,'/> <sequence id='cell_9' spec='Sequence' taxon='8' value='1,0,1,2,2,0,2,2,1,0,'/> <sequence id='cell_10' spec='Sequence' taxon='9' value='2,0,0,1,1,0,1,1,1,0,'/> 
+                     nrOfStates="9" />
+<sequence id='cell5' spec='Sequence' taxon='1' value='3,3,2,0,0,1,2,1,0,2,'/> <sequence id='cell6' spec='Sequence' taxon='2' value='0,0,2,0,0,4,0,1,0,0,'/> <sequence id='cell8' spec='Sequence' taxon='3' value='2,0,2,0,5,2,0,1,0,2,'/> <sequence id='cell11' spec='Sequence' taxon='4' value='2,6,2,0,5,2,0,1,1,2,'/> <sequence id='cell13' spec='Sequence' taxon='5' value='2,0,2,0,5,2,0,1,0,2,'/> <sequence id='cell14' spec='Sequence' taxon='6' value='4,7,2,5,0,0,0,1,0,8,'/> <sequence id='cell16' spec='Sequence' taxon='7' value='2,0,2,2,5,2,0,1,0,2,'/> <sequence id='cell17' spec='Sequence' taxon='8' value='2,0,2,2,5,2,0,1,0,2,'/> <sequence id='cell18' spec='Sequence' taxon='9' value='4,7,2,5,0,0,0,1,0,8,'/> <sequence id='cell19' spec='Sequence' taxon='10' value='4,7,2,5,0,0,0,1,0,8,'/> 
 </data>
 
 <!-- define set of taxa based on alignment - cells in this context -->
@@ -42,14 +42,14 @@
 
 <!-- specify tip dates in hours after the start of the experiment -->
 <traitSet id="dateTrait" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet" traitname="date-forward"
-	  value="1=54,2=54,3=54,4=54,5=54,6=54,7=54,8=54,9=54"/>
+	  value="1=54,2=54,3=54,4=54,5=54,6=54,7=54,8=54,9=54,10=54"/>
 
 
   <substModel id="substModel"
                spec="tidetree.substitutionmodel.EditAndSilencingModel"
                editRates="@editRate" silencingRate="@silencingRate"
                editHeight="54" editDuration="36">
-    <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0" estimate="false"/>
+    <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0" estimate="false"/>
   </substModel>
 
   <siteModel spec="SiteModel" id="siteModel" mutationRate="@mutationRate" proportionInvariant="@proportionInvariant"
@@ -57,7 +57,7 @@
   </siteModel>
 
 
-<run id="mcmc" spec="MCMC" chainLength="1000000">
+<run id="mcmc" spec="MCMC" chainLength="10000000">
 
     <!-- here the parameter of the model are defined that will be operated on (i.e. estimated) during the MCMC -->
     <state id="state" spec="State" storeEvery="5000">
@@ -71,7 +71,7 @@
         <!-- find the definition of the scarring, loss rate and clock rate in the TiDeTree manuscript -->
           <parameter id="editRate" spec="parameter.RealParameter"
 		     dimension="1" lower="0.0" name="stateNode"
-		     upper="1000"> 0.50 0.50
+		     upper="1000"> 0.12 0.12 0.12 0.12 0.12 0.12 0.12 0.16
           </parameter>
         <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1"
                    lower="0.0" name="stateNode" upper="1000"> 0.0</parameter>

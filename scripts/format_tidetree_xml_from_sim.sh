@@ -78,7 +78,7 @@ for ((iterator=2; iterator<=REPLACE_NUM_STATES; iterator++)); do
 done
 
 # Copy tidetree template to modify
-XML_FILE="${seq_file%%.*}_formatted_for_tidetree.xml"
+XML_FILE=$(echo "$seq_file" | sed 's/\.xml/_formatted_for_tidetree.xml/')
 cp inputs/tidetree_template.xml $XML_FILE
 
 # Replace key words

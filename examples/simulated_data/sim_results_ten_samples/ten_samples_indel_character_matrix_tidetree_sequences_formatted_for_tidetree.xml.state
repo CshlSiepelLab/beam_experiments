@@ -1,0 +1,26 @@
+<itsabeastystatewerein version='2.0' sample='10000000'>
+<statenode id='tree'>((0[&amp;cluster=0]:39.68298233158227,((9[&amp;cluster=4]:1.55476450881111,5[&amp;cluster=4]:1.55476450881111)14[&amp;cluster=0]:9.469177119277106,8[&amp;cluster=4]:11.023941628088215)15[&amp;cluster=0]:28.65904070349405)13[&amp;cluster=2]:0.14808234032186363,(1[&amp;cluster=1]:38.87983410263959,(((6[&amp;cluster=5]:14.218321689951402,7[&amp;cluster=5]:14.218321689951402)17[&amp;cluster=0]:8.240798745775706,(2[&amp;cluster=2]:9.511172255588571,4[&amp;cluster=2]:9.511172255588571)12[&amp;cluster=4]:12.947948180138537)11[&amp;cluster=0]:8.199800787112547,3[&amp;cluster=3]:30.658921222839655)16[&amp;cluster=4]:8.220912879799936)10[&amp;cluster=0]:0.9512305692645384)18[&amp;cluster=5]:0.0</statenode>
+<statenode id='editRate'>editRate[8 1] (0.0,1000.0): 0.3229374161757953 0.33405280946733 0.03237091029658421 0.08267551356659061 0.12392942991374892 0.05242458412136117 0.016305854996121492 0.035303481462468714 </statenode>
+<statenode id='silencingRate'>silencingRate[1 1] (0.0,1000.0): 0.0 </statenode>
+<statenode id='clockRate.c'>clockRate.c[1 1] (0.0,Infinity): 0.04044093413188589 </statenode>
+<statenode id='mutationRate'>mutationRate[1 1] (0.0,Infinity): 1.0 </statenode>
+<statenode id='proportionInvariant'>proportionInvariant[1 1] (0.0,1.0): 0.0 </statenode>
+<statenode id='birthRate'>birthRate[1 1] (0.0,5.0): 0.062734983333326 </statenode>
+<statenode id='deathRate'>deathRate[1 1] (0.0,5.0): 0.03262098246370768 </statenode>
+<statenode id='samplingRate'>samplingRate[1 1] (0.0,1.0): 0.0 </statenode>
+<statenode id='rho'>rho[1 1] (0.0,1.0): 1.0 </statenode>
+<statenode id='origin'>origin[1 1] (-Infinity,54.0001): 54.001 </statenode>
+</itsabeastystatewerein>
+<!--
+{"operators":[
+{"id":"unknown","p":"NaN","accept":1354242,"reject":1422924,"acceptFC":1351312,"rejectFC":1419608,"rejectIv":267996,"rejectOp":0},
+{"id":"unknown","p":19.170178316557674,"accept":64421,"reject":214296,"acceptFC":63918,"rejectFC":214182,"rejectIv":119436,"rejectOp":78143},
+{"id":"unknown","p":32.721901520436035,"accept":35991,"reject":242855,"acceptFC":35908,"rejectFC":242274,"rejectIv":164509,"rejectOp":98900},
+{"id":"unknown","p":"NaN","accept":132990,"reject":2644461,"acceptFC":132662,"rejectFC":2638464,"rejectIv":2341471,"rejectOp":1469191},
+{"id":"editRateScaler","p":2.61289466611159,"accept":6414,"reject":271710,"acceptFC":6374,"rejectFC":271097,"rejectIv":263398,"rejectOp":263398},
+{"id":"clockRateScaler","p":0.3307838075804098,"accept":76958,"reject":201393,"acceptFC":76507,"rejectFC":201234,"rejectIv":0,"rejectOp":0},
+{"id":"birthRateScaler","p":0.4869835724837971,"accept":76791,"reject":201194,"acceptFC":76377,"rejectFC":200968,"rejectIv":0,"rejectOp":0},
+{"id":"deathRateScaler","p":0.3886607218930626,"accept":78692,"reject":198527,"acceptFC":78229,"rejectFC":198370,"rejectIv":226,"rejectOp":0},
+{"id":"updownBD.t:LTv2_EBd32_cluster_1","p":0.6279067509390323,"accept":720851,"reject":2055291,"acceptFC":717801,"rejectFC":2052143,"rejectIv":11,"rejectOp":0}
+]}
+-->
