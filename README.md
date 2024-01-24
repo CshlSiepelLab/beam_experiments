@@ -17,6 +17,7 @@ python ./scripts/format_fixed_tree_from_sim.py examples/simulated_data/sim_resul
 ```
 
 ### Formatting simulated data to input to TideTree and running TideTree
+
 Takes in a mutation matrix and formats xml sequences section:
 ```
 python scripts/format_tidetree_sequences_sim_matrix.py examples/simulated_data/sim_results_ten_samples/ten_samples_indel_character_matrix.tsv
@@ -32,3 +33,6 @@ Runs TideTree from a fully formatted xml:
 scripts/run_tidetree.sh --xml tidetree.xml
 ```
 
+### Running FixedTreeAnalysis (or SetTreeAnalysisfrom TideTree output)
+
+This can be done by following those respective tutorials which specify to import `.tree` file and `.dat` file for tissue locations into BEAUTi where substitution model parameters and MCMC options can be specified through the GUI.
