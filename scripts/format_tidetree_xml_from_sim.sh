@@ -56,8 +56,8 @@ REPLACE_CHAIN_LENGTH=$chain_length
 # This is edit rates for one less than the number of states it seems (or number of columns in row 1 minue the first column which is default calculated)
 # These priors are set to be equal rates for all scarring states, but can probably be better set in the future to represent expected rates or based on
 # TideTree example had set bias for first rate to be much higher than the others, but it is not clear that there is a basis for this decision and the chain should run long enough to converge to the correct value regardless
-equal_rate_value=$(echo "scale=2; 1 / ($REPLACE_NUM_STATES - 1)" | bc)
-last_rate_value=$(echo "scale=2; 1 - $equal_rate_value * ($REPLACE_NUM_STATES - 2)" | bc)
+equal_rate_value=$(echo "scale=4; 1 / ($REPLACE_NUM_STATES - 1)" | bc)
+last_rate_value=$(echo "scale=4; 1 - $equal_rate_value * ($REPLACE_NUM_STATES - 2)" | bc)
 REPLACE_EDIT_RATES=""
 for ((i = 1; i < REPLACE_NUM_STATES; i++)); do
         if [ $i -eq $((REPLACE_NUM_STATES - 1)) ]; then

@@ -24,7 +24,7 @@ tissue_data_filepath = str(sys.argv[2])
 tree = ete3.Tree(newick_filepath)
 tissues_df = pd.read_csv(tissue_data_filepath, sep="\t")
 
-leaf_names = [int(leaf.name) for leaf in tree.iter_leaves()]
+leaf_names = [leaf.name for leaf in tree.iter_leaves()]
 leaf_tissues_df = tissues_df[tissues_df.loc[:,'node'].isin(leaf_names)]
 leaf_tissues_dict = dict(zip(leaf_tissues_df.loc[:,'node'], leaf_tissues_df.loc[:, 'tissue']))
 
