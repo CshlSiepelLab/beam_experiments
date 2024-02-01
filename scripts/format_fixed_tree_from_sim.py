@@ -3,6 +3,7 @@
 import sys
 import ete3
 import pandas as pd
+import pdb
 
 def format_tree_file(data_dict):
     xml_content = f"#NEXUS\n\nBegin taxa;\n\tDimensions ntax={len(data_dict)};\n\t\tTaxlabels\n"
@@ -25,7 +26,7 @@ tree = ete3.Tree(newick_filepath)
 tissues_df = pd.read_csv(tissue_data_filepath, sep="\t")
 
 leaf_names = [leaf.name for leaf in tree.iter_leaves()]
-leaf_tissues_df = tissues_df[tissues_df.loc[:,'node'].isin(leaf_names)]
+leaf_tissues_df = tissues_df[tissues_df.loc[:,'node'].astype(str).isin(leaf_names)]
 leaf_tissues_dict = dict(zip(leaf_tissues_df.loc[:,'node'], leaf_tissues_df.loc[:, 'tissue']))
 
 # Make nexus file for a single site of tissue label aligned across samples
@@ -33,7 +34,7 @@ xml_content, translate_dict = format_tree_file(leaf_tissues_dict)
 
 # Replace newick keys with translate value indices from 1 up to total number of taxa (requirement of BEAUti to load in trees)
 for leaf in tree.iter_leaves():
-    leaf.name = translate_dict[leaf.name]
+    leaf.name = translate_dict[str(leaf.name)]
 
 # Output tree in nexus file format
 ### Hack to prevent beast error for extra node at root; Need to solve this another way eventually
