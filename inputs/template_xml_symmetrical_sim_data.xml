@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='FixedTreeAnalysis' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.base.evolution.alignment:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" required="BEAST.base v2.7.6:FixedTreeAnalysis v0.0.2:BEAST_CLASSIC v1.6.3" version="2.7">
+
+    <data
+id="sim1_true"
+spec="Alignment"
+name="taxa">
+        <sequence id="Sequence.0" spec="Sequence" taxon="cell13" totalcount="4" value="?"/>
+        <sequence id="Sequence.1" spec="Sequence" taxon="cell18" totalcount="4" value="?"/>
+        <sequence id="Sequence.2" spec="Sequence" taxon="cell19" totalcount="4" value="?"/>
+        <sequence id="Sequence.3" spec="Sequence" taxon="cell32" totalcount="4" value="?"/>
+        <sequence id="Sequence.4" spec="Sequence" taxon="cell36" totalcount="4" value="?"/>
+        <sequence id="Sequence.5" spec="Sequence" taxon="cell40" totalcount="4" value="?"/>
+        <sequence id="Sequence.6" spec="Sequence" taxon="cell43" totalcount="4" value="?"/>
+        <sequence id="Sequence.7" spec="Sequence" taxon="cell46" totalcount="4" value="?"/>
+        <sequence id="Sequence.8" spec="Sequence" taxon="cell47" totalcount="4" value="?"/>
+        <sequence id="Sequence.9" spec="Sequence" taxon="cell48" totalcount="4" value="?"/>
+        <sequence id="Sequence.10" spec="Sequence" taxon="cell49" totalcount="4" value="?"/>
+        <sequence id="Sequence.11" spec="Sequence" taxon="cell50" totalcount="4" value="?"/>
+        <sequence id="Sequence.12" spec="Sequence" taxon="cell51" totalcount="4" value="?"/>
+        <sequence id="Sequence.13" spec="Sequence" taxon="cell52" totalcount="4" value="?"/>
+        <sequence id="Sequence.14" spec="Sequence" taxon="cell53" totalcount="4" value="?"/>
+        <sequence id="Sequence.15" spec="Sequence" taxon="cell54" totalcount="4" value="?"/>
+        <sequence id="Sequence.16" spec="Sequence" taxon="cell55" totalcount="4" value="?"/>
+        <sequence id="Sequence.17" spec="Sequence" taxon="cell56" totalcount="4" value="?"/>
+        <sequence id="Sequence.18" spec="Sequence" taxon="cell63" totalcount="4" value="?"/>
+        <sequence id="Sequence.19" spec="Sequence" taxon="cell67" totalcount="4" value="?"/>
+        <sequence id="Sequence.20" spec="Sequence" taxon="cell69" totalcount="4" value="?"/>
+        <sequence id="Sequence.21" spec="Sequence" taxon="cell70" totalcount="4" value="?"/>
+        <sequence id="Sequence.22" spec="Sequence" taxon="cell71" totalcount="4" value="?"/>
+        <sequence id="Sequence.23" spec="Sequence" taxon="cell72" totalcount="4" value="?"/>
+        <sequence id="Sequence.24" spec="Sequence" taxon="cell73" totalcount="4" value="?"/>
+        <sequence id="Sequence.25" spec="Sequence" taxon="cell74" totalcount="4" value="?"/>
+        <sequence id="Sequence.26" spec="Sequence" taxon="cell75" totalcount="4" value="?"/>
+        <sequence id="Sequence.27" spec="Sequence" taxon="cell77" totalcount="4" value="?"/>
+        <sequence id="Sequence.28" spec="Sequence" taxon="cell78" totalcount="4" value="?"/>
+        <sequence id="Sequence.29" spec="Sequence" taxon="cell79" totalcount="4" value="?"/>
+        <sequence id="Sequence.30" spec="Sequence" taxon="cell8" totalcount="4" value="?"/>
+        <sequence id="Sequence.31" spec="Sequence" taxon="cell80" totalcount="4" value="?"/>
+        <sequence id="Sequence.32" spec="Sequence" taxon="cell82" totalcount="4" value="?"/>
+        <sequence id="Sequence.33" spec="Sequence" taxon="cell83" totalcount="4" value="?"/>
+        <sequence id="Sequence.34" spec="Sequence" taxon="cell84" totalcount="4" value="?"/>
+        <sequence id="Sequence.35" spec="Sequence" taxon="cell85" totalcount="4" value="?"/>
+        <sequence id="Sequence.36" spec="Sequence" taxon="cell86" totalcount="4" value="?"/>
+        <sequence id="Sequence.37" spec="Sequence" taxon="cell87" totalcount="4" value="?"/>
+        <sequence id="Sequence.38" spec="Sequence" taxon="cell88" totalcount="4" value="?"/>
+        <sequence id="Sequence.39" spec="Sequence" taxon="cell89" totalcount="4" value="?"/>
+        <sequence id="Sequence.40" spec="Sequence" taxon="cell90" totalcount="4" value="?"/>
+        <sequence id="Sequence.41" spec="Sequence" taxon="cell91" totalcount="4" value="?"/>
+        <sequence id="Sequence.42" spec="Sequence" taxon="cell92" totalcount="4" value="?"/>
+        <sequence id="Sequence.43" spec="Sequence" taxon="cell93" totalcount="4" value="?"/>
+        <sequence id="Sequence.44" spec="Sequence" taxon="cell94" totalcount="4" value="?"/>
+        <sequence id="Sequence.45" spec="Sequence" taxon="cell95" totalcount="4" value="?"/>
+        <sequence id="Sequence.46" spec="Sequence" taxon="cell96" totalcount="4" value="?"/>
+        <sequence id="Sequence.47" spec="Sequence" taxon="cell97" totalcount="4" value="?"/>
+        <sequence id="Sequence.48" spec="Sequence" taxon="cell98" totalcount="4" value="?"/>
+        <sequence id="Sequence.49" spec="Sequence" taxon="cell99" totalcount="4" value="?"/>
+    </data>
+
+    <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
+
+    <map name="Exponential" >beast.base.inference.distribution.Exponential</map>
+
+    <map name="LogNormal" >beast.base.inference.distribution.LogNormalDistributionModel</map>
+
+    <map name="Normal" >beast.base.inference.distribution.Normal</map>
+
+    <map name="Beta" >beast.base.inference.distribution.Beta</map>
+
+    <map name="Gamma" >beast.base.inference.distribution.Gamma</map>
+
+    <map name="LaplaceDistribution" >beast.base.inference.distribution.LaplaceDistribution</map>
+
+    <map name="prior" >beast.base.inference.distribution.Prior</map>
+
+    <map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
+
+    <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
+
+    <run id="mcmc" spec="MCMC" chainLength="1000000">
+        <state id="state" spec="State" storeEvery="5000">
+            <stateNode id="Tree.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTree" IsLabelledNewick="true" adjustTipHeights="false" newick="((cell8:1.1967499999999998,(cell13:1.02981,(((cell18:0.7828080000000001,cell19:0.7828080000000001):0.020427300000000037,((cell50:0.308535,cell51:0.308535):0.23047499999999999,(cell98:0.033375299999999886,cell99:0.033375299999999886):0.5056349999999998):0.26422499999999993):0.02233560000000001,(((cell52:0.28847200000000006,cell53:0.28847200000000006):0.44805800000000007,(((cell74:0.1444970000000001,cell75:0.1444970000000001):0.479344,(cell96:0.038781900000000036,cell97:0.038781900000000036):0.585059):0.08516039999999991,(cell82:0.1025339999999999,cell83:0.1025339999999999):0.606468):0.027527800000000102):0.04441429999999991,(cell90:0.07288089999999992,cell91:0.07288089999999992):0.7080629999999999):0.04462719999999998):0.204241):0.16694199999999992):0.5794600000000001,(((cell32:0.5711629999999999,(cell43:0.37482499999999996,((cell63:0.243255,(cell80:0.11098199999999991,(cell94:0.043945300000000076,cell95:0.043945300000000076):0.06703670000000006):0.13227300000000008):0.01032349999999993,(cell67:0.23019100000000003,(cell77:0.13234299999999988,(cell84:0.09433310000000006,cell85:0.09433310000000006):0.03801039999999989):0.0978479000000001):0.023386899999999988):0.12124699999999988):0.1963379999999999):0.11534700000000009,((cell40:0.43836300000000006,(cell48:0.3096920000000001,cell49:0.3096920000000001):0.12867099999999998):0.0012303399999999964,(cell54:0.27267700000000006,cell55:0.27267700000000006):0.16691699999999998):0.2469159999999999):1.01018,((cell36:0.47911100000000006,(cell46:0.35596399999999995,cell47:0.35596399999999995):0.12314599999999998):0.9411670000000001,((((cell56:0.2627789999999999,(cell78:0.1176330000000001,cell79:0.1176330000000001):0.14514500000000008):0.09455389999999997,(cell86:0.0918082,cell87:0.0918082):0.265525):0.238294,(cell92:0.07169530000000002,cell93:0.07169530000000002):0.5239320000000001):0.5292700000000001,(((cell69:0.22675899999999993,(cell70:0.21049699999999993,cell71:0.21049699999999993):0.016262100000000057):0.0052860699999999206,(cell88:0.08566089999999993,cell89:0.08566089999999993):0.146385):0.02098599999999995,(cell72:0.19130500000000006,cell73:0.19130500000000006):0.06172650000000002):0.8718650000000001):0.2953809999999999):0.276416):0.07951960000000002):0.0">
+                <taxa idref="sim1_true"/>
+                <taxonset id="TaxonSet.1" spec="TaxonSet">
+                    <taxon id="cell13" spec="Taxon"/>
+                    <taxon id="cell18" spec="Taxon"/>
+                    <taxon id="cell19" spec="Taxon"/>
+                    <taxon id="cell32" spec="Taxon"/>
+                    <taxon id="cell36" spec="Taxon"/>
+                    <taxon id="cell40" spec="Taxon"/>
+                    <taxon id="cell43" spec="Taxon"/>
+                    <taxon id="cell46" spec="Taxon"/>
+                    <taxon id="cell47" spec="Taxon"/>
+                    <taxon id="cell48" spec="Taxon"/>
+                    <taxon id="cell49" spec="Taxon"/>
+                    <taxon id="cell50" spec="Taxon"/>
+                    <taxon id="cell51" spec="Taxon"/>
+                    <taxon id="cell52" spec="Taxon"/>
+                    <taxon id="cell53" spec="Taxon"/>
+                    <taxon id="cell54" spec="Taxon"/>
+                    <taxon id="cell55" spec="Taxon"/>
+                    <taxon id="cell56" spec="Taxon"/>
+                    <taxon id="cell63" spec="Taxon"/>
+                    <taxon id="cell67" spec="Taxon"/>
+                    <taxon id="cell69" spec="Taxon"/>
+                    <taxon id="cell70" spec="Taxon"/>
+                    <taxon id="cell71" spec="Taxon"/>
+                    <taxon id="cell72" spec="Taxon"/>
+                    <taxon id="cell73" spec="Taxon"/>
+                    <taxon id="cell74" spec="Taxon"/>
+                    <taxon id="cell75" spec="Taxon"/>
+                    <taxon id="cell77" spec="Taxon"/>
+                    <taxon id="cell78" spec="Taxon"/>
+                    <taxon id="cell79" spec="Taxon"/>
+                    <taxon id="cell8" spec="Taxon"/>
+                    <taxon id="cell80" spec="Taxon"/>
+                    <taxon id="cell82" spec="Taxon"/>
+                    <taxon id="cell83" spec="Taxon"/>
+                    <taxon id="cell84" spec="Taxon"/>
+                    <taxon id="cell85" spec="Taxon"/>
+                    <taxon id="cell86" spec="Taxon"/>
+                    <taxon id="cell87" spec="Taxon"/>
+                    <taxon id="cell88" spec="Taxon"/>
+                    <taxon id="cell89" spec="Taxon"/>
+                    <taxon id="cell90" spec="Taxon"/>
+                    <taxon id="cell91" spec="Taxon"/>
+                    <taxon id="cell92" spec="Taxon"/>
+                    <taxon id="cell93" spec="Taxon"/>
+                    <taxon id="cell94" spec="Taxon"/>
+                    <taxon id="cell95" spec="Taxon"/>
+                    <taxon id="cell96" spec="Taxon"/>
+                    <taxon id="cell97" spec="Taxon"/>
+                    <taxon id="cell98" spec="Taxon"/>
+                    <taxon id="cell99" spec="Taxon"/>
+                </taxonset>
+            </stateNode>
+            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="3">true</stateNode>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="3" name="stateNode">1.0</parameter>
+            <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
+        </state>
+        <distribution id="posterior" spec="CompoundDistribution">
+            <distribution id="prior" spec="CompoundDistribution">
+                <distribution id="FixedTreeModel.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTreeDistribution" tree="@Tree.t:tree"/>
+                <prior id="nonZeroRatePrior.s:tissue" name="distribution">
+                    <x id="nonZeroRates.s:tissue" spec="beast.base.evolution.Sum">
+                        <arg idref="rateIndicator.s:tissue"/>
+                    </x>
+                    <distr id="Poisson.0" spec="distribution.Poisson" offset="2.0">
+                        <parameter id="RealParameter.10" spec="parameter.RealParameter" estimate="false" name="lambda">0.693</parameter>
+                    </distr>
+                </prior>
+                <prior id="relativeGeoRatesPrior.s:tissue" name="distribution" x="@relativeGeoRates.s:tissue">
+                    <Gamma id="Gamma.2" name="distr">
+                        <parameter id="RealParameter.8" spec="parameter.RealParameter" estimate="false" name="alpha">1.0</parameter>
+                        <parameter id="RealParameter.9" spec="parameter.RealParameter" estimate="false" name="beta">1.0</parameter>
+                    </Gamma>
+                </prior>
+                <prior id="geoclockPrior.c:tissue" name="distribution" x="@traitClockRate.c:tissue">
+                    <Gamma id="Gamma.1" name="distr">
+                        <parameter id="RealParameter.6" spec="parameter.RealParameter" estimate="false" name="alpha">0.001</parameter>
+                        <parameter id="RealParameter.7" spec="parameter.RealParameter" estimate="false" name="beta">1000.0</parameter>
+                    </Gamma>
+                </prior>
+            </distribution>
+            <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
+                <distribution id="treeLikelihood.sim1_true" spec="fixedtreeanalysis.evolution.likelihood.FixedTreeLikelihood" data="@sim1_true" tree="@Tree.t:tree">
+                    <siteModel id="FixedSiteModel.s:sim1_true" spec="fixedtreeanalysis.evolution.sitemodel.FixedSiteModel">
+                        <parameter id="RealParameter.0" spec="parameter.RealParameter" estimate="false" lower="0.0" name="mutationRate" upper="1.0">1.0</parameter>
+                        <parameter id="RealParameter.1" spec="parameter.RealParameter" lower="0.0" name="shape" upper="0.0">1.0</parameter>
+                        <parameter id="RealParameter.2" spec="parameter.RealParameter" lower="0.0" name="proportionInvariant" upper="0.0">0.0</parameter>
+                        <substModel id="JC69.s:sim1_true" spec="JukesCantor"/>
+                    </siteModel>
+                    <branchRateModel id="FixedClock.c:sim1_true" spec="fixedtreeanalysis.evolution.branchratemodel.FixedClockModel">
+                        <parameter id="RealParameter.3" spec="parameter.RealParameter" estimate="false" name="clock.rate">1.0</parameter>
+                    </branchRateModel>
+                </distribution>
+                <distribution id="traitedtreeLikelihood.tissue" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@Tree.t:tree">
+                    <data
+id="tissue"
+spec="beastclassic.evolution.alignment.AlignmentFromTrait">
+                        <traitSet id="traitSet.tissue" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet.1" traitname="discrete">cell13=t2,
+
+cell18=t1,
+
+cell19=t1,
+
+cell32=t1,
+
+cell36=t2,
+
+cell40=t1,
+
+cell43=t1,
+
+cell46=t2,
+
+cell47=t2,
+
+cell48=t2,
+
+cell49=t2,
+
+cell50=t3,
+
+cell51=t3,
+
+cell52=t1,
+
+cell53=t1,
+
+cell54=t3,
+
+cell55=t3,
+
+cell56=t2,
+
+cell63=t1,
+
+cell67=t2,
+
+cell69=t3,
+
+cell70=t1,
+
+cell71=t1,
+
+cell72=t3,
+
+cell73=t3,
+
+cell74=t3,
+
+cell75=t3,
+
+cell77=t3,
+
+cell78=t2,
+
+cell79=t2,
+
+cell8=t2,
+
+cell80=t2,
+
+cell82=t1,
+
+cell83=t1,
+
+cell84=t2,
+
+cell85=t2,
+
+cell86=t2,
+
+cell87=t2,
+
+cell88=t1,
+
+cell89=t1,
+
+cell90=t3,
+
+cell91=t3,
+
+cell92=t1,
+
+cell93=t1,
+
+cell94=t2,
+
+cell95=t2,
+
+cell96=t3,
+
+cell97=t3,
+
+cell98=t3,
+
+cell99=t3</traitSet>
+                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="t1=0,t2=1,t3=2,? = 0 1 2 " codelength="-1" states="3"/>
+                    </data>
+                    <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
+                        <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
+                        <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
+                        <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
+                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue">
+                            <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
+                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="3" name="frequencies">0.3333333333333333</parameter>
+                            </frequencies>
+                        </substModel>
+                    </siteModel>
+                    <branchRateModel id="StrictClockModel.c:tissue" spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@traitClockRate.c:tissue"/>
+                </distribution>
+            </distribution>
+        </distribution>
+        <operator id="georateScaler.s:tissue" spec="ScaleOperator" parameter="@relativeGeoRates.s:tissue" scaleAllIndependently="true" scaleFactor="0.99" weight="30.0"/>
+        <operator id="indicatorFlip.s:tissue" spec="operator.BitFlipOperator" parameter="@rateIndicator.s:tissue" weight="30.0"/>
+        <operator id="geoMuScaler.c:tissue" spec="ScaleOperator" parameter="@traitClockRate.c:tissue" scaleFactor="0.9" weight="3.0"/>
+        <operator id="BSSVSoperator.c:tissue" spec="beastclassic.evolution.operators.BitFlipBSSVSOperator" indicator="@rateIndicator.s:tissue" mu="@traitClockRate.c:tissue" weight="30.0"/>
+        <logger id="tracelog" spec="Logger" fileName="$(filebase).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+            <log idref="treeLikelihood.sim1_true"/>
+            <log idref="rateIndicator.s:tissue"/>
+            <log idref="relativeGeoRates.s:tissue"/>
+            <log idref="traitClockRate.c:tissue"/>
+            <log id="geoSubstModelLogger.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModelLogger" dataType="@traitDataType.tissue" model="@svs.s:tissue"/>
+        </logger>
+        <logger id="screenlog" spec="Logger" logEvery="10000">
+            <log idref="posterior"/>
+            <log id="ESS.0" spec="util.ESS" arg="@posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+        </logger>
+        <logger id="treelog.t:tree" spec="Logger" fileName="$(filebase).trees" logEvery="1000" mode="tree">
+            <log id="TreeWithMetaDataLogger.t:tree" spec="beast.base.evolution.TreeWithMetaDataLogger" tree="@Tree.t:tree"/>
+        </logger>
+        <logger id="treeWithTraitLogger.tissue" spec="Logger" fileName="tissue_tree_with_trait.trees" logEvery="1000" mode="tree">
+            <log id="treeWithTraitLoggerItem.t:tree" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@Tree.t:tree">
+                <metadata idref="posterior"/>
+                <metadata idref="traitedtreeLikelihood.tissue"/>
+            </log>
+        </logger>
+        <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+    </run>
+
+</beast>
