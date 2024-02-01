@@ -1,0 +1,752 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='FixedTreeAnalysis' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.base.evolution.alignment:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" required="BEAST.base v2.7.6:FixedTreeAnalysis v0.0.2:BEAST_CLASSIC v1.6.3" version="2.7">
+
+    <data
+id="cp01_MMUS1495_cassiopeia_greedy"
+spec="Alignment"
+name="taxa">
+        <sequence id="Sequence.0" spec="Sequence" taxon="ASV003" totalcount="4" value="?"/>
+        <sequence id="Sequence.1" spec="Sequence" taxon="ASV003-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.2" spec="Sequence" taxon="ASV003-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.3" spec="Sequence" taxon="ASV003-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.4" spec="Sequence" taxon="ASV015" totalcount="4" value="?"/>
+        <sequence id="Sequence.5" spec="Sequence" taxon="ASV015-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.6" spec="Sequence" taxon="ASV015-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.7" spec="Sequence" taxon="ASV015-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.8" spec="Sequence" taxon="ASV018" totalcount="4" value="?"/>
+        <sequence id="Sequence.9" spec="Sequence" taxon="ASV018-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.10" spec="Sequence" taxon="ASV018-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.11" spec="Sequence" taxon="ASV018-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.12" spec="Sequence" taxon="ASV031" totalcount="4" value="?"/>
+        <sequence id="Sequence.13" spec="Sequence" taxon="ASV031-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.14" spec="Sequence" taxon="ASV031-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.15" spec="Sequence" taxon="ASV031-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.16" spec="Sequence" taxon="ASV037" totalcount="4" value="?"/>
+        <sequence id="Sequence.17" spec="Sequence" taxon="ASV037-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.18" spec="Sequence" taxon="ASV037-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.19" spec="Sequence" taxon="ASV039" totalcount="4" value="?"/>
+        <sequence id="Sequence.20" spec="Sequence" taxon="ASV039-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.21" spec="Sequence" taxon="ASV039-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.22" spec="Sequence" taxon="ASV039-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.23" spec="Sequence" taxon="ASV045" totalcount="4" value="?"/>
+        <sequence id="Sequence.24" spec="Sequence" taxon="ASV045-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.25" spec="Sequence" taxon="ASV045-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.26" spec="Sequence" taxon="ASV045-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.27" spec="Sequence" taxon="ASV046" totalcount="4" value="?"/>
+        <sequence id="Sequence.28" spec="Sequence" taxon="ASV046-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.29" spec="Sequence" taxon="ASV046-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.30" spec="Sequence" taxon="ASV046-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.31" spec="Sequence" taxon="ASV055" totalcount="4" value="?"/>
+        <sequence id="Sequence.32" spec="Sequence" taxon="ASV055-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.33" spec="Sequence" taxon="ASV055-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.34" spec="Sequence" taxon="ASV055-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.35" spec="Sequence" taxon="ASV056" totalcount="4" value="?"/>
+        <sequence id="Sequence.36" spec="Sequence" taxon="ASV056-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.37" spec="Sequence" taxon="ASV056-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.38" spec="Sequence" taxon="ASV056-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.39" spec="Sequence" taxon="ASV066" totalcount="4" value="?"/>
+        <sequence id="Sequence.40" spec="Sequence" taxon="ASV066-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.41" spec="Sequence" taxon="ASV066-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.42" spec="Sequence" taxon="ASV066-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.43" spec="Sequence" taxon="ASV070" totalcount="4" value="?"/>
+        <sequence id="Sequence.44" spec="Sequence" taxon="ASV070-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.45" spec="Sequence" taxon="ASV070-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.46" spec="Sequence" taxon="ASV081" totalcount="4" value="?"/>
+        <sequence id="Sequence.47" spec="Sequence" taxon="ASV081-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.48" spec="Sequence" taxon="ASV081-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.49" spec="Sequence" taxon="ASV081-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.50" spec="Sequence" taxon="ASV090" totalcount="4" value="?"/>
+        <sequence id="Sequence.51" spec="Sequence" taxon="ASV090-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.52" spec="Sequence" taxon="ASV090-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.53" spec="Sequence" taxon="ASV102" totalcount="4" value="?"/>
+        <sequence id="Sequence.54" spec="Sequence" taxon="ASV102-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.55" spec="Sequence" taxon="ASV102-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.56" spec="Sequence" taxon="ASV109" totalcount="4" value="?"/>
+        <sequence id="Sequence.57" spec="Sequence" taxon="ASV109-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.58" spec="Sequence" taxon="ASV109-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.59" spec="Sequence" taxon="ASV110" totalcount="4" value="?"/>
+        <sequence id="Sequence.60" spec="Sequence" taxon="ASV110-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.61" spec="Sequence" taxon="ASV112" totalcount="4" value="?"/>
+        <sequence id="Sequence.62" spec="Sequence" taxon="ASV112-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.63" spec="Sequence" taxon="ASV112-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.64" spec="Sequence" taxon="ASV115" totalcount="4" value="?"/>
+        <sequence id="Sequence.65" spec="Sequence" taxon="ASV115-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.66" spec="Sequence" taxon="ASV115-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.67" spec="Sequence" taxon="ASV115-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.68" spec="Sequence" taxon="ASV127" totalcount="4" value="?"/>
+        <sequence id="Sequence.69" spec="Sequence" taxon="ASV127-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.70" spec="Sequence" taxon="ASV127-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.71" spec="Sequence" taxon="ASV148" totalcount="4" value="?"/>
+        <sequence id="Sequence.72" spec="Sequence" taxon="ASV152" totalcount="4" value="?"/>
+        <sequence id="Sequence.73" spec="Sequence" taxon="ASV152-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.74" spec="Sequence" taxon="ASV152-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.75" spec="Sequence" taxon="ASV152-3" totalcount="4" value="?"/>
+        <sequence id="Sequence.76" spec="Sequence" taxon="ASV159" totalcount="4" value="?"/>
+        <sequence id="Sequence.77" spec="Sequence" taxon="ASV159-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.78" spec="Sequence" taxon="ASV162" totalcount="4" value="?"/>
+        <sequence id="Sequence.79" spec="Sequence" taxon="ASV162-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.80" spec="Sequence" taxon="ASV162-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.81" spec="Sequence" taxon="ASV170" totalcount="4" value="?"/>
+        <sequence id="Sequence.82" spec="Sequence" taxon="ASV170-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.83" spec="Sequence" taxon="ASV170-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.84" spec="Sequence" taxon="ASV177" totalcount="4" value="?"/>
+        <sequence id="Sequence.85" spec="Sequence" taxon="ASV177-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.86" spec="Sequence" taxon="ASV183" totalcount="4" value="?"/>
+        <sequence id="Sequence.87" spec="Sequence" taxon="ASV183-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.88" spec="Sequence" taxon="ASV183-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.89" spec="Sequence" taxon="ASV189" totalcount="4" value="?"/>
+        <sequence id="Sequence.90" spec="Sequence" taxon="ASV189-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.91" spec="Sequence" taxon="ASV189-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.92" spec="Sequence" taxon="ASV201" totalcount="4" value="?"/>
+        <sequence id="Sequence.93" spec="Sequence" taxon="ASV201-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.94" spec="Sequence" taxon="ASV212" totalcount="4" value="?"/>
+        <sequence id="Sequence.95" spec="Sequence" taxon="ASV229" totalcount="4" value="?"/>
+        <sequence id="Sequence.96" spec="Sequence" taxon="ASV229-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.97" spec="Sequence" taxon="ASV240" totalcount="4" value="?"/>
+        <sequence id="Sequence.98" spec="Sequence" taxon="ASV240-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.99" spec="Sequence" taxon="ASV247" totalcount="4" value="?"/>
+        <sequence id="Sequence.100" spec="Sequence" taxon="ASV247-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.101" spec="Sequence" taxon="ASV247-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.102" spec="Sequence" taxon="ASV255" totalcount="4" value="?"/>
+        <sequence id="Sequence.103" spec="Sequence" taxon="ASV255-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.104" spec="Sequence" taxon="ASV255-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.105" spec="Sequence" taxon="ASV256" totalcount="4" value="?"/>
+        <sequence id="Sequence.106" spec="Sequence" taxon="ASV256-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.107" spec="Sequence" taxon="ASV285" totalcount="4" value="?"/>
+        <sequence id="Sequence.108" spec="Sequence" taxon="ASV285-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.109" spec="Sequence" taxon="ASV301" totalcount="4" value="?"/>
+        <sequence id="Sequence.110" spec="Sequence" taxon="ASV301-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.111" spec="Sequence" taxon="ASV302" totalcount="4" value="?"/>
+        <sequence id="Sequence.112" spec="Sequence" taxon="ASV303" totalcount="4" value="?"/>
+        <sequence id="Sequence.113" spec="Sequence" taxon="ASV314" totalcount="4" value="?"/>
+        <sequence id="Sequence.114" spec="Sequence" taxon="ASV314-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.115" spec="Sequence" taxon="ASV315" totalcount="4" value="?"/>
+        <sequence id="Sequence.116" spec="Sequence" taxon="ASV315-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.117" spec="Sequence" taxon="ASV321" totalcount="4" value="?"/>
+        <sequence id="Sequence.118" spec="Sequence" taxon="ASV321-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.119" spec="Sequence" taxon="ASV321-2" totalcount="4" value="?"/>
+        <sequence id="Sequence.120" spec="Sequence" taxon="ASV331" totalcount="4" value="?"/>
+        <sequence id="Sequence.121" spec="Sequence" taxon="ASV331-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.122" spec="Sequence" taxon="ASV343" totalcount="4" value="?"/>
+        <sequence id="Sequence.123" spec="Sequence" taxon="ASV343-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.124" spec="Sequence" taxon="ASV359" totalcount="4" value="?"/>
+        <sequence id="Sequence.125" spec="Sequence" taxon="ASV374" totalcount="4" value="?"/>
+        <sequence id="Sequence.126" spec="Sequence" taxon="ASV375" totalcount="4" value="?"/>
+        <sequence id="Sequence.127" spec="Sequence" taxon="ASV394" totalcount="4" value="?"/>
+        <sequence id="Sequence.128" spec="Sequence" taxon="ASV407" totalcount="4" value="?"/>
+        <sequence id="Sequence.129" spec="Sequence" taxon="ASV408" totalcount="4" value="?"/>
+        <sequence id="Sequence.130" spec="Sequence" taxon="ASV409" totalcount="4" value="?"/>
+        <sequence id="Sequence.131" spec="Sequence" taxon="ASV410" totalcount="4" value="?"/>
+        <sequence id="Sequence.132" spec="Sequence" taxon="ASV410-1" totalcount="4" value="?"/>
+        <sequence id="Sequence.133" spec="Sequence" taxon="ASV429" totalcount="4" value="?"/>
+        <sequence id="Sequence.134" spec="Sequence" taxon="ASV453" totalcount="4" value="?"/>
+        <sequence id="Sequence.135" spec="Sequence" taxon="ASV516" totalcount="4" value="?"/>
+        <sequence id="Sequence.136" spec="Sequence" taxon="ASV517" totalcount="4" value="?"/>
+        <sequence id="Sequence.137" spec="Sequence" taxon="ASV518" totalcount="4" value="?"/>
+        <sequence id="Sequence.138" spec="Sequence" taxon="ASV562" totalcount="4" value="?"/>
+        <sequence id="Sequence.139" spec="Sequence" taxon="ASV563" totalcount="4" value="?"/>
+        <sequence id="Sequence.140" spec="Sequence" taxon="ASV564" totalcount="4" value="?"/>
+        <sequence id="Sequence.141" spec="Sequence" taxon="ASV565" totalcount="4" value="?"/>
+        <sequence id="Sequence.142" spec="Sequence" taxon="ASV566" totalcount="4" value="?"/>
+        <sequence id="Sequence.143" spec="Sequence" taxon="ASV617" totalcount="4" value="?"/>
+        <sequence id="Sequence.144" spec="Sequence" taxon="ASV618" totalcount="4" value="?"/>
+        <sequence id="Sequence.145" spec="Sequence" taxon="ASV619" totalcount="4" value="?"/>
+        <sequence id="Sequence.146" spec="Sequence" taxon="ASV620" totalcount="4" value="?"/>
+        <sequence id="Sequence.147" spec="Sequence" taxon="ASV692" totalcount="4" value="?"/>
+        <sequence id="Sequence.148" spec="Sequence" taxon="ASV693" totalcount="4" value="?"/>
+        <sequence id="Sequence.149" spec="Sequence" taxon="ASV694" totalcount="4" value="?"/>
+        <sequence id="Sequence.150" spec="Sequence" taxon="ASV695" totalcount="4" value="?"/>
+        <sequence id="Sequence.151" spec="Sequence" taxon="ASV696" totalcount="4" value="?"/>
+        <sequence id="Sequence.152" spec="Sequence" taxon="ASV697" totalcount="4" value="?"/>
+        <sequence id="Sequence.153" spec="Sequence" taxon="ASV698" totalcount="4" value="?"/>
+        <sequence id="Sequence.154" spec="Sequence" taxon="ASV699" totalcount="4" value="?"/>
+        <sequence id="Sequence.155" spec="Sequence" taxon="ASV700" totalcount="4" value="?"/>
+    </data>
+
+    <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
+
+    <map name="Exponential" >beast.base.inference.distribution.Exponential</map>
+
+    <map name="LogNormal" >beast.base.inference.distribution.LogNormalDistributionModel</map>
+
+    <map name="Normal" >beast.base.inference.distribution.Normal</map>
+
+    <map name="Beta" >beast.base.inference.distribution.Beta</map>
+
+    <map name="Gamma" >beast.base.inference.distribution.Gamma</map>
+
+    <map name="LaplaceDistribution" >beast.base.inference.distribution.LaplaceDistribution</map>
+
+    <map name="prior" >beast.base.inference.distribution.Prior</map>
+
+    <map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
+
+    <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
+
+    <run id="mcmc" spec="MCMC" chainLength="1000000">
+        <state id="state" spec="State" storeEvery="5000">
+            <stateNode id="Tree.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTree" IsLabelledNewick="true" adjustTipHeights="false" newick="(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((ASV003:1.0,((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((ASV003-1:1.0,(ASV003-2:1.0,ASV003-3:1.0):0.0):0.0,ASV247-2:1.0):0.0,ASV247-1:1.0):0.0,ASV177-1:1.0):0.0,ASV301-1:1.0):0.0,ASV183-2:1.0):0.0,ASV183-1:1.0):0.0,ASV314-1:1.0):0.0,ASV240-1:1.0):0.0,ASV081-3:1.0):0.0,ASV081-2:1.0):0.0,ASV081-1:1.0):0.0,ASV189-2:1.0):0.0,ASV189-1:1.0):0.0,ASV046-3:1.0):0.0,ASV046-2:1.0):0.0,ASV046-1:1.0):0.0,ASV045-3:1.0):0.0,ASV045-2:1.0):0.0,ASV045-1:1.0):0.0,ASV285-1:1.0):0.0,ASV127-2:1.0):0.0,ASV127-1:1.0):0.0,ASV018-3:1.0):0.0,ASV018-2:1.0):0.0,ASV018-1:1.0):0.0,ASV343-1:1.0):0.0,ASV256-1:1.0):0.0,ASV055-3:1.0):0.0,ASV055-2:1.0):0.0,ASV055-1:1.0):0.0,ASV321-2:1.0):0.0,ASV321-1:1.0):0.0,ASV070-2:1.0):0.0,ASV070-1:1.0):0.0,ASV229-1:1.0):0.0,ASV037-2:1.0):0.0,ASV037-1:1.0):0.0,ASV315-1:1.0):0.0,ASV115-3:1.0):0.0,ASV115-2:1.0):0.0,ASV115-1:1.0):0.0,ASV159-1:1.0):0.0,ASV056-3:1.0):0.0,ASV056-2:1.0):0.0,ASV056-1:1.0):0.0,ASV110-1:1.0):0.0,ASV090-2:1.0):0.0,ASV090-1:1.0):0.0,ASV112-2:1.0):0.0,ASV112-1:1.0):0.0,ASV015-3:1.0):0.0,ASV015-2:1.0):0.0,ASV015-1:1.0):0.0,ASV201-1:1.0):0.0,ASV039-3:1.0):0.0,ASV039-2:1.0):0.0,ASV039-1:1.0):0.0,ASV066-3:1.0):0.0,ASV066-2:1.0):0.0,ASV066-1:1.0):0.0,ASV162-2:1.0):0.0,ASV162-1:1.0):0.0,ASV152-3:1.0):0.0,ASV152-2:1.0):0.0,ASV152-1:1.0):0.0):0.0,ASV394:1.0):0.0,ASV247:1.0):0.0,ASV692:1.0):0.0,ASV177:1.0):0.0,ASV516:1.0):0.0,ASV301:1.0):0.0,ASV183:1.0):0.0,ASV314:1.0):0.0,ASV407:1.0):0.0,ASV240:1.0):0.0,ASV081:1.0):0.0,ASV374:1.0):0.0,ASV189:1.0):0.0,ASV046:1.0):0.0,ASV045:1.0):0.0,ASV285:1.0):0.0,ASV617:1.0):0.0,ASV127:1.0):0.0,ASV408:1.0):0.0,ASV562:1.0):0.0,ASV018:1.0):0.0,ASV343:1.0):0.0,ASV256:1.0):0.0,ASV055:1.0):0.0,ASV321:1.0):0.0,ASV070:1.0):0.0,ASV229:1.0):0.0,ASV693:1.0):0.0,ASV037:1.0):0.0,ASV315:1.0):0.0,ASV563:1.0):0.0,ASV302:1.0):0.0,ASV148:1.0):0.0,ASV517:1.0):0.0,ASV429:1.0):0.0,ASV518:1.0):0.0,ASV618:1.0):0.0,ASV115:1.0):0.0,ASV159:1.0):0.0,ASV056:1.0):0.0,ASV110:1.0):0.0,ASV565:1.0):0.0,ASV375:1.0):0.0,ASV359:1.0):0.0,ASV090:1.0):0.0,ASV112:1.0):0.0,ASV015:1.0):0.0,ASV201:1.0):0.0,ASV695:1.0):0.0,ASV039:1.0):0.0,ASV066:1.0):0.0,ASV162:1.0):0.0,ASV409:1.0):0.0,ASV152:1.0):0.0,ASV700:1.0):0.0,((ASV031:1.0,(((ASV031-1:1.0,(ASV031-2:1.0,ASV031-3:1.0):0.0):0.0,ASV255-2:1.0):0.0,ASV255-1:1.0):0.0):0.0,ASV255:1.0):1.0):0.0,(ASV102:1.0,((ASV102-1:1.0,ASV102-2:1.0):0.0,ASV303:1.0):0.0):1.0):0.0,((ASV170:1.0,(ASV170-1:1.0,ASV170-2:1.0):0.0):0.0,ASV697:1.0):1.0):0.0,(ASV566:1.0,ASV698:1.0):1.0):0.0,(ASV331:1.0,(ASV331-1:1.0,ASV699:1.0):0.0):1.0):0.0,((ASV453:1.0,ASV619:1.0):0.0,ASV694:1.0):1.0):0.0,((((((ASV109:1.0,((ASV109-1:1.0,ASV109-2:1.0):0.0,ASV410-1:1.0):0.0):0.0,ASV620:1.0):0.0,ASV564:1.0):0.0,ASV212:1.0):0.0,ASV696:1.0):0.0,ASV410:1.0):1.0)">
+                <taxa idref="cp01_MMUS1495_cassiopeia_greedy"/>
+                <taxonset id="TaxonSet.1" spec="TaxonSet">
+                    <taxon id="ASV003" spec="Taxon"/>
+                    <taxon id="ASV003-1" spec="Taxon"/>
+                    <taxon id="ASV003-2" spec="Taxon"/>
+                    <taxon id="ASV003-3" spec="Taxon"/>
+                    <taxon id="ASV015" spec="Taxon"/>
+                    <taxon id="ASV015-1" spec="Taxon"/>
+                    <taxon id="ASV015-2" spec="Taxon"/>
+                    <taxon id="ASV015-3" spec="Taxon"/>
+                    <taxon id="ASV018" spec="Taxon"/>
+                    <taxon id="ASV018-1" spec="Taxon"/>
+                    <taxon id="ASV018-2" spec="Taxon"/>
+                    <taxon id="ASV018-3" spec="Taxon"/>
+                    <taxon id="ASV031" spec="Taxon"/>
+                    <taxon id="ASV031-1" spec="Taxon"/>
+                    <taxon id="ASV031-2" spec="Taxon"/>
+                    <taxon id="ASV031-3" spec="Taxon"/>
+                    <taxon id="ASV037" spec="Taxon"/>
+                    <taxon id="ASV037-1" spec="Taxon"/>
+                    <taxon id="ASV037-2" spec="Taxon"/>
+                    <taxon id="ASV039" spec="Taxon"/>
+                    <taxon id="ASV039-1" spec="Taxon"/>
+                    <taxon id="ASV039-2" spec="Taxon"/>
+                    <taxon id="ASV039-3" spec="Taxon"/>
+                    <taxon id="ASV045" spec="Taxon"/>
+                    <taxon id="ASV045-1" spec="Taxon"/>
+                    <taxon id="ASV045-2" spec="Taxon"/>
+                    <taxon id="ASV045-3" spec="Taxon"/>
+                    <taxon id="ASV046" spec="Taxon"/>
+                    <taxon id="ASV046-1" spec="Taxon"/>
+                    <taxon id="ASV046-2" spec="Taxon"/>
+                    <taxon id="ASV046-3" spec="Taxon"/>
+                    <taxon id="ASV055" spec="Taxon"/>
+                    <taxon id="ASV055-1" spec="Taxon"/>
+                    <taxon id="ASV055-2" spec="Taxon"/>
+                    <taxon id="ASV055-3" spec="Taxon"/>
+                    <taxon id="ASV056" spec="Taxon"/>
+                    <taxon id="ASV056-1" spec="Taxon"/>
+                    <taxon id="ASV056-2" spec="Taxon"/>
+                    <taxon id="ASV056-3" spec="Taxon"/>
+                    <taxon id="ASV066" spec="Taxon"/>
+                    <taxon id="ASV066-1" spec="Taxon"/>
+                    <taxon id="ASV066-2" spec="Taxon"/>
+                    <taxon id="ASV066-3" spec="Taxon"/>
+                    <taxon id="ASV070" spec="Taxon"/>
+                    <taxon id="ASV070-1" spec="Taxon"/>
+                    <taxon id="ASV070-2" spec="Taxon"/>
+                    <taxon id="ASV081" spec="Taxon"/>
+                    <taxon id="ASV081-1" spec="Taxon"/>
+                    <taxon id="ASV081-2" spec="Taxon"/>
+                    <taxon id="ASV081-3" spec="Taxon"/>
+                    <taxon id="ASV090" spec="Taxon"/>
+                    <taxon id="ASV090-1" spec="Taxon"/>
+                    <taxon id="ASV090-2" spec="Taxon"/>
+                    <taxon id="ASV102" spec="Taxon"/>
+                    <taxon id="ASV102-1" spec="Taxon"/>
+                    <taxon id="ASV102-2" spec="Taxon"/>
+                    <taxon id="ASV109" spec="Taxon"/>
+                    <taxon id="ASV109-1" spec="Taxon"/>
+                    <taxon id="ASV109-2" spec="Taxon"/>
+                    <taxon id="ASV110" spec="Taxon"/>
+                    <taxon id="ASV110-1" spec="Taxon"/>
+                    <taxon id="ASV112" spec="Taxon"/>
+                    <taxon id="ASV112-1" spec="Taxon"/>
+                    <taxon id="ASV112-2" spec="Taxon"/>
+                    <taxon id="ASV115" spec="Taxon"/>
+                    <taxon id="ASV115-1" spec="Taxon"/>
+                    <taxon id="ASV115-2" spec="Taxon"/>
+                    <taxon id="ASV115-3" spec="Taxon"/>
+                    <taxon id="ASV127" spec="Taxon"/>
+                    <taxon id="ASV127-1" spec="Taxon"/>
+                    <taxon id="ASV127-2" spec="Taxon"/>
+                    <taxon id="ASV148" spec="Taxon"/>
+                    <taxon id="ASV152" spec="Taxon"/>
+                    <taxon id="ASV152-1" spec="Taxon"/>
+                    <taxon id="ASV152-2" spec="Taxon"/>
+                    <taxon id="ASV152-3" spec="Taxon"/>
+                    <taxon id="ASV159" spec="Taxon"/>
+                    <taxon id="ASV159-1" spec="Taxon"/>
+                    <taxon id="ASV162" spec="Taxon"/>
+                    <taxon id="ASV162-1" spec="Taxon"/>
+                    <taxon id="ASV162-2" spec="Taxon"/>
+                    <taxon id="ASV170" spec="Taxon"/>
+                    <taxon id="ASV170-1" spec="Taxon"/>
+                    <taxon id="ASV170-2" spec="Taxon"/>
+                    <taxon id="ASV177" spec="Taxon"/>
+                    <taxon id="ASV177-1" spec="Taxon"/>
+                    <taxon id="ASV183" spec="Taxon"/>
+                    <taxon id="ASV183-1" spec="Taxon"/>
+                    <taxon id="ASV183-2" spec="Taxon"/>
+                    <taxon id="ASV189" spec="Taxon"/>
+                    <taxon id="ASV189-1" spec="Taxon"/>
+                    <taxon id="ASV189-2" spec="Taxon"/>
+                    <taxon id="ASV201" spec="Taxon"/>
+                    <taxon id="ASV201-1" spec="Taxon"/>
+                    <taxon id="ASV212" spec="Taxon"/>
+                    <taxon id="ASV229" spec="Taxon"/>
+                    <taxon id="ASV229-1" spec="Taxon"/>
+                    <taxon id="ASV240" spec="Taxon"/>
+                    <taxon id="ASV240-1" spec="Taxon"/>
+                    <taxon id="ASV247" spec="Taxon"/>
+                    <taxon id="ASV247-1" spec="Taxon"/>
+                    <taxon id="ASV247-2" spec="Taxon"/>
+                    <taxon id="ASV255" spec="Taxon"/>
+                    <taxon id="ASV255-1" spec="Taxon"/>
+                    <taxon id="ASV255-2" spec="Taxon"/>
+                    <taxon id="ASV256" spec="Taxon"/>
+                    <taxon id="ASV256-1" spec="Taxon"/>
+                    <taxon id="ASV285" spec="Taxon"/>
+                    <taxon id="ASV285-1" spec="Taxon"/>
+                    <taxon id="ASV301" spec="Taxon"/>
+                    <taxon id="ASV301-1" spec="Taxon"/>
+                    <taxon id="ASV302" spec="Taxon"/>
+                    <taxon id="ASV303" spec="Taxon"/>
+                    <taxon id="ASV314" spec="Taxon"/>
+                    <taxon id="ASV314-1" spec="Taxon"/>
+                    <taxon id="ASV315" spec="Taxon"/>
+                    <taxon id="ASV315-1" spec="Taxon"/>
+                    <taxon id="ASV321" spec="Taxon"/>
+                    <taxon id="ASV321-1" spec="Taxon"/>
+                    <taxon id="ASV321-2" spec="Taxon"/>
+                    <taxon id="ASV331" spec="Taxon"/>
+                    <taxon id="ASV331-1" spec="Taxon"/>
+                    <taxon id="ASV343" spec="Taxon"/>
+                    <taxon id="ASV343-1" spec="Taxon"/>
+                    <taxon id="ASV359" spec="Taxon"/>
+                    <taxon id="ASV374" spec="Taxon"/>
+                    <taxon id="ASV375" spec="Taxon"/>
+                    <taxon id="ASV394" spec="Taxon"/>
+                    <taxon id="ASV407" spec="Taxon"/>
+                    <taxon id="ASV408" spec="Taxon"/>
+                    <taxon id="ASV409" spec="Taxon"/>
+                    <taxon id="ASV410" spec="Taxon"/>
+                    <taxon id="ASV410-1" spec="Taxon"/>
+                    <taxon id="ASV429" spec="Taxon"/>
+                    <taxon id="ASV453" spec="Taxon"/>
+                    <taxon id="ASV516" spec="Taxon"/>
+                    <taxon id="ASV517" spec="Taxon"/>
+                    <taxon id="ASV518" spec="Taxon"/>
+                    <taxon id="ASV562" spec="Taxon"/>
+                    <taxon id="ASV563" spec="Taxon"/>
+                    <taxon id="ASV564" spec="Taxon"/>
+                    <taxon id="ASV565" spec="Taxon"/>
+                    <taxon id="ASV566" spec="Taxon"/>
+                    <taxon id="ASV617" spec="Taxon"/>
+                    <taxon id="ASV618" spec="Taxon"/>
+                    <taxon id="ASV619" spec="Taxon"/>
+                    <taxon id="ASV620" spec="Taxon"/>
+                    <taxon id="ASV692" spec="Taxon"/>
+                    <taxon id="ASV693" spec="Taxon"/>
+                    <taxon id="ASV694" spec="Taxon"/>
+                    <taxon id="ASV695" spec="Taxon"/>
+                    <taxon id="ASV696" spec="Taxon"/>
+                    <taxon id="ASV697" spec="Taxon"/>
+                    <taxon id="ASV698" spec="Taxon"/>
+                    <taxon id="ASV699" spec="Taxon"/>
+                    <taxon id="ASV700" spec="Taxon"/>
+                </taxonset>
+            </stateNode>
+            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="6">true</stateNode>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="6" name="stateNode">1 1 1 1 1 1</parameter>
+            <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
+        </state>
+        <distribution id="posterior" spec="CompoundDistribution">
+            <distribution id="prior" spec="CompoundDistribution">
+                <distribution id="FixedTreeModel.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTreeDistribution" tree="@Tree.t:tree"/>
+                <prior id="geoclockPrior.c:tissue" name="distribution" x="@traitClockRate.c:tissue">
+                    <Gamma id="Gamma.1" name="distr">
+                        <parameter id="RealParameter.6" spec="parameter.RealParameter" estimate="false" name="alpha">0.001</parameter>
+                        <parameter id="RealParameter.7" spec="parameter.RealParameter" estimate="false" name="beta">1000.0</parameter>
+                    </Gamma>
+                </prior>
+                <prior id="relativeGeoRatesPrior.s:tissue" name="distribution" x="@relativeGeoRates.s:tissue">
+                    <Gamma id="Gamma.2" name="distr">
+                        <parameter id="RealParameter.8" spec="parameter.RealParameter" estimate="false" name="alpha">1.0</parameter>
+                        <parameter id="RealParameter.9" spec="parameter.RealParameter" estimate="false" name="beta">1.0</parameter>
+                    </Gamma>
+                </prior>
+                <prior id="nonZeroRatePrior.s:tissue" name="distribution">
+                    <x id="nonZeroRates.s:tissue" spec="beast.base.evolution.Sum">
+                        <arg idref="rateIndicator.s:tissue"/>
+                    </x>
+                    <distr id="Poisson.0" spec="distribution.Poisson" offset="3.0">
+                        <parameter id="RealParameter.10" spec="parameter.RealParameter" estimate="false" name="lambda">0.693</parameter>
+                    </distr>
+                </prior>
+            </distribution>
+            <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
+                <distribution id="treeLikelihood.cp01_MMUS1495_cassiopeia_greedy" spec="fixedtreeanalysis.evolution.likelihood.FixedTreeLikelihood" data="@cp01_MMUS1495_cassiopeia_greedy" tree="@Tree.t:tree">
+                    <siteModel id="FixedSiteModel.s:cp01_MMUS1495_cassiopeia_greedy" spec="fixedtreeanalysis.evolution.sitemodel.FixedSiteModel">
+                        <parameter id="RealParameter.0" spec="parameter.RealParameter" estimate="false" lower="0.0" name="mutationRate" upper="1.0">1.0</parameter>
+                        <parameter id="RealParameter.1" spec="parameter.RealParameter" lower="0.0" name="shape" upper="0.0">1.0</parameter>
+                        <parameter id="RealParameter.2" spec="parameter.RealParameter" lower="0.0" name="proportionInvariant" upper="0.0">0.0</parameter>
+                        <substModel id="JC69.s:cp01_MMUS1495_cassiopeia_greedy" spec="JukesCantor"/>
+                    </siteModel>
+                    <branchRateModel id="FixedClock.c:cp01_MMUS1495_cassiopeia_greedy" spec="fixedtreeanalysis.evolution.branchratemodel.FixedClockModel">
+                        <parameter id="RealParameter.3" spec="parameter.RealParameter" estimate="false" name="clock.rate">1.0</parameter>
+                    </branchRateModel>
+                </distribution>
+                <distribution id="traitedtreeLikelihood.tissue" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@Tree.t:tree">
+                <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="0 0 1 0" estimate="false"/>
+                    <data
+id="tissue"
+spec="beastclassic.evolution.alignment.AlignmentFromTrait">
+                        <traitSet id="traitSet.tissue" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet.1" traitname="discrete">ASV003=LVM,
+
+ASV003-1=LVR,
+
+ASV003-2=PRL,
+
+ASV003-3=RBL,
+
+ASV015=LVM,
+
+ASV015-1=LVR,
+
+ASV015-2=PRL,
+
+ASV015-3=RBL,
+
+ASV018=RBL,
+
+ASV018-1=PRL,
+
+ASV018-2=LVM,
+
+ASV018-3=LVR,
+
+ASV031=RBL,
+
+ASV031-1=LVM,
+
+ASV031-2=LVR,
+
+ASV031-3=PRL,
+
+ASV037=RBL,
+
+ASV037-1=LVR,
+
+ASV037-2=LVM,
+
+ASV039=LVM,
+
+ASV039-1=LVR,
+
+ASV039-2=PRL,
+
+ASV039-3=RBL,
+
+ASV045=PRL,
+
+ASV045-1=RBL,
+
+ASV045-2=LVM,
+
+ASV045-3=LVR,
+
+ASV046=LVM,
+
+ASV046-1=LVR,
+
+ASV046-2=PRL,
+
+ASV046-3=RBL,
+
+ASV055=RBL,
+
+ASV055-1=LVM,
+
+ASV055-2=LVR,
+
+ASV055-3=PRL,
+
+ASV056=RBL,
+
+ASV056-1=PRL,
+
+ASV056-2=LVR,
+
+ASV056-3=LVM,
+
+ASV066=LVM,
+
+ASV066-1=LVR,
+
+ASV066-2=PRL,
+
+ASV066-3=RBL,
+
+ASV070=LVM,
+
+ASV070-1=LVR,
+
+ASV070-2=PRL,
+
+ASV081=RBL,
+
+ASV081-1=PRL,
+
+ASV081-2=LVM,
+
+ASV081-3=LVR,
+
+ASV090=LVM,
+
+ASV090-1=LVR,
+
+ASV090-2=RBL,
+
+ASV102=RBL,
+
+ASV102-1=LVM,
+
+ASV102-2=LVR,
+
+ASV109=RBL,
+
+ASV109-1=LVM,
+
+ASV109-2=LVR,
+
+ASV110=LVR,
+
+ASV110-1=PRL,
+
+ASV112=LVM,
+
+ASV112-1=LVR,
+
+ASV112-2=RBL,
+
+ASV115=LVM,
+
+ASV115-1=LVR,
+
+ASV115-2=PRL,
+
+ASV115-3=RBL,
+
+ASV127=LVM,
+
+ASV127-1=LVR,
+
+ASV127-2=PRL,
+
+ASV148=RBL,
+
+ASV152=LVR,
+
+ASV152-1=PRL,
+
+ASV152-2=LVM,
+
+ASV152-3=RBL,
+
+ASV159=LVR,
+
+ASV159-1=LVM,
+
+ASV162=LVM,
+
+ASV162-1=LVR,
+
+ASV162-2=RBL,
+
+ASV170=LVM,
+
+ASV170-1=LVR,
+
+ASV170-2=PRL,
+
+ASV177=PRL,
+
+ASV177-1=LVR,
+
+ASV183=LVM,
+
+ASV183-1=LVR,
+
+ASV183-2=PRL,
+
+ASV189=LVM,
+
+ASV189-1=LVR,
+
+ASV189-2=PRL,
+
+ASV201=RBL,
+
+ASV201-1=LVR,
+
+ASV212=RBL,
+
+ASV229=RBL,
+
+ASV229-1=PRL,
+
+ASV240=LVM,
+
+ASV240-1=RBL,
+
+ASV247=LVR,
+
+ASV247-1=PRL,
+
+ASV247-2=RBL,
+
+ASV255=RBL,
+
+ASV255-1=LVM,
+
+ASV255-2=LVR,
+
+ASV256=PRL,
+
+ASV256-1=LVM,
+
+ASV285=LVM,
+
+ASV285-1=LVR,
+
+ASV301=LVM,
+
+ASV301-1=LVR,
+
+ASV302=LVR,
+
+ASV303=LVR,
+
+ASV314=PRL,
+
+ASV314-1=LVR,
+
+ASV315=LVR,
+
+ASV315-1=LVM,
+
+ASV321=LVM,
+
+ASV321-1=PRL,
+
+ASV321-2=RBL,
+
+ASV331=LVR,
+
+ASV331-1=RBL,
+
+ASV343=LVR,
+
+ASV343-1=PRL,
+
+ASV359=RBL,
+
+ASV374=RBL,
+
+ASV375=LVR,
+
+ASV394=LVR,
+
+ASV407=RBL,
+
+ASV408=RBL,
+
+ASV409=PRL,
+
+ASV410=LVM,
+
+ASV410-1=LVR,
+
+ASV429=RBL,
+
+ASV453=LVM,
+
+ASV516=LVM,
+
+ASV517=LVM,
+
+ASV518=LVM,
+
+ASV562=LVR,
+
+ASV563=LVM,
+
+ASV564=LVM,
+
+ASV565=LVM,
+
+ASV566=LVM,
+
+ASV617=LVM,
+
+ASV618=LVM,
+
+ASV619=LVM,
+
+ASV620=RBL,
+
+ASV692=LVM,
+
+ASV693=LVM,
+
+ASV694=LVM,
+
+ASV695=LVM,
+
+ASV696=LVR,
+
+ASV697=LVR,
+
+ASV698=LVM,
+
+ASV699=RBL,
+
+ASV700=LVR</traitSet>
+                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="LVM=0,LVR=1,PRL=2,RBL=3,? = 0 1 2 3 " codelength="-1" states="4"/>
+                    </data>
+                    <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
+                        <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
+                        <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
+                        <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
+                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue">
+                            <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
+                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="4" name="frequencies">0.25</parameter>
+                            </frequencies>
+                        </substModel>
+                    </siteModel>
+                    <branchRateModel id="StrictClockModel.c:tissue" spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@traitClockRate.c:tissue"/>
+                </distribution>
+            </distribution>
+        </distribution>
+        <operator id="georateScaler.s:tissue" spec="ScaleOperator" parameter="@relativeGeoRates.s:tissue" scaleAllIndependently="true" scaleFactor="0.99" weight="30.0"/>
+        <operator id="indicatorFlip.s:tissue" spec="operator.BitFlipOperator" parameter="@rateIndicator.s:tissue" weight="30.0"/>
+        <operator id="geoMuScaler.c:tissue" spec="ScaleOperator" parameter="@traitClockRate.c:tissue" scaleFactor="0.9" weight="3.0"/>
+        <operator id="BSSVSoperator.c:tissue" spec="beastclassic.evolution.operators.BitFlipBSSVSOperator" indicator="@rateIndicator.s:tissue" mu="@traitClockRate.c:tissue" weight="30.0"/>
+        <logger id="tracelog" spec="Logger" fileName="$(filebase).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+            <log idref="treeLikelihood.cp01_MMUS1495_cassiopeia_greedy"/>
+            <log idref="rateIndicator.s:tissue"/>
+            <log idref="relativeGeoRates.s:tissue"/>
+            <log idref="traitClockRate.c:tissue"/>
+            <log id="geoSubstModelLogger.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModelLogger" dataType="@traitDataType.tissue" model="@svs.s:tissue"/>
+        </logger>
+        <logger id="screenlog" spec="Logger" logEvery="1000">
+            <log idref="posterior"/>
+            <log id="ESS.0" spec="util.ESS" arg="@posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+        </logger>
+        <logger id="treelog.t:tree" spec="Logger" fileName="$(filebase).trees" logEvery="1000" mode="tree">
+            <log id="TreeWithMetaDataLogger.t:tree" spec="beast.base.evolution.TreeWithMetaDataLogger" tree="@Tree.t:tree"/>
+        </logger>
+        <logger id="treeWithTraitLogger.tissue" spec="Logger" fileName="tissue_tree_with_trait.trees" logEvery="1000" mode="tree">
+            <log id="treeWithTraitLoggerItem.t:tree" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@Tree.t:tree">
+                <metadata idref="posterior"/>
+                <metadata idref="traitedtreeLikelihood.tissue"/>
+            </log>
+        </logger>
+        <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+    </run>
+
+</beast>

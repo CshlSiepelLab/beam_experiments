@@ -160,7 +160,6 @@ name="taxa">
         <sequence id="Sequence.153" spec="Sequence" taxon="ASV698" totalcount="4" value="?"/>
         <sequence id="Sequence.154" spec="Sequence" taxon="ASV699" totalcount="4" value="?"/>
         <sequence id="Sequence.155" spec="Sequence" taxon="ASV700" totalcount="4" value="?"/>
-        <sequence id="Sequence.156" spec="Sequence" taxon="Root" totalcount="4" value="?"/>
     </data>
 
     <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
@@ -185,7 +184,7 @@ name="taxa">
 
     <run id="mcmc" spec="MCMC" chainLength="1000000">
         <state id="state" spec="State" storeEvery="5000">
-            <stateNode id="Tree.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTree" IsLabelledNewick="true" adjustTipHeights="false" newick="((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((ASV003:1.0,((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((ASV003-1:1.0,(ASV003-2:1.0,ASV003-3:1.0):0.0):0.0,ASV247-2:1.0):0.0,ASV247-1:1.0):0.0,ASV177-1:1.0):0.0,ASV301-1:1.0):0.0,ASV183-2:1.0):0.0,ASV183-1:1.0):0.0,ASV314-1:1.0):0.0,ASV240-1:1.0):0.0,ASV081-3:1.0):0.0,ASV081-2:1.0):0.0,ASV081-1:1.0):0.0,ASV189-2:1.0):0.0,ASV189-1:1.0):0.0,ASV046-3:1.0):0.0,ASV046-2:1.0):0.0,ASV046-1:1.0):0.0,ASV045-3:1.0):0.0,ASV045-2:1.0):0.0,ASV045-1:1.0):0.0,ASV285-1:1.0):0.0,ASV127-2:1.0):0.0,ASV127-1:1.0):0.0,ASV018-3:1.0):0.0,ASV018-2:1.0):0.0,ASV018-1:1.0):0.0,ASV343-1:1.0):0.0,ASV256-1:1.0):0.0,ASV055-3:1.0):0.0,ASV055-2:1.0):0.0,ASV055-1:1.0):0.0,ASV321-2:1.0):0.0,ASV321-1:1.0):0.0,ASV070-2:1.0):0.0,ASV070-1:1.0):0.0,ASV229-1:1.0):0.0,ASV037-2:1.0):0.0,ASV037-1:1.0):0.0,ASV315-1:1.0):0.0,ASV115-3:1.0):0.0,ASV115-2:1.0):0.0,ASV115-1:1.0):0.0,ASV159-1:1.0):0.0,ASV056-3:1.0):0.0,ASV056-2:1.0):0.0,ASV056-1:1.0):0.0,ASV110-1:1.0):0.0,ASV090-2:1.0):0.0,ASV090-1:1.0):0.0,ASV112-2:1.0):0.0,ASV112-1:1.0):0.0,ASV015-3:1.0):0.0,ASV015-2:1.0):0.0,ASV015-1:1.0):0.0,ASV201-1:1.0):0.0,ASV039-3:1.0):0.0,ASV039-2:1.0):0.0,ASV039-1:1.0):0.0,ASV066-3:1.0):0.0,ASV066-2:1.0):0.0,ASV066-1:1.0):0.0,ASV162-2:1.0):0.0,ASV162-1:1.0):0.0,ASV152-3:1.0):0.0,ASV152-2:1.0):0.0,ASV152-1:1.0):0.0):0.0,ASV394:1.0):0.0,ASV247:1.0):0.0,ASV692:1.0):0.0,ASV177:1.0):0.0,ASV516:1.0):0.0,ASV301:1.0):0.0,ASV183:1.0):0.0,ASV314:1.0):0.0,ASV407:1.0):0.0,ASV240:1.0):0.0,ASV081:1.0):0.0,ASV374:1.0):0.0,ASV189:1.0):0.0,ASV046:1.0):0.0,ASV045:1.0):0.0,ASV285:1.0):0.0,ASV617:1.0):0.0,ASV127:1.0):0.0,ASV408:1.0):0.0,ASV562:1.0):0.0,ASV018:1.0):0.0,ASV343:1.0):0.0,ASV256:1.0):0.0,ASV055:1.0):0.0,ASV321:1.0):0.0,ASV070:1.0):0.0,ASV229:1.0):0.0,ASV693:1.0):0.0,ASV037:1.0):0.0,ASV315:1.0):0.0,ASV563:1.0):0.0,ASV302:1.0):0.0,ASV148:1.0):0.0,ASV517:1.0):0.0,ASV429:1.0):0.0,ASV518:1.0):0.0,ASV618:1.0):0.0,ASV115:1.0):0.0,ASV159:1.0):0.0,ASV056:1.0):0.0,ASV110:1.0):0.0,ASV565:1.0):0.0,ASV375:1.0):0.0,ASV359:1.0):0.0,ASV090:1.0):0.0,ASV112:1.0):0.0,ASV015:1.0):0.0,ASV201:1.0):0.0,ASV695:1.0):0.0,ASV039:1.0):0.0,ASV066:1.0):0.0,ASV162:1.0):0.0,ASV409:1.0):0.0,ASV152:1.0):0.0,ASV700:1.0):0.0,((ASV031:1.0,(((ASV031-1:1.0,(ASV031-2:1.0,ASV031-3:1.0):0.0):0.0,ASV255-2:1.0):0.0,ASV255-1:1.0):0.0):0.0,ASV255:1.0):1.0):0.0,(ASV102:1.0,((ASV102-1:1.0,ASV102-2:1.0):0.0,ASV303:1.0):0.0):1.0):0.0,((ASV170:1.0,(ASV170-1:1.0,ASV170-2:1.0):0.0):0.0,ASV697:1.0):1.0):0.0,(ASV566:1.0,ASV698:1.0):1.0):0.0,(ASV331:1.0,(ASV331-1:1.0,ASV699:1.0):0.0):1.0):0.0,((ASV453:1.0,ASV619:1.0):0.0,ASV694:1.0):1.0):0.0,((((((ASV109:1.0,((ASV109-1:1.0,ASV109-2:1.0):0.0,ASV410-1:1.0):0.0):0.0,ASV620:1.0):0.0,ASV564:1.0):0.0,ASV212:1.0):0.0,ASV696:1.0):0.0,ASV410:1.0):1.0):0.0,Root:0.0):0.0">
+            <stateNode id="Tree.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTree" IsLabelledNewick="true" adjustTipHeights="false" newick="(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((ASV003:1.0,((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((ASV003-1:1.0,(ASV003-2:1.0,ASV003-3:1.0):0.0):0.0,ASV247-2:1.0):0.0,ASV247-1:1.0):0.0,ASV177-1:1.0):0.0,ASV301-1:1.0):0.0,ASV183-2:1.0):0.0,ASV183-1:1.0):0.0,ASV314-1:1.0):0.0,ASV240-1:1.0):0.0,ASV081-3:1.0):0.0,ASV081-2:1.0):0.0,ASV081-1:1.0):0.0,ASV189-2:1.0):0.0,ASV189-1:1.0):0.0,ASV046-3:1.0):0.0,ASV046-2:1.0):0.0,ASV046-1:1.0):0.0,ASV045-3:1.0):0.0,ASV045-2:1.0):0.0,ASV045-1:1.0):0.0,ASV285-1:1.0):0.0,ASV127-2:1.0):0.0,ASV127-1:1.0):0.0,ASV018-3:1.0):0.0,ASV018-2:1.0):0.0,ASV018-1:1.0):0.0,ASV343-1:1.0):0.0,ASV256-1:1.0):0.0,ASV055-3:1.0):0.0,ASV055-2:1.0):0.0,ASV055-1:1.0):0.0,ASV321-2:1.0):0.0,ASV321-1:1.0):0.0,ASV070-2:1.0):0.0,ASV070-1:1.0):0.0,ASV229-1:1.0):0.0,ASV037-2:1.0):0.0,ASV037-1:1.0):0.0,ASV315-1:1.0):0.0,ASV115-3:1.0):0.0,ASV115-2:1.0):0.0,ASV115-1:1.0):0.0,ASV159-1:1.0):0.0,ASV056-3:1.0):0.0,ASV056-2:1.0):0.0,ASV056-1:1.0):0.0,ASV110-1:1.0):0.0,ASV090-2:1.0):0.0,ASV090-1:1.0):0.0,ASV112-2:1.0):0.0,ASV112-1:1.0):0.0,ASV015-3:1.0):0.0,ASV015-2:1.0):0.0,ASV015-1:1.0):0.0,ASV201-1:1.0):0.0,ASV039-3:1.0):0.0,ASV039-2:1.0):0.0,ASV039-1:1.0):0.0,ASV066-3:1.0):0.0,ASV066-2:1.0):0.0,ASV066-1:1.0):0.0,ASV162-2:1.0):0.0,ASV162-1:1.0):0.0,ASV152-3:1.0):0.0,ASV152-2:1.0):0.0,ASV152-1:1.0):0.0):0.0,ASV394:1.0):0.0,ASV247:1.0):0.0,ASV692:1.0):0.0,ASV177:1.0):0.0,ASV516:1.0):0.0,ASV301:1.0):0.0,ASV183:1.0):0.0,ASV314:1.0):0.0,ASV407:1.0):0.0,ASV240:1.0):0.0,ASV081:1.0):0.0,ASV374:1.0):0.0,ASV189:1.0):0.0,ASV046:1.0):0.0,ASV045:1.0):0.0,ASV285:1.0):0.0,ASV617:1.0):0.0,ASV127:1.0):0.0,ASV408:1.0):0.0,ASV562:1.0):0.0,ASV018:1.0):0.0,ASV343:1.0):0.0,ASV256:1.0):0.0,ASV055:1.0):0.0,ASV321:1.0):0.0,ASV070:1.0):0.0,ASV229:1.0):0.0,ASV693:1.0):0.0,ASV037:1.0):0.0,ASV315:1.0):0.0,ASV563:1.0):0.0,ASV302:1.0):0.0,ASV148:1.0):0.0,ASV517:1.0):0.0,ASV429:1.0):0.0,ASV518:1.0):0.0,ASV618:1.0):0.0,ASV115:1.0):0.0,ASV159:1.0):0.0,ASV056:1.0):0.0,ASV110:1.0):0.0,ASV565:1.0):0.0,ASV375:1.0):0.0,ASV359:1.0):0.0,ASV090:1.0):0.0,ASV112:1.0):0.0,ASV015:1.0):0.0,ASV201:1.0):0.0,ASV695:1.0):0.0,ASV039:1.0):0.0,ASV066:1.0):0.0,ASV162:1.0):0.0,ASV409:1.0):0.0,ASV152:1.0):0.0,ASV700:1.0):0.0,((ASV031:1.0,(((ASV031-1:1.0,(ASV031-2:1.0,ASV031-3:1.0):0.0):0.0,ASV255-2:1.0):0.0,ASV255-1:1.0):0.0):0.0,ASV255:1.0):1.0):0.0,(ASV102:1.0,((ASV102-1:1.0,ASV102-2:1.0):0.0,ASV303:1.0):0.0):1.0):0.0,((ASV170:1.0,(ASV170-1:1.0,ASV170-2:1.0):0.0):0.0,ASV697:1.0):1.0):0.0,(ASV566:1.0,ASV698:1.0):1.0):0.0,(ASV331:1.0,(ASV331-1:1.0,ASV699:1.0):0.0):1.0):0.0,((ASV453:1.0,ASV619:1.0):0.0,ASV694:1.0):1.0):0.0,((((((ASV109:1.0,((ASV109-1:1.0,ASV109-2:1.0):0.0,ASV410-1:1.0):0.0):0.0,ASV620:1.0):0.0,ASV564:1.0):0.0,ASV212:1.0):0.0,ASV696:1.0):0.0,ASV410:1.0):1.0)">
                 <taxa idref="cp01_MMUS1495_cassiopeia_greedy"/>
                 <taxonset id="TaxonSet.1" spec="TaxonSet">
                     <taxon id="ASV003" spec="Taxon"/>
@@ -344,11 +343,10 @@ name="taxa">
                     <taxon id="ASV698" spec="Taxon"/>
                     <taxon id="ASV699" spec="Taxon"/>
                     <taxon id="ASV700" spec="Taxon"/>
-                    <taxon id="Root" spec="Taxon"/>
                 </taxonset>
             </stateNode>
-            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="6">true</stateNode>
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="6" name="stateNode">1.0</parameter>
+            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="12">true</stateNode>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="12" name="stateNode">1 1 1 1 1 1 1 1 1 1 1 1</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>
         <distribution id="posterior" spec="CompoundDistribution">
@@ -388,6 +386,7 @@ name="taxa">
                     </branchRateModel>
                 </distribution>
                 <distribution id="traitedtreeLikelihood.tissue" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@Tree.t:tree">
+                <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="0 0 1 0" estimate="false"/>
                     <data
 id="tissue"
 spec="beastclassic.evolution.alignment.AlignmentFromTrait">
@@ -701,16 +700,14 @@ ASV698=LVM,
 
 ASV699=RBL,
 
-ASV700=LVR,
-
-Root=PRL</traitSet>
+ASV700=LVR</traitSet>
                         <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="LVM=0,LVR=1,PRL=2,RBL=3,? = 0 1 2 3 " codelength="-1" states="4"/>
                     </data>
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
                         <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
-                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue">
+                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue" symmetric="false">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
                                 <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="4" name="frequencies">0.25</parameter>
                             </frequencies>
