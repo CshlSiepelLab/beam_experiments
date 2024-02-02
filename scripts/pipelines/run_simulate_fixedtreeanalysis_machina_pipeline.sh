@@ -20,6 +20,7 @@ conda activate simulate
 # Keep only tree and tissue dict, remove barcode data since it is unused for fixed tree analysis
 mkdir ${pipeline_run_name}/sim_results_sim${i}
 mv sim_results_sim${i}/sim${i}_true.nwk ${pipeline_run_name}/sim_results_sim${i}/
+mv sim_results_sim${i}/sim${i}_true_tissues.nwk ${pipeline_run_name}/sim_results_sim${i}/
 mv sim_results_sim${i}/sim${i}_tissues.tsv ${pipeline_run_name}/sim_results_sim${i}/
 rm -r sim_results_sim${i}
 
@@ -36,11 +37,32 @@ traitfile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_traitset_format
 newickfile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_newick_formatted_for_xml.txt"
 scripts/format_template_symmetrical_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile}
 
+# Run BEAST2 on formatted xml with output automatically in sim directory
+beast_path=$(which beast)
+${beast_path} -working ${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_final_input_xml.xml
+
+# Get Maximum Clade Credibility tree from posterior of trees
+treeannotator_path=$(which treeannotator)
+${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${pipeline_run_name}/sim_results_sim${i}/tissue_tree_with_trait.trees ${pipeline_run_name}/sim_results_sim${i}/tissue_tree_with_trait.tree
+
+# Run MACHINA on simulated true tree
+sim_tree_with_tissues="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_tissues.nwk"
+machina_dir="${pipeline_run_name}/sim_results_sim${i}/machina"
+mkdir ${machina_dir}
+python ./scripts/machina/prep_machina.py ${sim_tree_with_tissues} ${machina_dir}
 conda deactivate
 
-# Run BEAST2 on formatted xml
-beast_path=$(which beast)
+conda activate machina
+./scripts/machina/run_machina.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue t1 --outdir ${machina_dir}
+conda deactivate
 
+conda activate simulate
+python ./scripts/machina/post_machina_to_tree.py ${tree_dir}/only_leaf_tissue_labels.nwk ${machina_dir}/T-t1-0.labeling ${machina_dir}
+
+# Compare results from BEAST2 FixedTreeAnalysis and MACHINA against the simulated ground truth
+
+
+conda deactivate
 done
 
 

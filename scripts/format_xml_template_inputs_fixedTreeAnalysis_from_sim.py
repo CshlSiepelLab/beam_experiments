@@ -54,8 +54,9 @@ tissue_df['node'] = 'cell' + tissue_df['node'].astype(str)
 
 # Output relabeled newick string
 newick_outfile = newick_file.split(".")[0] + "_newick_formatted_for_xml.txt"
-newick = tree.write(format=5)
-newick = newick[:-1] + ":0.0\n"
+newick = tree.write(format=5, format_root_node=False)
+# removes outer parentheses to set unedited as root length
+newick = newick[1:-2] + "\n"
 with open(newick_outfile, "w") as file:
     file.write(newick)
     

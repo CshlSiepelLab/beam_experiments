@@ -32,11 +32,17 @@ done < "$newickfile"
 XML_FILE=$(echo "$seqfile" | sed 's/\_sequences_formatted_for_xml.txt/_final_input_xml.xml/')
 cp inputs/template_xml_symmetrical_sim_data.xml $XML_FILE
 
-# Replace key words
+
 REPLACE_SEQUENCES=$(printf '%s\n' "$REPLACE_SEQUENCES" | sed 's/[\/&]/\\&/g')
 REPLACE_TAXONSET=$(printf '%s\n' "$REPLACE_TAXONSET" | sed 's/[\/&]/\\&/g')
 REPLACE_TRAITSET=$(printf '%s\n' "$REPLACE_TRAITSET" | sed 's/[\/&]/\\&/g')
 REPLACE_NEWICK=$(printf '%s\n' "$REPLACE_NEWICK" | sed 's/[\/&]/\\&/g')
+
+# Replace single quotes with double quotes for sequences and taxon
+REPLACE_SEQUENCES="${REPLACE_SEQUENCES//\'/\"}"
+REPLACE_TAXONSET="${REPLACE_TAXONSET//\'/\"}"
+
+# Replace key words
 sed -i "s/REPLACE_SEQUENCES/$REPLACE_SEQUENCES/g" $XML_FILE
 sed -i "s/REPLACE_TAXONSET/$REPLACE_TAXONSET/g" $XML_FILE
 sed -i "s/REPLACE_TRAITSET/$REPLACE_TRAITSET/g" $XML_FILE
