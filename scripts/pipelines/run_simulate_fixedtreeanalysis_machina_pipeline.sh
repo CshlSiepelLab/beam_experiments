@@ -8,11 +8,17 @@ source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
 
-pipeline_run_name="compare_beast_machina_fixedtree_2_1_24"
+pipeline_run_name="compare_beast_machina_fixedtree_2_2_24"
 mkdir ${pipeline_run_name}
 
+accuracy_file="${pipeline_run_name}/accuracy.tsv"
+echo -e "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary" > ${accuracy_file}
+
+runtime_file="${pipeline_run_name}/runtime.tsv"
+echo -e "data_id\tmachina_seconds\tbeast_seconds" > ${runtime_file}
+
 # Specify the number of simulations to be run for ground truth trees with migration data
-num_trees=1
+num_trees=25
 
 for ((i=1; i<=${num_trees}; i++))
 do
@@ -42,7 +48,10 @@ scripts/format_template_symmetrical_fixedTreeAnalysis_xml_from_sim.sh ${seqfile}
 
 # Run BEAST2 on formatted xml with output automatically in sim directory
 beast_path=$(which beast)
+start_time=$(date +%s.%N)
 ${beast_path} -working ${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_final_input_xml.xml
+end_time=$(date +%s.%N)
+beast_time=$(printf "%.2f" $(echo "$end_time - $start_time" | bc))
 
 # Get Maximum Clade Credibility tree from posterior of trees
 treeannotator_path=$(which treeannotator)
@@ -57,21 +66,32 @@ conda deactivate
 
 # Run MACHINA
 conda activate machina
+start_time=$(date +%s.%N)
 ./scripts/machina/run_machina.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue t1 --outdir ${machina_dir}
+end_time=$(date +%s.%N)
+machina_time=$(printf "%.2f" $(echo "$end_time - $start_time" | bc))
 conda deactivate
 
 # Condense MACHINA output into a labeled tree newick format
 conda activate simulate
 python ./scripts/machina/post_machina_to_tree.py ${sim_tree_with_tissues} ${machina_dir}/T-t1-0.labeling ${machina_dir}
+conda deactivate
 
 # Remove intermediate MACHINA output files
 mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${pipeline_run_name}/sim_results_sim${i}/
 rm -r ${machina_dir}
 
 # Compare results from BEAST2 FixedTreeAnalysis and MACHINA against the simulated ground truth
-
-
+conda activate compare_trees
+beast_tree="${pipeline_run_name}/sim_results_sim${i}/tissue_tree_with_trait.tree"
+machina_tree="${pipeline_run_name}/sim_results_sim${i}/machina_tree_all_tissue_labels.nwk"
+python scripts/calculate_internal_node_label_performance.py ${sim_tree_with_tissues} ${beast_tree} ${machina_tree}
 conda deactivate
+
+sim_accuracy_output="${pipeline_run_name}/sim_results_sim${i}/compare_machina_beast_internal_node_performance.tsv"
+echo -e "$(sed -n '2p' ${sim_accuracy_output})" >> ${accuracy_file}
+echo -e "sim${i}\t${machina_time}\t${beast_time}" >> ${runtime_file}
+
 done
 
 
