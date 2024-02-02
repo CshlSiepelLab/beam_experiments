@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # Necessary line to access conda commands for bash script on CSHL HPC cluster
-source ~/anaconda3/etc/profile.d/conda.sh
+# source ~/anaconda3/etc/profile.d/conda.sh
+
+# Necessary line to access conda commands on lab server (need to make these the same long term)
+source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
 
@@ -45,19 +48,25 @@ ${beast_path} -working ${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_fin
 treeannotator_path=$(which treeannotator)
 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${pipeline_run_name}/sim_results_sim${i}/tissue_tree_with_trait.trees ${pipeline_run_name}/sim_results_sim${i}/tissue_tree_with_trait.tree
 
-# Run MACHINA on simulated true tree
+# Prep simulated true tree for MACHINA input files
 sim_tree_with_tissues="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_tissues.nwk"
 machina_dir="${pipeline_run_name}/sim_results_sim${i}/machina"
 mkdir ${machina_dir}
 python ./scripts/machina/prep_machina.py ${sim_tree_with_tissues} ${machina_dir}
 conda deactivate
 
+# Run MACHINA
 conda activate machina
 ./scripts/machina/run_machina.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue t1 --outdir ${machina_dir}
 conda deactivate
 
+# Condense MACHINA output into a labeled tree newick format
 conda activate simulate
-python ./scripts/machina/post_machina_to_tree.py ${tree_dir}/only_leaf_tissue_labels.nwk ${machina_dir}/T-t1-0.labeling ${machina_dir}
+python ./scripts/machina/post_machina_to_tree.py ${sim_tree_with_tissues} ${machina_dir}/T-t1-0.labeling ${machina_dir}
+
+# Remove intermediate MACHINA output files
+mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${pipeline_run_name}/sim_results_sim${i}/
+rm -r ${machina_dir}
 
 # Compare results from BEAST2 FixedTreeAnalysis and MACHINA against the simulated ground truth
 

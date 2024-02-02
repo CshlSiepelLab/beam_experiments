@@ -12,6 +12,15 @@ machina_dir = sys.argv[3]
 
 
 tree = ete3.Tree(leaf_tree, format=8)
+# Remove tissue labels for internal node names
+for node in tree.traverse():
+    if node.is_leaf() or node.is_root():
+        continue
+    else:
+        current_name = node.name
+        new_name = current_name.split("_")[0]
+        node.name = new_name
+
 tree.get_tree_root().name = '0'
 machina_df = pd.read_csv(machina_labels, delim_whitespace = True, names = ['node', 'tissue'], index_col = 0)
 

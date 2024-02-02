@@ -15,7 +15,18 @@ output_file_edges = output_dir + "/" + input_prefix + ".tree"
 output_file_colors = output_dir + "/" + input_prefix + "_colors.txt"
 
 tree = ete3.Tree(leaf_labeled_tree, format=8)
+
+# Remove tissue labels for internal node names
+for node in tree.traverse():
+    if node.is_leaf() or node.is_root():
+        continue
+    else:
+        current_name = node.name
+        new_name = current_name.split("_")[0]
+        node.name = new_name
+
 tree.get_tree_root().name = '0'
+
 
 leaf_label = pd.DataFrame(columns = ['leaf', 'tissue'])
 edges = pd.DataFrame(columns = ['node1', 'node2'])
