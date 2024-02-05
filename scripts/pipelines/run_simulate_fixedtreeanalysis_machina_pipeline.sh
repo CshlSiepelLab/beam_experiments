@@ -8,7 +8,7 @@ source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
 
-pipeline_run_name="compare_beast_machina_fixedtree_2_2_24"
+pipeline_run_name="compare_beast_machina_fixedtreeanalysis_default_2_2_24"
 mkdir ${pipeline_run_name}
 
 accuracy_file="${pipeline_run_name}/accuracy.tsv"
@@ -18,7 +18,7 @@ runtime_file="${pipeline_run_name}/runtime.tsv"
 echo -e "data_id\tmachina_seconds\tbeast_seconds" > ${runtime_file}
 
 # Specify the number of simulations to be run for ground truth trees with migration data
-num_trees=25
+num_trees=100
 
 for ((i=1; i<=${num_trees}; i++))
 do
