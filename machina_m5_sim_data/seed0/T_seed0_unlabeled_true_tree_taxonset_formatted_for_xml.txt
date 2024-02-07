@@ -1,0 +1,16 @@
+<taxon id='cell13-P' spec='Taxon'/>
+<taxon id='cell16-P' spec='Taxon'/>
+<taxon id='cell29-P' spec='Taxon'/>
+<taxon id='cell21_22_24_30-M4' spec='Taxon'/>
+<taxon id='cell38-M4' spec='Taxon'/>
+<taxon id='cell41-M4' spec='Taxon'/>
+<taxon id='cell19-M3' spec='Taxon'/>
+<taxon id='cell34-M3' spec='Taxon'/>
+<taxon id='cell5_11_18_20_23_25_27_28-M2' spec='Taxon'/>
+<taxon id='cell32-M2' spec='Taxon'/>
+<taxon id='cell36-M2' spec='Taxon'/>
+<taxon id='cell35-M2' spec='Taxon'/>
+<taxon id='cell37-M2' spec='Taxon'/>
+<taxon id='cell9-M1' spec='Taxon'/>
+<taxon id='cell10-M1' spec='Taxon'/>
+<taxon id='cell12-M1' spec='Taxon'/>

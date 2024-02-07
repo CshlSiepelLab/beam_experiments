@@ -24,6 +24,7 @@ def format_taxa_string(name_list):
 def format_traitset(taxa_names,tissue_df):
     traits = ""
     for i, name in enumerate(taxa_names):
+        print(name)
         tissue = tissue_df.loc[tissue_df['node'] == name, 'tissue'].values[0]
         traits += f"{name}={tissue}"
         if i < len(taxa_names) - 1:
@@ -35,8 +36,8 @@ def format_traitset(taxa_names,tissue_df):
 newick_file = sys.argv[1]
 tissue_file = sys.argv[2]
 
-# newick_file = "compare_beast_machina_fixedtree_2_1_24/sim_results_sim1/sim1_true.nwk"
-# tissue_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/compare_beast_machina_fixedtree_2_1_24/sim_results_sim1/sim1_tissues.tsv"
+# newick_file = "machina_m5_sim_data/seed0/T_seed0_unlabeled_true_tree.nwk"
+# tissue_file = "machina_m5_sim_data/seed0/T_seed0_tissues.tsv"
 
 tree = Tree(newick_file, format=5)
 tissue_df = pd.read_csv(tissue_file, sep='\t')
@@ -51,6 +52,9 @@ for leaf in tree.iter_leaves():
     taxa_names.append(new_name)
 
 tissue_df['node'] = 'cell' + tissue_df['node'].astype(str)
+
+# Replace semiccolons from machina sims; should not affect my own sim data
+tissue_df['node'] = tissue_df['node'].str.replace(";", "_")
 
 # Output relabeled newick string
 newick_outfile = newick_file.split(".")[0] + "_newick_formatted_for_xml.txt"
