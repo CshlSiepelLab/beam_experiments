@@ -47,14 +47,24 @@ def get_posterior_labels_relaxed(tree,threshold):
             labels.append(prediction)
     return labels
 
+def remove_zero_length_nodes(tree):
+    for node in tree.internal_nodes():
+        if node.edge_length == 0:
+            parent = node.parent_node
+            if parent is not None:
+                parent.remove_child(node)
+                children = node.child_nodes()
+                for child in children:
+                    parent.add_child(child)
+
 
 true_file=sys.argv[1]
 beast_file=sys.argv[2]
 machina_file=sys.argv[3]
 
-# true_file="compare_beast_machina_fixedtree_2_2_24/sim_results_sim1/sim1_true_tissues.nwk"
-# beast_file="compare_beast_machina_fixedtree_2_2_24/sim_results_sim1/tissue_tree_with_trait.tree"
-# machina_file="compare_beast_machina_fixedtree_2_2_24/sim_results_sim1/machina_tree_all_tissue_labels.nwk"
+# true_file="machina_m5_sim_data/seed0/T_seed0_tissue_labeled_true_tree.nwk"
+# beast_file="machina_m5_sim_data/seed0/tissue_tree_with_trait.tree"
+# machina_file="machina_m5_sim_data/seed0/machina_tree_all_tissue_labels.nwk"
 
 data_id = true_file.split("/")[-1].split(".")[0]
 
@@ -62,17 +72,19 @@ true_tree = Tree(true_file, format=8)
 beast_tree = dendropy.Tree.get(path=beast_file, schema='nexus')
 machina_tree = Tree(machina_file, format=8)
 
+# Collapse beast tree fake branches with 0 branch length to poyltomy for relabeling
+remove_zero_length_nodes(beast_tree)
+
 # Relabel beast tree internal nodes based on true tree dictionary
-true_tree_no_tissues = true_tree.copy()
 node_leaf_dict = {}
-for node in true_tree_no_tissues.traverse():
+for node in true_tree.traverse():
     name = node.name.split("_")[0]
     if node.is_leaf() == False:
-        leaves = "_".join(sorted([leaf.name.split("_")[0] for leaf in node.get_leaves()]))
+        leaves = "/".join(sorted([leaf.name.split("_")[0] for leaf in node.get_leaves()]))
         node_leaf_dict[leaves] = name
 
 for node in beast_tree.internal_nodes():
-    leaves = "_".join(sorted([leaf.taxon.label.split("ll")[1] for leaf in node.leaf_nodes()]))
+    leaves = "/".join(sorted([leaf.taxon.label.replace(" ", "-").split("ll")[1] for leaf in node.leaf_nodes()]))
     node.label = node_leaf_dict[leaves]
 
 # Get internal node tissue labels for true tree and machina
@@ -94,7 +106,7 @@ beast_strict_accuracy = len(beast_strict_correct) / total
 beast_relaxed_accuracy = len(beast_relaxed_correct) / total
 
 # Compute non-primary (np) tissue (t1) accuracy
-np_true_labels = [label for label in true_labels if 't1' not in label]
+np_true_labels = [label for label in true_labels if '_t1' not in label and '_P' not in label]
 np_total = len(np_true_labels)
 np_machina_labels = [label for label in machina_labels if label in np_true_labels]
 np_beast_strict_labels = [label for label in beast_strict_labels if label in np_true_labels]

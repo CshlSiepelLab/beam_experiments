@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='FixedTreeAnalysis' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.base.evolution.alignment:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" required="BEAST.base v2.7.6:FixedTreeAnalysis v0.0.2:BEAST_CLASSIC v1.6.3" version="2.7">
+
+    <data
+id="sim1_true"
+spec="Alignment"
+name="taxa">
+        REPLACE_SEQUENCES
+    </data>
+
+    <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
+
+    <map name="Exponential" >beast.base.inference.distribution.Exponential</map>
+
+    <map name="LogNormal" >beast.base.inference.distribution.LogNormalDistributionModel</map>
+
+    <map name="Normal" >beast.base.inference.distribution.Normal</map>
+
+    <map name="Beta" >beast.base.inference.distribution.Beta</map>
+
+    <map name="Gamma" >beast.base.inference.distribution.Gamma</map>
+
+    <map name="LaplaceDistribution" >beast.base.inference.distribution.LaplaceDistribution</map>
+
+    <map name="prior" >beast.base.inference.distribution.Prior</map>
+
+    <map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
+
+    <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
+
+    <run id="mcmc" spec="MCMC" chainLength="1000000">
+        <state id="state" spec="State" storeEvery="5000">
+            <stateNode id="Tree.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTree" IsLabelledNewick="true" adjustTipHeights="false" newick="REPLACE_NEWICK">
+                <taxa idref="sim1_true"/>
+                <taxonset id="TaxonSet.1" spec="TaxonSet">
+                    REPLACE_TAXONSET
+                </taxonset>
+            </stateNode>
+            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="55">true</stateNode>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="55" name="stateNode">1.0</parameter>
+            <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
+        </state>
+        <distribution id="posterior" spec="CompoundDistribution">
+            <distribution id="prior" spec="CompoundDistribution">
+                <distribution id="FixedTreeModel.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTreeDistribution" tree="@Tree.t:tree"/>
+                <prior id="nonZeroRatePrior.s:tissue" name="distribution">
+                    <x id="nonZeroRates.s:tissue" spec="beast.base.evolution.Sum">
+                        <arg idref="rateIndicator.s:tissue"/>
+                    </x>
+                    <distr id="Poisson.0" spec="distribution.Poisson" offset="2.0">
+                        <parameter id="RealParameter.10" spec="parameter.RealParameter" estimate="false" name="lambda">0.693</parameter>
+                    </distr>
+                </prior>
+                <prior id="relativeGeoRatesPrior.s:tissue" name="distribution" x="@relativeGeoRates.s:tissue">
+                    <Gamma id="Gamma.2" name="distr">
+                        <parameter id="RealParameter.8" spec="parameter.RealParameter" estimate="false" name="alpha">1.0</parameter>
+                        <parameter id="RealParameter.9" spec="parameter.RealParameter" estimate="false" name="beta">1.0</parameter>
+                    </Gamma>
+                </prior>
+                <prior id="geoclockPrior.c:tissue" name="distribution" x="@traitClockRate.c:tissue">
+                    <Gamma id="Gamma.1" name="distr">
+                        <parameter id="RealParameter.6" spec="parameter.RealParameter" estimate="false" name="alpha">0.001</parameter>
+                        <parameter id="RealParameter.7" spec="parameter.RealParameter" estimate="false" name="beta">1000.0</parameter>
+                    </Gamma>
+                </prior>
+            </distribution>
+            <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
+                <distribution id="treeLikelihood.sim1_true" spec="fixedtreeanalysis.evolution.likelihood.FixedTreeLikelihood" data="@sim1_true" tree="@Tree.t:tree">
+                    <siteModel id="FixedSiteModel.s:sim1_true" spec="fixedtreeanalysis.evolution.sitemodel.FixedSiteModel">
+                        <parameter id="RealParameter.0" spec="parameter.RealParameter" estimate="false" lower="0.0" name="mutationRate" upper="1.0">1.0</parameter>
+                        <parameter id="RealParameter.1" spec="parameter.RealParameter" lower="0.0" name="shape" upper="0.0">1.0</parameter>
+                        <parameter id="RealParameter.2" spec="parameter.RealParameter" lower="0.0" name="proportionInvariant" upper="0.0">0.0</parameter>
+                        <substModel id="JC69.s:sim1_true" spec="JukesCantor"/>
+                    </siteModel>
+                    <branchRateModel id="FixedClock.c:sim1_true" spec="fixedtreeanalysis.evolution.branchratemodel.FixedClockModel">
+                        <parameter id="RealParameter.3" spec="parameter.RealParameter" estimate="false" name="clock.rate">1.0</parameter>
+                    </branchRateModel>
+                </distribution>
+                <distribution id="traitedtreeLikelihood.tissue" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@Tree.t:tree">
+                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0 0 0" estimate="false"/>
+                    <data
+id="tissue"
+spec="beastclassic.evolution.alignment.AlignmentFromTrait">
+                        <traitSet id="traitSet.tissue" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet.1" traitname="discrete">REPLACE_TRAITSET</traitSet>
+                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="P=0,M1=1,M2=2,M3=3,M4=4,M5=5,M6=6,M7=7,M8=8,M9=9,M10=10,? = 0 1 2 3 4 5 6 7 8 9 10" codelength="-1" states="11"/>
+                    </data>
+                    <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
+                        <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
+                        <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
+                        <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
+                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue">
+                            <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
+                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="11" name="frequencies">0.0909090909</parameter>
+                            </frequencies>
+                        </substModel>
+                    </siteModel>
+                    <branchRateModel id="StrictClockModel.c:tissue" spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@traitClockRate.c:tissue"/>
+                </distribution>
+            </distribution>
+        </distribution>
+        <operator id="georateScaler.s:tissue" spec="ScaleOperator" parameter="@relativeGeoRates.s:tissue" scaleAllIndependently="true" scaleFactor="0.99" weight="30.0"/>
+        <operator id="indicatorFlip.s:tissue" spec="operator.BitFlipOperator" parameter="@rateIndicator.s:tissue" weight="30.0"/>
+        <operator id="geoMuScaler.c:tissue" spec="ScaleOperator" parameter="@traitClockRate.c:tissue" scaleFactor="0.9" weight="3.0"/>
+        <operator id="BSSVSoperator.c:tissue" spec="beastclassic.evolution.operators.BitFlipBSSVSOperator" indicator="@rateIndicator.s:tissue" mu="@traitClockRate.c:tissue" weight="30.0"/>
+        <logger id="tracelog" spec="Logger" fileName="$(filebase).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+            <log idref="posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+            <log idref="treeLikelihood.sim1_true"/>
+            <log idref="rateIndicator.s:tissue"/>
+            <log idref="relativeGeoRates.s:tissue"/>
+            <log idref="traitClockRate.c:tissue"/>
+            <log id="geoSubstModelLogger.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModelLogger" dataType="@traitDataType.tissue" model="@svs.s:tissue"/>
+        </logger>
+        <logger id="screenlog" spec="Logger" logEvery="10000">
+            <log idref="posterior"/>
+            <log id="ESS.0" spec="util.ESS" arg="@posterior"/>
+            <log idref="likelihood"/>
+            <log idref="prior"/>
+        </logger>
+        <logger id="treelog.t:tree" spec="Logger" fileName="$(filebase).trees" logEvery="1000" mode="tree">
+            <log id="TreeWithMetaDataLogger.t:tree" spec="beast.base.evolution.TreeWithMetaDataLogger" tree="@Tree.t:tree"/>
+        </logger>
+        <logger id="treeWithTraitLogger.tissue" spec="Logger" fileName="tissue_tree_with_trait.trees" logEvery="1000" mode="tree">
+            <log id="treeWithTraitLoggerItem.t:tree" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@Tree.t:tree">
+                <metadata idref="posterior"/>
+                <metadata idref="traitedtreeLikelihood.tissue"/>
+            </log>
+        </logger>
+        <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+    </run>
+
+</beast>

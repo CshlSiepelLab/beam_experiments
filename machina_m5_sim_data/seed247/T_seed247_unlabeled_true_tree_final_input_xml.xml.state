@@ -1,0 +1,14 @@
+<itsabeastystatewerein version='2.0' sample='1000000'>
+<statenode id='Tree.t:tree'>(0:1.0,(1:1.0,(((2:1.0,3:1.0)15:1.0,4:1.0)16:1.0,((5:1.0,((6:1.0,7:1.0)17:1.0,(8:1.0,(9:1.0,10:1.0)18:0.0)19:0.0)20:0.0)21:1.0,(11:1.0,((12:1.0,13:1.0)22:1.0,14:1.0)23:0.0)24:0.0)25:1.0)26:0.0)27:0.0)28:0.0</statenode>
+<statenode id='rateIndicator.s:tissue'>rateIndicator.s:tissue[36 1] (null,true): true false false false false false false false false true false false false false false true true false false false false false false false false false false false false false false false false false false false </statenode>
+<statenode id='relativeGeoRates.s:tissue'>relativeGeoRates.s:tissue[36 1] (-Infinity,Infinity): 4.011460517776078 0.3935107833090308 6.2435384860882674 1.1827254691647098 3.5028234260101656 1.5494143972297412 0.35976800934133524 0.257124691015836 0.06904686732188453 0.5057007900218556 0.05636419042569937 0.7902564531224807 0.004153231315806371 0.25420703789925764 1.2332852212964318 0.6083079602519725 1.8296586898451754 0.1687000224982418 0.942570986226438 0.14037887023479315 1.1694412804512986 0.3233489796282518 0.6056498744367483 0.21163400609526709 2.649862966294672 3.7813422982223046 3.317387498147604 0.7549836059601142 2.932698659314318 0.9128127595709883 0.5654911716075449 0.12461345118745552 0.06979827060289046 3.6949278217564996 1.2892002485639429 0.29517694177332005 </statenode>
+<statenode id='traitClockRate.c:tissue'>traitClockRate.c:tissue[1 1] (0.0,Infinity): 4.586337074220623 </statenode>
+</itsabeastystatewerein>
+<!--
+{"operators":[
+{"id":"georateScaler.s:tissue","p":0.7427578129704169,"accept":90424,"reject":232198,"acceptFC":81580,"rejectFC":231957,"rejectIv":0,"rejectOp":0},
+{"id":"indicatorFlip.s:tissue","p":"NaN","accept":10219,"reject":312381,"acceptFC":9921,"rejectFC":303380,"rejectIv":22,"rejectOp":0},
+{"id":"geoMuScaler.c:tissue","p":0.21306003022286565,"accept":11682,"reject":20481,"acceptFC":10826,"rejectFC":20421,"rejectIv":0,"rejectOp":0},
+{"id":"BSSVSoperator.c:tissue","p":"NaN","accept":9897,"reject":312719,"acceptFC":9589,"rejectFC":304007,"rejectIv":32,"rejectOp":0}
+]}
+-->

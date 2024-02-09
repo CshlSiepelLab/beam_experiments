@@ -26,6 +26,7 @@ def build_tree_from_file(file_path):
     # Sort edges based on first value in key to prevent out of order additions to tree that result in duplicate nodes
     edges = sorted(edges, key=lambda x: int(x[0].split(";")[0]))
     edges.insert(0, gl_edge)
+    letter_edges = sorted(letter_edges, key=lambda s: s[0][0])
     edges.extend(letter_edges)
     for edge in edges:
         parent, child = edge
@@ -47,21 +48,24 @@ def build_tree_from_file(file_path):
             leaf.detach()
             parent.name = leaf_name
     gl_node = tree.search_nodes(name="GL")[0]
-    return gl_node
+    return gl_node, edges
 
 
 tree_file = sys.argv[1]
 vertex_labeling_file = sys.argv[2]
 
-# tree_file = "machina_m5_sim_data/seed0/T_seed0.tree"
-# vertex_labeling_file = "machina_m5_sim_data/seed0/T_seed0.vertex.labeling"
+# tree_file = "machina_m8_sim_data/seed10046/T_seed10046.tree"
+# vertex_labeling_file = "machina_m8_sim_data/seed10046/T_seed10046.vertex.labeling"
 
 tissue_df = pd.read_csv(vertex_labeling_file, sep='\s+', names=['node', 'tissue'])
-tree = build_tree_from_file(tree_file)
+tree, edges = build_tree_from_file(tree_file)
 
+for node in tree.traverse():
+    node.name = node.name.replace(";","-")
 
 unlabeled_names = [node.name for node in tree.traverse() if node.name != '']
 tissue_df['node'] = tissue_df['node'].str.replace("_", "-")
+tissue_df['node'] = tissue_df['node'].str.replace(";", "-")
 tissue_df_subset = tissue_df[tissue_df['node'].isin(unlabeled_names)]
 tissue_dict = dict(zip(tissue_df_subset['node'], tissue_df_subset['tissue']))
 
@@ -82,6 +86,6 @@ tissue_df_subset.to_csv(output_tissues_tsv, sep='\t', index=False)
     
 # Output fully tissue labeled newick
 output_labeled_file = output_prefix + "_tissue_labeled_true_tree.nwk"
-labeled_tree.write(outfile=output_labeled_file, format=3)
+labeled_tree.write(outfile=output_labeled_file, format=8)
 
 

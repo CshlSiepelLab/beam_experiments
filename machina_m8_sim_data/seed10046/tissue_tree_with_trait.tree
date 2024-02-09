@@ -1,0 +1,40 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=14;
+		Taxlabels
+			cell101-M4
+			cell106-M4
+			cell11-23-29-32-M2
+			cell40-43-51-62-M5
+			cell42-M1
+			cell42-M5
+			cell45-M1
+			cell49-M2
+			cell52-M2
+			cell57-58-M3
+			cell65-M6
+			cell65-P
+			cell9-10-17-34-60-61-63-66-72-96-M4
+			cellM3-0
+			;
+End;
+Begin trees;
+	Translate
+		     1 cell101-M4,
+		     2 cell106-M4,
+		     3 cell11-23-29-32-M2,
+		     4 cell40-43-51-62-M5,
+		     5 cell42-M1,
+		     6 cell42-M5,
+		     7 cell45-M1,
+		     8 cell49-M2,
+		     9 cell52-M2,
+		    10 cell57-58-M3,
+		    11 cell65-M6,
+		    12 cell65-P,
+		    13 cell9-10-17-34-60-61-63-66-72-96-M4,
+		    14 cellM3-0
+;
+tree TREE1 = (((((1[&height=0.0,length=1.0,location=M4,location.prob=1.0,location.set={M4},location.set.prob={1.0}]:1.0,2[&height=0.0,length=1.0,location=M4,location.prob=1.0,location.set={M4},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=M4,location.prob=0.4739178690344062,location.set={P,M1,M2,M3,M4,M5,M6,M7,M8},location.set.prob={0.08435072142064373,0.08213096559378469,0.0932297447280799,0.0732519422863485,0.4739178690344062,0.09655937846836848,0.08546059933407325,0.006659267480577136,0.004439511653718091},posterior=1.0]:1.0,13[&height=1.0,length=1.0,location=M4,location.prob=1.0,location.set={M4},location.set.prob={1.0}]:1.0)[&height=2.0,length=1.0,location=M4,location.prob=0.4261931187569367,location.set={P,M1,M2,M3,M4,M5,M6,M7,M8},location.set.prob={0.09877913429522753,0.08990011098779134,0.07991120976692564,0.09100998890122086,0.4261931187569367,0.11098779134295228,0.09100998890122086,0.003329633740288568,0.008879023307436182},posterior=1.0]:1.0,((3[&height=1.0,length=1.0,location=M2,location.prob=1.0,location.set={M2},location.set.prob={1.0}]:1.0,(8[&height=1.0,length=1.0,location=M2,location.prob=1.0,location.set={M2},location.set.prob={1.0}]:1.0,9[&height=1.0,length=1.0,location=M2,location.prob=1.0,location.set={M2},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=M2,location.prob=0.5172031076581576,location.set={P,M1,M2,M3,M4,M5,M6,M7,M8},location.set.prob={0.09433962264150944,0.08657047724750278,0.5172031076581576,0.08657047724750278,0.07103218645948946,0.06770255271920089,0.07214206437291898,0.0011098779134295228,0.003329633740288568},posterior=1.0]:0.0)[&height=2.0,length=1.0,location=M2,location.prob=0.5172031076581576,location.set={P,M1,M2,M3,M4,M5,M6,M7,M8},location.set.prob={0.09433962264150944,0.08657047724750278,0.5172031076581576,0.08657047724750278,0.07103218645948946,0.06770255271920089,0.07214206437291898,0.0011098779134295228,0.003329633740288568},posterior=1.0]:1.0,(4[&height=1.0,length=1.0,location=M5,location.prob=1.0,location.set={M5},location.set.prob={1.0}]:1.0,(5[&height=0.0,length=1.0,location=M1,location.prob=1.0,location.set={M1},location.set.prob={1.0}]:1.0,6[&height=0.0,length=1.0,location=M5,location.prob=1.0,location.set={M5},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=M5,location.prob=0.2619311875693674,location.set={P,M1,M2,M3,M4,M5,M6,M7,M8},location.set.prob={0.11986681465038845,0.22086570477247502,0.06770255271920089,0.11986681465038845,0.08324084350721421,0.2619311875693674,0.11875693673695893,0.0022197558268590455,0.005549389567147614},posterior=1.0]:1.0)[&height=2.0,length=1.0,location=M5,location.prob=0.2619311875693674,location.set={P,M1,M2,M3,M4,M5,M6,M7,M8},location.set.prob={0.14983351831298558,0.16981132075471697,0.0732519422863485,0.1320754716981132,0.08324084350721421,0.2619311875693674,0.11542730299667037,0.006659267480577136,0.00776914539400666},posterior=1.0]:1.0)[&height=3.0,length=0.0,location=P,location.prob=1.0,location.set={P},location.set.prob={1.0},posterior=1.0]:0.0)[&height=3.0,length=0.0,location=P,location.prob=1.0,location.set={P},location.set.prob={1.0},posterior=1.0]:0.0,((11[&height=0.0,length=1.0,location=M6,location.prob=1.0,location.set={M6},location.set.prob={1.0}]:1.0,12[&height=0.0,length=1.0,location=P,location.prob=1.0,location.set={P},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=P,location.prob=0.2153163152053274,location.set={P,M1,M2,M3,M4,M5,M6,M7,M8},location.set.prob={0.2153163152053274,0.12763596004439512,0.09211986681465038,0.15205327413984462,0.10210876803551609,0.09100998890122086,0.20865704772475027,0.003329633740288568,0.00776914539400666},posterior=1.0]:1.0,14[&height=1.0,length=1.0,location=M3,location.prob=1.0,location.set={M3},location.set.prob={1.0}]:1.0)[&height=2.0,length=1.0,location=M3,location.prob=0.22308546059933407,location.set={P,M1,M2,M3,M4,M5,M6,M7,M8},location.set.prob={0.20643729189789123,0.12097669256381798,0.08879023307436182,0.22308546059933407,0.07991120976692564,0.12430632630410655,0.1453940066592675,0.005549389567147614,0.005549389567147614},posterior=1.0]:1.0)[&height=3.0,length=0.0,location=P,location.prob=1.0,location.set={P},location.set.prob={1.0},posterior=1.0]:0.0,(7[&height=1.0,length=1.0,location=M1,location.prob=1.0,location.set={M1},location.set.prob={1.0}]:1.0,10[&height=1.0,length=1.0,location=M3,location.prob=1.0,location.set={M3},location.set.prob={1.0}]:1.0)[&height=2.0,length=1.0,location=M3,location.prob=0.19311875693673697,location.set={P,M1,M2,M3,M4,M5,M6,M7,M8},location.set.prob={0.18423973362930077,0.1897891231964484,0.0932297447280799,0.19311875693673697,0.08102108768035517,0.12541620421753608,0.11875693673695893,0.006659267480577136,0.00776914539400666},posterior=1.0]:1.0)[&height=3.0,length=0.0,location=P,location.prob=1.0,location.set={P},location.set.prob={1.0},posterior=1.0]:0.0;
+End;

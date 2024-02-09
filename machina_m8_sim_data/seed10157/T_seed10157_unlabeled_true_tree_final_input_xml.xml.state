@@ -1,0 +1,14 @@
+<itsabeastystatewerein version='2.0' sample='1000000'>
+<statenode id='Tree.t:tree'>(0:1.0,((1:1.0,(2:1.0,3:1.0)23:0.0)24:1.0,((4:1.0,(5:1.0,((6:1.0,(7:1.0,8:1.0)25:1.0)26:1.0,(9:1.0,10:1.0)27:0.0)28:0.0)29:1.0)30:1.0,(11:1.0,(12:1.0,((13:1.0,(14:1.0,(15:1.0,(((16:1.0,17:1.0)31:1.0,18:1.0)32:1.0,((19:1.0,20:1.0)33:1.0,21:1.0)34:0.0)35:0.0)36:0.0)37:0.0)38:1.0,22:1.0)39:1.0)40:1.0)41:0.0)42:0.0)43:0.0)44:0.0</statenode>
+<statenode id='rateIndicator.s:tissue'>rateIndicator.s:tissue[36 1] (null,true): false false false true false false false false false false true false false false false false true false false false false false true false false false false true true false false true false false false false </statenode>
+<statenode id='relativeGeoRates.s:tissue'>relativeGeoRates.s:tissue[36 1] (-Infinity,Infinity): 1.4940044059233164 0.2913441038349762 0.4331196550479988 0.16498631631756983 0.24689369045616183 0.12011961772068752 0.1314132890697472 0.3321087204622539 1.8410558641334018 2.0147057561510864 0.36314477282334756 0.03820938694181206 0.6445791536958161 2.8982445988319308 1.7407870883201482 1.6123001083529118 0.5155886578510303 0.2054903292252908 0.5652957830314856 0.5313982409736173 1.1376371864285926 0.5873413933491537 0.91560551449982 0.3967472702893047 3.7992924222130053 0.8172238924955497 1.5785368764129937 1.6025965816481187 0.32557995075172663 1.1164064403439067 0.273586903920481 1.6710357084837135 1.6663628933603 1.0783663368670078 0.224324453889044 0.09951242928972394 </statenode>
+<statenode id='traitClockRate.c:tissue'>traitClockRate.c:tissue[1 1] (0.0,Infinity): 2.1144058653059523 </statenode>
+</itsabeastystatewerein>
+<!--
+{"operators":[
+{"id":"georateScaler.s:tissue","p":0.7458005620697601,"accept":91580,"reject":230821,"acceptFC":82767,"rejectFC":230581,"rejectIv":0,"rejectOp":0},
+{"id":"indicatorFlip.s:tissue","p":"NaN","accept":12900,"reject":308655,"acceptFC":12478,"rejectFC":299967,"rejectIv":31,"rejectOp":0},
+{"id":"geoMuScaler.c:tissue","p":0.2575335529599222,"accept":11714,"reject":21011,"acceptFC":10822,"rejectFC":20954,"rejectIv":0,"rejectOp":0},
+{"id":"BSSVSoperator.c:tissue","p":"NaN","accept":10961,"reject":312359,"acceptFC":10619,"rejectFC":303383,"rejectIv":23,"rejectOp":0}
+]}
+-->

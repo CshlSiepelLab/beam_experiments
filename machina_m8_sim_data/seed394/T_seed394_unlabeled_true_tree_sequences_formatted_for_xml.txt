@@ -1,0 +1,11 @@
+<sequence id='Sequence.0' spec='Sequence' taxon='cell0-P' totalcount='4' value='?'/>
+<sequence id='Sequence.1' spec='Sequence' taxon='cell5-6-P' totalcount='4' value='?'/>
+<sequence id='Sequence.2' spec='Sequence' taxon='cell7-P' totalcount='4' value='?'/>
+<sequence id='Sequence.3' spec='Sequence' taxon='cell9-13-17-22-26-30-33-M5' totalcount='4' value='?'/>
+<sequence id='Sequence.4' spec='Sequence' taxon='cell41-M5' totalcount='4' value='?'/>
+<sequence id='Sequence.5' spec='Sequence' taxon='cell11-12-18-M6' totalcount='4' value='?'/>
+<sequence id='Sequence.6' spec='Sequence' taxon='cell11-12-18-M2' totalcount='4' value='?'/>
+<sequence id='Sequence.7' spec='Sequence' taxon='cell27-M2' totalcount='4' value='?'/>
+<sequence id='Sequence.8' spec='Sequence' taxon='cell15-19-20-M1' totalcount='4' value='?'/>
+<sequence id='Sequence.9' spec='Sequence' taxon='cell35-M1' totalcount='4' value='?'/>
+<sequence id='Sequence.10' spec='Sequence' taxon='cell8-31-M4' totalcount='4' value='?'/>

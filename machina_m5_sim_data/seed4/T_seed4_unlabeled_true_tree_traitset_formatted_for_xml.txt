@@ -1,0 +1,12 @@
+cell0-P=P,
+cell1-P=P,
+cell2-P=P,
+cell13-21-26-33-P=P,
+cell42-P=P,
+cell38-41-M4=M4,
+cell43-M4=M4,
+cell3-5-9-20-24-25-M3=M3,
+cell29-M3=M3,
+cell4-6-7-10-11-14-15-M1=M1,
+cell22-23-M2=M2,
+cell30-M2=M2

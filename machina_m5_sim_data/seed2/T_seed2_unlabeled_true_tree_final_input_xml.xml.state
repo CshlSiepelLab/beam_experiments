@@ -1,0 +1,14 @@
+<itsabeastystatewerein version='2.0' sample='1000000'>
+<statenode id='Tree.t:tree'>(0:1.0,(1:1.0,(2:1.0,(3:1.0,(4:1.0,(5:1.0,6:1.0)7:0.0)8:1.0)9:0.0)10:0.0)11:1.0)12:0.0</statenode>
+<statenode id='rateIndicator.s:tissue'>rateIndicator.s:tissue[36 1] (null,true): false false false true false false false false false false true false false false true false true false false false false false false false false false false false false false false true false false false false </statenode>
+<statenode id='relativeGeoRates.s:tissue'>relativeGeoRates.s:tissue[36 1] (-Infinity,Infinity): 6.281711929105172 0.7906400068378463 0.6238021852573179 1.419483364324552 0.6887919940630551 0.13427563576105855 1.222911036855621 0.27082041299486215 0.9591448753228684 0.7634024756979472 1.3444034715019888 0.611359909961916 3.1103971190664628 0.002557589884879625 1.550005040452209 0.23940919231398206 0.23322988024073588 0.6834067355788273 0.2754351816845622 1.7501472717608915 0.46262893713230857 2.177000003947613 1.1006645175941976 1.394507438071629 0.3171673759940283 1.6305857222002351 0.6311641356843549 0.7242816684186308 0.42099005578067183 0.09451851690269014 0.7251234471307177 0.6590305162080645 0.8087787654769795 1.9241976209679796 3.6283950266185223 0.007629873017756262 </statenode>
+<statenode id='traitClockRate.c:tissue'>traitClockRate.c:tissue[1 1] (0.0,Infinity): 15.159158455111418 </statenode>
+</itsabeastystatewerein>
+<!--
+{"operators":[
+{"id":"georateScaler.s:tissue","p":0.7437922582672184,"accept":90844,"reject":231060,"acceptFC":82025,"rejectFC":230806,"rejectIv":0,"rejectOp":0},
+{"id":"indicatorFlip.s:tissue","p":"NaN","accept":13711,"reject":309434,"acceptFC":13215,"rejectFC":300844,"rejectIv":8,"rejectOp":0},
+{"id":"geoMuScaler.c:tissue","p":0.19788807189414087,"accept":11960,"reject":20477,"acceptFC":11088,"rejectFC":20421,"rejectIv":0,"rejectOp":0},
+{"id":"BSSVSoperator.c:tissue","p":"NaN","accept":13392,"reject":309123,"acceptFC":12950,"rejectFC":300523,"rejectIv":5,"rejectOp":0}
+]}
+-->

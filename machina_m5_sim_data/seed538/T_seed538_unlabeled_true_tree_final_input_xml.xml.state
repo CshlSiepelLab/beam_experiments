@@ -1,0 +1,14 @@
+<itsabeastystatewerein version='2.0' sample='1000000'>
+<statenode id='Tree.t:tree'>(0:1.0,(1:1.0,(2:1.0,(((3:1.0,4:1.0)13:1.0,((5:1.0,6:1.0)14:1.0,(7:1.0,8:1.0)15:1.0)16:0.0)17:1.0,((9:1.0,10:1.0)18:1.0,(11:1.0,12:1.0)19:1.0)20:0.0)21:0.0)22:1.0)23:0.0)24:0.0</statenode>
+<statenode id='rateIndicator.s:tissue'>rateIndicator.s:tissue[36 1] (null,true): false false true false false false false false false false true false false false false true false false false false false true false false false false false false false false false false false false false false </statenode>
+<statenode id='relativeGeoRates.s:tissue'>relativeGeoRates.s:tissue[36 1] (-Infinity,Infinity): 0.005326384239094084 1.108219560471414 0.1441815417857147 0.4776201397736253 0.6414285451960826 0.330631526682183 1.3837145412623038 0.5141817395099644 0.5546840973523408 0.676499451262675 1.7216000100073665 0.18098510564719542 0.2020514649445128 0.5296213186746566 0.6679597582673114 0.17264524816675159 1.288385377641785 0.13329918604097432 0.6621761167460427 1.4444857983061978 3.573939122360065 2.426757640801367 1.4488880343918662 2.205543639039791 1.5123035655684054 1.816975427442052 0.4354128974118017 0.555048296276433 1.3423813721403477 0.8624845804616106 1.850356254232773 2.0479851085520497 1.7178123911339451 0.7562621345167729 0.6594745515791816 0.7277620346689343 </statenode>
+<statenode id='traitClockRate.c:tissue'>traitClockRate.c:tissue[1 1] (0.0,Infinity): 5.772990343059169 </statenode>
+</itsabeastystatewerein>
+<!--
+{"operators":[
+{"id":"georateScaler.s:tissue","p":0.7428918893105498,"accept":90723,"reject":232572,"acceptFC":81926,"rejectFC":232291,"rejectIv":0,"rejectOp":0},
+{"id":"indicatorFlip.s:tissue","p":"NaN","accept":9876,"reject":311873,"acceptFC":9541,"rejectFC":303153,"rejectIv":20,"rejectOp":0},
+{"id":"geoMuScaler.c:tissue","p":0.2109231566279924,"accept":11969,"reject":20297,"acceptFC":11100,"rejectFC":20243,"rejectIv":0,"rejectOp":0},
+{"id":"BSSVSoperator.c:tissue","p":"NaN","accept":9598,"reject":313093,"acceptFC":9279,"rejectFC":304260,"rejectIv":20,"rejectOp":0}
+]}
+-->

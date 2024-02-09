@@ -4,7 +4,7 @@
 id="sim1_true"
 spec="Alignment"
 name="taxa">
-        <sequence id="Sequence.0" spec="Sequence" taxon="cell13-P" totalcount="4" value="?"/> <sequence id="Sequence.1" spec="Sequence" taxon="cell16-P" totalcount="4" value="?"/> <sequence id="Sequence.2" spec="Sequence" taxon="cell29-P" totalcount="4" value="?"/> <sequence id="Sequence.3" spec="Sequence" taxon="cell21_22_24_30-M4" totalcount="4" value="?"/> <sequence id="Sequence.4" spec="Sequence" taxon="cell38-M4" totalcount="4" value="?"/> <sequence id="Sequence.5" spec="Sequence" taxon="cell41-M4" totalcount="4" value="?"/> <sequence id="Sequence.6" spec="Sequence" taxon="cell19-M3" totalcount="4" value="?"/> <sequence id="Sequence.7" spec="Sequence" taxon="cell34-M3" totalcount="4" value="?"/> <sequence id="Sequence.8" spec="Sequence" taxon="cell5_11_18_20_23_25_27_28-M2" totalcount="4" value="?"/> <sequence id="Sequence.9" spec="Sequence" taxon="cell32-M2" totalcount="4" value="?"/> <sequence id="Sequence.10" spec="Sequence" taxon="cell36-M2" totalcount="4" value="?"/> <sequence id="Sequence.11" spec="Sequence" taxon="cell35-M2" totalcount="4" value="?"/> <sequence id="Sequence.12" spec="Sequence" taxon="cell37-M2" totalcount="4" value="?"/> <sequence id="Sequence.13" spec="Sequence" taxon="cell9-M1" totalcount="4" value="?"/> <sequence id="Sequence.14" spec="Sequence" taxon="cell10-M1" totalcount="4" value="?"/> <sequence id="Sequence.15" spec="Sequence" taxon="cell12-M1" totalcount="4" value="?"/> 
+        <sequence id="Sequence.0" spec="Sequence" taxon="cell13-P" totalcount="4" value="?"/> <sequence id="Sequence.1" spec="Sequence" taxon="cell16-P" totalcount="4" value="?"/> <sequence id="Sequence.2" spec="Sequence" taxon="cell29-P" totalcount="4" value="?"/> <sequence id="Sequence.3" spec="Sequence" taxon="cell21-22-24-30-M4" totalcount="4" value="?"/> <sequence id="Sequence.4" spec="Sequence" taxon="cell38-M4" totalcount="4" value="?"/> <sequence id="Sequence.5" spec="Sequence" taxon="cell41-M4" totalcount="4" value="?"/> <sequence id="Sequence.6" spec="Sequence" taxon="cell19-M3" totalcount="4" value="?"/> <sequence id="Sequence.7" spec="Sequence" taxon="cell34-M3" totalcount="4" value="?"/> <sequence id="Sequence.8" spec="Sequence" taxon="cell5-11-18-20-23-25-27-28-M2" totalcount="4" value="?"/> <sequence id="Sequence.9" spec="Sequence" taxon="cell32-M2" totalcount="4" value="?"/> <sequence id="Sequence.10" spec="Sequence" taxon="cell36-M2" totalcount="4" value="?"/> <sequence id="Sequence.11" spec="Sequence" taxon="cell35-M2" totalcount="4" value="?"/> <sequence id="Sequence.12" spec="Sequence" taxon="cell37-M2" totalcount="4" value="?"/> <sequence id="Sequence.13" spec="Sequence" taxon="cell9-M1" totalcount="4" value="?"/> <sequence id="Sequence.14" spec="Sequence" taxon="cell10-M1" totalcount="4" value="?"/> <sequence id="Sequence.15" spec="Sequence" taxon="cell12-M1" totalcount="4" value="?"/> 
     </data>
 
     <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
@@ -29,14 +29,14 @@ name="taxa">
 
     <run id="mcmc" spec="MCMC" chainLength="1000000">
         <state id="state" spec="State" storeEvery="5000">
-            <stateNode id="Tree.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTree" IsLabelledNewick="true" adjustTipHeights="false" newick="(((cell13-P:1,(cell16-P:1,cell29-P:1,(cell21_22_24_30-M4:1,cell38-M4:1,cell41-M4:1):1):1,(cell19-M3:1,cell34-M3:1):1):1,(cell5_11_18_20_23_25_27_28-M2:1,(cell32-M2:1,cell36-M2:1):1,cell35-M2:1,cell37-M2:1):1):1,(cell9-M1:1,cell10-M1:1,cell12-M1:1):1):1">
+            <stateNode id="Tree.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTree" IsLabelledNewick="true" adjustTipHeights="false" newick="(((cell13-P:1,(cell16-P:1,cell29-P:1,(cell21-22-24-30-M4:1,cell38-M4:1,cell41-M4:1):1):1,(cell19-M3:1,cell34-M3:1):1):1,(cell5-11-18-20-23-25-27-28-M2:1,(cell32-M2:1,cell36-M2:1):1,cell35-M2:1,cell37-M2:1):1):1,(cell9-M1:1,cell10-M1:1,cell12-M1:1):1):1">
                 <taxa idref="sim1_true"/>
                 <taxonset id="TaxonSet.1" spec="TaxonSet">
-                    <taxon id="cell13-P" spec="Taxon"/> <taxon id="cell16-P" spec="Taxon"/> <taxon id="cell29-P" spec="Taxon"/> <taxon id="cell21_22_24_30-M4" spec="Taxon"/> <taxon id="cell38-M4" spec="Taxon"/> <taxon id="cell41-M4" spec="Taxon"/> <taxon id="cell19-M3" spec="Taxon"/> <taxon id="cell34-M3" spec="Taxon"/> <taxon id="cell5_11_18_20_23_25_27_28-M2" spec="Taxon"/> <taxon id="cell32-M2" spec="Taxon"/> <taxon id="cell36-M2" spec="Taxon"/> <taxon id="cell35-M2" spec="Taxon"/> <taxon id="cell37-M2" spec="Taxon"/> <taxon id="cell9-M1" spec="Taxon"/> <taxon id="cell10-M1" spec="Taxon"/> <taxon id="cell12-M1" spec="Taxon"/> 
+                    <taxon id="cell13-P" spec="Taxon"/> <taxon id="cell16-P" spec="Taxon"/> <taxon id="cell29-P" spec="Taxon"/> <taxon id="cell21-22-24-30-M4" spec="Taxon"/> <taxon id="cell38-M4" spec="Taxon"/> <taxon id="cell41-M4" spec="Taxon"/> <taxon id="cell19-M3" spec="Taxon"/> <taxon id="cell34-M3" spec="Taxon"/> <taxon id="cell5-11-18-20-23-25-27-28-M2" spec="Taxon"/> <taxon id="cell32-M2" spec="Taxon"/> <taxon id="cell36-M2" spec="Taxon"/> <taxon id="cell35-M2" spec="Taxon"/> <taxon id="cell37-M2" spec="Taxon"/> <taxon id="cell9-M1" spec="Taxon"/> <taxon id="cell10-M1" spec="Taxon"/> <taxon id="cell12-M1" spec="Taxon"/> 
                 </taxonset>
             </stateNode>
-            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="15">true</stateNode>
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="15" name="stateNode">1.0</parameter>
+            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="36">true</stateNode>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="36" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>
         <distribution id="posterior" spec="CompoundDistribution">
@@ -76,12 +76,12 @@ name="taxa">
                     </branchRateModel>
                 </distribution>
                 <distribution id="traitedtreeLikelihood.tissue" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@Tree.t:tree">
-                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0" estimate="false"/>
+                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0" estimate="false"/>
                     <data
 id="tissue"
 spec="beastclassic.evolution.alignment.AlignmentFromTrait">
-                        <traitSet id="traitSet.tissue" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet.1" traitname="discrete">cell13-P=P, cell16-P=P, cell29-P=P, cell21_22_24_30-M4=M4, cell38-M4=M4, cell41-M4=M4, cell19-M3=M3, cell34-M3=M3, cell5_11_18_20_23_25_27_28-M2=M2, cell32-M2=M2, cell36-M2=M2, cell35-M2=M2, cell37-M2=M2, cell9-M1=M1, cell10-M1=M1, cell12-M1=M1 </traitSet>
-                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="P=0,M1=1,M2=2,M3=3,M4=4,M5=5,? = 0 1 2 3 4 5" codelength="-1" states="6"/>
+                        <traitSet id="traitSet.tissue" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet.1" traitname="discrete">cell13-P=P, cell16-P=P, cell29-P=P, cell21-22-24-30-M4=M4, cell38-M4=M4, cell41-M4=M4, cell19-M3=M3, cell34-M3=M3, cell5-11-18-20-23-25-27-28-M2=M2, cell32-M2=M2, cell36-M2=M2, cell35-M2=M2, cell37-M2=M2, cell9-M1=M1, cell10-M1=M1, cell12-M1=M1 </traitSet>
+                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="P=0,M1=1,M2=2,M3=3,M4=4,M5=5,M6=6,M7=7,M8=8,? = 0 1 2 3 4 5 6 7 8" codelength="-1" states="9"/>
                     </data>
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
@@ -89,7 +89,7 @@ spec="beastclassic.evolution.alignment.AlignmentFromTrait">
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
                         <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
-                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="6" name="frequencies">0.16666666666</parameter>
+                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="9" name="frequencies">0.11111111111</parameter>
                             </frequencies>
                         </substModel>
                     </siteModel>

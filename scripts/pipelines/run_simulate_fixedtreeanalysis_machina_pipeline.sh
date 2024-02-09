@@ -7,7 +7,7 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
-pipeline_run_name="moresims_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_5_24"
+pipeline_run_name="test_moresims_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_5_24"
 mkdir ${pipeline_run_name}
 
 accuracy_file="${pipeline_run_name}/accuracy.tsv"
@@ -53,7 +53,8 @@ do
         taxafile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_taxonset_formatted_for_xml.txt"
         traitfile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_traitset_formatted_for_xml.txt"
         newickfile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_newick_formatted_for_xml.txt"
-        scripts/format_template_symmetrical_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile}
+        xml_template="inputs/template_xml_symmetrical_sim_data.xml"
+        scripts/format_template_symmetrical_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template}
 
         # Run BEAST2 on formatted xml with output automatically in sim directory
         beast_path=$(which beast)
@@ -70,13 +71,14 @@ do
         sim_tree_with_tissues="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_tissues.nwk"
         machina_dir="${pipeline_run_name}/sim_results_sim${i}/machina"
         mkdir ${machina_dir}
-        python ./scripts/machina/prep_machina.py ${sim_tree_with_tissues} ${machina_dir}
+        primary_tissue="t1"
+        python ./scripts/machina/prep_machina.py ${sim_tree_with_tissues} ${machina_dir} ${primary_tissue}
         conda deactivate
 
         # Run MACHINA
         conda activate machina
         start_time=$(date +%s.%N)
-        ./scripts/machina/run_machina.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue t1 --outdir ${machina_dir}
+        ./scripts/machina/run_machina.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir}
         end_time=$(date +%s.%N)
         machina_time=$(printf "%.2f" $(echo "$end_time - $start_time" | bc))
         conda deactivate
