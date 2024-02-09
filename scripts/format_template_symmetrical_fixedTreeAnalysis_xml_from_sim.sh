@@ -7,6 +7,14 @@ taxafile=$2
 traitfile=$3
 newickfile=$4
 xml_template=$5
+primary_tissue=$6
+
+seqfile="machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_sequences_formatted_for_xml.txt"
+taxafile="machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
+traitfile="machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_traitset_formatted_for_xml.txt"
+newickfile="machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_newick_formatted_for_xml.txt"
+xml_template="inputs/template_xml_symmetrical_machina_sim_universl.xml"
+primary_tissue="P"
 
 REPLACE_SEQUENCES=""
 REPLACE_NEWICK=""
@@ -21,9 +29,26 @@ while IFS= read -r line; do
     REPLACE_TAXONSET+="$line "
 done < "$taxafile"
 
+traits=()
 while IFS= read -r line; do
     REPLACE_TRAITSET+="$line "
+    trait=$(echo $line | awk -F'=' '{print $2}' | awk -F',' '{print $1}')
+    if [[ ! " ${traits[@]} " =~ " $trait " ]]; then
+        traits+=("$trait")
+    fi
 done < "$traitfile"
+REPLACE_NUM_TISSUES=${#traits[@]}
+REPLACE_TISSUE_FREQS=$(echo "scale=10; 1 / $REPLACE_NUM_TISSUES" | bc)
+REPLACE_NUM_RATES=$((REPLACE_NUM_TISSUES * (REPLACE_NUM_TISSUES - 1) / 2))
+
+REPLACE_ROOT_FREQUENCIES="1"
+for ((i=1; i<$REPLACE_NUM_TISSUES; i++)); do
+    REPLACE_ROOT_FREQUENCIES+=" 0"
+done
+
+# REPLACE_CODE_MAP = P=0,M1=1,M2=2,M3=3,M4=4,M5=5,? = 0 1 2 3 4 5 for number of tissues ***FORCE PRIMARY TISSUE***
+
+### ADD CODE HERE THEN UPDATE PIPELINES TO INPUT PRIMARY TISSUE ###
 
 while IFS= read -r line; do
     REPLACE_NEWICK+="$line"
