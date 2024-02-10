@@ -35,8 +35,8 @@ name="taxa">
                     <taxon id="cell0-P" spec="Taxon"/> <taxon id="cell1-P" spec="Taxon"/> <taxon id="cell7-10-13-M4" spec="Taxon"/> <taxon id="cell65-75-M1" spec="Taxon"/> <taxon id="cell71-78-M1" spec="Taxon"/> <taxon id="cell40-47-63-M9" spec="Taxon"/> <taxon id="cell83-M9" spec="Taxon"/> <taxon id="cell38-66-73-84-M7" spec="Taxon"/> <taxon id="cell55-56-70-M2" spec="Taxon"/> <taxon id="cell77-M2" spec="Taxon"/> <taxon id="cell43-M1" spec="Taxon"/> <taxon id="cell43-M4" spec="Taxon"/> <taxon id="cell72-M8" spec="Taxon"/> <taxon id="cell88-M8" spec="Taxon"/> <taxon id="cell68-M7" spec="Taxon"/> <taxon id="cell34-41-M7" spec="Taxon"/> <taxon id="cell81-M7" spec="Taxon"/> <taxon id="cell30-M6" spec="Taxon"/> <taxon id="cell64-M6" spec="Taxon"/> <taxon id="cell33-39-M5" spec="Taxon"/> <taxon id="cell60-M5" spec="Taxon"/> <taxon id="cell67-M3" spec="Taxon"/> <taxon id="cell69-M3" spec="Taxon"/> <taxon id="cell3-P" spec="Taxon"/> <taxon id="cell6-14-23-28-M4" spec="Taxon"/> <taxon id="cell24-M3" spec="Taxon"/> 
                 </taxonset>
             </stateNode>
-            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="55">true</stateNode>
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="55" name="stateNode">1.0</parameter>
+            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="45">true</stateNode>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="45" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>
         <distribution id="posterior" spec="CompoundDistribution">
@@ -76,12 +76,12 @@ name="taxa">
                     </branchRateModel>
                 </distribution>
                 <distribution id="traitedtreeLikelihood.tissue" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@Tree.t:tree">
-                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0 0 0" estimate="false"/>
+                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0 0" estimate="false"/>
                     <data
 id="tissue"
 spec="beastclassic.evolution.alignment.AlignmentFromTrait">
                         <traitSet id="traitSet.tissue" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet.1" traitname="discrete">cell0-P=P, cell1-P=P, cell7-10-13-M4=M4, cell65-75-M1=M1, cell71-78-M1=M1, cell40-47-63-M9=M9, cell83-M9=M9, cell38-66-73-84-M7=M7, cell55-56-70-M2=M2, cell77-M2=M2, cell43-M1=M1, cell43-M4=M4, cell72-M8=M8, cell88-M8=M8, cell68-M7=M7, cell34-41-M7=M7, cell81-M7=M7, cell30-M6=M6, cell64-M6=M6, cell33-39-M5=M5, cell60-M5=M5, cell67-M3=M3, cell69-M3=M3, cell3-P=P, cell6-14-23-28-M4=M4, cell24-M3=M3 </traitSet>
-                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="P=0,M1=1,M2=2,M3=3,M4=4,M5=5,M6=6,M7=7,M8=8,M9=9,M10=10,? = 0 1 2 3 4 5 6 7 8 9 10" codelength="-1" states="11"/>
+                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="P=0,M1=1,M2=2,M3=3,M4=4,M5=5,M6=6,M7=7,M8=8,M9=9,? 0 1 2 3 4 5 6 7 8 9" codelength="-1" states="10"/>
                     </data>
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
@@ -89,7 +89,7 @@ spec="beastclassic.evolution.alignment.AlignmentFromTrait">
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
                         <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
-                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="11" name="frequencies">0.0909090909</parameter>
+                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="10" name="frequencies">.1000000000</parameter>
                             </frequencies>
                         </substModel>
                     </siteModel>

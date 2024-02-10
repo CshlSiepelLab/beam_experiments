@@ -45,13 +45,14 @@ seqfile="${dir}T_${dir_prefix}_unlabeled_true_tree_sequences_formatted_for_xml.t
 taxafile="${dir}T_${dir_prefix}_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
 traitfile="${dir}T_${dir_prefix}_unlabeled_true_tree_traitset_formatted_for_xml.txt"
 newickfile="${dir}T_${dir_prefix}_unlabeled_true_tree_newick_formatted_for_xml.txt"
+primary_tissue="P"
 # if [[ $dir == *m5* ]]; then
 #     xml_template="inputs/template_xml_symmetrical_machina_sim_m5_data.xml"
 # elif [[ $dir == *m8* ]]; then
 #     xml_template="inputs/template_xml_symmetrical_machina_sim_m8_data.xml"
 # fi
 xml_template="inputs/template_xml_symmetrical_machina_sim_m8_data.xml"
-scripts/format_template_symmetrical_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template}
+scripts/format_template_symmetrical_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue}
 
 # Run BEAST2 on formatted xml with output automatically in sim directory
 beast_path=$(which beast)
@@ -68,7 +69,6 @@ ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/tissue_
 sim_tree_with_tissues="${dir}/T_${dir_prefix}_tissue_labeled_true_tree.nwk"
 machina_dir="${dir}/machina"
 mkdir ${machina_dir}
-primary_tissue="P"
 python ./scripts/machina/prep_machina.py ${sim_tree_with_tissues} ${machina_dir} ${primary_tissue}
 conda deactivate
 

@@ -54,7 +54,8 @@ do
         traitfile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_traitset_formatted_for_xml.txt"
         newickfile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_newick_formatted_for_xml.txt"
         xml_template="inputs/template_xml_symmetrical_sim_data.xml"
-        scripts/format_template_symmetrical_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template}
+        primary_tissue="t1"
+        scripts/format_template_symmetrical_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue}
 
         # Run BEAST2 on formatted xml with output automatically in sim directory
         beast_path=$(which beast)
@@ -71,7 +72,6 @@ do
         sim_tree_with_tissues="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_tissues.nwk"
         machina_dir="${pipeline_run_name}/sim_results_sim${i}/machina"
         mkdir ${machina_dir}
-        primary_tissue="t1"
         python ./scripts/machina/prep_machina.py ${sim_tree_with_tissues} ${machina_dir} ${primary_tissue}
         conda deactivate
 
