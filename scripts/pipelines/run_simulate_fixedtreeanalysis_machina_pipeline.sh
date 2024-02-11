@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Set script limit to roughly 100 GB to prevent evolgen crash when memory exceeded
+ulimit -v 100000000
+
 # Necessary line to access conda commands for bash script on CSHL HPC cluster
 # source ~/anaconda3/etc/profile.d/conda.sh
 
@@ -7,7 +10,7 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
-pipeline_run_name="test_moresims_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_5_24"
+pipeline_run_name="moresims_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_11_24"
 mkdir ${pipeline_run_name}
 
 accuracy_file="${pipeline_run_name}/accuracy.tsv"
@@ -20,7 +23,7 @@ inputs_file="${pipeline_run_name}/inputs_key.tsv"
 echo -e "data_id\tsample_size\tmigration_rate" > ${inputs_file}
 
 migration_rates=(0.5 1.0 2.0 3.0)
-sample_size=(25 50 100 200 300)
+sample_size=(25 50 100 200)
 
 # Specify the number of simulations to be run for ground truth trees with migration data
 num_trees=10
