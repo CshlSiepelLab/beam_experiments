@@ -22,7 +22,7 @@ echo -e "data_id\tmachina_seconds\tbeast_seconds" > ${runtime_file}
 inputs_file="${pipeline_run_name}/inputs_key.tsv"
 echo -e "data_id\tsample_size\tmigration_rate" > ${inputs_file}
 
-migration_rates=(0.5 1.0 2.0 3.0)
+migration_rates=(0.5 1.0 2.0 3.0 4.0)
 sample_size=(25 50 100 200)
 
 # Specify the number of simulations to be run for ground truth trees with migration data
@@ -56,9 +56,10 @@ do
         taxafile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_taxonset_formatted_for_xml.txt"
         traitfile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_traitset_formatted_for_xml.txt"
         newickfile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_newick_formatted_for_xml.txt"
-        xml_template="inputs/template_xml_symmetrical_sim_data.xml"
+        xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
         primary_tissue="t1"
-        scripts/format_template_symmetrical_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue}
+        symmetric="true"
+        scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric}
 
         # Run BEAST2 on formatted xml with output automatically in sim directory
         beast_path=$(which beast)

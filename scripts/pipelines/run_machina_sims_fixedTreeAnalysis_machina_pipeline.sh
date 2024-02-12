@@ -51,8 +51,9 @@ primary_tissue="P"
 # elif [[ $dir == *m8* ]]; then
 #     xml_template="inputs/template_xml_symmetrical_machina_sim_m8_data.xml"
 # fi
-xml_template="inputs/template_xml_symmetrical_machina_sim_m8_data.xml"
-scripts/format_template_symmetrical_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue}
+xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
+symmetric="true"
+scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric}
 
 # Run BEAST2 on formatted xml with output automatically in sim directory
 beast_path=$(which beast)

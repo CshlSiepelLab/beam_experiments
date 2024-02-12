@@ -8,6 +8,7 @@ traitfile=$3
 newickfile=$4
 xml_template=$5
 primary_tissue=$6
+symmetric=$7
 
 # seqfile="machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_sequences_formatted_for_xml.txt"
 # taxafile="machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
@@ -15,6 +16,9 @@ primary_tissue=$6
 # newickfile="machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_newick_formatted_for_xml.txt"
 # xml_template="inputs/template_xml_symmetrical_machina_sim_universal.xml"
 # primary_tissue="P"
+# symmetric="True"
+
+REPLACE_SYMMETRIC="${symmetric}"
 
 REPLACE_SEQUENCES=""
 REPLACE_NEWICK=""
@@ -39,7 +43,12 @@ while IFS= read -r line; do
 done < "$traitfile"
 REPLACE_NUM_TISSUES=${#traits[@]}
 REPLACE_TISSUE_FREQS=$(echo "scale=10; 1 / $REPLACE_NUM_TISSUES" | bc)
-REPLACE_NUM_RATES=$((REPLACE_NUM_TISSUES * (REPLACE_NUM_TISSUES - 1) / 2))
+
+if [ "$symmetric" = "true" ]; then
+    REPLACE_NUM_RATES=$(((REPLACE_NUM_TISSUES * (REPLACE_NUM_TISSUES - 1)) / 2))
+else
+    REPLACE_NUM_RATES=$((REPLACE_NUM_TISSUES * (REPLACE_NUM_TISSUES - 1)))
+fi
 
 non_primary_traits=()
 for item in "${traits[@]}"; do
@@ -51,7 +60,7 @@ done
 sorted_np=($(for element in "${non_primary_traits[@]}"; do echo "$element"; done | sort))
 
 REPLACE_CODE_MAP="${primary_tissue}=0"
-trailing_code_map=",? 0"
+trailing_code_map=",? = 0"
 REPLACE_ROOT_FREQUENCIES="1"
 for ((i=1; i<$REPLACE_NUM_TISSUES; i++)); do
     REPLACE_ROOT_FREQUENCIES+=" 0"
@@ -90,3 +99,4 @@ sed -i "s|REPLACE_TISSUE_FREQS|$REPLACE_TISSUE_FREQS|g" $XML_FILE
 sed -i "s|REPLACE_NUM_RATES|$REPLACE_NUM_RATES|g" $XML_FILE
 sed -i "s|REPLACE_CODE_MAP|$REPLACE_CODE_MAP|g" $XML_FILE
 sed -i "s|REPLACE_ROOT_FREQUENCIES|$REPLACE_ROOT_FREQUENCIES|g" $XML_FILE
+sed -i "s|REPLACE_SYMMETRIC|$REPLACE_SYMMETRIC|g" $XML_FILE
