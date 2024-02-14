@@ -1,1 +1,0 @@
-(cell0-P:1,(cell1-P:1,(cell2-P:1,(cell3-P:1,(cell11-M1:1,(cell23-M4:1,(cell26-M4:1,cell32-M4:1):1):1):1):1,(cell35-M2:1,(cell7-10-12-M1:1,cell17-M1:1):1):1):1,cell5-8-9-24-M3:1):1):1

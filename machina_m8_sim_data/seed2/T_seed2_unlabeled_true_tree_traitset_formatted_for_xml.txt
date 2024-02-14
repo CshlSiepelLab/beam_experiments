@@ -1,9 +1,0 @@
-cell0-P=P,
-cell6-P=P,
-cell6-M1=M1,
-cell18-M5=M5,
-cell7-19-M4=M4,
-cell14-M2=M2,
-cell17-32-M6=M6,
-cell36-M2=M2,
-cell38-M2=M2

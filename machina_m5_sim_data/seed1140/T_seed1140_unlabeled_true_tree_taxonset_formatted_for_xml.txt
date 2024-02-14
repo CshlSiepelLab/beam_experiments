@@ -1,8 +1,0 @@
-<taxon id='cell0-P' spec='Taxon'/>
-<taxon id='cell9-P' spec='Taxon'/>
-<taxon id='cell11-P' spec='Taxon'/>
-<taxon id='cell19-P' spec='Taxon'/>
-<taxon id='cell19-M3' spec='Taxon'/>
-<taxon id='cell27-33-M4' spec='Taxon'/>
-<taxon id='cell22-35-M2' spec='Taxon'/>
-<taxon id='cell40-M2' spec='Taxon'/>

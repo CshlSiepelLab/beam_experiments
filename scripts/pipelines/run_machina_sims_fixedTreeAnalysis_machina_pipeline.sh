@@ -9,14 +9,18 @@ source ~/miniconda3/etc/profile.d/conda.sh
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
 
 
-# data=(m5 m8)
+data=(m5 m8)
 
-# for dataset in ${data[@]}
-# do
-dataset="m8"
+for dataset in ${data[@]}
+do
+# dataset="m5"
+dir_name="machina_${dataset}_sim_data"
 
-pipeline_run_name="test_fixed_round2_machina_${dataset}_sims_compare_beast_machina_fixedtreeanalysis_default_2_8_24"
+pipeline_run_name="longer_10million_mcmc_unsymmetrical_machina_${dataset}_sims_compare_beast_machina_fixedtreeanalysis_default_2_12_24"
 mkdir ${pipeline_run_name}
+
+cp -r ${dir_name} ${pipeline_run_name}/
+cp_dir="${pipeline_run_name}/${dir_name}"
 
 accuracy_file="${pipeline_run_name}/accuracy.tsv"
 echo -e "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary" > ${accuracy_file}
@@ -24,14 +28,13 @@ echo -e "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeas
 runtime_file="${pipeline_run_name}/runtime.tsv"
 echo -e "data_id\tmachina_seconds\tbeast_seconds" > ${runtime_file}
 
-
-for dir in machina_${dataset}_sim_data/*/;
+for dir in ${cp_dir}/*/;
 do
 
 # dir="machina_m8_sim_data/seed172/"
 
 conda activate simulate
-dir_prefix=$(echo $dir | awk -F'/' '{print $2}')
+dir_prefix=$(echo $dir | awk -F'/' '{print $3}')
 
 
 # # Format FixedTreeAnalysis input for BEAST2;  Input is simulated tree and tsv of tissue labels; Output is .tree file and .dat file for tissue mapping
@@ -52,7 +55,7 @@ primary_tissue="P"
 #     xml_template="inputs/template_xml_symmetrical_machina_sim_m8_data.xml"
 # fi
 xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
-symmetric="true"
+symmetric="false"
 scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric}
 
 # Run BEAST2 on formatted xml with output automatically in sim directory
@@ -103,5 +106,5 @@ echo -e "$(sed -n '2p' ${sim_accuracy_output})" >> ${accuracy_file}
 echo -e "${dir_prefix}\t${machina_time}\t${beast_time}" >> ${runtime_file}
 
 done
-# done
+done
 
