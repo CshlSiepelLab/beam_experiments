@@ -1,7 +1,5 @@
 # Load necessary libraries
 library(ggplot2)
-library(gtable)
-library(grid)
 library(tidyr)
 library(dplyr)
 library(tibble)
@@ -10,7 +8,7 @@ library(tibble)
 # log_file <- commandArgs(trailingOnly = TRUE)[1]
 # primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
 
-log_file <- "data/fixed_round2_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_8_24/machina_m8_sim_data/seed3/T_seed3_unlabeled_true_tree_final_input_xml.log"
+log_file <- "/Users/staklins/projects/crispr-barcode-cancer-metastasis/stephen_data/longer_10million_mcmc_unsymmetrical_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_12_24/T_seed3_unlabeled_true_tree_final_input_xml.log"
 primary_tissue <- "P"
 
 # burnin <- 0.1   ### Seems like Tracer values are closer to averages with burnin kept in, so I turned this off for now.
@@ -37,22 +35,26 @@ grouped_df <- melted_df %>%
   group_by(Source, Recipient) %>%
   summarise(mean_rate = mean(value, na.rm = TRUE))
 
-order_source <- c(primary_tissue, sort(unique(grouped_df$Source[grouped_df$Source != primary_tissue])))
-order_recipient <- c(primary_tissue, sort(unique(grouped_df$Recipient[grouped_df$Recipient != primary_tissue])))
-len_os <- length(order_source)
-len_rs <- length(order_recipient)
-if (len_os >= len_rs){
-  order <- order_source
-} 
-else {
-  order <- order_recipient
-}
 
-# grouped_df$Source <- factor(grouped_df$Source, levels = order)
-# grouped_df$Recipient <- factor(grouped_df$Recipient, levels = order)
+order_source <- c(grouped_df$Source)
+order_recipient <- c(grouped_df$Recipient)
+
+order <- unique(c(order_source, order_recipient))
+order <- c(primary_tissue, sort(unique(order[order != primary_tissue])))
+
+add_rows <- setdiff(order, order_source)
+add_cols <- setdiff(order, order_recipient)
 
 heatmap_df <- pivot_wider(grouped_df, names_from = Recipient, values_from = mean_rate)
 heatmap_df <- column_to_rownames(heatmap_df, var = "Source")
+
+# Add rows for source tissues missing
+heatmap_df <- rbind(heatmap_df, setNames(data.frame(matrix(NA, ncol = ncol(heatmap_df), nrow = length(add_rows))), colnames(heatmap_df)))
+rownames(heatmap_df)[(nrow(heatmap_df) - length(add_rows) + 1):nrow(heatmap_df)] <- add_rows
+
+# Add cols for recipient tissues missing
+heatmap_df[,add_cols] <- NA
+
 heatmap_df <- heatmap_df %>%
   rownames_to_column() %>%
   gather(colname, value, -rowname)
