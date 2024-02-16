@@ -1,15 +1,15 @@
-# Load necessary libraries
+#Load necessary libraries
 library(ggplot2)
 library(tidyr)
 library(dplyr)
 library(tibble)
 
 # Specify your log file and output file
-# log_file <- commandArgs(trailingOnly = TRUE)[1]
-# primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
+log_file <- commandArgs(trailingOnly = TRUE)[1]
+primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
 
-log_file <- "/Users/staklins/projects/crispr-barcode-cancer-metastasis/stephen_data/longer_10million_mcmc_unsymmetrical_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_12_24/T_seed3_unlabeled_true_tree_final_input_xml.log"
-primary_tissue <- "P"
+# log_file <- "/Users/staklins/projects/crispr-barcode-cancer-metastasis/stephen_data/longer_10million_mcmc_unsymmetrical_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_12_24/T_seed3_unlabeled_true_tree_final_input_xml.log"
+# primary_tissue <- "P"
 
 # burnin <- 0.1   ### Seems like Tracer values are closer to averages with burnin kept in, so I turned this off for now.
 
