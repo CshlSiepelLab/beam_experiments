@@ -40,7 +40,23 @@ order_source <- c(grouped_df$Source)
 order_recipient <- c(grouped_df$Recipient)
 
 order <- unique(c(order_source, order_recipient))
-order <- c(primary_tissue, sort(unique(order[order != primary_tissue])))
+
+custom_sort <- function(x) {
+  # Extract numeric part and pad with leading zeros
+  numeric_part <- gsub("\\D", "", x)
+  numeric_part_padded <- sprintf("%02d", as.numeric(numeric_part))
+  
+  # Combine original and padded numeric parts
+  combined <- paste0(numeric_part_padded, x)
+  
+  # Return the combined values for sorting
+  return(combined)
+}
+
+order <- c(primary_tissue, unique(order[order != primary_tissue]))
+order_np <- sort(as.numeric(sub("M", "", order[order != primary_tissue])))
+order_np <- paste("M", order_np, sep = "")
+order <- c(primary_tissue, order_np)
 
 add_rows <- setdiff(order, order_source)
 add_cols <- setdiff(order, order_recipient)
