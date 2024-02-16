@@ -36,3 +36,7 @@ scripts/run_tidetree.sh --xml tidetree.xml
 ### Running FixedTreeAnalysis (or SetTreeAnalysisfrom TideTree output)
 
 This can be done by following those respective tutorials which specify to import `.tree` file and `.dat` file for tissue locations into BEAUTi where substitution model parameters and MCMC options can be specified through the GUI.
+
+### Resolving branch length estimated for MACHINA simulated data following PathFinder method
+
+`python ./scripts/pathfinder/pathfinder.py input.fas --primary P -o Example_output`
