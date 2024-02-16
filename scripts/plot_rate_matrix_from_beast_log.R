@@ -53,10 +53,9 @@ custom_sort <- function(x) {
   return(combined)
 }
 
-order <- c(primary_tissue, unique(order[order != primary_tissue]))
-order_np <- sort(as.numeric(sub("M", "", order[order != primary_tissue])))
-order_np <- paste("M", order_np, sep = "")
-order <- c(primary_tissue, order_np)
+order <- unique(order[order != primary_tissue])
+order <- paste("M", sort(as.numeric(sub("M", "", order))), sep = "")
+order <- c(primary_tissue, order)
 
 add_rows <- setdiff(order, order_source)
 add_cols <- setdiff(order, order_recipient)
