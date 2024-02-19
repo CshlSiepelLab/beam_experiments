@@ -79,7 +79,7 @@ def get_migrating_node_names(tree):
             parent_name = node.up.name
             parent_tissue = parent_name.split("_")[1]
             if node_tissue != parent_tissue:
-                migrating_nodes.append(parent_name)
+                migrating_nodes.append(node_name)
                 migrating_edges.append(f'{parent_name}->{node_name}')
     return migrating_nodes, migrating_edges
 
@@ -96,16 +96,16 @@ def dendropy_beast_to_ete_newick_with_strict_locations(tree):
             node.label = prediction
         if leaf == True:
             node.taxon.label = prediction
-    ete_tree = Tree(tree_copy.as_string(schema="newick").replace("\'", ""), format=3)
+    ete_tree = Tree(tree_copy.as_string(schema="newick").replace("\'", "").replace("cell",""), format=3)
     return ete_tree
 
 true_file=sys.argv[1]
 beast_file=sys.argv[2]
 machina_file=sys.argv[3]
 
-# true_file="data/fixed_round2_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_8_24/machina_m5_sim_data/seed0/T_seed0_tissue_labeled_true_tree.nwk"
-# beast_file="data/fixed_round2_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_8_24/machina_m5_sim_data/seed0/tissue_tree_with_trait.tree"
-# machina_file="data/fixed_round2_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_8_24/machina_m5_sim_data/seed0/machina_tree_all_tissue_labels.nwk"
+# true_file="asymmetrical_with_f1scores_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_19_24/sim_results_sim4/sim4_true_tissues.nwk"
+# beast_file="asymmetrical_with_f1scores_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_19_24/sim_results_sim4/tissue_tree_with_trait.tree"
+# machina_file="asymmetrical_with_f1scores_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_19_24/sim_results_sim4/machina_tree_all_tissue_labels.nwk"
 
 data_id = true_file.split("/")[-1].split(".")[0]
 
@@ -172,5 +172,5 @@ np_beast_relaxed_accuracy = len(np_beast_relaxed_labels) / np_total
 outputfile = "/".join(true_file.split("/")[:-1]) + "/compare_machina_beast_internal_node_performance.tsv"
 with open(outputfile, "w") as file:
     header_str = "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\tbeast_f1_migrating_nodes\tbeast_f1_paths"
-    accuracy_str = f"{data_id}\t{machina_accuracy}\t{beast_strict_accuracy}\t{beast_relaxed_accuracy}\t{np_machina_accuracy}\t{np_beast_strict_accuracy}\t{np_beast_relaxed_accuracy}\t{machina_f1_mig_nodes}\t{machina_f1_paths}\t{beast_f1_mig_nodes}\t {beast_f1_paths}"
+    accuracy_str = f"{data_id}\t{machina_accuracy}\t{beast_strict_accuracy}\t{beast_relaxed_accuracy}\t{np_machina_accuracy}\t{np_beast_strict_accuracy}\t{np_beast_relaxed_accuracy}\t{machina_f1_mig_nodes}\t{machina_f1_paths}\t{beast_f1_mig_nodes}\t{beast_f1_paths}"
     file.write(f"{header_str}\n{accuracy_str}")

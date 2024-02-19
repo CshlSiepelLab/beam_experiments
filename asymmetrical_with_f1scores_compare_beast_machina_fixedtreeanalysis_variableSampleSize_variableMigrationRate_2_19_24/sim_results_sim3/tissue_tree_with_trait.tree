@@ -1,0 +1,62 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=25;
+		Taxlabels
+			cell10
+			cell14
+			cell16
+			cell20
+			cell24
+			cell25
+			cell27
+			cell28
+			cell29
+			cell30
+			cell31
+			cell33
+			cell34
+			cell35
+			cell37
+			cell38
+			cell40
+			cell41
+			cell42
+			cell43
+			cell45
+			cell46
+			cell47
+			cell48
+			cell49
+			;
+End;
+Begin trees;
+	Translate
+		     1 cell10,
+		     2 cell14,
+		     3 cell16,
+		     4 cell20,
+		     5 cell24,
+		     6 cell25,
+		     7 cell27,
+		     8 cell28,
+		     9 cell29,
+		    10 cell30,
+		    11 cell31,
+		    12 cell33,
+		    13 cell34,
+		    14 cell35,
+		    15 cell37,
+		    16 cell38,
+		    17 cell40,
+		    18 cell41,
+		    19 cell42,
+		    20 cell43,
+		    21 cell45,
+		    22 cell46,
+		    23 cell47,
+		    24 cell48,
+		    25 cell49
+;
+tree TREE1 = (((1[&height=2.9999999995311555E-7,length=0.958554000000017,location=t2,location.prob=1.0,location.set={t2},location.set.prob={1.0}]:0.9585539999999797,(5[&height=1.299999999870849E-6,length=0.4155779999999971,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.41557799999999434,6[&height=1.299999999870849E-6,length=0.4155779999999971,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.41557799999999434)[&height=0.4155792999999942,length=0.542975000000009,location=t1,location.prob=0.9156492785793563,location.set={t1,t2},location.set.prob={0.9156492785793563,0.08435072142064373},posterior=1.0]:0.5429749999999854)[&height=0.9585542999999797,length=0.32468399999999564,location=t1,location.prob=0.8201997780244173,location.set={t1,t2},location.set.prob={0.8201997780244173,0.17980022197558268},posterior=1.0]:0.3246840000000144,(((2[&height=9.999999999177334E-7,length=0.5962279999999966,location=t2,location.prob=1.0,location.set={t2},location.set.prob={1.0}]:0.5962279999999949,((15[&height=7.999999998009599E-7,length=0.20256900000000178,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.20256899999999972,(21[&height=1.0999999997540755E-6,length=0.059573700000000895,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.05957370000000027,(22[&height=1.1999999998124622E-6,length=0.028008499999999655,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.028008499999999655,23[&height=1.1999999998124622E-6,length=0.028008499999999655,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.028008499999999655)[&height=0.028009699999999468,length=0.03156510000000068,location=t1,location.prob=0.9833518312985572,location.set={t1,t2},location.set.prob={0.9833518312985572,0.016648168701442843},posterior=1.0]:0.031565100000000554)[&height=0.059574800000000025,length=0.14299499999999923,location=t1,location.prob=0.9778024417314095,location.set={t1,t2},location.set.prob={0.9778024417314095,0.022197558268590455},posterior=1.0]:0.14299499999999948)[&height=0.20256979999999952,length=0.3090329999999995,location=t1,location.prob=0.9433962264150944,location.set={t1,t2},location.set.prob={0.9433962264150944,0.05660377358490566},posterior=1.0]:0.30903299999999495,(24[&height=1.0299999999574538E-6,length=0.008674769999999889,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.008674769999999889,25[&height=1.0299999999574538E-6,length=0.008674769999999889,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.008674769999999889)[&height=0.008675799999999846,length=0.5029269999999998,location=t1,location.prob=0.9877913429522752,location.set={t1,t2},location.set.prob={0.9877913429522752,0.01220865704772475},posterior=1.0]:0.5029269999999946)[&height=0.5116027999999945,length=0.0846262000000012,location=t1,location.prob=0.8790233074361821,location.set={t1,t2},location.set.prob={0.8790233074361821,0.12097669256381798},posterior=1.0]:0.08462620000000032)[&height=0.5962289999999948,length=0.38671799999999423,location=t1,location.prob=0.8423973362930077,location.set={t1,t2},location.set.prob={0.8423973362930077,0.15760266370699222},posterior=1.0]:0.38671799999999756,(3[&height=0.0,length=0.5521709999999906,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.5521709999999906,(16[&height=0.0,length=0.1819570000000008,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.1819570000000008,(17[&height=6.999999997425732E-7,length=0.11002700000000143,location=t2,location.prob=1.0,location.set={t2},location.set.prob={1.0}]:0.1100270000000025,18[&height=6.999999997425732E-7,length=0.11002700000000143,location=t2,location.prob=1.0,location.set={t2},location.set.prob={1.0}]:0.1100270000000025)[&height=0.11002770000000224,length=0.07192930000000056,location=t2,location.prob=0.8834628190899001,location.set={t1,t2},location.set.prob={0.11653718091009989,0.8834628190899001},posterior=1.0]:0.07192929999999857)[&height=0.1819570000000008,length=0.3702139999999966,location=t1,location.prob=0.6481687014428413,location.set={t1,t2},location.set.prob={0.6481687014428413,0.3518312985571587},posterior=1.0]:0.37021399999998983)[&height=0.5521709999999906,length=0.43077599999999544,location=t1,location.prob=0.8057713651498335,location.set={t1,t2},location.set.prob={0.8057713651498335,0.19422863485016648},posterior=1.0]:0.4307760000000017)[&height=0.9829469999999924,length=0.062092300000001294,location=t1,location.prob=0.8479467258601554,location.set={t1,t2},location.set.prob={0.8479467258601554,0.15205327413984462},posterior=1.0]:0.062092299999998324,((4[&height=2.9999999995311555E-7,length=0.4964919999999931,location=t2,location.prob=1.0,location.set={t2},location.set.prob={1.0}]:0.49649199999999993,(10[&height=2.9999999995311555E-7,length=0.3700210000000042,location=t2,location.prob=1.0,location.set={t2},location.set.prob={1.0}]:0.37002100000000154,11[&height=2.9999999995311555E-7,length=0.3700210000000042,location=t2,location.prob=1.0,location.set={t2},location.set.prob={1.0}]:0.37002100000000154)[&height=0.3700213000000015,length=0.12647099999999833,location=t2,location.prob=0.8246392896781354,location.set={t1,t2},location.set.prob={0.1753607103218646,0.8246392896781354},posterior=1.0]:0.1264709999999984)[&height=0.4964922999999999,length=0.16160399999999944,location=t2,location.prob=0.7291897891231964,location.set={t1,t2},location.set.prob={0.27081021087680357,0.7291897891231964},posterior=1.0]:0.1616040000000083,((7[&height=4.999999998478444E-7,length=0.41048100000000337,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.41048100000000287,(8[&height=8.000000000230045E-7,length=0.37843400000000577,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.3784339999999968,9[&height=8.000000000230045E-7,length=0.37843400000000577,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.3784339999999968)[&height=0.3784347999999968,length=0.032046699999999574,location=t1,location.prob=0.9234184239733629,location.set={t1,t2},location.set.prob={0.9234184239733629,0.07658157602663707},posterior=1.0]:0.03204670000000592)[&height=0.4104815000000027,length=0.08280980000000072,location=t1,location.prob=0.9278579356270811,location.set={t1,t2},location.set.prob={0.9278579356270811,0.07214206437291898},posterior=1.0]:0.08280980000000382,(19[&height=8.999999998593466E-7,length=0.08640539999999947,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.08640539999999904,20[&height=8.999999998593466E-7,length=0.08640539999999947,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.08640539999999904)[&height=0.0864062999999989,length=0.40688499999999306,location=t1,location.prob=0.9556048834628191,location.set={t1,t2},location.set.prob={0.9556048834628191,0.04439511653718091},posterior=1.0]:0.40688500000000766)[&height=0.49329130000000654,length=0.16480500000000103,location=t1,location.prob=0.9012208657047724,location.set={t1,t2},location.set.prob={0.9012208657047724,0.09877913429522753},posterior=1.0]:0.16480500000000164)[&height=0.6580963000000082,length=0.3869429999999945,location=t1,location.prob=0.7924528301886793,location.set={t1,t2},location.set.prob={0.7924528301886793,0.20754716981132076},posterior=1.0]:0.3869429999999825)[&height=1.0450392999999907,length=0.23819900000000221,location=t1,location.prob=0.8379578246392897,location.set={t1,t2},location.set.prob={0.8379578246392897,0.16204217536071033},posterior=1.0]:0.23819900000000338)[&height=1.283238299999994,length=0.26007100000000427,location=t1,location.prob=0.8879023307436182,location.set={t1,t2},location.set.prob={0.8879023307436182,0.1120976692563818},posterior=1.0]:0.26007099999999284,(12[&height=2.300000000010627E-6,length=0.2949969999999975,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.2949969999999995,(13[&height=2.5000000001274003E-6,length=0.24315599999999907,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.24315599999999885,14[&height=2.5000000001274003E-6,length=0.24315599999999907,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0}]:0.24315599999999885)[&height=0.24315849999999897,length=0.05184080000000064,location=t1,location.prob=0.9556048834628191,location.set={t1,t2},location.set.prob={0.9556048834628191,0.04439511653718091},posterior=1.0]:0.05184080000000055)[&height=0.2949992999999995,length=1.2483099999999725,location=t1,location.prob=0.9533851276359601,location.set={t1,t2},location.set.prob={0.9533851276359601,0.04661487236403995},posterior=1.0]:1.2483099999999874)[&height=1.543309299999987,length=0.0,location=t1,location.prob=1.0,location.set={t1},location.set.prob={1.0},posterior=1.0]:0.0;
+End;

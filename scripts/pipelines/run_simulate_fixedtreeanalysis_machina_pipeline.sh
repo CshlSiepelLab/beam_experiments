@@ -10,7 +10,7 @@ ulimit -v 100000000
 source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
-pipeline_run_name="moresims_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_11_24"
+pipeline_run_name="asymmetrical_with_f1scores_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_19_24"
 mkdir ${pipeline_run_name}
 
 accuracy_file="${pipeline_run_name}/accuracy.tsv"
@@ -58,7 +58,7 @@ do
         newickfile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_newick_formatted_for_xml.txt"
         xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
         primary_tissue="t1"
-        symmetric="true"
+        symmetric="false"
         scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric}
 
         # Run BEAST2 on formatted xml with output automatically in sim directory
