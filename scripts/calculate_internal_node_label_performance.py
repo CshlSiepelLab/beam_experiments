@@ -5,6 +5,7 @@
 import sys
 from ete3 import Tree
 import dendropy
+from copy import deepcopy
 
 def get_labels_newick(tree):
     labels = []
@@ -57,14 +58,54 @@ def remove_zero_length_nodes(tree):
                 for child in children:
                     parent.add_child(child)
 
+def calculate_f1_score(actual, predicted):
+    true_positive = sum(1 for element in predicted if element in actual)
+    false_positive = sum(1 for element in predicted if element not in actual)
+    false_negative = sum(1 for element in actual if element not in predicted)
+    precision = true_positive / (true_positive + false_positive) if (true_positive + false_positive) != 0 else 0
+    recall = true_positive / (true_positive + false_negative) if (true_positive + false_negative) != 0 else 0
+    f1_score = (2 * precision * recall) / (precision + recall) if (precision + recall) != 0 else 0
+    return f1_score
+
+def get_migrating_node_names(tree):
+    migrating_nodes=[]
+    migrating_edges=[]
+    for node in tree.traverse():
+        if node.is_root() or "_" not in node.up.name:
+            continue
+        else:
+            node_name = node.name
+            node_tissue = node_name.split("_")[1]
+            parent_name = node.up.name
+            parent_tissue = parent_name.split("_")[1]
+            if node_tissue != parent_tissue:
+                migrating_nodes.append(parent_name)
+                migrating_edges.append(f'{parent_name}->{node_name}')
+    return migrating_nodes, migrating_edges
+
+def dendropy_beast_to_ete_newick_with_strict_locations(tree):
+    tree_copy = deepcopy(tree)
+    for node in tree_copy.preorder_node_iter():
+        label = node.label
+        leaf = False
+        if label is None:
+            label = node.taxon.label
+            leaf = True
+        prediction = label + "_" + node.annotations.get_value('location')
+        if leaf == False:
+            node.label = prediction
+        if leaf == True:
+            node.taxon.label = prediction
+    ete_tree = Tree(tree_copy.as_string(schema="newick").replace("\'", ""), format=3)
+    return ete_tree
 
 true_file=sys.argv[1]
 beast_file=sys.argv[2]
 machina_file=sys.argv[3]
 
-# true_file="machina_m5_sim_data/seed0/T_seed0_tissue_labeled_true_tree.nwk"
-# beast_file="machina_m5_sim_data/seed0/tissue_tree_with_trait.tree"
-# machina_file="machina_m5_sim_data/seed0/machina_tree_all_tissue_labels.nwk"
+# true_file="data/fixed_round2_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_8_24/machina_m5_sim_data/seed0/T_seed0_tissue_labeled_true_tree.nwk"
+# beast_file="data/fixed_round2_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_8_24/machina_m5_sim_data/seed0/tissue_tree_with_trait.tree"
+# machina_file="data/fixed_round2_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_8_24/machina_m5_sim_data/seed0/machina_tree_all_tissue_labels.nwk"
 
 data_id = true_file.split("/")[-1].split(".")[0]
 
@@ -86,6 +127,18 @@ for node in true_tree.traverse():
 for node in beast_tree.internal_nodes():
     leaves = "/".join(sorted([leaf.taxon.label.replace(" ", "-").split("ll")[1] for leaf in node.leaf_nodes()]))
     node.label = node_leaf_dict[leaves]
+
+beast_tree_ete = dendropy_beast_to_ete_newick_with_strict_locations(beast_tree)
+
+# Get F1 scores for migrating clone identificaiton and migration paths
+true_nodes, true_paths = get_migrating_node_names(true_tree)
+machina_nodes, machina_paths = get_migrating_node_names(machina_tree)
+beast_nodes, beast_paths = get_migrating_node_names(beast_tree_ete)
+
+machina_f1_mig_nodes = calculate_f1_score(true_nodes, machina_nodes)
+machina_f1_paths = calculate_f1_score(true_paths, machina_paths)
+beast_f1_mig_nodes = calculate_f1_score(true_nodes, beast_nodes)
+beast_f1_paths = calculate_f1_score(true_paths, beast_paths)
 
 # Get internal node tissue labels for true tree and machina
 true_labels = get_labels_newick(true_tree)
@@ -118,6 +171,6 @@ np_beast_relaxed_accuracy = len(np_beast_relaxed_labels) / np_total
 
 outputfile = "/".join(true_file.split("/")[:-1]) + "/compare_machina_beast_internal_node_performance.tsv"
 with open(outputfile, "w") as file:
-    header_str = "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary"
-    accuracy_str = f"{data_id}\t{machina_accuracy}\t{beast_strict_accuracy}\t{beast_relaxed_accuracy}\t{np_machina_accuracy}\t{np_beast_strict_accuracy}\t{np_beast_relaxed_accuracy}"
+    header_str = "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\tbeast_f1_migrating_nodes\tbeast_f1_paths"
+    accuracy_str = f"{data_id}\t{machina_accuracy}\t{beast_strict_accuracy}\t{beast_relaxed_accuracy}\t{np_machina_accuracy}\t{np_beast_strict_accuracy}\t{np_beast_relaxed_accuracy}\t{machina_f1_mig_nodes}\t{machina_f1_paths}\t{beast_f1_mig_nodes}\t {beast_f1_paths}"
     file.write(f"{header_str}\n{accuracy_str}")

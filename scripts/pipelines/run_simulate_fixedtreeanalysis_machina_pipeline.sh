@@ -14,7 +14,7 @@ pipeline_run_name="moresims_compare_beast_machina_fixedtreeanalysis_variableSamp
 mkdir ${pipeline_run_name}
 
 accuracy_file="${pipeline_run_name}/accuracy.tsv"
-echo -e "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary" > ${accuracy_file}
+echo -e "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\tbeast_f1_migrating_nodes\tbeast_f1_paths" > ${accuracy_file}
 
 runtime_file="${pipeline_run_name}/runtime.tsv"
 echo -e "data_id\tmachina_seconds\tbeast_seconds" > ${runtime_file}
