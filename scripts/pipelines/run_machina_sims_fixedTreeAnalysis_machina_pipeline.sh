@@ -7,7 +7,9 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
-
+symmetry=(true false)
+for state in ${symmetry[@]}
+do
 
 data=(m5 m8)
 
@@ -16,14 +18,14 @@ do
 # dataset="m5"
 dir_name="machina_${dataset}_sim_data"
 
-pipeline_run_name="longer_10million_mcmc_unsymmetrical_machina_${dataset}_sims_compare_beast_machina_fixedtreeanalysis_default_2_12_24"
+pipeline_run_name="f1_scores_symmmetrical${state}_1million_mcmc_unsymmetrical_machina_${dataset}_sims_compare_beast_machina_fixedtreeanalysis_default_2_19_24"
 mkdir ${pipeline_run_name}
 
 cp -r ${dir_name} ${pipeline_run_name}/
 cp_dir="${pipeline_run_name}/${dir_name}"
 
 accuracy_file="${pipeline_run_name}/accuracy.tsv"
-echo -e "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\tbeast_f1_migrating_nodes\tbeast_f1_paths" > ${accuracy_file}
+echo -e "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\tbeast_f1_migrating_clones\tbeast_f1_paths" > ${accuracy_file}
 
 runtime_file="${pipeline_run_name}/runtime.tsv"
 echo -e "data_id\tmachina_seconds\tbeast_seconds" > ${runtime_file}
@@ -55,7 +57,8 @@ primary_tissue="P"
 #     xml_template="inputs/template_xml_symmetrical_machina_sim_m8_data.xml"
 # fi
 xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
-symmetric="false"
+# symmetric="false"
+symmetric="${state}"
 scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric}
 
 # Run BEAST2 on formatted xml with output automatically in sim directory
@@ -105,6 +108,7 @@ sim_accuracy_output="${dir}/compare_machina_beast_internal_node_performance.tsv"
 echo -e "$(sed -n '2p' ${sim_accuracy_output})" >> ${accuracy_file}
 echo -e "${dir_prefix}\t${machina_time}\t${beast_time}" >> ${runtime_file}
 
+done
 done
 done
 

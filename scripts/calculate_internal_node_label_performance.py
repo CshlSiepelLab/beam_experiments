@@ -171,6 +171,6 @@ np_beast_relaxed_accuracy = len(np_beast_relaxed_labels) / np_total
 
 outputfile = "/".join(true_file.split("/")[:-1]) + "/compare_machina_beast_internal_node_performance.tsv"
 with open(outputfile, "w") as file:
-    header_str = "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\tbeast_f1_migrating_nodes\tbeast_f1_paths"
+    header_str = "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\tbeast_f1_migrating_clones\tbeast_f1_paths"
     accuracy_str = f"{data_id}\t{machina_accuracy}\t{beast_strict_accuracy}\t{beast_relaxed_accuracy}\t{np_machina_accuracy}\t{np_beast_strict_accuracy}\t{np_beast_relaxed_accuracy}\t{machina_f1_mig_nodes}\t{machina_f1_paths}\t{beast_f1_mig_nodes}\t{beast_f1_paths}"
     file.write(f"{header_str}\n{accuracy_str}")
