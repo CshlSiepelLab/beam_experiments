@@ -79,7 +79,7 @@ def get_migrating_node_names(tree):
             parent_name = node.up.name
             parent_tissue = parent_name.split("_")[1]
             if node_tissue != parent_tissue:
-                migrating_nodes.append(node_name)
+                migrating_nodes.append(node_name.split("_")[0])
                 migrating_edges.append(f'{parent_name}->{node_name}')
     return migrating_nodes, migrating_edges
 
