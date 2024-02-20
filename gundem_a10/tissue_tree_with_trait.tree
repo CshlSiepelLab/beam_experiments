@@ -1,0 +1,26 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=7;
+		Taxlabels
+			blueE
+			dark-brownA
+			dark-pinkE
+			dark-purpleD
+			goldC
+			orangeD
+			pinkE
+			;
+End;
+Begin trees;
+	Translate
+		     1 blueE,
+		     2 dark-brownA,
+		     3 dark-pinkE,
+		     4 dark-purpleD,
+		     5 goldC,
+		     6 orangeD,
+		     7 pinkE
+;
+tree TREE1 = ((((1[&height=0.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0,7[&height=0.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=prostate,location.prob=0.9422863485016648,location.set={periportal-lymph-node,perigastric-lymph-node,prostate,right-iliac-lymph-node},location.set.prob={0.017758046614872364,0.011098779134295227,0.9422863485016648,0.02885682574916759},posterior=1.0]:1.0,3[&height=1.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=prostate,location.prob=0.9356270810210877,location.set={periportal-lymph-node,perigastric-lymph-node,prostate,right-iliac-lymph-node},location.set.prob={0.01220865704772475,0.017758046614872364,0.9356270810210877,0.03440621531631521},posterior=1.0]:0.0,2[&height=1.0,length=1.0,location=right-iliac-lymph-node,location.prob=1.0,location.set={right-iliac-lymph-node},location.set.prob={1.0}]:1.0)[&height=2.0,length=1.0,location=prostate,location.prob=0.9356270810210877,location.set={periportal-lymph-node,perigastric-lymph-node,prostate,right-iliac-lymph-node},location.set.prob={0.01220865704772475,0.017758046614872364,0.9356270810210877,0.03440621531631521},posterior=1.0]:1.0,((4[&height=0.0,length=1.0,location=periportal-lymph-node,location.prob=1.0,location.set={periportal-lymph-node},location.set.prob={1.0}]:1.0,6[&height=0.0,length=1.0,location=periportal-lymph-node,location.prob=1.0,location.set={periportal-lymph-node},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=periportal-lymph-node,location.prob=0.8057713651498335,location.set={periportal-lymph-node,perigastric-lymph-node,prostate,right-iliac-lymph-node},location.set.prob={0.8057713651498335,0.09211986681465038,0.03662597114317425,0.06548279689234185},posterior=1.0]:1.0,5[&height=1.0,length=1.0,location=perigastric-lymph-node,location.prob=1.0,location.set={perigastric-lymph-node},location.set.prob={1.0}]:1.0)[&height=2.0,length=1.0,location=perigastric-lymph-node,location.prob=0.36403995560488345,location.set={periportal-lymph-node,perigastric-lymph-node,prostate,right-iliac-lymph-node},location.set.prob={0.19089900110987792,0.36403995560488345,0.2386237513873474,0.20643729189789123},posterior=1.0]:1.0)[&height=3.0,length=0.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0},posterior=1.0]:0.0;
+End;

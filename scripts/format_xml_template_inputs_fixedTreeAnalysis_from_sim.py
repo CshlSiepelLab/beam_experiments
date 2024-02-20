@@ -36,22 +36,34 @@ def format_traitset(taxa_names,tissue_df):
 newick_file = sys.argv[1]
 tissue_file = sys.argv[2]
 
-# newick_file = "machina_m5_sim_data/seed0/T_seed0_unlabeled_true_tree.nwk"
-# tissue_file = "machina_m5_sim_data/seed0/T_seed0_tissues.tsv"
+# newick_file = "gundem_a10/A10_unlabeled_tree.nwk"
+# tissue_file = "gundem_a10/A10_tissues.tsv"
 
-tree = Tree(newick_file, format=5)
+# newick_file = "results/unsymmetrical_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_12_24/machina_m8_sim_data/seed0/T_seed0_unlabeled_true_tree.nwk"
+# tissue_file = "results/unsymmetrical_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_12_24/machina_m8_sim_data/seed0/T_seed0_tissues.tsv"
+
+try:
+    tree = Tree(newick_file, format=5)
+except:
+    tree = Tree(newick_file, format=8)
 tissue_df = pd.read_csv(tissue_file, sep='\t')
 tissue_df = tissue_df.loc[:, ['node', 'tissue']]
 
-# Rename newick string names with cell prefix for consistency
+# Rename newick string names with cell prefix for consistency if any name is all int values
 taxa_names = []
+add_cell = False
 for leaf in tree.iter_leaves():
     current_name = leaf.name
-    new_name = "cell" + current_name
+    try:
+        new_name = "cell" + int(current_name)
+        add_cell = True
+    except ValueError:
+        new_name = current_name
     leaf.name = new_name
     taxa_names.append(new_name)
 
-tissue_df['node'] = 'cell' + tissue_df['node'].astype(str)
+if add_cell:
+    tissue_df['node'] = 'cell' + tissue_df['node'].astype(str)
 
 # Replace semiccolons from machina sims; should not affect my own sim data
 tissue_df['node'] = tissue_df['node'].str.replace(";", "_")
@@ -59,8 +71,12 @@ tissue_df['node'] = tissue_df['node'].str.replace(";", "_")
 # Output relabeled newick string
 newick_outfile = newick_file.split(".")[0] + "_newick_formatted_for_xml.txt"
 newick = tree.write(format=5, format_root_node=False)
-# removes outer parentheses to set unedited as root length
-newick = newick[1:-2] + "\n"
+# removes outer parentheses to set unedited as root length when fake empty root exists as artifact from ete3 tree building
+if len(tree.get_tree_root().children) == 1:
+    newick = newick[1:-2] + "\n"
+else:
+    newick = newick.replace(";", "") + "\n"
+    
 with open(newick_outfile, "w") as file:
     file.write(newick)
     

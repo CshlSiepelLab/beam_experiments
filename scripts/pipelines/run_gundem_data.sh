@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Necessary line to access conda commands for bash script on CSHL HPC cluster
+# source ~/anaconda3/etc/profile.d/conda.sh
+
+# Necessary line to access conda commands on Evolgen lab server (need to make these the same long term)
+source ~/miniconda3/etc/profile.d/conda.sh
+
+conda activate ete3
+
+tree_file="gundem_a10/A10.tree"
+labeling_file="gundem_a10/A10.labeling"
+primary_tissue="prostate"
+
+dir=$(dirname "$tree_file")
+dir_prefix=$(basename "$tree_file" | cut -d'.' -f1)
+
+python scripts/machina_realdata_to_newick.py $tree_file $labeling_file $primary_tissue
+
+tree="${dir}/${dir_prefix}_unlabeled_tree.nwk"
+tissues="${dir}/${dir_prefix}_tissues.tsv"
+
+python ./scripts/format_xml_template_inputs_fixedTreeAnalysis_from_sim.py ${tree} ${tissues}
+
+conda deactivate
+
+# Format template xml
+seqfile="${dir}/${dir_prefix}_unlabeled_tree_sequences_formatted_for_xml.txt"
+taxafile="${dir}/${dir_prefix}_unlabeled_tree_taxonset_formatted_for_xml.txt"
+traitfile="${dir}/${dir_prefix}_unlabeled_tree_traitset_formatted_for_xml.txt"
+newickfile="${dir}/${dir_prefix}_unlabeled_tree_newick_formatted_for_xml.txt"
+
+xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
+symmetric="false"
+
+scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric}
+
+# Run BEAST2 on formatted xml with output automatically in sim directory
+beast_path=$(which beast)
+# start_time=$(date +%s.%N)
+${beast_path} -overwrite -working ${dir}/${dir_prefix}_unlabeled_tree_final_input_xml.xml
+# end_time=$(date +%s.%N)
+# beast_time=$(printf "%.2f" $(echo "$end_time - $start_time" | bc))
+
+# Get Maximum Clade Credibility tree from posterior of trees
+treeannotator_path=$(which treeannotator)
+${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/tissue_tree_with_trait.trees ${dir}/tissue_tree_with_trait.tree
+
+# Plot rate matrix and FigTree from BEAST results
+conda activate ggplot2
+logfile="${dir}/${dir_prefix}_unlabeled_tree_final_input_xml.log"
+Rscript scripts/plot_rate_matrix_from_beast_log.R $logfile $primary_tissue
+conda deactivate
+
+treefile="${dir}/tissue_tree_with_trait.tree"
+scripts/figtree_plot_tree.sh $treefile

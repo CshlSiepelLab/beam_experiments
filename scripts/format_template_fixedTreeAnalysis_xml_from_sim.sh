@@ -16,7 +16,7 @@ symmetric=$7
 # newickfile="machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_newick_formatted_for_xml.txt"
 # xml_template="inputs/template_xml_symmetrical_machina_sim_universal.xml"
 # primary_tissue="P"
-# symmetric="True"
+# symmetric="true"
 
 REPLACE_SYMMETRIC="${symmetric}"
 
@@ -75,7 +75,6 @@ REPLACE_CODE_MAP+="${trailing_code_map}"
 while IFS= read -r line; do
     REPLACE_NEWICK+="$line"
 done < "$newickfile"
-
 # Copy xml template to modify
 XML_FILE=$(echo "$seqfile" | sed 's/\_sequences_formatted_for_xml.txt/_final_input_xml.xml/')
 cp $xml_template $XML_FILE

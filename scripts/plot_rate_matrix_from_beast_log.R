@@ -41,20 +41,12 @@ order_recipient <- c(grouped_df$Recipient)
 
 order <- unique(c(order_source, order_recipient))
 
-custom_sort <- function(x) {
-  # Extract numeric part and pad with leading zeros
-  numeric_part <- gsub("\\D", "", x)
-  numeric_part_padded <- sprintf("%02d", as.numeric(numeric_part))
-  
-  # Combine original and padded numeric parts
-  combined <- paste0(numeric_part_padded, x)
-  
-  # Return the combined values for sorting
-  return(combined)
+order <- unique(order[order != primary_tissue])
+order_numeric <- as.numeric(sub("M", "", order))
+if (!any(is.na(order_numeric))) {
+order <- paste("M", sort(order_numeric), sep = "")
 }
 
-order <- unique(order[order != primary_tissue])
-order <- paste("M", sort(as.numeric(sub("M", "", order))), sep = "")
 order <- c(primary_tissue, order)
 
 add_rows <- setdiff(order, order_source)
@@ -63,12 +55,16 @@ add_cols <- setdiff(order, order_recipient)
 heatmap_df <- pivot_wider(grouped_df, names_from = Recipient, values_from = mean_rate)
 heatmap_df <- column_to_rownames(heatmap_df, var = "Source")
 
+if (length(add_rows) != 0) {
 # Add rows for source tissues missing
 heatmap_df <- rbind(heatmap_df, setNames(data.frame(matrix(NA, ncol = ncol(heatmap_df), nrow = length(add_rows))), colnames(heatmap_df)))
 rownames(heatmap_df)[(nrow(heatmap_df) - length(add_rows) + 1):nrow(heatmap_df)] <- add_rows
+}
 
+if (length(add_cols) != 0) {
 # Add cols for recipient tissues missing
 heatmap_df[,add_cols] <- NA
+}
 
 heatmap_df <- heatmap_df %>%
   rownames_to_column() %>%
@@ -81,7 +77,7 @@ heatmap <- ggplot(heatmap_df, aes(x = factor(colname, levels = order), y = facto
   scale_fill_gradient(low = "white", high = "red", limits = c(0, 1)) +
   theme_minimal() +
   labs(x="Recipient tissue", y="Source tissue", fill="Rate") +
-  theme(axis.text.x=element_text(size=18, color="black"),
+  theme(axis.text.x=element_text(size=18, color="black", angle = 90, hjust = 1),
         axis.text.y=element_text(size=18, color="black"),
         axis.title=element_text(size=20, color="black"),
         legend.text=element_text(size=18, color="black"),

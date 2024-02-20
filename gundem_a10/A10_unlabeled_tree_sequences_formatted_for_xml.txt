@@ -1,0 +1,7 @@
+<sequence id='Sequence.0' spec='Sequence' taxon='dark-brownA' totalcount='4' value='?'/>
+<sequence id='Sequence.1' spec='Sequence' taxon='dark-pinkE' totalcount='4' value='?'/>
+<sequence id='Sequence.2' spec='Sequence' taxon='blueE' totalcount='4' value='?'/>
+<sequence id='Sequence.3' spec='Sequence' taxon='pinkE' totalcount='4' value='?'/>
+<sequence id='Sequence.4' spec='Sequence' taxon='orangeD' totalcount='4' value='?'/>
+<sequence id='Sequence.5' spec='Sequence' taxon='dark-purpleD' totalcount='4' value='?'/>
+<sequence id='Sequence.6' spec='Sequence' taxon='goldC' totalcount='4' value='?'/>
