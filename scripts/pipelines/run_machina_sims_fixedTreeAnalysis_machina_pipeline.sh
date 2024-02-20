@@ -16,12 +16,13 @@ data=(m5 m8)
 for dataset in ${data[@]}
 do
 # dataset="m5"
+dir_pre="machina_data/sims/"
 dir_name="machina_${dataset}_sim_data"
 
 pipeline_run_name="f1_scores_symmmetrical${state}_1million_mcmc_unsymmetrical_machina_${dataset}_sims_compare_beast_machina_fixedtreeanalysis_default_2_19_24"
 mkdir ${pipeline_run_name}
 
-cp -r ${dir_name} ${pipeline_run_name}/
+cp -r ${dir_pre}${dir_name} ${pipeline_run_name}/
 cp_dir="${pipeline_run_name}/${dir_name}"
 
 accuracy_file="${pipeline_run_name}/accuracy.tsv"

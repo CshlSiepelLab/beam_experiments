@@ -8,13 +8,17 @@ ulimit -v 100000000
 
 # Necessary line to access conda commands on lab server (need to make these the same long term)
 source ~/miniconda3/etc/profile.d/conda.sh
+symmetry=(false true)
+
+for sym in ${symmetry[@]}
+do
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
-pipeline_run_name="asymmetrical_with_f1scores_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_19_24"
+pipeline_run_name="symmetrical${sym}_with_f1scores_compare_beast_machina_fixedtreeanalysis_100_SampleSize_0_5_MigrationRate_2_19_24"
 mkdir ${pipeline_run_name}
 
 accuracy_file="${pipeline_run_name}/accuracy.tsv"
-echo -e "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\tbeast_f1_migrating_nodes\tbeast_f1_paths" > ${accuracy_file}
+echo -e "data_id\tmachina\tbeast_strict\tbeast_relaxed\tmachina_nonprimary\tbeast_strict_nonprimary\tbeast_relaxed_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\tbeast_f1_migrating_clones\tbeast_f1_paths" > ${accuracy_file}
 
 runtime_file="${pipeline_run_name}/runtime.tsv"
 echo -e "data_id\tmachina_seconds\tbeast_seconds" > ${runtime_file}
@@ -22,8 +26,8 @@ echo -e "data_id\tmachina_seconds\tbeast_seconds" > ${runtime_file}
 inputs_file="${pipeline_run_name}/inputs_key.tsv"
 echo -e "data_id\tsample_size\tmigration_rate" > ${inputs_file}
 
-migration_rates=(0.5 1.0 2.0 3.0 4.0)
-sample_size=(25 50 100 200)
+migration_rates=(0.5)
+sample_size=(100)
 
 # Specify the number of simulations to be run for ground truth trees with migration data
 num_trees=10
@@ -58,7 +62,8 @@ do
         newickfile="${pipeline_run_name}/sim_results_sim${i}/sim${i}_true_newick_formatted_for_xml.txt"
         xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
         primary_tissue="t1"
-        symmetric="false"
+        # symmetric="false"
+        symmetric="${sym}"
         scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric}
 
         # Run BEAST2 on formatted xml with output automatically in sim directory
@@ -110,5 +115,7 @@ do
         i=$(( i+1 ))
         done
     done
+done
+
 done
 
