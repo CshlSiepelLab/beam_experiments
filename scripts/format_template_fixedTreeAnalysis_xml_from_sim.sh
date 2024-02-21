@@ -44,7 +44,7 @@ while IFS= read -r line; do
     fi
 done < "$traitfile"
 REPLACE_NUM_TISSUES=${#traits[@]}
-REPLACE_OFFSET=$(( $REPLACE_NUM_TISSUE - 1 ))
+REPLACE_OFFSET=$(( $REPLACE_NUM_TISSUES - 1 ))
 REPLACE_TISSUE_FREQS=$(echo "scale=10; 1 / $REPLACE_NUM_TISSUES" | bc)
 
 if [ "$symmetric" = "true" ]; then

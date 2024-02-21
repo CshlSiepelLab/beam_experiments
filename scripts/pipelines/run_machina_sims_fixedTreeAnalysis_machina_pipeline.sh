@@ -19,7 +19,7 @@ do
 dir_pre="machina_data/sims/"
 dir_name="machina_${dataset}_sim_data"
 
-pipeline_run_name="f1_scores_symmmetrical${state}_1million_mcmc_unsymmetrical_machina_${dataset}_sims_compare_beast_machina_fixedtreeanalysis_default_2_19_24"
+pipeline_run_name="fixed_offset_symmmetrical${state}_machina_${dataset}_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24"
 mkdir ${pipeline_run_name}
 
 cp -r ${dir_pre}${dir_name} ${pipeline_run_name}/
@@ -60,7 +60,12 @@ primary_tissue="P"
 xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
 # symmetric="false"
 symmetric="${state}"
-chainlength=1000000
+# Shorter chain length for symmetrical setup since convergence is reached earlier with less parameters
+if [ "$state" = true ]; then
+    chainlength=1000000
+else
+    chainlength=10000000
+fi
 
 scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric} ${chainlength}
 

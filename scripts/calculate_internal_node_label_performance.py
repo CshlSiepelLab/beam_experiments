@@ -103,9 +103,9 @@ true_file=sys.argv[1]
 beast_file=sys.argv[2]
 machina_file=sys.argv[3]
 
-# true_file="asymmetrical_with_f1scores_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_19_24/sim_results_sim4/sim4_true_tissues.nwk"
-# beast_file="asymmetrical_with_f1scores_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_19_24/sim_results_sim4/tissue_tree_with_trait.tree"
-# machina_file="asymmetrical_with_f1scores_compare_beast_machina_fixedtreeanalysis_variableSampleSize_variableMigrationRate_2_19_24/sim_results_sim4/machina_tree_all_tissue_labels.nwk"
+# true_file="fixed_offset_symmmetricaltrue_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m5_sim_data/seed0/T_seed0_tissue_labeled_true_tree.nwk"
+# beast_file="fixed_offset_symmmetricaltrue_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m5_sim_data/seed0/tissue_tree_with_trait.tree"
+# machina_file="fixed_offset_symmmetricaltrue_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m5_sim_data/seed0/machina_tree_all_tissue_labels.nwk"
 
 data_id = true_file.split("/")[-1].split(".")[0]
 
@@ -125,7 +125,7 @@ for node in true_tree.traverse():
         node_leaf_dict[leaves] = name
 
 for node in beast_tree.internal_nodes():
-    leaves = "/".join(sorted([leaf.taxon.label.replace(" ", "-").split("ll")[1] for leaf in node.leaf_nodes()]))
+    leaves = "/".join(sorted([leaf.taxon.label.replace(" ", "-").split("ll")[1] if "ll" in leaf.taxon.label else leaf.taxon.label.replace(" ", "-") for leaf in node.leaf_nodes()]))
     node.label = node_leaf_dict[leaves]
 
 beast_tree_ete = dendropy_beast_to_ete_newick_with_strict_locations(beast_tree)
