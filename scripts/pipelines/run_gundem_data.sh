@@ -76,7 +76,8 @@ ${beast_path} -overwrite -working ${dir}/${dir_prefix}_unlabeled_tree_final_inpu
 
 # Get Maximum Clade Credibility tree from posterior of trees
 treeannotator_path=$(which treeannotator)
-${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/tissue_tree_with_trait.trees ${dir}/tissue_tree_with_trait.tree
+consensus_tree="${dir}/tissue_tree_with_trait.tree"
+${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/tissue_tree_with_trait.trees ${consensus_tree}
 
 # Plot rate matrix and FigTree from BEAST results
 conda activate ggplot2
@@ -86,6 +87,12 @@ conda deactivate
 
 treefile="${dir}/tissue_tree_with_trait.tree"
 scripts/figtree_plot_tree.sh $treefile
+
+conda activate ggtree
+Rscript scripts/plot_tree_piecharts_ggtree.R ${consensus_tree} ${primary_tissue}
+conda deactivate
+
+# Prep and run MACHINA to compare
 
 done
 done

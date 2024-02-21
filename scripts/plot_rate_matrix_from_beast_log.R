@@ -4,12 +4,12 @@ library(tidyr)
 library(dplyr)
 library(tibble)
 
-# Specify your log file and output file
-log_file <- commandArgs(trailingOnly = TRUE)[1]
-primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
+# # Specify your log file and output file
+# log_file <- commandArgs(trailingOnly = TRUE)[1]
+# primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
 
-# log_file <- "/Users/staklins/projects/crispr-barcode-cancer-metastasis/stephen_data/longer_10million_mcmc_unsymmetrical_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_12_24/T_seed3_unlabeled_true_tree_final_input_xml.log"
-# primary_tissue <- "P"
+log_file <- "beast_gundem_2015_2_21_24/A29_asym/A29_unlabeled_tree_final_input_xml.log"
+primary_tissue <- "prostate"
 
 # burnin <- 0.1   ### Seems like Tracer values are closer to averages with burnin kept in, so I turned this off for now.
 
@@ -70,11 +70,18 @@ heatmap_df <- heatmap_df %>%
   rownames_to_column() %>%
   gather(colname, value, -rowname)
 
+# Increase color scale when rates go above 1 to the nearest 0.5 above the highest rate
+max_limit=1
+max_value = max(na.omit(heatmap_df$value))
+if ( max_value > 1) {
+  max_limit <- ceiling(max_value * 2) / 2
+}
+
 # Create a ggplot2 heatmap
 heatmap <- ggplot(heatmap_df, aes(x = factor(colname, levels = order), y = factor(rowname, levels = order), fill=value)) +
   geom_tile() +
-  geom_text(aes(label = round(value, 3)), vjust = 1) +
-  scale_fill_gradient(low = "white", high = "red", limits = c(0, 1)) +
+  # geom_text(aes(label = round(value, 3)), vjust = 1) +
+  scale_fill_gradient(low = "white", high = "red", limits = c(0, max_limit)) +
   theme_minimal() +
   labs(x="Recipient tissue", y="Source tissue", fill="Rate") +
   theme(axis.text.x=element_text(size=18, color="black", angle = 90, hjust = 1),

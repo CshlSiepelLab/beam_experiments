@@ -46,7 +46,7 @@ name="taxa">
                     <x id="nonZeroRates.s:tissue" spec="beast.base.evolution.Sum">
                         <arg idref="rateIndicator.s:tissue"/>
                     </x>
-                    <distr id="Poisson.0" spec="distribution.Poisson" offset="2.0">
+                    <distr id="Poisson.0" spec="distribution.Poisson" offset="REPLACE_OFFSET">
                         <parameter id="RealParameter.10" spec="parameter.RealParameter" estimate="false" name="lambda">0.693</parameter>
                     </distr>
                 </prior>
