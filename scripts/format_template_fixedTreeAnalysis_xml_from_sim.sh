@@ -9,6 +9,7 @@ newickfile=$4
 xml_template=$5
 primary_tissue=$6
 symmetric=$7
+chainlength=$8
 
 # seqfile="machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_sequences_formatted_for_xml.txt"
 # taxafile="machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
@@ -19,6 +20,7 @@ symmetric=$7
 # symmetric="true"
 
 REPLACE_SYMMETRIC="${symmetric}"
+REPLACE_CHAINLENGTH="${chainlength}"
 
 REPLACE_SEQUENCES=""
 REPLACE_NEWICK=""
@@ -99,3 +101,4 @@ sed -i "s|REPLACE_NUM_RATES|$REPLACE_NUM_RATES|g" $XML_FILE
 sed -i "s|REPLACE_CODE_MAP|$REPLACE_CODE_MAP|g" $XML_FILE
 sed -i "s|REPLACE_ROOT_FREQUENCIES|$REPLACE_ROOT_FREQUENCIES|g" $XML_FILE
 sed -i "s|REPLACE_SYMMETRIC|$REPLACE_SYMMETRIC|g" $XML_FILE
+sed -i "s|REPLACE_CHAINLENGTH|$REPLACE_CHAINLENGTH|g" $XML_FILE

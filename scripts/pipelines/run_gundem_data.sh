@@ -6,14 +6,39 @@
 # Necessary line to access conda commands on Evolgen lab server (need to make these the same long term)
 source ~/miniconda3/etc/profile.d/conda.sh
 
-conda activate ete3
+pipeline_run="beast_gundem_2015_2_21_24"
+mkdir ${pipeline_run}
 
-tree_file="gundem_a10/A10.tree"
-labeling_file="gundem_a10/A10.labeling"
+symmetric=(true false)
+
+for sym in "${symmetric[@]}"; do
+
+for tree_file in machina_data/realdata/gundem_2015/reported_clonetrees/*.tree; do
+
+dir_prefix=$(basename "$tree_file" .tree)
+labeling_file="${tree_file%.tree}.labeling"
 primary_tissue="prostate"
 
-dir=$(dirname "$tree_file")
-dir_prefix=$(basename "$tree_file" | cut -d'.' -f1)
+# Rename dir for running both symmetrical and asymmetrical beast in parallel
+if [ "$sym" = true ]; then
+    sym_name="sym"
+else
+    sym_name="asym"
+fi
+sym_prefix="${dir_prefix}_${sym_name}"
+
+# Make directory specific for each patient
+dir="${pipeline_run}/${sym_prefix}"
+mkdir ${dir}
+
+# Copy original files into working directory for each patient
+cp ${tree_file} ${dir}/
+cp ${labeling_file} ${dir}/
+
+tree_file="${dir}/${dir_prefix}.tree"
+labeling_file="${tree_file%.tree}.labeling"
+
+conda activate ete3
 
 python scripts/machina_realdata_to_newick.py $tree_file $labeling_file $primary_tissue
 
@@ -31,9 +56,16 @@ traitfile="${dir}/${dir_prefix}_unlabeled_tree_traitset_formatted_for_xml.txt"
 newickfile="${dir}/${dir_prefix}_unlabeled_tree_newick_formatted_for_xml.txt"
 
 xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
-symmetric="false"
+symmetric="${sym}"
 
-scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric}
+# Shorter chain length for symmetrical setup since convergence is reached earlier with less parameters
+if [ "$sym" = true ]; then
+    chainlength=1000000
+else
+    chainlength=10000000
+fi
+
+scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric} ${chainlength}
 
 # Run BEAST2 on formatted xml with output automatically in sim directory
 beast_path=$(which beast)
@@ -54,3 +86,6 @@ conda deactivate
 
 treefile="${dir}/tissue_tree_with_trait.tree"
 scripts/figtree_plot_tree.sh $treefile
+
+done
+done

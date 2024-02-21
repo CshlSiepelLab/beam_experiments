@@ -60,7 +60,9 @@ primary_tissue="P"
 xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
 # symmetric="false"
 symmetric="${state}"
-scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric}
+chainlength=1000000
+
+scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric} ${chainlength}
 
 # Run BEAST2 on formatted xml with output automatically in sim directory
 beast_path=$(which beast)
