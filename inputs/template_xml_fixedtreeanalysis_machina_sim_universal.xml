@@ -27,7 +27,7 @@ name="taxa">
 
     <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
 
-    <run id="mcmc" spec="MCMC" chainLength="1000000">
+    <run id="mcmc" spec="MCMC" chainLength="REPLACE_CHAINLENGTH">
         <state id="state" spec="State" storeEvery="5000">
             <stateNode id="Tree.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTree" IsLabelledNewick="true" adjustTipHeights="false" newick="REPLACE_NEWICK">
                 <taxa idref="sim1_true"/>
