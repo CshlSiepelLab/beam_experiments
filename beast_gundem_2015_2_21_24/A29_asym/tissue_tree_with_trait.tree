@@ -1,0 +1,20 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=4;
+		Taxlabels
+			dark-greenC
+			dark-pinkC
+			goldA
+			light-blueC
+			;
+End;
+Begin trees;
+	Translate
+		     1 dark-greenC,
+		     2 dark-pinkC,
+		     3 goldA,
+		     4 light-blueC
+;
+tree TREE1 = ((1[&height=0.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0,4[&height=0.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=prostate,location.prob=0.8327963559604489,location.set={right-superficial-inguinal-lymph-node,prostate},location.set.prob={0.16720364403955115,0.8327963559604489},posterior=1.0]:1.0,(2[&height=0.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0,3[&height=0.0,length=1.0,location=right-superficial-inguinal-lymph-node,location.prob=1.0,location.set={right-superficial-inguinal-lymph-node},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=prostate,location.prob=0.7879124541717587,location.set={right-superficial-inguinal-lymph-node,prostate},location.set.prob={0.2120875458282413,0.7879124541717587},posterior=1.0]:1.0)[&height=2.0,length=0.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0},posterior=1.0]:0.0;
+End;

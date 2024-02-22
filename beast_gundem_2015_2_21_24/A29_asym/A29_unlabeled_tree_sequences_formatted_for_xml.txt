@@ -1,0 +1,4 @@
+<sequence id='Sequence.0' spec='Sequence' taxon='goldA' totalcount='4' value='?'/>
+<sequence id='Sequence.1' spec='Sequence' taxon='dark-pinkC' totalcount='4' value='?'/>
+<sequence id='Sequence.2' spec='Sequence' taxon='dark-greenC' totalcount='4' value='?'/>
+<sequence id='Sequence.3' spec='Sequence' taxon='light-blueC' totalcount='4' value='?'/>

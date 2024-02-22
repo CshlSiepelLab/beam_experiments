@@ -1,0 +1,44 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=16;
+		Taxlabels
+			blueF
+			dark-greenA
+			dark-greenC
+			dark-pinkD
+			dark-purpleD
+			goldD
+			greyC
+			light-blueF
+			light-brownE
+			mid-blueC
+			mid-blueE
+			mid-greenE
+			orangeA
+			orangeC
+			orangeF
+			pinkC
+			;
+End;
+Begin trees;
+	Translate
+		     1 blueF,
+		     2 dark-greenA,
+		     3 dark-greenC,
+		     4 dark-pinkD,
+		     5 dark-purpleD,
+		     6 goldD,
+		     7 greyC,
+		     8 light-blueF,
+		     9 light-brownE,
+		    10 mid-blueC,
+		    11 mid-blueE,
+		    12 mid-greenE,
+		    13 orangeA,
+		    14 orangeC,
+		    15 orangeF,
+		    16 pinkC
+;
+tree TREE1 = ((((((((1[&height=1.0,length=1.0,location=right-humerus,location.prob=1.0,location.set={right-humerus},location.set.prob={1.0}]:1.0,13[&height=1.0,length=1.0,location=right-rib-8,location.prob=1.0,location.set={right-rib-8},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=right-humerus,location.prob=0.2630410654827969,location.set={prostate,left-cervical-lymph-node,left-subclavicular-lymph-node,right-rib-8,right-humerus},location.set.prob={0.22197558268590456,0.1609322974472808,0.146503884572697,0.20754716981132076,0.2630410654827969},posterior=1.0]:0.0,14[&height=1.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=right-humerus,location.prob=0.2630410654827969,location.set={prostate,left-cervical-lymph-node,left-subclavicular-lymph-node,right-rib-8,right-humerus},location.set.prob={0.22197558268590456,0.1609322974472808,0.146503884572697,0.20754716981132076,0.2630410654827969},posterior=1.0]:0.0,15[&height=1.0,length=1.0,location=right-humerus,location.prob=1.0,location.set={right-humerus},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=right-humerus,location.prob=0.2630410654827969,location.set={prostate,left-cervical-lymph-node,left-subclavicular-lymph-node,right-rib-8,right-humerus},location.set.prob={0.22197558268590456,0.1609322974472808,0.146503884572697,0.20754716981132076,0.2630410654827969},posterior=1.0]:0.0,(2[&height=0.0,length=1.0,location=right-rib-8,location.prob=1.0,location.set={right-rib-8},location.set.prob={1.0}]:1.0,3[&height=0.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=prostate,location.prob=0.2619311875693674,location.set={prostate,left-subclavicular-lymph-node,left-cervical-lymph-node,right-rib-8,right-humerus},location.set.prob={0.2619311875693674,0.15316315205327413,0.1598224195338513,0.2241953385127636,0.2008879023307436},posterior=1.0]:1.0)[&height=2.0,length=1.0,location=right-humerus,location.prob=0.2630410654827969,location.set={prostate,left-cervical-lymph-node,left-subclavicular-lymph-node,right-rib-8,right-humerus},location.set.prob={0.22197558268590456,0.1609322974472808,0.146503884572697,0.20754716981132076,0.2630410654827969},posterior=1.0]:1.0,((4[&height=0.0,length=1.0,location=left-cervical-lymph-node,location.prob=1.0,location.set={left-cervical-lymph-node},location.set.prob={1.0}]:1.0,6[&height=0.0,length=1.0,location=left-cervical-lymph-node,location.prob=1.0,location.set={left-cervical-lymph-node},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=left-cervical-lymph-node,location.prob=0.36958934517203107,location.set={left-subclavicular-lymph-node,left-cervical-lymph-node,prostate,right-rib-8,right-humerus},location.set.prob={0.1609322974472808,0.36958934517203107,0.14761376248612654,0.15760266370699222,0.16426193118756938},posterior=1.0]:1.0,8[&height=1.0,length=1.0,location=right-humerus,location.prob=1.0,location.set={right-humerus},location.set.prob={1.0}]:1.0)[&height=2.0,length=1.0,location=right-humerus,location.prob=0.2486126526082131,location.set={prostate,left-cervical-lymph-node,left-subclavicular-lymph-node,right-rib-8,right-humerus},location.set.prob={0.1509433962264151,0.22197558268590456,0.21087680355160932,0.16759156492785793,0.2486126526082131},posterior=1.0]:1.0)[&height=3.0,length=0.0,location=prostate,location.prob=0.2397336293007769,location.set={left-cervical-lymph-node,prostate,left-subclavicular-lymph-node,right-rib-8,right-humerus},location.set.prob={0.19644839067702552,0.2397336293007769,0.16870144284128746,0.18091009988901222,0.2142064372918979},posterior=1.0]:0.0,5[&height=2.0,length=1.0,location=left-cervical-lymph-node,location.prob=1.0,location.set={left-cervical-lymph-node},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=prostate,location.prob=0.2397336293007769,location.set={left-cervical-lymph-node,prostate,left-subclavicular-lymph-node,right-rib-8,right-humerus},location.set.prob={0.19644839067702552,0.2397336293007769,0.16870144284128746,0.18091009988901222,0.2142064372918979},posterior=1.0]:0.0,(9[&height=1.0,length=1.0,location=left-subclavicular-lymph-node,location.prob=1.0,location.set={left-subclavicular-lymph-node},location.set.prob={1.0}]:1.0,12[&height=1.0,length=1.0,location=left-subclavicular-lymph-node,location.prob=1.0,location.set={left-subclavicular-lymph-node},location.set.prob={1.0}]:1.0)[&height=2.0,length=1.0,location=left-subclavicular-lymph-node,location.prob=0.3274139844617092,location.set={left-cervical-lymph-node,prostate,left-subclavicular-lymph-node,right-rib-8,right-humerus},location.set.prob={0.15871254162042175,0.17647058823529413,0.3274139844617092,0.17314095449500555,0.16426193118756938},posterior=1.0]:1.0)[&height=3.0,length=1.0,location=prostate,location.prob=0.2397336293007769,location.set={left-cervical-lymph-node,prostate,left-subclavicular-lymph-node,right-rib-8,right-humerus},location.set.prob={0.19644839067702552,0.2397336293007769,0.16870144284128746,0.18091009988901222,0.2142064372918979},posterior=1.0]:1.0,(7[&height=3.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0,((10[&height=2.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0,11[&height=2.0,length=1.0,location=left-subclavicular-lymph-node,location.prob=1.0,location.set={left-subclavicular-lymph-node},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=prostate,location.prob=0.38290788013318533,location.set={left-subclavicular-lymph-node,prostate,left-cervical-lymph-node,right-rib-8,right-humerus},location.set.prob={0.1609322974472808,0.38290788013318533,0.12763596004439512,0.15871254162042175,0.16981132075471697},posterior=1.0]:0.0,16[&height=2.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=3.0,length=1.0,location=prostate,location.prob=0.38290788013318533,location.set={left-subclavicular-lymph-node,prostate,left-cervical-lymph-node,right-rib-8,right-humerus},location.set.prob={0.1609322974472808,0.38290788013318533,0.12763596004439512,0.15871254162042175,0.16981132075471697},posterior=1.0]:1.0)[&height=4.0,length=0.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0},posterior=1.0]:0.0)[&height=4.0,length=0.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0},posterior=1.0]:0.0;
+End;

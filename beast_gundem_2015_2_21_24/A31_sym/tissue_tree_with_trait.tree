@@ -1,0 +1,50 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=19;
+		Taxlabels
+			blueD
+			dark-greenA
+			dark-greenF
+			dark-pinkC
+			dark-purpleC
+			dark-purpleD
+			dark-purpleE
+			dark-purpleF
+			goldA
+			greyE
+			light-blueD
+			light-blueF
+			light-brownE
+			mid-greenC
+			orangeA
+			orangeC
+			orangeD
+			orangeE
+			orangeF
+			;
+End;
+Begin trees;
+	Translate
+		     1 blueD,
+		     2 dark-greenA,
+		     3 dark-greenF,
+		     4 dark-pinkC,
+		     5 dark-purpleC,
+		     6 dark-purpleD,
+		     7 dark-purpleE,
+		     8 dark-purpleF,
+		     9 goldA,
+		    10 greyE,
+		    11 light-blueD,
+		    12 light-blueF,
+		    13 light-brownE,
+		    14 mid-greenC,
+		    15 orangeA,
+		    16 orangeC,
+		    17 orangeD,
+		    18 orangeE,
+		    19 orangeF
+;
+tree TREE1 = ((((((((((((((1[&height=1.0,length=1.0,location=right-inguinal-lymph-node,location.prob=1.0,location.set={right-inguinal-lymph-node},location.set.prob={1.0}]:1.0,(11[&height=0.0,length=1.0,location=right-inguinal-lymph-node,location.prob=1.0,location.set={right-inguinal-lymph-node},location.set.prob={1.0}]:1.0,12[&height=0.0,length=1.0,location=right-rib-7,location.prob=1.0,location.set={right-rib-7},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=right-inguinal-lymph-node,location.prob=0.22641509433962265,location.set={left-adrenal-gland,right-subdural,prostate,right-rib-7,right-inguinal-lymph-node},location.set.prob={0.17203107658157601,0.18312985571587126,0.2008879023307436,0.21753607103218647,0.22641509433962265},posterior=1.0]:1.0)[&height=2.0,length=0.0,location=right-inguinal-lymph-node,location.prob=0.20532741398446172,location.set={left-adrenal-gland,right-subdural,right-rib-7,prostate,right-inguinal-lymph-node},location.set.prob={0.19866814650388456,0.1997780244173141,0.19311875693673697,0.20310765815760268,0.20532741398446172},posterior=1.0]:0.0,15[&height=1.0,length=1.0,location=right-subdural,location.prob=1.0,location.set={right-subdural},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=right-inguinal-lymph-node,location.prob=0.20532741398446172,location.set={left-adrenal-gland,right-subdural,right-rib-7,prostate,right-inguinal-lymph-node},location.set.prob={0.19866814650388456,0.1997780244173141,0.19311875693673697,0.20310765815760268,0.20532741398446172},posterior=1.0]:0.0,16[&height=1.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=right-inguinal-lymph-node,location.prob=0.20532741398446172,location.set={left-adrenal-gland,right-subdural,right-rib-7,prostate,right-inguinal-lymph-node},location.set.prob={0.19866814650388456,0.1997780244173141,0.19311875693673697,0.20310765815760268,0.20532741398446172},posterior=1.0]:0.0,17[&height=1.0,length=1.0,location=right-inguinal-lymph-node,location.prob=1.0,location.set={right-inguinal-lymph-node},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=right-inguinal-lymph-node,location.prob=0.20532741398446172,location.set={left-adrenal-gland,right-subdural,right-rib-7,prostate,right-inguinal-lymph-node},location.set.prob={0.19866814650388456,0.1997780244173141,0.19311875693673697,0.20310765815760268,0.20532741398446172},posterior=1.0]:0.0,18[&height=1.0,length=1.0,location=left-adrenal-gland,location.prob=1.0,location.set={left-adrenal-gland},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=right-inguinal-lymph-node,location.prob=0.20532741398446172,location.set={left-adrenal-gland,right-subdural,right-rib-7,prostate,right-inguinal-lymph-node},location.set.prob={0.19866814650388456,0.1997780244173141,0.19311875693673697,0.20310765815760268,0.20532741398446172},posterior=1.0]:0.0,19[&height=1.0,length=1.0,location=right-rib-7,location.prob=1.0,location.set={right-rib-7},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=right-inguinal-lymph-node,location.prob=0.20532741398446172,location.set={left-adrenal-gland,right-subdural,right-rib-7,prostate,right-inguinal-lymph-node},location.set.prob={0.19866814650388456,0.1997780244173141,0.19311875693673697,0.20310765815760268,0.20532741398446172},posterior=1.0]:0.0,((2[&height=0.0,length=1.0,location=right-subdural,location.prob=1.0,location.set={right-subdural},location.set.prob={1.0}]:1.0,3[&height=0.0,length=1.0,location=right-rib-7,location.prob=1.0,location.set={right-rib-7},location.set.prob={1.0}]:1.0)[&height=1.0,length=0.0,location=right-subdural,location.prob=0.2874583795782464,location.set={left-adrenal-gland,right-subdural,prostate,right-rib-7,right-inguinal-lymph-node},location.set.prob={0.16759156492785793,0.2874583795782464,0.17203107658157601,0.1864594894561598,0.1864594894561598},posterior=1.0]:0.0,9[&height=0.0,length=1.0,location=right-subdural,location.prob=1.0,location.set={right-subdural},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=right-subdural,location.prob=0.2874583795782464,location.set={left-adrenal-gland,right-subdural,prostate,right-rib-7,right-inguinal-lymph-node},location.set.prob={0.16759156492785793,0.2874583795782464,0.17203107658157601,0.1864594894561598,0.1864594894561598},posterior=1.0]:1.0)[&height=2.0,length=1.0,location=right-inguinal-lymph-node,location.prob=0.20532741398446172,location.set={left-adrenal-gland,right-subdural,right-rib-7,prostate,right-inguinal-lymph-node},location.set.prob={0.19866814650388456,0.1997780244173141,0.19311875693673697,0.20310765815760268,0.20532741398446172},posterior=1.0]:1.0,5[&height=2.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=prostate,location.prob=0.24084350721420644,location.set={left-adrenal-gland,right-subdural,prostate,right-rib-7,right-inguinal-lymph-node},location.set.prob={0.22641509433962265,0.16426193118756938,0.24084350721420644,0.18091009988901222,0.18756936736958935},posterior=1.0]:0.0,6[&height=2.0,length=1.0,location=right-inguinal-lymph-node,location.prob=1.0,location.set={right-inguinal-lymph-node},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=prostate,location.prob=0.24084350721420644,location.set={left-adrenal-gland,right-subdural,prostate,right-rib-7,right-inguinal-lymph-node},location.set.prob={0.22641509433962265,0.16426193118756938,0.24084350721420644,0.18091009988901222,0.18756936736958935},posterior=1.0]:0.0,7[&height=2.0,length=1.0,location=left-adrenal-gland,location.prob=1.0,location.set={left-adrenal-gland},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=prostate,location.prob=0.24084350721420644,location.set={left-adrenal-gland,right-subdural,prostate,right-rib-7,right-inguinal-lymph-node},location.set.prob={0.22641509433962265,0.16426193118756938,0.24084350721420644,0.18091009988901222,0.18756936736958935},posterior=1.0]:0.0,8[&height=2.0,length=1.0,location=right-rib-7,location.prob=1.0,location.set={right-rib-7},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=prostate,location.prob=0.24084350721420644,location.set={left-adrenal-gland,right-subdural,prostate,right-rib-7,right-inguinal-lymph-node},location.set.prob={0.22641509433962265,0.16426193118756938,0.24084350721420644,0.18091009988901222,0.18756936736958935},posterior=1.0]:0.0,13[&height=2.0,length=1.0,location=left-adrenal-gland,location.prob=1.0,location.set={left-adrenal-gland},location.set.prob={1.0}]:1.0)[&height=3.0,length=1.0,location=prostate,location.prob=0.24084350721420644,location.set={left-adrenal-gland,right-subdural,prostate,right-rib-7,right-inguinal-lymph-node},location.set.prob={0.22641509433962265,0.16426193118756938,0.24084350721420644,0.18091009988901222,0.18756936736958935},posterior=1.0]:1.0,10[&height=3.0,length=1.0,location=left-adrenal-gland,location.prob=1.0,location.set={left-adrenal-gland},location.set.prob={1.0}]:1.0)[&height=4.0,length=0.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0},posterior=1.0]:0.0,(4[&height=2.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0,14[&height=2.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=3.0,length=1.0,location=prostate,location.prob=0.2807991120976693,location.set={left-adrenal-gland,right-subdural,right-rib-7,prostate,right-inguinal-lymph-node},location.set.prob={0.18423973362930077,0.14872364039955605,0.19089900110987792,0.2807991120976693,0.195338512763596},posterior=1.0]:1.0)[&height=4.0,length=0.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0},posterior=1.0]:0.0;
+End;

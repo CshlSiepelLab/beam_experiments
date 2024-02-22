@@ -5,11 +5,11 @@ library(dplyr)
 library(tibble)
 
 # # Specify your log file and output file
-# log_file <- commandArgs(trailingOnly = TRUE)[1]
-# primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
+log_file <- commandArgs(trailingOnly = TRUE)[1]
+primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
 
-log_file <- "beast_gundem_2015_2_21_24/A29_asym/A29_unlabeled_tree_final_input_xml.log"
-primary_tissue <- "prostate"
+# log_file <- "beast_gundem_2015_2_21_24/A29_asym/A29_unlabeled_tree_final_input_xml.log"
+# primary_tissue <- "prostate"
 
 # burnin <- 0.1   ### Seems like Tracer values are closer to averages with burnin kept in, so I turned this off for now.
 

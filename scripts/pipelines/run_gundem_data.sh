@@ -92,7 +92,34 @@ conda activate ggtree
 Rscript scripts/plot_tree_piecharts_ggtree.R ${consensus_tree} ${primary_tissue}
 conda deactivate
 
-# Prep and run MACHINA to compare
+
+### NEED TO SETUP MACHINA BELOW AND CHECK FOR BUGS IF USING THIS TO COMPARE. USING ORIGINAL MACHINA FIGURES FOR NOW TO COMPARE WITH BEAST.
+# # Prep and run MACHINA to compare
+# # Prep simulated true tree for MACHINA input files
+# labeled_tree="${dir}/${dir_prefix}_tissue_labeled_tree.nwk"
+# machina_dir="${dir}/machina"
+# mkdir ${machina_dir}
+# conda activate simulate
+# python ./scripts/machina/prep_machina.py ${labeled_tree} ${machina_dir} ${primary_tissue}
+# conda deactivate
+
+# # Run MACHINA
+# conda activate machina
+# sed -i '0,/0/s/0/GL/' ${machina_dir}/*.tree     # Prevents MACHINA segmentation fault due to input formatting
+# start_time=$(date +%s.%N)
+# ./scripts/machina/run_machina.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir}
+# end_time=$(date +%s.%N)
+# machina_time=$(printf "%.2f" $(echo "$end_time - $start_time" | bc))
+# conda deactivate
+
+# # Condense MACHINA output into a labeled tree newick format
+# conda activate simulate
+# python ./scripts/machina/post_machina_to_tree.py ${labeled_tree} ${machina_dir}/T-P-0.labeling ${machina_dir}
+# conda deactivate
+
+# # Remove intermediate MACHINA output files
+# mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${dir}/
+# rm -r ${machina_dir}
 
 done
 done

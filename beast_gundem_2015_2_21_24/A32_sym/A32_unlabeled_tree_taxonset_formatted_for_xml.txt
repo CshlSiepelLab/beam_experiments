@@ -1,0 +1,16 @@
+<taxon id='light-brownE' spec='Taxon'/>
+<taxon id='mid-greenE' spec='Taxon'/>
+<taxon id='dark-purpleD' spec='Taxon'/>
+<taxon id='dark-greenA' spec='Taxon'/>
+<taxon id='dark-greenC' spec='Taxon'/>
+<taxon id='orangeF' spec='Taxon'/>
+<taxon id='orangeC' spec='Taxon'/>
+<taxon id='orangeA' spec='Taxon'/>
+<taxon id='blueF' spec='Taxon'/>
+<taxon id='goldD' spec='Taxon'/>
+<taxon id='dark-pinkD' spec='Taxon'/>
+<taxon id='light-blueF' spec='Taxon'/>
+<taxon id='greyC' spec='Taxon'/>
+<taxon id='pinkC' spec='Taxon'/>
+<taxon id='mid-blueE' spec='Taxon'/>
+<taxon id='mid-blueC' spec='Taxon'/>

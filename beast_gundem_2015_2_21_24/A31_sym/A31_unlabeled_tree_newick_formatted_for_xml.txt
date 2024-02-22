@@ -1,0 +1,1 @@
+((dark-pinkC:1,mid-greenC:1):1,(greyE:1,(light-brownE:1,(dark-purpleF:1,dark-purpleE:1,dark-purpleD:1,dark-purpleC:1,((goldA:1,(dark-greenF:1,dark-greenA:1):0):1,(orangeF:1,orangeE:1,orangeD:1,orangeC:1,orangeA:1,(light-blueD:1,light-blueF:1):1,blueD:1):0):1):0):1):0)

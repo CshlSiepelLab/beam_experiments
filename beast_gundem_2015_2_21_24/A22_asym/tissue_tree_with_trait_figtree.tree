@@ -1,0 +1,187 @@
+#NEXUS
+
+Begin taxa;
+	Dimensions ntax=42;
+		Taxlabels
+			dark-blueD
+			dark-blueG
+			dark-blueJ
+			dark-brownC
+			dark-greenI
+			dark-greenK
+			dark-purpleE
+			dark-purpleF
+			dark-purpleG
+			dark-purpleH
+			dark-purpleI
+			dark-purpleJ
+			dark-purpleK
+			goldF
+			greyC
+			greyD
+			light-blueH
+			light-blueK
+			light-brownI
+			light-greenF
+			light-greenG
+			light-greenH
+			light-greenI
+			light-greenJ
+			light-greenK
+			light-purpleE
+			mid-blueD
+			mid-blueG
+			mid-blueJ
+			mid-greenE
+			mid-greenF
+			orangeA
+			orangeE
+			orangeG
+			orangeJ
+			pinkA
+			pinkJ
+			redC
+			redD
+			redK
+			yellowH
+			yellowK
+			;
+End;
+Begin trees;
+	Translate
+		     1 dark-blueD,
+		     2 dark-blueG,
+		     3 dark-blueJ,
+		     4 dark-brownC,
+		     5 dark-greenI,
+		     6 dark-greenK,
+		     7 dark-purpleE,
+		     8 dark-purpleF,
+		     9 dark-purpleG,
+		    10 dark-purpleH,
+		    11 dark-purpleI,
+		    12 dark-purpleJ,
+		    13 dark-purpleK,
+		    14 goldF,
+		    15 greyC,
+		    16 greyD,
+		    17 light-blueH,
+		    18 light-blueK,
+		    19 light-brownI,
+		    20 light-greenF,
+		    21 light-greenG,
+		    22 light-greenH,
+		    23 light-greenI,
+		    24 light-greenJ,
+		    25 light-greenK,
+		    26 light-purpleE,
+		    27 mid-blueD,
+		    28 mid-blueG,
+		    29 mid-blueJ,
+		    30 mid-greenE,
+		    31 mid-greenF,
+		    32 orangeA,
+		    33 orangeE,
+		    34 orangeG,
+		    35 orangeJ,
+		    36 pinkA,
+		    37 pinkJ,
+		    38 redC,
+		    39 redD,
+		    40 redK,
+		    41 yellowH,
+		    42 yellowK
+;
+tree TREE1 = (((((((((((((1[&height=2.0,length=1.0,location=seminal-vesicle,location.prob=1.0,location.set={seminal-vesicle},location.set.prob={1.0}]:1.0,(2[&height=2.0,length=1.0,location=bladder,location.prob=1.0,location.set={bladder},location.set.prob={1.0}]:1.0,3[&height=2.0,length=1.0,location=right-pelvic-lymph-node-12,location.prob=1.0,location.set={right-pelvic-lymph-node-12},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=seminal-vesicle,location.prob=0.4529496722586379,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,seminal-vesicle,left-adrenal-gland,bladder,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.04799466725919342,0.0511054327296967,0.025774913898455726,0.4529496722586379,0.0511054327296967,0.1302077546939229,0.040995444950561045,0.009110098877902456,0.05666037106988112,0.134096211532052},posterior=1.0]:0.0)[&height=3.0,length=1.0,location=seminal-vesicle,location.prob=0.4529496722586379,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,seminal-vesicle,left-adrenal-gland,bladder,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.04799466725919342,0.0511054327296967,0.025774913898455726,0.4529496722586379,0.0511054327296967,0.1302077546939229,0.040995444950561045,0.009110098877902456,0.05666037106988112,0.134096211532052},posterior=1.0]:1.0,20[&height=3.0,length=1.0,location=right-adrenal-gland,location.prob=1.0,location.set={right-adrenal-gland},location.set.prob={1.0}]:1.0)[&height=4.0,length=0.0,location=seminal-vesicle,location.prob=0.4552827463615154,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0714365070547717,0.07088101322075326,0.02833018553494056,0.098433507388068,0.4552827463615154,0.02833018553494056,0.03932896344850572,0.018109098989001222,0.11943117431396512,0.0704366181535385},posterior=1.0]:0.0,21[&height=3.0,length=1.0,location=bladder,location.prob=1.0,location.set={bladder},location.set.prob={1.0}]:1.0)[&height=4.0,length=0.0,location=seminal-vesicle,location.prob=0.4552827463615154,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0714365070547717,0.07088101322075326,0.02833018553494056,0.098433507388068,0.4552827463615154,0.02833018553494056,0.03932896344850572,0.018109098989001222,0.11943117431396512,0.0704366181535385},posterior=1.0]:0.0,22[&height=3.0,length=1.0,location=pelvic-lymph-node-7,location.prob=1.0,location.set={pelvic-lymph-node-7},location.set.prob={1.0}]:1.0)[&height=4.0,length=0.0,location=seminal-vesicle,location.prob=0.4552827463615154,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0714365070547717,0.07088101322075326,0.02833018553494056,0.098433507388068,0.4552827463615154,0.02833018553494056,0.03932896344850572,0.018109098989001222,0.11943117431396512,0.0704366181535385},posterior=1.0]:0.0,23[&height=3.0,length=1.0,location=left-pelvic-lymph-node-8,location.prob=1.0,location.set={left-pelvic-lymph-node-8},location.set.prob={1.0}]:1.0)[&height=4.0,length=0.0,location=seminal-vesicle,location.prob=0.4552827463615154,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0714365070547717,0.07088101322075326,0.02833018553494056,0.098433507388068,0.4552827463615154,0.02833018553494056,0.03932896344850572,0.018109098989001222,0.11943117431396512,0.0704366181535385},posterior=1.0]:0.0,24[&height=3.0,length=1.0,location=right-pelvic-lymph-node-12,location.prob=1.0,location.set={right-pelvic-lymph-node-12},location.set.prob={1.0}]:1.0)[&height=4.0,length=0.0,location=seminal-vesicle,location.prob=0.4552827463615154,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0714365070547717,0.07088101322075326,0.02833018553494056,0.098433507388068,0.4552827463615154,0.02833018553494056,0.03932896344850572,0.018109098989001222,0.11943117431396512,0.0704366181535385},posterior=1.0]:0.0,25[&height=3.0,length=1.0,location=left-pelvic-lymph-node-5,location.prob=1.0,location.set={left-pelvic-lymph-node-5},location.set.prob={1.0}]:1.0)[&height=4.0,length=0.0,location=seminal-vesicle,location.prob=0.4552827463615154,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0714365070547717,0.07088101322075326,0.02833018553494056,0.098433507388068,0.4552827463615154,0.02833018553494056,0.03932896344850572,0.018109098989001222,0.11943117431396512,0.0704366181535385},posterior=1.0]:0.0,((((((((((((5[&height=1.0,length=1.0,location=left-pelvic-lymph-node-8,location.prob=1.0,location.set={left-pelvic-lymph-node-8},location.set.prob={1.0}]:1.0,(19[&height=1.0,length=1.0,location=left-pelvic-lymph-node-8,location.prob=1.0,location.set={left-pelvic-lymph-node-8},location.set.prob={1.0}]:1.0,(41[&height=0.0,length=1.0,location=pelvic-lymph-node-7,location.prob=1.0,location.set={pelvic-lymph-node-7},location.set.prob={1.0}]:1.0,42[&height=0.0,length=1.0,location=left-pelvic-lymph-node-5,location.prob=1.0,location.set={left-pelvic-lymph-node-5},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=left-pelvic-lymph-node-5,location.prob=0.46817020331074327,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,seminal-vesicle,left-adrenal-gland,bladder,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.17620264415064993,0.030441062104210645,0.014665037218086879,0.0366625930452172,0.018109098989001222,0.035884901677591376,0.18209087879124541,0.0015553827352516388,0.46817020331074327,0.036218197978002444},posterior=1.0]:1.0)[&height=2.0,length=0.0,location=left-pelvic-lymph-node-8,location.prob=0.37295856015998224,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.37295856015998224,0.042106432618597936,0.020664370625486057,0.04832796355960449,0.06065992667481391,0.023886234862793024,0.10198866792578602,0.0024441728696811466,0.27319186757027,0.05377180313298523},posterior=1.0]:0.0)[&height=2.0,length=0.0,location=left-pelvic-lymph-node-8,location.prob=0.37295856015998224,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.37295856015998224,0.042106432618597936,0.020664370625486057,0.04832796355960449,0.06065992667481391,0.023886234862793024,0.10198866792578602,0.0024441728696811466,0.27319186757027,0.05377180313298523},posterior=1.0]:0.0,6[&height=1.0,length=1.0,location=left-pelvic-lymph-node-5,location.prob=1.0,location.set={left-pelvic-lymph-node-5},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=left-pelvic-lymph-node-8,location.prob=0.37295856015998224,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.37295856015998224,0.042106432618597936,0.020664370625486057,0.04832796355960449,0.06065992667481391,0.023886234862793024,0.10198866792578602,0.0024441728696811466,0.27319186757027,0.05377180313298523},posterior=1.0]:0.0,(17[&height=0.0,length=1.0,location=pelvic-lymph-node-7,location.prob=1.0,location.set={pelvic-lymph-node-7},location.set.prob={1.0}]:1.0,18[&height=0.0,length=1.0,location=left-pelvic-lymph-node-5,location.prob=1.0,location.set={left-pelvic-lymph-node-5},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=left-pelvic-lymph-node-5,location.prob=0.46717031440951007,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.18120208865681592,0.02855238306854794,0.013554049550049994,0.03310743250749917,0.036773691812020885,0.017886901455393844,0.17998000222197533,0.002110876569270081,0.46717031440951007,0.03966225974891679},posterior=1.0]:1.0)[&height=2.0,length=1.0,location=left-pelvic-lymph-node-8,location.prob=0.37295856015998224,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.37295856015998224,0.042106432618597936,0.020664370625486057,0.04832796355960449,0.06065992667481391,0.023886234862793024,0.10198866792578602,0.0024441728696811466,0.27319186757027,0.05377180313298523},posterior=1.0]:1.0,(14[&height=1.0,length=1.0,location=right-adrenal-gland,location.prob=1.0,location.set={right-adrenal-gland},location.set.prob={1.0}]:1.0,(30[&height=1.0,length=1.0,location=left-adrenal-gland,location.prob=1.0,location.set={left-adrenal-gland},location.set.prob={1.0}]:1.0,31[&height=1.0,length=1.0,location=right-adrenal-gland,location.prob=1.0,location.set={right-adrenal-gland},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=right-adrenal-gland,location.prob=0.29541162093100765,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.29541162093100765,0.049994445061659815,0.03599600044439507,0.13298522386401512,0.060215531607599154,0.20486612598600157,0.04410621042106433,0.0017775802688590157,0.052327519164537276,0.12231974225086102},posterior=1.0]:0.0)[&height=2.0,length=1.0,location=right-adrenal-gland,location.prob=0.29541162093100765,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.29541162093100765,0.049994445061659815,0.03599600044439507,0.13298522386401512,0.060215531607599154,0.20486612598600157,0.04410621042106433,0.0017775802688590157,0.052327519164537276,0.12231974225086102},posterior=1.0]:1.0)[&height=3.0,length=0.0,location=seminal-vesicle,location.prob=0.26363737362515277,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.09143428507943561,0.09310076658149094,0.03066325963781802,0.1823130763248528,0.26363737362515277,0.03988445728252416,0.053549605599377846,0.0026663704032885236,0.12554160648816798,0.11720919897789135},posterior=1.0]:0.0,7[&height=2.0,length=1.0,location=left-adrenal-gland,location.prob=1.0,location.set={left-adrenal-gland},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=seminal-vesicle,location.prob=0.26363737362515277,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.09143428507943561,0.09310076658149094,0.03066325963781802,0.1823130763248528,0.26363737362515277,0.03988445728252416,0.053549605599377846,0.0026663704032885236,0.12554160648816798,0.11720919897789135},posterior=1.0]:0.0,8[&height=2.0,length=1.0,location=right-adrenal-gland,location.prob=1.0,location.set={right-adrenal-gland},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=seminal-vesicle,location.prob=0.26363737362515277,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.09143428507943561,0.09310076658149094,0.03066325963781802,0.1823130763248528,0.26363737362515277,0.03988445728252416,0.053549605599377846,0.0026663704032885236,0.12554160648816798,0.11720919897789135},posterior=1.0]:0.0,9[&height=2.0,length=1.0,location=bladder,location.prob=1.0,location.set={bladder},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=seminal-vesicle,location.prob=0.26363737362515277,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.09143428507943561,0.09310076658149094,0.03066325963781802,0.1823130763248528,0.26363737362515277,0.03988445728252416,0.053549605599377846,0.0026663704032885236,0.12554160648816798,0.11720919897789135},posterior=1.0]:0.0,10[&height=2.0,length=1.0,location=pelvic-lymph-node-7,location.prob=1.0,location.set={pelvic-lymph-node-7},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=seminal-vesicle,location.prob=0.26363737362515277,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.09143428507943561,0.09310076658149094,0.03066325963781802,0.1823130763248528,0.26363737362515277,0.03988445728252416,0.053549605599377846,0.0026663704032885236,0.12554160648816798,0.11720919897789135},posterior=1.0]:0.0,11[&height=2.0,length=1.0,location=left-pelvic-lymph-node-8,location.prob=1.0,location.set={left-pelvic-lymph-node-8},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=seminal-vesicle,location.prob=0.26363737362515277,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.09143428507943561,0.09310076658149094,0.03066325963781802,0.1823130763248528,0.26363737362515277,0.03988445728252416,0.053549605599377846,0.0026663704032885236,0.12554160648816798,0.11720919897789135},posterior=1.0]:0.0,12[&height=2.0,length=1.0,location=right-pelvic-lymph-node-12,location.prob=1.0,location.set={right-pelvic-lymph-node-12},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=seminal-vesicle,location.prob=0.26363737362515277,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.09143428507943561,0.09310076658149094,0.03066325963781802,0.1823130763248528,0.26363737362515277,0.03988445728252416,0.053549605599377846,0.0026663704032885236,0.12554160648816798,0.11720919897789135},posterior=1.0]:0.0,13[&height=2.0,length=1.0,location=left-pelvic-lymph-node-5,location.prob=1.0,location.set={left-pelvic-lymph-node-5},location.set.prob={1.0}]:1.0)[&height=3.0,length=0.0,location=seminal-vesicle,location.prob=0.26363737362515277,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.09143428507943561,0.09310076658149094,0.03066325963781802,0.1823130763248528,0.26363737362515277,0.03988445728252416,0.053549605599377846,0.0026663704032885236,0.12554160648816798,0.11720919897789135},posterior=1.0]:0.0,(((((26[&height=1.0,length=1.0,location=left-adrenal-gland,location.prob=1.0,location.set={left-adrenal-gland},location.set.prob={1.0}]:1.0,32[&height=1.0,length=1.0,location=left-humerus-bone-marrow,location.prob=1.0,location.set={left-humerus-bone-marrow},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=bladder,location.prob=0.2997444728363515,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.07965781579824464,0.0443284079546717,0.040662148650149985,0.2997444728363515,0.06688145761582047,0.18564603932896345,0.04166203755138318,0.0016664815020553273,0.044883901788690145,0.1948672369736696},posterior=1.0]:0.0,33[&height=1.0,length=1.0,location=left-adrenal-gland,location.prob=1.0,location.set={left-adrenal-gland},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=bladder,location.prob=0.2997444728363515,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.07965781579824464,0.0443284079546717,0.040662148650149985,0.2997444728363515,0.06688145761582047,0.18564603932896345,0.04166203755138318,0.0016664815020553273,0.044883901788690145,0.1948672369736696},posterior=1.0]:0.0,34[&height=1.0,length=1.0,location=bladder,location.prob=1.0,location.set={bladder},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=bladder,location.prob=0.2997444728363515,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.07965781579824464,0.0443284079546717,0.040662148650149985,0.2997444728363515,0.06688145761582047,0.18564603932896345,0.04166203755138318,0.0016664815020553273,0.044883901788690145,0.1948672369736696},posterior=1.0]:0.0,35[&height=1.0,length=1.0,location=right-pelvic-lymph-node-12,location.prob=1.0,location.set={right-pelvic-lymph-node-12},location.set.prob={1.0}]:1.0)[&height=2.0,length=0.0,location=bladder,location.prob=0.2997444728363515,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.07965781579824464,0.0443284079546717,0.040662148650149985,0.2997444728363515,0.06688145761582047,0.18564603932896345,0.04166203755138318,0.0016664815020553273,0.044883901788690145,0.1948672369736696},posterior=1.0]:0.0,(36[&height=0.0,length=1.0,location=left-humerus-bone-marrow,location.prob=1.0,location.set={left-humerus-bone-marrow},location.set.prob={1.0}]:1.0,37[&height=0.0,length=1.0,location=right-pelvic-lymph-node-12,location.prob=1.0,location.set={right-pelvic-lymph-node-12},location.set.prob={1.0}]:1.0)[&height=1.0,length=1.0,location=right-pelvic-lymph-node-12,location.prob=0.4000666592600822,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,seminal-vesicle,left-adrenal-gland,bladder,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.06465948227974669,0.027330296633707365,0.11009887790245529,0.05032774136207088,0.12198644595044995,0.1619820019997778,0.027663592934118433,0.002110876569270081,0.033774025108321296,0.4000666592600822},posterior=1.0]:1.0)[&height=2.0,length=1.0,location=bladder,location.prob=0.2997444728363515,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.07965781579824464,0.0443284079546717,0.040662148650149985,0.2997444728363515,0.06688145761582047,0.18564603932896345,0.04166203755138318,0.0016664815020553273,0.044883901788690145,0.1948672369736696},posterior=1.0]:1.0)[&height=3.0,length=1.0,location=seminal-vesicle,location.prob=0.26363737362515277,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.09143428507943561,0.09310076658149094,0.03066325963781802,0.1823130763248528,0.26363737362515277,0.03988445728252416,0.053549605599377846,0.0026663704032885236,0.12554160648816798,0.11720919897789135},posterior=1.0]:1.0)[&height=4.0,length=1.0,location=seminal-vesicle,location.prob=0.4552827463615154,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,bladder,seminal-vesicle,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0714365070547717,0.07088101322075326,0.02833018553494056,0.098433507388068,0.4552827463615154,0.02833018553494056,0.03932896344850572,0.018109098989001222,0.11943117431396512,0.0704366181535385},posterior=1.0]:1.0,38[&height=4.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=5.0,length=0.0,location=prostate,location.prob=0.971114320631041,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0015553827352516388,0.0018886790356627042,0.002777469170092212,0.010332185312743028,0.0031107654705032775,9.998889012331964E-4,0.0011109876680368848,0.971114320631041,0.0035551605377180315,0.0035551605377180315},posterior=1.0]:0.0,39[&height=4.0,length=1.0,location=seminal-vesicle,location.prob=1.0,location.set={seminal-vesicle},location.set.prob={1.0}]:1.0)[&height=5.0,length=0.0,location=prostate,location.prob=0.971114320631041,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0015553827352516388,0.0018886790356627042,0.002777469170092212,0.010332185312743028,0.0031107654705032775,9.998889012331964E-4,0.0011109876680368848,0.971114320631041,0.0035551605377180315,0.0035551605377180315},posterior=1.0]:0.0,40[&height=4.0,length=1.0,location=left-pelvic-lymph-node-5,location.prob=1.0,location.set={left-pelvic-lymph-node-5},location.set.prob={1.0}]:1.0)[&height=5.0,length=0.0,location=prostate,location.prob=0.971114320631041,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0015553827352516388,0.0018886790356627042,0.002777469170092212,0.010332185312743028,0.0031107654705032775,9.998889012331964E-4,0.0011109876680368848,0.971114320631041,0.0035551605377180315,0.0035551605377180315},posterior=1.0]:0.0,(27[&height=3.0,length=1.0,location=seminal-vesicle,location.prob=1.0,location.set={seminal-vesicle},location.set.prob={1.0}]:1.0,(28[&height=3.0,length=1.0,location=bladder,location.prob=1.0,location.set={bladder},location.set.prob={1.0}]:1.0,29[&height=3.0,length=1.0,location=right-pelvic-lymph-node-12,location.prob=1.0,location.set={right-pelvic-lymph-node-12},location.set.prob={1.0}]:1.0)[&height=4.0,length=0.0,location=seminal-vesicle,location.prob=0.4418397955782691,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.04199533385179424,0.038884568381290965,0.022330852127541385,0.4418397955782691,0.0828796800355516,0.04077324741695367,0.03332963004110654,0.16809243417398068,0.055993778469058994,0.07388067992445284},posterior=1.0]:0.0)[&height=4.0,length=1.0,location=seminal-vesicle,location.prob=0.4418397955782691,location.set={left-pelvic-lymph-node-8,right-adrenal-gland,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.04199533385179424,0.038884568381290965,0.022330852127541385,0.4418397955782691,0.0828796800355516,0.04077324741695367,0.03332963004110654,0.16809243417398068,0.055993778469058994,0.07388067992445284},posterior=1.0]:1.0)[&height=5.0,length=1.0,location=prostate,location.prob=0.971114320631041,location.set={right-adrenal-gland,left-pelvic-lymph-node-8,left-humerus-bone-marrow,seminal-vesicle,bladder,left-adrenal-gland,pelvic-lymph-node-7,prostate,left-pelvic-lymph-node-5,right-pelvic-lymph-node-12},location.set.prob={0.0015553827352516388,0.0018886790356627042,0.002777469170092212,0.010332185312743028,0.0031107654705032775,9.998889012331964E-4,0.0011109876680368848,0.971114320631041,0.0035551605377180315,0.0035551605377180315},posterior=1.0]:1.0,((4[&height=5.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0,15[&height=5.0,length=1.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0}]:1.0)[&height=6.0,length=0.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0},posterior=1.0]:0.0,16[&height=5.0,length=1.0,location=seminal-vesicle,location.prob=1.0,location.set={seminal-vesicle},location.set.prob={1.0}]:1.0)[&height=6.0,length=0.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0},posterior=1.0]:0.0)[&height=6.0,length=0.0,location=prostate,location.prob=1.0,location.set={prostate},location.set.prob={1.0},posterior=1.0]:0.0;
+End;
+begin figtree;
+	set appearance.backgroundColorAttribute="Default";
+	set appearance.backgroundColour=#ffffff;
+	set appearance.branchColorAttribute="User selection";
+	set appearance.branchColorGradient=false;
+	set appearance.branchLineWidth=1.0;
+	set appearance.branchMinLineWidth=0.0;
+	set appearance.branchWidthAttribute="Fixed";
+	set appearance.foregroundColour=#000000;
+	set appearance.hilightingGradient=false;
+	set appearance.selectionColour=#2d3680;
+	set branchLabels.colorAttribute="User selection";
+	set branchLabels.displayAttribute="Branch times";
+	set branchLabels.fontName="sansserif";
+	set branchLabels.fontSize=8;
+	set branchLabels.fontStyle=0;
+	set branchLabels.isShown=false;
+	set branchLabels.significantDigits=4;
+	set layout.expansion=0;
+	set layout.layoutType="POLAR";
+	set layout.zoom=0;
+	set legend.attribute="location";
+	set legend.fontSize=12.0;
+	set legend.isShown=true;
+	set legend.significantDigits=4;
+	set nodeBars.barWidth=4.0;
+	set nodeBars.displayAttribute=null;
+	set nodeBars.isShown=false;
+	set nodeLabels.colorAttribute="User selection";
+	set nodeLabels.displayAttribute="location.prob";
+	set nodeLabels.fontName="sansserif";
+	set nodeLabels.fontSize=12;
+	set nodeLabels.fontStyle=0;
+	set nodeLabels.isShown=true;
+	set nodeLabels.significantDigits=2;
+	set nodeShapeExternal.colourAttribute="location";
+	set nodeShapeExternal.isShown=true;
+	set nodeShapeExternal.minSize=10.0;
+	set nodeShapeExternal.scaleType=Width;
+	set nodeShapeExternal.shapeType=Circle;
+	set nodeShapeExternal.size=10.0;
+	set nodeShapeExternal.sizeAttribute=null;
+	set nodeShapeInternal.colourAttribute="location";
+	set nodeShapeInternal.isShown=true;
+	set nodeShapeInternal.minSize=10.0;
+	set nodeShapeInternal.scaleType=Width;
+	set nodeShapeInternal.shapeType=Circle;
+	set nodeShapeInternal.size=10.0;
+	set nodeShapeInternal.sizeAttribute=null;
+	set polarLayout.alignTipLabels=false;
+	set polarLayout.angularRange=0;
+	set polarLayout.rootAngle=0;
+	set polarLayout.rootLength=100;
+	set polarLayout.showRoot=false;
+	set radialLayout.spread=0.0;
+	set rectilinearLayout.alignTipLabels=false;
+	set rectilinearLayout.curvature=0;
+	set rectilinearLayout.rootLength=100;
+	set scale.offsetAge=0.0;
+	set scale.rootAge=1.0;
+	set scale.scaleFactor=1.0;
+	set scale.scaleRoot=false;
+	set scaleAxis.automaticScale=true;
+	set scaleAxis.fontSize=8.0;
+	set scaleAxis.isShown=false;
+	set scaleAxis.lineWidth=1.0;
+	set scaleAxis.majorTicks=1.0;
+	set scaleAxis.minorTicks=0.5;
+	set scaleAxis.origin=0.0;
+	set scaleAxis.reverseAxis=false;
+	set scaleAxis.showGrid=true;
+	set scaleBar.automaticScale=true;
+	set scaleBar.fontSize=10.0;
+	set scaleBar.isShown=false;
+	set scaleBar.lineWidth=1.0;
+	set scaleBar.scaleRange=1.0;
+	set tipLabels.colorAttribute="User selection";
+	set tipLabels.displayAttribute="Names";
+	set tipLabels.fontName="sansserif";
+	set tipLabels.fontSize=8;
+	set tipLabels.fontStyle=0;
+	set tipLabels.isShown=true;
+	set tipLabels.significantDigits=4;
+	set trees.order=true;
+	set trees.orderType="decreasing";
+	set trees.rooting=false;
+	set trees.rootingType="User Selection";
+	set trees.transform=false;
+	set trees.transformType="cladogram";
+end;
+

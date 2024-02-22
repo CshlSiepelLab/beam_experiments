@@ -1,0 +1,7 @@
+<taxon id='dark-brownA' spec='Taxon'/>
+<taxon id='dark-pinkE' spec='Taxon'/>
+<taxon id='blueE' spec='Taxon'/>
+<taxon id='pinkE' spec='Taxon'/>
+<taxon id='orangeD' spec='Taxon'/>
+<taxon id='dark-purpleD' spec='Taxon'/>
+<taxon id='goldC' spec='Taxon'/>
