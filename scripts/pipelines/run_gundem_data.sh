@@ -86,7 +86,7 @@ Rscript scripts/plot_rate_matrix_from_beast_log.R $logfile $primary_tissue
 conda deactivate
 
 treefile="${dir}/tissue_tree_with_trait.tree"
-scripts/figtree_plot_tree.sh $treefile
+scripts/plot_figtree_consensus_tree.sh $treefile
 
 conda activate ggtree
 Rscript scripts/plot_tree_piecharts_ggtree.R ${consensus_tree} ${primary_tissue}
