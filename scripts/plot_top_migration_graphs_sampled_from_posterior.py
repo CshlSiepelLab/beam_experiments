@@ -4,6 +4,7 @@
 
 import re, sys
 import numpy as np
+import networkx as nx
 
 def find_max_bins(data):
     max_bins = 1

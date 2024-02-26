@@ -4,6 +4,11 @@
 
 import re, sys
 import pandas as pd
+import numpy as np
+import networkx as nx
+import ete3
+import matplotlib.pyplot as plt
+import matplotlib
 
 def remove_bracket_content(match):
     annotations.append(match.group()[1:-1])
@@ -62,4 +67,75 @@ annotations_dict = {}
 for node in node_labels:
     annotations_dict[node] = annotations[node_labels.index(node)]
 
-### NEED TO PLOT GRAPH HERE NOW THAT ANNOTATIONS ARE SAVED IN A DICT AND NEWICK IS ITERABLE
+annotations_df = pd.DataFrame.from_dict(annotations_dict, orient='index')
+location_probs_df = annotations_df.loc[:, ['location.set', 'location.set.prob']]
+
+# read newick into ete3 Tree
+tree = ete3.Tree(node_labeled_newick, format=3)
+
+locations = list(annotations_df['location.set'].values)
+uniq_locations = list(set([value for location in locations for value in location.split(",")]))
+
+# make adjacency matrix weighted by location probabilities with source as row index names and recipient as column names
+weighted_adjacency_matrix = pd.DataFrame(0, index=uniq_locations, columns=uniq_locations)
+
+for node in tree.traverse():
+    if node.is_root():
+        continue
+    node_name = node.name
+    parent_name = node.up.name
+    node_locs = list(location_probs_df.loc[node_name, 'location.set'].split(','))
+    node_locs_probs = list(location_probs_df.loc[node_name, 'location.set.prob'].split(','))
+    parent_locs = list(location_probs_df.loc[parent_name, 'location.set'].split(','))
+    parent_locs_probs = list(location_probs_df.loc[parent_name, 'location.set.prob'].split(','))
+    for parent_loc in parent_locs:
+        parent_loc_index = parent_locs.index(parent_loc)
+        parent_loc_prob = float(parent_locs_probs[parent_loc_index])
+        for node_loc in node_locs:
+            node_loc_index = node_locs.index(node_loc)
+            node_loc_prob = float(node_locs_probs[node_loc_index])
+            joint_prob = parent_loc_prob * node_loc_prob
+            weighted_adjacency_matrix.loc[parent_loc, node_loc] = weighted_adjacency_matrix.loc[parent_loc, node_loc] + joint_prob
+
+# remove diagonal entries to not plot self-migrations
+num_tissues = len(weighted_adjacency_matrix)
+for i in range(0, num_tissues):
+    for j in range(0, num_tissues):
+        if i == j:
+            weighted_adjacency_matrix.iloc[i,j] = 0
+
+# normalize weighted adjacency matrix so the largest is 1
+max_value = weighted_adjacency_matrix.values.max()
+weighted_adj_norm = weighted_adjacency_matrix / max_value
+
+# make complete graph with all locations
+G = nx.MultiDiGraph()
+for loc1 in uniq_locations:
+    for loc2 in uniq_locations:
+        if loc1 != loc2:
+            weight = weighted_adj_norm.loc[loc1, loc2]
+            G.add_edge(loc1, loc2, weight=weight)
+
+# Plot the graph
+# nx.draw_planar(G, with_labels = True, arrows = True, connectionstyle='arc3, rad = 0.1')
+
+
+
+# Extract edge weights
+edge_weights = [G.get_edge_data(u,v)[0]['weight'] for u, v in G.edges()]
+
+# Create a colormap based on edge weights
+cmap = matplotlib.colormaps['Reds']
+
+# Draw the graph with edge colors
+pos = nx.spring_layout(G)
+nx.draw(G, pos, with_labels=True, connectionstyle='arc3, rad = 0.1', edge_color=edge_colors, edge_cmap=cmap, width=2, font_size=10, font_color='black', font_weight='bold')
+
+# Add a colorbar to show the weight gradient
+sm = plt.cm.ScalarMappable(cmap=cmap, norm=normalize)
+sm.set_array([])
+cbar = plt.colorbar(sm, orientation='vertical')
+cbar.set_label('Edge Weight')
+
+plt.show()
+
