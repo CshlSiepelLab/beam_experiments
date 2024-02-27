@@ -1,4 +1,0 @@
-<taxon id='goldA' spec='Taxon'/>
-<taxon id='dark-pinkC' spec='Taxon'/>
-<taxon id='dark-greenC' spec='Taxon'/>
-<taxon id='light-blueC' spec='Taxon'/>

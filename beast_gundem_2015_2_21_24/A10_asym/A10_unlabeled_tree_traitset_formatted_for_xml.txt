@@ -1,7 +1,0 @@
-dark-brownA=right-iliac-lymph-node,
-dark-pinkE=prostate,
-blueE=prostate,
-pinkE=prostate,
-orangeD=periportal-lymph-node,
-dark-purpleD=periportal-lymph-node,
-goldC=perigastric-lymph-node

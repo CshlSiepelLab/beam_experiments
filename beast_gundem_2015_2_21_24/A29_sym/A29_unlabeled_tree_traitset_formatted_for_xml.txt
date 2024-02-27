@@ -1,4 +1,0 @@
-goldA=right-superficial-inguinal-lymph-node,
-dark-pinkC=prostate,
-dark-greenC=prostate,
-light-blueC=prostate
