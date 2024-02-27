@@ -37,9 +37,17 @@ def label_nodes(newick):
     node_labeled_newick += parts[-1]
     return node_labeled_newick
 
-# consensus_tree_file = sys.argv[1]
 
-consensus_tree_file = "beast_gundem_2015_2_21_24/A10_sym/tissue_tree_with_trait.tree"
+
+
+consensus_tree_file = sys.argv[1]
+primary_tissue = sys.argv[2]
+
+# consensus_tree_file = "beast_gundem_2015_2_21_24/A10_sym/tissue_tree_with_trait.tree"
+# primary_tissue = "prostate"
+
+
+
 
 with open(consensus_tree_file, 'r') as file:
     for line in file:
@@ -116,26 +124,69 @@ for loc1 in uniq_locations:
             weight = weighted_adj_norm.loc[loc1, loc2]
             G.add_edge(loc1, loc2, weight=weight)
 
-# Plot the graph
-# nx.draw_planar(G, with_labels = True, arrows = True, connectionstyle='arc3, rad = 0.1')
-
-
+nodes = sorted(list(G.nodes()))
+G = G.subgraph(nodes)
 
 # Extract edge weights
 edge_weights = [G.get_edge_data(u,v)[0]['weight'] for u, v in G.edges()]
+edge_widths = [weight * 5 for weight in edge_weights]
 
 # Create a colormap based on edge weights
-cmap = matplotlib.colormaps['Reds']
+# cmap = matplotlib.colormaps['binary']
+cmap = plt.cm.colors.LinearSegmentedColormap.from_list('custom', [(1,1,1), (1,1,1), (0.5,0.5,0.5), (0,0,0)], N=256)
 
 # Draw the graph with edge colors
-pos = nx.spring_layout(G)
-nx.draw(G, pos, with_labels=True, connectionstyle='arc3, rad = 0.1', edge_color=edge_colors, edge_cmap=cmap, width=2, font_size=10, font_color='black', font_weight='bold')
+edge_colors = [sm.to_rgba(weight) for (u, v), weight in zip(G.edges(), edge_weights)]
+node_colors = range(len(nodes))
+node_cmap = matplotlib.cm.get_cmap('tab20', len(nodes))
+
+# Find the node corresponding to the primary tissue
+primary_tissue_node = [node for node in G.nodes() if node == primary_tissue][0]
+
+# Create positions for the nodes
+fig, ax = plt.subplots(figsize=(8, 8))
+max_width = ax.get_position().width
+pos = {}
+row_height = 0.25
+num_nodes = len(nodes)
+
+for i, node in enumerate(G.nodes()):
+    if node == primary_tissue:
+        pos[node] = (max_width / 2, 0)
+    else:
+        pos[node] = ((max_width / num_nodes) * (i + 0.5), -row_height) 
+
+nx.draw(G, 
+        pos=pos, 
+        ax=ax, 
+        with_labels=False, 
+        connectionstyle='arc3, rad = 0.2', 
+        edge_color=edge_colors, 
+        edge_cmap=cmap, 
+        width=edge_widths, 
+        arrowsize = 20,
+        font_size=10, 
+        font_color='black', 
+        font_weight='bold', 
+        node_shape = 's',
+        node_size = 1000,
+        node_color = node_colors,
+        cmap=node_cmap)
 
 # Add a colorbar to show the weight gradient
-sm = plt.cm.ScalarMappable(cmap=cmap, norm=normalize)
+sm = plt.cm.ScalarMappable(cmap=cmap)
 sm.set_array([])
-cbar = plt.colorbar(sm, orientation='vertical')
-cbar.set_label('Edge Weight')
+cbar = plt.colorbar(sm, ax=ax, shrink=0.5, ticks=np.arange(0, 1.01, 0.25))
+cbar.set_label('Probability')
 
-plt.show()
+# Create legend for node colors
+legend_labels = {loc: node_cmap(i) for i, loc in enumerate(list(G.nodes()))}
+legend_handles = [plt.Line2D([0], [0], marker='s', color='w', markerfacecolor=color, markersize=10) for color in legend_labels.values()]
+ax.legend(legend_handles, legend_labels.keys(), title='Node Locations', loc='upper left', bbox_to_anchor=(0.9, 1))
+
+
+# plt.show()
+
+outfile = consensus_tree_file.split(".")[0] + "_mcc_migration_graph.pdf"
+plt.savefig(outfile)
 
