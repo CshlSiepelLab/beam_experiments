@@ -11,4 +11,7 @@ outputdir=$(dirname "$file")
 
 python scripts/pathfinder/pathfinder.py $file -o $outputdir
 
+rm -r ${outputdir}/M11CC_Out
+mv ${outputdir}/scratch* ${outputdir}/megacc
+
 done
