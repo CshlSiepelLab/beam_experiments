@@ -43,7 +43,7 @@ def label_nodes(newick):
 consensus_tree_file = sys.argv[1]
 primary_tissue = sys.argv[2]
 
-# consensus_tree_file = "beast_gundem_2015_2_21_24/A10_sym/tissue_tree_with_trait.tree"
+# consensus_tree_file = "results/beast_gundem_2015_2_21_24/A10_sym/tissue_tree_with_trait.tree"
 # primary_tissue = "prostate"
 
 
@@ -117,15 +117,19 @@ max_value = weighted_adjacency_matrix.values.max()
 weighted_adj_norm = weighted_adjacency_matrix / max_value
 
 # make complete graph with all locations
-G = nx.MultiDiGraph()
+H = nx.MultiDiGraph()
 for loc1 in uniq_locations:
     for loc2 in uniq_locations:
         if loc1 != loc2:
             weight = weighted_adj_norm.loc[loc1, loc2]
-            G.add_edge(loc1, loc2, weight=weight)
+            H.add_edge(loc1, loc2, weight=weight)
 
-nodes = sorted(list(G.nodes()))
-G = G.subgraph(nodes)
+nodes_np = sorted(list(H.nodes()))
+nodes = [primary_tissue] + [node for node in nodes_np if node != primary_tissue]
+
+G = nx.MultiDiGraph()
+G.add_nodes_from(nodes)
+G.add_edges_from(H.edges(data=True))
 
 # Extract edge weights
 edge_weights = [G.get_edge_data(u,v)[0]['weight'] for u, v in G.edges()]
@@ -147,7 +151,7 @@ primary_tissue_node = [node for node in G.nodes() if node == primary_tissue][0]
 fig, ax = plt.subplots(figsize=(8, 8))
 max_width = ax.get_position().width
 pos = {}
-row_height = 0.25
+row_height = 0.1
 num_nodes = len(nodes)
 
 for i, node in enumerate(G.nodes()):
@@ -155,6 +159,10 @@ for i, node in enumerate(G.nodes()):
         pos[node] = (max_width / 2, 0)
     else:
         pos[node] = ((max_width / num_nodes) * (i + 0.5), -row_height) 
+
+# make my own color map of 10 colors for now
+node_colors = ["black", "red", "green", "blue", "orange", "purple", "brown", "pink", "gray", "gold"]
+node_colors = node_colors[0:len(nodes)]
 
 nx.draw(G, 
         pos=pos, 
@@ -170,8 +178,8 @@ nx.draw(G,
         font_weight='bold', 
         node_shape = 's',
         node_size = 1000,
-        node_color = node_colors,
-        cmap=node_cmap)
+        node_color = node_colors)
+        # cmap=node_cmap)
 
 # Add a colorbar to show the weight gradient
 sm = plt.cm.ScalarMappable(cmap=cmap)
@@ -180,7 +188,8 @@ cbar = plt.colorbar(sm, ax=ax, shrink=0.5, ticks=np.arange(0, 1.01, 0.25))
 cbar.set_label('Probability')
 
 # Create legend for node colors
-legend_labels = {loc: node_cmap(i) for i, loc in enumerate(list(G.nodes()))}
+# legend_labels = {loc: node_cmap(i) for i, loc in enumerate(list(G.nodes()))}
+legend_labels = {loc: node_color for loc, node_color in zip(nodes, node_colors)}
 legend_handles = [plt.Line2D([0], [0], marker='s', color='w', markerfacecolor=color, markersize=10) for color in legend_labels.values()]
 ax.legend(legend_handles, legend_labels.keys(), title='Node Locations', loc='upper left', bbox_to_anchor=(0.9, 1))
 

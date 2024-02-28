@@ -9,7 +9,7 @@ library(ggimage)
 treefile <- commandArgs(trailingOnly = TRUE)[1]
 primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
 
-# treefile <- "A22_unlabeled_tree_final_input_xml.tree"
+# treefile <- "results/beast_gundem_2015_2_21_24/A10_sym/tissue_tree_with_trait.tree"
 # primary_tissue <- "prostate"
 
 beast_tree <- read.beast(treefile)
@@ -21,7 +21,7 @@ beast_tree <- as.phylo(beast_tree_df)
 locationset <- beast_tree_df$location.set
 locationsetprob <- beast_tree_df$location.set.prob
 
-location_order <- c(primary_tissue, unique(beast_tree_df$location[beast_tree_df$location != primary_tissue]))
+location_order <- c(primary_tissue, sort(unique(beast_tree_df$location[beast_tree_df$location != primary_tissue])))
 num_locations <- length(location_order)
 colors <- setNames(palette()[1:length(location_order)], location_order)
 
@@ -66,7 +66,7 @@ p <- ggtree(beast_tree, aes(color=beast_tree_df$location), layout="rectangular")
     geom_tiplab(hjust = -0.2) +
     geom_tippoint(aes(color = beast_tree_df$location), size=5) + 
     scale_color_manual(values = colors, breaks = location_order) +
-    labs(color = "Tissue") +
+    labs(color = "Node location") +
     theme(legend.position = "right") +
     xlim(0, x)
 

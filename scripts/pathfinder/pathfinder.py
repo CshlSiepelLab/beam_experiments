@@ -30,7 +30,6 @@ print_megacc_cmd = False
 
 parser = argparse.ArgumentParser(description="PathFinder tumor migration path solver.")
 parser.add_argument("aln", help="Clone sequence alignment file.", type=str)
-parser.add_argument("--primary", help="Specify name of primary tumor.", type=str, default="Primary")
 parser.add_argument("-o", "--output", help="Output directory to put results in.", type=str, default=".")
 
 args = parser.parse_args()

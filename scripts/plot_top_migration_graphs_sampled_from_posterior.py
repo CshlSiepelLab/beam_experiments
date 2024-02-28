@@ -61,7 +61,7 @@ def tree_to_migration_graph(tree, primary_tissue, ax, n):
 
     tree_ete = ete3.Tree(node_labeled_newick, format=3)
 
-    G = nx.MultiDiGraph()
+    H = nx.MultiDiGraph()
 
     for node in tree_ete.traverse():
         if node.is_root():
@@ -71,11 +71,15 @@ def tree_to_migration_graph(tree, primary_tissue, ax, n):
         node_loc = str(annotations_df.loc[node_name, 'location'])
         parent_loc = str(annotations_df.loc[parent_name, 'location'])
         if parent_loc != node_loc:
-            G.add_edge(parent_loc, node_loc)
+            H.add_edge(parent_loc, node_loc)
 
-    # Draw the graph with edge colors
-    nodes = sorted(list(G.nodes()))
-    G = G.subgraph(nodes)
+    nodes_np = sorted(list(H.nodes()))
+    nodes = [primary_tissue] + [node for node in nodes_np if node != primary_tissue]
+
+    G = nx.MultiDiGraph()
+    G.add_nodes_from(nodes)
+    G.add_edges_from(H.edges(data=True))
+
     node_colors = range(len(nodes))
     node_cmap = matplotlib.cm.get_cmap('tab20', len(nodes))
 
@@ -94,6 +98,10 @@ def tree_to_migration_graph(tree, primary_tissue, ax, n):
         else:
             pos[node] = ((max_width / num_nodes) * (i + 0.5), -row_height) 
 
+    # make my own color map of 10 colors for now
+    node_colors = ["black", "red", "green", "blue", "orange", "purple", "brown", "pink", "gray", "gold"]
+    node_colors = node_colors[0:len(nodes)]
+
     nx.draw(G, 
             pos=pos, 
             ax=ax, 
@@ -106,10 +114,11 @@ def tree_to_migration_graph(tree, primary_tissue, ax, n):
             font_weight='bold', 
             node_shape = 's',
             node_size = 1000,
-            node_color = node_colors,
-            cmap=node_cmap)
+            node_color = node_colors)
+            # cmap=node_cmap)
 
-    legend_labels = {loc: node_cmap(i) for i, loc in enumerate(list(G.nodes()))}
+    # legend_labels = {loc: node_cmap(i) for i, loc in enumerate(list(G.nodes()))}
+    legend_labels = {loc: node_color for loc, node_color in zip(nodes, node_colors)}
     legend_handles = [plt.Line2D([0], [0], marker='s', color='w', markerfacecolor=color, markersize=10) for color in legend_labels.values()]
     ax.legend(legend_handles, legend_labels.keys(), title='Node locations', loc='upper left', bbox_to_anchor=(0.7, 1))
     plt.tight_layout()
@@ -120,7 +129,7 @@ def tree_to_migration_graph(tree, primary_tissue, ax, n):
 posterior_file = sys.argv[1]
 primary_tissue = sys.argv[2]
 
-# posterior_file = "beast_gundem_2015_2_21_24/A10_sym/tissue_tree_with_trait.trees"
+# posterior_file = "results/beast_gundem_2015_2_21_24/A10_sym/tissue_tree_with_trait.trees"
 # primary_tissue = "prostate"
 
 # set the number of trees to obtain as graphs
@@ -155,15 +164,21 @@ posterior_values = [round(float(value), 2) for value in posterior_values]
 
 kde = gaussian_kde(posterior_values)
 x_values = np.linspace(min(posterior_values), max(posterior_values), 1000)
+max_x = max(x_values)
+max_x_y = kde(max_x)
 peak_value = x_values[np.argmax(kde(x_values))]
 peak_density = kde(peak_value)
 
 # # plot posterior values to see peak
-# plt.plot(x_values, kde(x_values), label='Posterior Density')
-# plt.hist(posterior_values, bins=100, density=True, alpha=0.5, color='green', label='Posterior Histogram')
-# plt.scatter(peak_value, peak_density, color='red', label=f'Peak: {peak_value:.2f}')
+# plt.plot(x_values, kde(x_values)) #label='Posterior Density')
+# plt.hist(posterior_values, bins=100, density=True, alpha=0.5, color='green') #label='Posterior Histogram')
+# plt.scatter(peak_value, peak_density, color='red')
+# plt.axvline(x=peak_value, color='red', linestyle='--', label='Highest density')
+# plt.scatter(max_x, max_x_y, color='black')
+# plt.axvline(x=max_x, color='black', linestyle='--', label='Highest posterior')
 # plt.xlabel("Posterior")
 # plt.ylabel("Density")
+# plt.legend()
 # plt.show()
 
 # get n number of trees closest to the peak value of the posterior density
