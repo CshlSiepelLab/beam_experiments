@@ -55,9 +55,6 @@ def parse_input_aln(aln_file_in, aln_file_out):
 				else:
 					seqs[seqname] = line
 		if 'Normal' not in seqs.keys():
-			if args.default_normal_char == None:
-				raise Exception("No Normal sequence found, Normal must be specified, or a default Normal sequence character must be specified with --default_normal_char option.")
-			print("No Normal sequence found, using user specified default char {} * {}".format(args.default_normal_char,len(next(iter(seqs.values())))))
 			seqs['Normal'] = 'A' * len(next(iter(seqs.values())))
 		seq_len = len(seqs[next(iter(seqs.keys()))])
 		target_seq_len = 3
