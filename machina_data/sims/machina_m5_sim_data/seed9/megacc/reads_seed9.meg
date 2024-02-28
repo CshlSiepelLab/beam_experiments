@@ -1,0 +1,17 @@
+#MEGA
+!Title SNVs;
+!Format datatype=Protein;
+#Clo0
+AATTTTTTT
+#Clo1
+AATTTTTTT
+#Clo2
+ATTTTTTTT
+#Clo3
+ATTAAATTT
+#Clo4
+ATATTTATA
+#Clo5
+ATTAAATAT
+#Normal
+AAAAAAAAA

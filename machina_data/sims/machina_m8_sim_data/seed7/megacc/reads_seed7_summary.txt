@@ -1,0 +1,57 @@
+;   MEGA-CC (Molecular Evolutionary Genetics Analysis Compute Core)
+;
+;   Suggested Citation for MEGA-CC 11:
+;
+;   Tamura K, Stecher G, and Kumar S.
+;   MEGA11: Molecular Evolutionary Genetics Analysis version 11.
+;   Molecular Biology and Evolution (2021) 38:3022-3027
+;
+;   Kumar S, Stecher G, Peterson D, and Tamura K
+;   MEGA-CC: Computing Core of Molecular Evolutionary Genetics Analysis Program for Automated and Iterative Data Analysis
+;   Bioinformatics (2012) 28:2685-2686 (Epub 2012 Aug 24)
+
+[Application Info]
+
+	Version                                 = 11.0.13
+	Build                                   = 11220620-x86_64
+	User Interface                          = CommandLine
+	Operating System                        = mac
+
+[General Info]
+
+	Data Type                               = amino acid
+	No. of Taxa                             =       10
+	No. of Sites                            =       50
+	Data File                               = 'machina_data/sims//machina_m8_sim_data/seed7/scratch_1/reads_seed7.meg'
+	Settings File                           = 'scripts/pathfinder/infer_NJ_amino_acid.mao'
+	Command Line                            = megacc -a scripts/pathfinder/infer_NJ_amino_acid.mao -d machina_data/sims//machina_m8_sim_data/seed7/scratch_1/reads_seed7.meg -o machina_data/sims//machina_m8_sim_data/seed7/scratch_1/reads_seed7.nwk
+
+[Analysis Settings]
+
+	Analysis                                = Phylogeny Reconstruction
+	Scope                                   = All Selected Taxa
+	Statistical Method                      = Neighbor-joining
+	Test of Phylogeny                       = None
+	No. of Bootstrap Replications           = Not Applicable
+	Substitutions Type                      = Amino acid
+	Model/Method                            = p-distance
+	Rates among Sites                       = Uniform Rates
+	Gamma Parameter                         = Not Applicable
+	Pattern among Lineages                  = Same (Homogeneous)
+	Gaps/Missing Data Treatment             = Pairwise deletion
+	Site Coverage Cutoff (%)                = Not Applicable
+	Number of Threads                       = 1
+	Has Time Limit                          = False
+	Maximum Execution Time                  = -1
+	datatype                                = snProtein
+	MissingBaseSymbol                       = ?
+	IdenticalBaseSymbol                     = .
+	GapSymbol                               = -
+
+[Analysis Statistics]
+
+	Start Time                              = 28-2-24 11:03:21
+	End Time                                = 28-2-24 11:03:22
+	Execution Time                          =    0.109 (seconds)
+	Max Heap Memory Used                    = 7.544 (MB)
+	Sum of branch lengths                   =    1.587
