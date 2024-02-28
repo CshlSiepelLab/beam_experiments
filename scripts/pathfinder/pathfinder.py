@@ -22,7 +22,7 @@ from Bio.Seq import Seq
 from io import StringIO
 
 megacc_app = "megacc"
-mp_tree_infer_mao = "infer_NJ_amino_acid.mao"
+mp_tree_infer_mao = "scripts/pathfinder/infer_NJ_amino_acid.mao"
 ancestral_seqs_mao = "ancestral_seqs_ML_protein.mao"
 outgroup_file = "outgroup.txt"
 
