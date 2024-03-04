@@ -19,7 +19,7 @@ do
 dir_pre="machina_data/sims/"
 dir_name="machina_${dataset}_sim_data"
 
-pipeline_run_name="fixed_offset_symmmetrical${state}_machina_${dataset}_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24"
+pipeline_run_name="no_bsvss_symmmetrical${state}_machina_${dataset}_sims_compare_beast_machina_fixedtreeanalysis_3_4_24"
 mkdir ${pipeline_run_name}
 
 cp -r ${dir_pre}${dir_name} ${pipeline_run_name}/
@@ -52,12 +52,8 @@ taxafile="${dir}T_${dir_prefix}_unlabeled_true_tree_taxonset_formatted_for_xml.t
 traitfile="${dir}T_${dir_prefix}_unlabeled_true_tree_traitset_formatted_for_xml.txt"
 newickfile="${dir}T_${dir_prefix}_unlabeled_true_tree_newick_formatted_for_xml.txt"
 primary_tissue="P"
-# if [[ $dir == *m5* ]]; then
-#     xml_template="inputs/template_xml_symmetrical_machina_sim_m5_data.xml"
-# elif [[ $dir == *m8* ]]; then
-#     xml_template="inputs/template_xml_symmetrical_machina_sim_m8_data.xml"
-# fi
-xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
+# xml_template="inputs/template_xml_fixedtreeanalysis_machina_sim_universal.xml"
+xml_template="inputs/no_bsvss_template_xml_fixedtreeanalysis_machina_sim_universal.xml"
 # symmetric="false"
 symmetric="${state}"
 # Shorter chain length for symmetrical setup since convergence is reached earlier with less parameters
