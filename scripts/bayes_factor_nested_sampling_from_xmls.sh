@@ -36,9 +36,10 @@ cp_xml2="${xml2_dir}/${xml2_file}"
 
 # replace necessary portions of the xml to run nested sampling
 existing_mcmc="<run id=\"mcmc\" spec=\"MCMC\""
+# start with low number of active particles such as 1 and then increase only if SD of each is not less than 2 so the diff threshold is too high. Can compute the necessary number of particles with N=H/(SD*SD) where H is the information content and SD the desired standard deviation, reccomended to be 2.
 active_particles=1
-subchainlength=2000
-# can setup nested sampling with or without autoSubChainLength which may be unstable
+# can use another script to test different subChainLengths to choose that which is the minimum requried to ensure ML and SD stability which indicates indepedent sampling of points. Values in the range of 5000-20000 seem to be the most common. Can also empirically determine based on seperate normal MCMC run where subChainLength = len MCMC / smallest ESS of all parameters, but this will give an unneccessarily high value.
+subchainlength=10000
 replace_mcmc="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"1000000\" particleCount=\"$active_particles\" subChainLength=\"$subchainlength\" epsilon=\"1e-13\">"
 sed -i "s|$existing_mcmc.*|$replace_mcmc|" "$cp_xml1"
 sed -i "s|$existing_mcmc.*|$replace_mcmc|" "$cp_xml2"
@@ -85,7 +86,7 @@ diff_threshold=$(echo "2 * sqrt(($sd1^2) + ($sd2^2))" | bc -l)
 
 # determine if the number of particles is enough
 if (( $(echo "$abs_log_bf < $diff_threshold" | bc -l) )); then
-    echo "Bayes factor comparison failed because the Log(BF) of $abs_log_bf was not greater than $diff_threshold. Need to repeat with more active particles then ${active_particles} to detect fine differences."
+    echo "Bayes factor comparison failed because the Log(BF) of $abs_log_bf was not greater than $diff_threshold. Need to repeat with more active particles then ${active_particles} to reduce the difference threshold to detect fine differences, or otherwise conclude that the models cannot be distinguished."
     exit
 fi
 
