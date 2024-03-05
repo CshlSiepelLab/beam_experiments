@@ -35,8 +35,11 @@ cp_xml1="${xml1_dir}/${xml1_file}"
 cp_xml2="${xml2_dir}/${xml2_file}"
 
 # replace necessary portions of the xml to run nested sampling
-existing_mcmc='<run id="mcmc" spec="MCMC"'
-replace_mcmc='<run id="mcmc" spec="beast.gss.NS" chainLength="250000" particleCount="1" subChainLength="20000" epsilon="1e-13" autoSubChainLength="true" paramCountFactor="10">'
+existing_mcmc="<run id=\"mcmc\" spec=\"MCMC\""
+active_particles=1
+subchainlength=2000
+# can setup nested sampling with or without autoSubChainLength which may be unstable
+replace_mcmc="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"1000000\" particleCount=\"$active_particles\" subChainLength=\"$subchainlength\" epsilon=\"1e-13\">"
 sed -i "s|$existing_mcmc.*|$replace_mcmc|" "$cp_xml1"
 sed -i "s|$existing_mcmc.*|$replace_mcmc|" "$cp_xml2"
 
@@ -47,9 +50,76 @@ sed -i "s|$existing_logger|$replace_logger|" "$cp_xml2"
 
 # run nested sampling in BEAST for both xml files
 beast_path=$(which beast)
-$beast_path -overwrite -working $cp_xml1 > ${xml1_dir}/xml1_marginal_likelihood_run.txt
-$beast_path -overwrite -working $cp_xml2 > ${xml2_dir}/xml2_marginal_likelihood_run.txt
+output_xml1="${xml1_dir}/xml1_marginal_likelihood_run.txt"
+output_xml2="${xml2_dir}/xml2_marginal_likelihood_run.txt"
 
+# run both xml files in parallel
+cmd1="$beast_path -overwrite -working '$cp_xml1' > '$output_xml1'"
+cmd2="$beast_path -overwrite -working '$cp_xml2' > '$output_xml2'"
+commands=("$cmd1" "$cmd2")
 
+# setup file with 2 individual commands to run in parallel
+for command in "${commands[@]}"
+do
+  echo "${command}" >> "${dir}/parallel.txt"
+done
 
+# run 2 individual commands in parallel
+parallel -j 2 < "${dir}/parallel.txt"
+rm "${dir}/parallel.txt"
 
+# grab marginal likleihood and SD estimates from the plain output
+ml_line_xml1=$(grep "Marginal likelihood:" "$output_xml1" | grep -vE "subsample|bootstrap")
+ml_line_xml2=$(grep "Marginal likelihood:" "$output_xml2" | grep -vE "subsample|bootstrap")
+
+# process output line to get ML and SD for each xml run
+ml1=$(echo "$ml_line_xml1" | cut -d ' ' -f 3 | cut -d '(' -f 1)
+sd1=$(echo "$ml_line_xml1" | cut -d ' ' -f 3 | cut -d '(' -f 2 | cut -d ')' -f 1)
+ml2=$(echo "$ml_line_xml2" | cut -d ' ' -f 3 | cut -d '(' -f 1)
+sd2=$(echo "$ml_line_xml2" | cut -d ' ' -f 3 | cut -d '(' -f 2 | cut -d ')' -f 1)
+
+# compute Bayes factor and difference threshold from ML and SD estimates for each XML
+log_bf=$(echo "$ml1 - $ml2" | bc -l)
+abs_log_bf=$(echo "if ($log_bf < 0) -($log_bf) else $log_bf" | bc -l)
+diff_threshold=$(echo "2 * sqrt(($sd1^2) + ($sd2^2))" | bc -l)
+
+# determine if the number of particles is enough
+if (( $(echo "$abs_log_bf < $diff_threshold" | bc -l) )); then
+    echo "Bayes factor comparison failed because the Log(BF) of $abs_log_bf was not greater than $diff_threshold. Need to repeat with more active particles then ${active_particles} to detect fine differences."
+    exit
+fi
+
+# decide if model 1 or model 2 is favored
+if (( $(echo "$log_bf > 0" | bc -l) )); then
+    model="Model1 (xml1)"
+elif (( $(echo "$log_bf < 0" | bc -l) )); then
+    model="Model1 (xml1)"
+fi
+
+# interpret log Bayes factor where a positive value support model1 and a negative value supports model2
+# echo "log(BF) = log(ML1) - log(ML2), where BEAST nested sampling automatically reports log(ML) values"
+echo "Log(BF) is ${log_bf}"
+
+if (( $(echo "$abs_log_bf <= 0.5" | bc -l) )); then
+    intepretation="${model} is preferred, but the difference is hardly worth mentioning."
+    echo $interpretation
+elif (( $(echo "$abs_log_bf <= 1.3" | bc -l) )); then
+    interpretation="${model} is preferred with positive support."
+    echo $interpretation
+elif (( $(echo "$abs_log_bf <= 2.2" | bc -l) )); then
+    interpretation="${model} is preferred with strong support."
+    echo $interpretation
+elif (( $(echo "$abs_log_bf > 2.2" | bc -l) )); then
+    interpretation="${model} is preferred with overwhelming support."
+    echo $interpretation
+fi
+
+# write results to an output file
+outputfile="${dir}/bayes_factor_results.txt"
+
+echo "Log(ML1) is ${ml1}" > $outputfile
+echo "SD of ML1 is ${sd1}" >> $outputfile
+echo "Log(ML2) is ${ml2}" >> $outputfile
+echo "SD of ML2 is ${sd2}" >> $outputfile
+echo "Log(BF) is ${log_bf}" >> $outputfile
+echo $interpretation >> $outputfile

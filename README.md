@@ -37,6 +37,18 @@ scripts/run_tidetree.sh --xml tidetree.xml
 
 This can be done by following those respective tutorials which specify to import `.tree` file and `.dat` file for tissue locations into BEAUTi where substitution model parameters and MCMC options can be specified through the GUI.
 
+This can also be done by directly editing the xml file as done in the pipelines in this repo.
+
 ### Resolving branch length estimated for MACHINA simulated data following PathFinder method
 
 `python ./scripts/pathfinder/pathfinder.py input.fas --primary P -o Example_output`
+
+### Running Bayes factor comparison for two XML files for FixedTreeAnalysis
+
+```
+scripts/bayes_factor_nested_sampling_from_xmls.sh --xml1 results/no_bsvss_compare_beast_machina_fixedtreeanalysis_3_4_24/no_bsvss_symmmetricalfalse_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_3_4_24/machina_m5_sim_data/seed3/T_seed3_unlabeled_true_tree_final_input_xml.xml --xml2 results/no_bsvss_compare_beast_machina_fixedtreeanalysis_3_4_24/no_bsvss_symmmetricaltrue_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_3_4_24/machina_m5_sim_data/seed3/T_seed3_unlabeled_true_tree_final_input_xml.xml --dir compare_asym_sym_bayes_factor_m5_seed3_3_5_24
+```
+or the more general form:
+```
+bayes_factor_nested_sampling_from_xmls.sh --xml1 <xml filepath (str)> --xml2 <xml filepath (str)> --dir <working directory path (str)>
+```
