@@ -52,3 +52,11 @@ or the more general form:
 ```
 bayes_factor_nested_sampling_from_xmls.sh --xml1 <xml filepath (str)> --xml2 <xml filepath (str)> --dir <working directory path (str)>
 ```
+
+### Running new BEAST2.7 metastabayes package models for reduced paramaterization and/or joint inference with TideTree
+
+Need to obtain the metastabayes.jar from the metastabayes repo, which if placed up one directory from this repo, then can be run as follows with the option of adding the `-working` flag before the xml file name to produce output in the same directory as the xml file and the `-overwrite` flag to force BEAST to run a new analysis and overwrite previous results from the same xml in the same directory:
+```
+java -jar ../metastabayes/metastabayes.jar ../metastabayes/examples/oneRate_machina_m5_seed3.xml
+```
+
