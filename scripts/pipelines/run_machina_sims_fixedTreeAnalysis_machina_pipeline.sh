@@ -105,7 +105,7 @@ rm -r ${machina_dir}
 conda activate compare_trees
 beast_tree="${dir}/tissue_tree_with_trait.tree"
 machina_tree="${dir}/machina_tree_all_tissue_labels.nwk"
-python scripts/calculate_internal_node_label_performance.py ${sim_tree_with_tissues} ${beast_tree} ${machina_tree}
+python scripts/calculate_internal_node_label_performance.py ${sim_tree_with_tissues} ${beast_tree} ${machina_tree} ${dir}
 conda deactivate
 
 sim_accuracy_output="${dir}/compare_machina_beast_internal_node_performance.tsv"

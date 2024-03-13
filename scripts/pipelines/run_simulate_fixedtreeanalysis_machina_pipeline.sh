@@ -112,7 +112,7 @@ do
         conda activate compare_trees
         beast_tree="${pipeline_run_name}/sim_results_sim${i}/tissue_tree_with_trait.tree"
         machina_tree="${pipeline_run_name}/sim_results_sim${i}/machina_tree_all_tissue_labels.nwk"
-        python scripts/calculate_internal_node_label_performance.py ${sim_tree_with_tissues} ${beast_tree} ${machina_tree}
+        python scripts/calculate_internal_node_label_performance.py ${sim_tree_with_tissues} ${beast_tree} ${machina_tree} "${pipeline_run_name}/sim_results_sim${i}"
         conda deactivate
 
         sim_accuracy_output="${pipeline_run_name}/sim_results_sim${i}/compare_machina_beast_internal_node_performance.tsv"

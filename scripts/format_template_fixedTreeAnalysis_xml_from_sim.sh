@@ -2,22 +2,23 @@
 
 # This script takes in files containing the information which needs to be plugged into the template xml file for FixedTreeAnalysis.
 
-# seqfile=$1
-# taxafile=$2
-# traitfile=$3
-# newickfile=$4
-# xml_template=$5
-# primary_tissue=$6
-# chainlength=$7
-# model=$8    ### can be "asym", "sym", "oneRate", "threeRates"
+seqfile=$1
+taxafile=$2
+traitfile=$3
+newickfile=$4
+xml_template=$5
+primary_tissue=$6
+chainlength=$7
+model=$8    ### can be "asym", "sym", "oneRate", "threeRates"
 
-seqfile="results/fixed_offset_sym_asym_compare_machina_sims_fixedtreeanalysis_2_21_24/fixed_offset_symmmetricalfalse_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_sequences_formatted_for_xml.txt"
-taxafile="results/fixed_offset_sym_asym_compare_machina_sims_fixedtreeanalysis_2_21_24/fixed_offset_symmmetricalfalse_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
-traitfile="results/fixed_offset_sym_asym_compare_machina_sims_fixedtreeanalysis_2_21_24/fixed_offset_symmmetricalfalse_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_traitset_formatted_for_xml.txt"
-newickfile="results/fixed_offset_sym_asym_compare_machina_sims_fixedtreeanalysis_2_21_24/fixed_offset_symmmetricalfalse_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_newick_formatted_for_xml.txt"
-xml_template="inputs/no_bsvss_template_xml_fixedtreeanalysis_machina_sim_universal.xml"
-primary_tissue="P"
-model="oneRate"
+# seqfile="results/fixed_offset_sym_asym_compare_machina_sims_fixedtreeanalysis_2_21_24/fixed_offset_symmmetricalfalse_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_sequences_formatted_for_xml.txt"
+# taxafile="results/fixed_offset_sym_asym_compare_machina_sims_fixedtreeanalysis_2_21_24/fixed_offset_symmmetricalfalse_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
+# traitfile="results/fixed_offset_sym_asym_compare_machina_sims_fixedtreeanalysis_2_21_24/fixed_offset_symmmetricalfalse_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_traitset_formatted_for_xml.txt"
+# newickfile="results/fixed_offset_sym_asym_compare_machina_sims_fixedtreeanalysis_2_21_24/fixed_offset_symmmetricalfalse_machina_m8_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m8_sim_data/seed172/T_seed172_unlabeled_true_tree_newick_formatted_for_xml.txt"
+# xml_template="inputs/no_bsvss_template_xml_fixedtreeanalysis_machina_sim_universal.xml"
+# primary_tissue="P"
+# chainlength = 100000
+# model="oneRate"
 
 REPLACE_CHAINLENGTH="${chainlength}"
 
@@ -123,7 +124,8 @@ sed -i "s|REPLACE_OFFSET|$REPLACE_OFFSET|g" $XML_FILE
 
 # add metastabayes package to namespace if necessary based on the input substitution model selection
 if [ "$model" = "oneRate" ] || [ "$model" = "threeRates" ]; then
-    new_namespace=":metastabayes"
-    sed -i "1s/namespace=\"\(.*\)\"/namespace=\"\1$new_namespace\"/" "$XML_FILE"
+    namespace=$(grep -oP 'namespace="\K[^"]+' "$XML_FILE")
+    new_namespace="${namespace}:metastabayes"
+    sed -i "s/$namespace/$new_namespace/g" "$XML_FILE"
 fi
 
