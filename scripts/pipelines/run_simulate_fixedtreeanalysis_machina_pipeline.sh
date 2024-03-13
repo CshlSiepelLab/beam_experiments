@@ -65,8 +65,13 @@ do
         # symmetric="false"
         symmetric="${sym}"
         chainlength=1000000
+        if [ "$sym" = true ]; then
+            sym_name="sym"
+        else
+            sym_name="asym"
+        fi
 
-        scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${symmetric} ${chainlength}
+        scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${chainlength} ${sym_name}
 
         # Run BEAST2 on formatted xml with output automatically in sim directory
         beast_path=$(which beast)

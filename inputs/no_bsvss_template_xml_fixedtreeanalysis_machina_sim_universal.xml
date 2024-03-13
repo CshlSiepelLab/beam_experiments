@@ -35,21 +35,12 @@ name="taxa">
                     REPLACE_TAXONSET
                 </taxonset>
             </stateNode>
-            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="REPLACE_NUM_RATES">true</stateNode>
             <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="REPLACE_NUM_RATES" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>
         <distribution id="posterior" spec="CompoundDistribution">
             <distribution id="prior" spec="CompoundDistribution">
                 <distribution id="FixedTreeModel.t:tree" spec="fixedtreeanalysis.evolution.tree.FixedTreeDistribution" tree="@Tree.t:tree"/>
-                <prior id="nonZeroRatePrior.s:tissue" name="distribution">
-                    <x id="nonZeroRates.s:tissue" spec="beast.base.evolution.Sum">
-                        <arg idref="rateIndicator.s:tissue"/>
-                    </x>
-                    <distr id="Poisson.0" spec="distribution.Poisson" offset="REPLACE_OFFSET">
-                        <parameter id="RealParameter.10" spec="parameter.RealParameter" estimate="false" name="lambda">0.693</parameter>
-                    </distr>
-                </prior>
                 <prior id="relativeGeoRatesPrior.s:tissue" name="distribution" x="@relativeGeoRates.s:tissue">
                     <Gamma id="Gamma.2" name="distr">
                         <parameter id="RealParameter.8" spec="parameter.RealParameter" estimate="false" name="alpha">1.0</parameter>
@@ -87,7 +78,7 @@ spec="beastclassic.evolution.alignment.AlignmentFromTrait">
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
                         <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
-                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue" symmetric="REPLACE_SYMMETRIC">
+                        REPLACE_SUBSTITUTION_MODEL
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
                                 <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="REPLACE_NUM_TISSUES" name="frequencies">REPLACE_TISSUE_FREQS</parameter>
                             </frequencies>
@@ -106,10 +97,10 @@ spec="beastclassic.evolution.alignment.AlignmentFromTrait">
             <log idref="likelihood"/>
             <log idref="prior"/>
             <log idref="treeLikelihood.sim1_true"/>
-            <log idref="rateIndicator.s:tissue"/>
+            <!-- <log idref="rateIndicator.s:tissue"/> -->
             <log idref="relativeGeoRates.s:tissue"/>
             <log idref="traitClockRate.c:tissue"/>
-            <log id="geoSubstModelLogger.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModelLogger" dataType="@traitDataType.tissue" model="@svs.s:tissue"/>
+            REPLACE_GEO_LOGGER
         </logger>
         <logger id="screenlog" spec="Logger" logEvery="10000">
             <log idref="posterior"/>
@@ -120,7 +111,7 @@ spec="beastclassic.evolution.alignment.AlignmentFromTrait">
         <logger id="treelog.t:tree" spec="Logger" fileName="$(filebase).trees" logEvery="1000" mode="tree">
             <log id="TreeWithMetaDataLogger.t:tree" spec="beast.base.evolution.TreeWithMetaDataLogger" tree="@Tree.t:tree"/>
         </logger>
-        <logger id="treeWithTraitLogger.tissue" spec="Logger" fileName="tissue_tree_with_trait.trees" logEvery="1000" mode="tree">
+        <logger id="treeWithTraitLogger.tissue" spec="Logger" fileName="$(filebase)_tissues.trees" logEvery="1000" mode="tree">
             <log id="treeWithTraitLoggerItem.t:tree" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@Tree.t:tree">
                 <metadata idref="posterior"/>
                 <metadata idref="traitedtreeLikelihood.tissue"/>
