@@ -45,6 +45,8 @@ This can also be done by directly editing the xml file as done in the pipelines 
 
 ### Running Bayes factor comparison for two XML files for FixedTreeAnalysis
 
+Need to provide xml file for a normal MCMC run of two models and then this script will reformat the xml file to run the Nested Sampling BEAST2 package to obtain marginal likelihood values with standard deviations that can be use dto get Bayes factor and compared to random chance differences:
+
 ```
 scripts/bayes_factor_nested_sampling_from_xmls.sh --xml1 results/no_bsvss_compare_beast_machina_fixedtreeanalysis_3_4_24/no_bsvss_symmmetricalfalse_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_3_4_24/machina_m5_sim_data/seed3/T_seed3_unlabeled_true_tree_final_input_xml.xml --xml2 results/no_bsvss_compare_beast_machina_fixedtreeanalysis_3_4_24/no_bsvss_symmmetricaltrue_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_3_4_24/machina_m5_sim_data/seed3/T_seed3_unlabeled_true_tree_final_input_xml.xml --dir compare_asym_sym_bayes_factor_m5_seed3_3_5_24
 ```
@@ -52,6 +54,17 @@ or the more general form:
 ```
 bayes_factor_nested_sampling_from_xmls.sh --xml1 <xml filepath (str)> --xml2 <xml filepath (str)> --dir <working directory path (str)>
 ```
+
+It is also possible to seperate the steps for calculating the marginal likelihood of each model and then computing Bayes factor for both results as follows:
+```
+scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml results/no_bsvss_compare_beast_machina_fixedtreeanalysis_3_4_24/no_bsvss_symmmetricalfalse_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_3_4_24/machina_m5_sim_data/seed3/T_seed3_unlabeled_true_tree_final_input_xml.xml  --dir compare_asym_sym_bayes_factor_m5_seed3_3_5_24/model1
+
+scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml results/no_bsvss_compare_beast_machina_fixedtreeanalysis_3_4_24/no_bsvss_symmmetricaltrue_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_3_4_24/machina_m5_sim_data/seed3/T_seed3_unlabeled_true_tree_final_input_xml.xml --dir compare_asym_sym_bayes_factor_m5_seed3_3_5_24/model2
+
+scripts/bayes_factor_from_marginals.sh --ml1 compare_asym_sym_bayes_factor_m5_seed3_3_5_24/model1/xml1/xml1_marginal_likelihood_run.txt --ml2 /home/staklins/bayesian_phylogenetic_metastasis/compare_asym_sym_bayes_factor_m5_seed3_3_5_24/model2/xml1/xml1_marginal_likelihood_run.txt --dir compare_asym_sym_bayes_factor_m5_seed3_3_5_24/bayes_factor
+```
+
+Any run of Nesdted Sampling is dependent on 2 parameters, the number of active particles and the subchain length which need to be tuned appropriately according to Nested Sampling wiki. The general premise is that more active particles decreases the standard deviation of each marginal likelihood estimate, which then lowers the threshold for a Bayes factor difference to not just be caused by random chance. The sub chain length is less well defined but has to do with independent sampling of the next points from the current position and needs to be large enough to where further increases in length no longer make a difference in the estimate. This can be roughly estimated in the script `scripts/determine_subchainlength_nested_sampling.sh`.
 
 ### Running new BEAST2.7 metastabayes package models for reduced paramaterization and/or joint inference with TideTree
 
