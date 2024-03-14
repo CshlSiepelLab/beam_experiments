@@ -35,6 +35,7 @@ name="taxa">
                     REPLACE_TAXONSET
                 </taxonset>
             </stateNode>
+            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="REPLACE_NUM_RATES">true</stateNode>
             <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="REPLACE_NUM_RATES" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>

@@ -13,7 +13,7 @@ metastabayes_jar="../metastabayes/metastabayes.jar"
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
 models=(oneRate threeRates sym asym)
-pipeline_run_name="multiple_models_beast_machina_performance_marginalikelihood_3_13_24"
+pipeline_run_name="multiple_models_beast_machina_performance_marginal_likelihood_3_14_24"
 mkdir ${pipeline_run_name}
 
 # copy machina datasets to working directory for the run
@@ -28,7 +28,7 @@ done
 
 # intialize files to track metrics for the entire run
 accuracy_file="${pipeline_run_name}/accuracy.tsv"
-marginalLikelihood_file="${pipeline_run_name}/marginal_likelihoods.tsv"
+marginal_likelihood_file="${pipeline_run_name}/marginal_likelihoods.tsv"
 
 
 
@@ -40,34 +40,42 @@ datatype=$(echo $dir | awk -F'/' '{print $2}')
 # get seed name for sim data
 dir_prefix=$(echo $dir | awk -F'/' '{print $3}')
 # # Format FixedTreeAnalysis input for BEAST2;  Input is simulated tree and tsv of tissue labels; Output is .tree file and .dat file for tissue mapping
-sim_tree="${dir}T_${dir_prefix}_unlabeled_true_tree.nwk"
-sim_tissues="${dir}T_${dir_prefix}_tissues.tsv"
+sim_tree="${dir}/T_${dir_prefix}_unlabeled_true_tree.nwk"
+sim_tissues="${dir}/T_${dir_prefix}_tissues.tsv"
 python ./scripts/format_xml_template_inputs_fixedTreeAnalysis_from_sim.py ${sim_tree} ${sim_tissues}
 
 # Format template xml for each model
-seqfile="${dir}T_${dir_prefix}_unlabeled_true_tree_sequences_formatted_for_xml.txt"
-taxafile="${dir}T_${dir_prefix}_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
-traitfile="${dir}T_${dir_prefix}_unlabeled_true_tree_traitset_formatted_for_xml.txt"
-newickfile="${dir}T_${dir_prefix}_unlabeled_true_tree_newick_formatted_for_xml.txt"
+seqfile="${dir}/T_${dir_prefix}_unlabeled_true_tree_sequences_formatted_for_xml.txt"
+taxafile="${dir}/T_${dir_prefix}_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
+traitfile="${dir}/T_${dir_prefix}_unlabeled_true_tree_traitset_formatted_for_xml.txt"
+newickfile="${dir}/T_${dir_prefix}_unlabeled_true_tree_newick_formatted_for_xml.txt"
 primary_tissue="P"
 xml_template="inputs/no_bsvss_template_xml_fixedtreeanalysis_machina_sim_universal.xml"
-# Longer chain length for asymmetrical setup since convergence is reached later with more parameters
-if [ "$model" = "asym" ]; then
-    chainlength=10000000
-else
-    chainlength=1000000
-fi
-models=(oneRate threeRates sym asym)
 commands=()
 beast_trees=()
 for model in ${models[@]}; do
-scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${chainlength} ${sym_name}
+# Longer chain length for asymmetrical setup since convergence is reached later with more parameters
+# if [ "$model" = "asym" ]; then
+#     chainlength=10000000
+# else
+#     chainlength=1000000
+# fi
+chainlength=100000
+scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${chainlength} ${model}
 beast_tree="${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.tree"
 beast_trees+=("$beast_tree")
+xml_path="${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}.xml"
+ns_dir="${dir}/${model}_nested_sampling"
 if [ "$model" = "sym" ] || [ "$model" = "asym" ]; then
-    commands+=("${beast_path} -overwrite -working ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}.xml && ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}")
+    commands+=("${beast_path} -overwrite -working ${xml_path} && \
+                ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree} && \
+                mkdir ${ns_dir} && \
+                scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles 1 --sub_chain_length 1000")
 else
-    commands+=("java -jar ${metastabayes_jar} -overwrite -working ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}.xml && ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}")
+    commands+=("java -jar ${metastabayes_jar} -overwrite -working ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}.xml && \
+                ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree} && \
+                mkdir ${ns_dir} && \
+                scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles 1 --sub_chain_length 1000 --model metastabayes")
 fi
 done
 
@@ -107,7 +115,7 @@ machina_tree="${dir}/machina_tree_all_tissue_labels.nwk"
 python scripts/calculate_internal_node_label_performance.py ${sim_tree_with_tissues} ${beast_trees_str} ${machina_tree} ${dir}
 conda deactivate
 
-# Add sub run output to main output files
+# Add sub run outputs to main output files
 sim_accuracy_output="${dir}/compare_machina_beast_internal_node_performance.tsv"
 if [ ! -s "${accuracy_file}" ]; then
     # If accuracy_file does not exist or is empty then add the first two lines to include the header
@@ -117,7 +125,27 @@ else
     echo -e "$(sed -n '2p' ${sim_accuracy_output})" >> ${accuracy_file}
 fi
 
+if [ ! -s "${marginal_likelihood_file}" ]; then
+ml_header="data_id"
+for m in ${models[@]}; do
+ml_header+="\t${m}_ml\t${m}_sd"
 done
+echo -e $ml_header > $marginal_likelihood_file
+fi
+
+data_id=$(basename "$dir")
+ml_str="${data_id}"
+
+for mod in ${models[@]}; do
+ml_output_path="${dir}/${mod}_nested_sampling/xml1/xml1_marginal_likelihood_run.txt"
+ml_line=$(grep "Marginal likelihood:" "$ml_output_path" | grep -vE "subsample|bootstrap")
+ml=$(echo "$ml_line" | cut -d ' ' -f 3 | cut -d '(' -f 1)
+sd=$(echo "$ml_line" | cut -d ' ' -f 3 | cut -d '(' -f 2 | cut -d ')' -f 1)
+ml_str+="\t${ml}\t${sd}"
 done
+echo -e $ml_str >> $marginal_likelihood_file
+
+exit
 done
+
 

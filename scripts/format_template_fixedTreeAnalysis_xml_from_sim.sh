@@ -49,19 +49,19 @@ REPLACE_TISSUE_FREQS=$(echo "scale=10; 1 / $REPLACE_NUM_TISSUES" | bc)
 
 if [ "$model" = "sym" ]; then
     REPLACE_NUM_RATES=$(((REPLACE_NUM_TISSUES * (REPLACE_NUM_TISSUES - 1)) / 2))
-    REPLACE_SUBSTITUTION_MODEL="<substModel id=\"svs.s:tissue\" spec=\"beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel\" rateIndicator=\"true\" rates=\"@relativeGeoRates.s:tissue\" symmetric=\"true\">"
+    REPLACE_SUBSTITUTION_MODEL="<substModel id=\"svs.s:tissue\" spec=\"beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel\" rateIndicator=\"@rateIndicator.s:tissue\" rates=\"@relativeGeoRates.s:tissue\" symmetric=\"true\">"
     REPLACE_GEO_LOGGER="<log id=\"geoSubstModelLogger.s:tissue\" spec=\"beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModelLogger\" dataType=\"@traitDataType.tissue\" model=\"@svs.s:tissue\"/>"
 elif [ "$model" = "asym" ]; then
     REPLACE_NUM_RATES=$((REPLACE_NUM_TISSUES * (REPLACE_NUM_TISSUES - 1)))
-    REPLACE_SUBSTITUTION_MODEL="<substModel id=\"svs.s:tissue\" spec=\"beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel\" rateIndicator=\"true\" rates=\"@relativeGeoRates.s:tissue\" symmetric=\"false\">"
+    REPLACE_SUBSTITUTION_MODEL="<substModel id=\"svs.s:tissue\" spec=\"beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel\" rateIndicator=\"@rateIndicator.s:tissue\" rates=\"@relativeGeoRates.s:tissue\" symmetric=\"false\">"
     REPLACE_GEO_LOGGER="<log id=\"geoSubstModelLogger.s:tissue\" spec=\"beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModelLogger\" dataType=\"@traitDataType.tissue\" model=\"@svs.s:tissue\"/>"
 elif [ "$model" = "oneRate" ]; then
     REPLACE_NUM_RATES=1
-    REPLACE_SUBSTITUTION_MODEL="<substModel id=\"svs.s:tissue\" spec=\"metastabayes.substitutionmodel.OneRateAllTissues\" rates=\"@relativeGeoRates.s:tissue\" rateIndicator=\"true\" symmetric=\"true\">"
+    REPLACE_SUBSTITUTION_MODEL="<substModel id=\"svs.s:tissue\" spec=\"metastabayes.substitutionmodel.OneRateAllTissues\" rates=\"@relativeGeoRates.s:tissue\" rateIndicator=\"@rateIndicator.s:tissue\" symmetric=\"true\">"
     REPLACE_GEO_LOGGER="<log id=\"geoSubstModelLogger.s:tissue\" spec=\"metastabayes.substitutionmodel.OneRateAllTissuesLogger\" dataType=\"@traitDataType.tissue\" model=\"@svs.s:tissue\"/>"
-elif [ "$model" = "threeRate" ]; then
+elif [ "$model" = "threeRates" ]; then
     REPLACE_NUM_RATES=3
-    REPLACE_SUBSTITUTION_MODEL="<substModel id=\"svs.s:tissue\" spec=\"metastabayes.substitutionmodel.ThreeRatesForSeedingRoutes\" rates=\"@relativeGeoRates.s:tissue\" rateIndicator=\"true\" symmetric=\"false\">"
+    REPLACE_SUBSTITUTION_MODEL="<substModel id=\"svs.s:tissue\" spec=\"metastabayes.substitutionmodel.ThreeRatesForSeedingRoutes\" rates=\"@relativeGeoRates.s:tissue\" rateIndicator=\"@rateIndicator.s:tissue\" symmetric=\"false\">"
     REPLACE_GEO_LOGGER="<log id=\"geoSubstModelLogger.s:tissue\" spec=\"metastabayes.substitutionmodel.ThreeRatesForSeedingRoutesLogger\" dataType=\"@traitDataType.tissue\" model=\"@svs.s:tissue\"/>"
 else
     echo "Model input flag does not match allowable options. Please use asym, sym, oneRate, or threeRates."
