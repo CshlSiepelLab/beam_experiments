@@ -94,7 +94,8 @@ conda deactivate
 sim_accuracy_output="${dir}/compare_machina_beast_internal_node_performance.tsv"
 if [ ! -s "${accuracy_file}" ]; then
     # If accuracy_file does not exist or is empty then add the first two lines to include the header
-    echo -e "$(sed -n '1,2p' ${sim_accuracy_output})" > ${accuracy_file}
+    # echo -e "$(sed -n '1,2p' ${sim_accuracy_output})" > ${accuracy_file}
+    echo -e "$(sed -n '2p' ${sim_accuracy_output})" >> ${accuracy_file}
 else
     # If accuracy_file exists and is not empty
     echo -e "$(sed -n '2p' ${sim_accuracy_output})" >> ${accuracy_file}
