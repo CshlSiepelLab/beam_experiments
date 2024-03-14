@@ -87,7 +87,7 @@ rm -r ${machina_dir}
 conda activate compare_trees
 beast_trees_str=$(IFS=','; echo "${beast_trees[*]}")
 machina_tree="${dir}/machina_tree_all_tissue_labels.nwk"
-python scripts/calculate_internal_node_label_performance.py ${sim_tree_with_tissues} ${beast_trees_str} ${machina_tree} ${dir}
+python scripts/calculate_internal_node_label_performance.py ${sim_tree_with_tissues} ${beast_trees_str} ${machina_tree} ${dir} ${datatype}
 conda deactivate
 
 # Add sub run outputs to main output files
@@ -109,7 +109,7 @@ echo -e $ml_header > $marginal_likelihood_file
 fi
 
 data_id=$(basename "$dir")
-ml_str="${data_id}"
+ml_str="${data_id}_${datatype}"
 
 for mod in ${models[@]}; do
 ml_output_path="${dir}/${mod}_nested_sampling/xml1/xml1_marginal_likelihood_run.txt"

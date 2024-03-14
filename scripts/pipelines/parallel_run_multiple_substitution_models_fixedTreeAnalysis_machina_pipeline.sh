@@ -37,5 +37,5 @@ do
   echo "${command}" >> "${pipeline_run_name}/parallel.txt"
 done
 
-parallel --progress -j 35 < "${pipeline_run_name}/parallel.txt"
+parallel --progress -j 40 < "${pipeline_run_name}/parallel.txt"
 rm "${pipeline_run_name}/parallel.txt"

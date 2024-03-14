@@ -103,6 +103,7 @@ true_file=sys.argv[1]
 beast_file=sys.argv[2]      # can be stirng for a single filepath or comma sep string for multiple filepaths
 machina_file=sys.argv[3]
 outdir=sys.argv[4]
+datatype=sys.argv[5]
 
 # true_file="results/fixed_offset_sym_asym_compare_machina_sims_fixedtreeanalysis_2_21_24/fixed_offset_symmmetricaltrue_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m5_sim_data/seed0/T_seed0_tissue_labeled_true_tree.nwk"
 # beast_file="results/fixed_offset_sym_asym_compare_machina_sims_fixedtreeanalysis_2_21_24/fixed_offset_symmmetricaltrue_machina_m5_sims_compare_beast_machina_fixedtreeanalysis_default_2_21_24/machina_m5_sim_data/seed0/tissue_tree_with_trait.tree"
@@ -199,7 +200,7 @@ for bf in beast_files:
 outputfile = f"{outdir}/compare_machina_beast_internal_node_performance.tsv"
 with open(outputfile, "w") as file:
     header_str = f"data_id\tmachina\tmachina_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\t"
-    accuracy_str = f"{data_id}\t{machina_accuracy}\t{np_machina_accuracy}\t{machina_f1_mig_nodes}\t{machina_f1_paths}"
+    accuracy_str = f"{data_id}_{datatype}\t{machina_accuracy}\t{np_machina_accuracy}\t{machina_f1_mig_nodes}\t{machina_f1_paths}"
     for key, value in beast_results.items():
         bs = value["beast_strict"]
         br = value["beast_relaxed"]
