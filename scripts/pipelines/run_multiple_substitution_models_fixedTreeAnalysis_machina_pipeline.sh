@@ -11,29 +11,12 @@ beast_path=$(which beast)
 treeannotator_path=$(which treeannotator)
 metastabayes_jar="../metastabayes/metastabayes.jar"
 
-# This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
-models=(oneRate threeRates sym asym)
-pipeline_run_name="multiple_models_beast_machina_performance_marginal_likelihood_3_14_24"
-mkdir ${pipeline_run_name}
+# user input to run from parallel approach
+dir=$1
+pipeline_run_name=$2
+accuracy_file=$3
+marginal_likelihood_file=$4
 
-# copy machina datasets to working directory for the run
-data=(m5 m8)
-for dataset in ${data[@]}
-do
-dir_pre="machina_data/sims/"
-dir_name="machina_${dataset}_sim_data"
-cp -r ${dir_pre}${dir_name} ${pipeline_run_name}/
-cp_dir="${pipeline_run_name}/${dir_name}"
-done
-
-# intialize files to track metrics for the entire run
-accuracy_file="${pipeline_run_name}/accuracy.tsv"
-marginal_likelihood_file="${pipeline_run_name}/marginal_likelihoods.tsv"
-
-
-
-for dir in ${pipeline_run_name}/*/*;
-do
 conda activate simulate
 # get m5 or m8 categoruy of machina sim data in which the seed name resides
 datatype=$(echo $dir | awk -F'/' '{print $2}')
@@ -51,8 +34,8 @@ traitfile="${dir}/T_${dir_prefix}_unlabeled_true_tree_traitset_formatted_for_xml
 newickfile="${dir}/T_${dir_prefix}_unlabeled_true_tree_newick_formatted_for_xml.txt"
 primary_tissue="P"
 xml_template="inputs/no_bsvss_template_xml_fixedtreeanalysis_machina_sim_universal.xml"
-commands=()
 beast_trees=()
+models=(oneRate threeRates sym asym)
 for model in ${models[@]}; do
 # Longer chain length for asymmetrical setup since convergence is reached later with more parameters
 if [ "$model" = "asym" ]; then
@@ -65,27 +48,20 @@ beast_tree="${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_
 beast_trees+=("$beast_tree")
 xml_path="${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}.xml"
 ns_dir="${dir}/${model}_nested_sampling"
+active_particles=10
+subchainlen=10000
 if [ "$model" = "sym" ] || [ "$model" = "asym" ]; then
-    commands+=("${beast_path} -overwrite -working ${xml_path} && \
-                ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree} && \
-                mkdir ${ns_dir} && \
-                scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles 10 --sub_chain_length 10000")
+    ${beast_path} -overwrite -working ${xml_path}
+    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}
+    mkdir ${ns_dir}
+    scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles ${active_particles} --sub_chain_length ${subchainlen}
 else
-    commands+=("java -jar ${metastabayes_jar} -overwrite -working ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}.xml && \
-                ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree} && \
-                mkdir ${ns_dir} && \
-                scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles 10 --sub_chain_length 10000 --model metastabayes")
+    java -jar ${metastabayes_jar} -overwrite -working ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}.xml
+    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}
+    mkdir ${ns_dir}
+    scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles ${active_particles} --sub_chain_length ${subchainlen} --model metastabayes
 fi
 done
-
-# run models in parallel in beast
-for command in "${commands[@]}"
-do
-  echo "${command}" >> "${dir}/parallel.txt"
-done
-
-parallel -j 4 < "${dir}/parallel.txt"
-rm "${dir}/parallel.txt"
 
 # Prep simulated true tree for MACHINA input files
 sim_tree_with_tissues="${dir}/T_${dir_prefix}_tissue_labeled_true_tree.nwk"
@@ -143,7 +119,4 @@ sd=$(echo "$ml_line" | cut -d ' ' -f 3 | cut -d '(' -f 2 | cut -d ')' -f 1)
 ml_str+="\t${ml}\t${sd}"
 done
 echo -e $ml_str >> $marginal_likelihood_file
-
-done
-
 
