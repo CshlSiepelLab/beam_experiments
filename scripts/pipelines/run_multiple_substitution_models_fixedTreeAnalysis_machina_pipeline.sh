@@ -55,12 +55,11 @@ commands=()
 beast_trees=()
 for model in ${models[@]}; do
 # Longer chain length for asymmetrical setup since convergence is reached later with more parameters
-# if [ "$model" = "asym" ]; then
-#     chainlength=10000000
-# else
-#     chainlength=1000000
-# fi
-chainlength=100000
+if [ "$model" = "asym" ]; then
+    chainlength=10000000
+else
+    chainlength=1000000
+fi
 scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${chainlength} ${model}
 beast_tree="${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.tree"
 beast_trees+=("$beast_tree")
@@ -70,12 +69,12 @@ if [ "$model" = "sym" ] || [ "$model" = "asym" ]; then
     commands+=("${beast_path} -overwrite -working ${xml_path} && \
                 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree} && \
                 mkdir ${ns_dir} && \
-                scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles 1 --sub_chain_length 1000")
+                scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles 10 --sub_chain_length 10000")
 else
     commands+=("java -jar ${metastabayes_jar} -overwrite -working ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}.xml && \
                 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/T_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree} && \
                 mkdir ${ns_dir} && \
-                scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles 1 --sub_chain_length 1000 --model metastabayes")
+                scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles 10 --sub_chain_length 10000 --model metastabayes")
 fi
 done
 
@@ -145,7 +144,6 @@ ml_str+="\t${ml}\t${sd}"
 done
 echo -e $ml_str >> $marginal_likelihood_file
 
-exit
 done
 
 
