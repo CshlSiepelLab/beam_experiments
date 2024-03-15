@@ -21,8 +21,8 @@ cp_dir="${pipeline_run_name}/${dir_name}"
 done
 
 # intialize files to track metrics for the entire run
-accuracy_file="${pipeline_run_name}/accuracy.tsv"
-marginal_likelihood_file="${pipeline_run_name}/marginal_likelihoods.tsv"
+accuracy_file="${pipeline_run_name}/accuracy.csv"
+marginal_likelihood_file="${pipeline_run_name}/marginal_likelihoods.csv"
 
 commands=()
 

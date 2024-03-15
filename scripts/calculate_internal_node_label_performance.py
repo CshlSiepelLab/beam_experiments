@@ -197,10 +197,10 @@ for bf in beast_files:
     }
 
 
-outputfile = f"{outdir}/compare_machina_beast_internal_node_performance.tsv"
+outputfile = f"{outdir}/compare_machina_beast_internal_node_performance.csv"
 with open(outputfile, "w") as file:
-    header_str = f"data_id\tmachina\tmachina_nonprimary\tmachina_f1_migrating_clones\tmachina_f1_paths\t"
-    accuracy_str = f"{data_id}_{datatype}\t{machina_accuracy}\t{np_machina_accuracy}\t{machina_f1_mig_nodes}\t{machina_f1_paths}"
+    header_str = f"data_id,machina,machina_nonprimary,machina_f1_migrating_clones,machina_f1_paths,"
+    accuracy_str = f"{data_id}_{datatype},{machina_accuracy},{np_machina_accuracy},{machina_f1_mig_nodes},{machina_f1_paths}"
     for key, value in beast_results.items():
         bs = value["beast_strict"]
         br = value["beast_relaxed"]
@@ -208,6 +208,6 @@ with open(outputfile, "w") as file:
         np_br = value["beast_relaxed_nonprimary"]
         b_f1_nodes = value["beast_f1_migrating_clones"]
         b_f1_paths = value["beast_f1_paths"]
-        header_str += f"\tbeast_strict_{key}\tbeast_relaxed_{key}\tbeast_strict_nonprimary_{key}\tbeast_relaxed_nonprimary_{key}\tbeast_f1_migrating_clones_{key}\tbeast_f1_paths_{key}"
-        accuracy_str += f"\t{bs}\t{br}\t{np_bs}\t{np_br}\t{b_f1_nodes}\t{b_f1_paths}"
+        header_str += f",beast_strict_{key},beast_relaxed_{key},beast_strict_nonprimary_{key},beast_relaxed_nonprimary_{key},beast_f1_migrating_clones_{key},beast_f1_paths_{key}"
+        accuracy_str += f",{bs},{br},{np_bs},{np_br},{b_f1_nodes},{b_f1_paths}"
     file.write(f"{header_str}\n{accuracy_str}")

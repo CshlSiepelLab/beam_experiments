@@ -91,7 +91,7 @@ python scripts/calculate_internal_node_label_performance.py ${sim_tree_with_tiss
 conda deactivate
 
 # Add sub run outputs to main output files
-sim_accuracy_output="${dir}/compare_machina_beast_internal_node_performance.tsv"
+sim_accuracy_output="${dir}/compare_machina_beast_internal_node_performance.csv"
 if [ ! -s "${accuracy_file}" ]; then
     # If accuracy_file does not exist or is empty then add the first two lines to include the header
     # echo -e "$(sed -n '1,2p' ${sim_accuracy_output})" > ${accuracy_file}
@@ -104,7 +104,7 @@ fi
 if [ ! -s "${marginal_likelihood_file}" ]; then
 ml_header="data_id"
 for m in ${models[@]}; do
-ml_header+="\t${m}_ml\t${m}_sd"
+ml_header+=",${m}_ml,${m}_sd"
 done
 echo -e $ml_header > $marginal_likelihood_file
 fi
@@ -117,7 +117,7 @@ ml_output_path="${dir}/${mod}_nested_sampling/xml1/xml1_marginal_likelihood_run.
 ml_line=$(grep "Marginal likelihood:" "$ml_output_path" | grep -vE "subsample|bootstrap")
 ml=$(echo "$ml_line" | cut -d ' ' -f 3 | cut -d '(' -f 1)
 sd=$(echo "$ml_line" | cut -d ' ' -f 3 | cut -d '(' -f 2 | cut -d ')' -f 1)
-ml_str+="\t${ml}\t${sd}"
+ml_str+=",${ml},${sd}"
 done
 echo -e $ml_str >> $marginal_likelihood_file
 
