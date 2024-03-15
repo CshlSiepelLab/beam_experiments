@@ -52,16 +52,16 @@ fi
 # echo "log(BF) = log(ML1) - log(ML2), where BEAST nested sampling automatically reports log(ML) values"
 echo "Log(BF) is ${log_bf}"
 
-if (( $(echo "$abs_log_bf <= 0.5" | bc -l) )); then
+if (( $(echo "$abs_log_bf <= 1.1" | bc -l) )); then
     intepretation="${model} is preferred, but the difference is hardly worth mentioning."
     echo $interpretation
-elif (( $(echo "$abs_log_bf <= 1.3" | bc -l) )); then
+elif (( $(echo "$abs_log_bf <= 3" | bc -l) )); then
     interpretation="${model} is preferred with positive support."
     echo $interpretation
-elif (( $(echo "$abs_log_bf <= 2.2" | bc -l) )); then
+elif (( $(echo "$abs_log_bf <= 5" | bc -l) )); then
     interpretation="${model} is preferred with strong support."
     echo $interpretation
-elif (( $(echo "$abs_log_bf > 2.2" | bc -l) )); then
+elif (( $(echo "$abs_log_bf > 5" | bc -l) )); then
     interpretation="${model} is preferred with overwhelming support."
     echo $interpretation
 fi
