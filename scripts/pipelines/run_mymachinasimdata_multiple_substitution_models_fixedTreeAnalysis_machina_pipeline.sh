@@ -23,15 +23,19 @@ datatype=$(echo $dir | awk -F'/' '{print $2}')
 # get seed name for sim data
 dir_prefix=$(echo $dir | awk -F'/' '{print $3}')
 # # Format FixedTreeAnalysis input for BEAST2;  Input is simulated tree and tsv of tissue labels; Output is .tree file and .dat file for tissue mapping
-sim_tree="${dir}/tree_seed${dir_prefix}_unlabeled_true_tree.nwk"
-sim_tissues="${dir}/tree_seed${dir_prefix}_tissues.tsv"
+sim_tree="${dir}/*_unlabeled_true_tree.nwk"
+sim_tissues="${dir}/*_tissues.tsv"
+echo $datatype
+echo $dir_prefix
+echo $sim_tree
+echo $sim_tissues
 python ./scripts/format_xml_template_inputs_fixedTreeAnalysis_from_sim.py ${sim_tree} ${sim_tissues}
-
+exit
 # Format template xml for each model
-seqfile="${dir}/tree_seed${dir_prefix}_unlabeled_true_tree_sequences_formatted_for_xml.txt"
-taxafile="${dir}/tree_seed${dir_prefix}_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
-traitfile="${dir}/tree_seed${dir_prefix}_unlabeled_true_tree_traitset_formatted_for_xml.txt"
-newickfile="${dir}/tree_seed${dir_prefix}_unlabeled_true_tree_newick_formatted_for_xml.txt"
+seqfile="${dir}/*_unlabeled_true_tree_sequences_formatted_for_xml.txt"
+taxafile="${dir}/*_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
+traitfile="${dir}/*_unlabeled_true_tree_traitset_formatted_for_xml.txt"
+newickfile="${dir}/*_unlabeled_true_tree_newick_formatted_for_xml.txt"
 primary_tissue="P"
 xml_template="inputs/no_bsvss_template_xml_fixedtreeanalysis_machina_sim_universal.xml"
 beast_trees=()
@@ -44,27 +48,27 @@ else
     chainlength=1000000
 fi
 scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${chainlength} ${model}
-beast_tree="${dir}/tree_seed${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.tree"
+beast_tree="${dir}/*_unlabeled_true_tree_final_input_xml_${model}_tissues.tree"
 beast_trees+=("$beast_tree")
-xml_path="${dir}/tree_seed${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}.xml"
+xml_path="${dir}/*_unlabeled_true_tree_final_input_xml_${model}.xml"
 ns_dir="${dir}/${model}_nested_sampling"
 active_particles=10
 subchainlen=10000
 if [ "$model" = "sym" ] || [ "$model" = "asym" ]; then
     ${beast_path} -overwrite -working ${xml_path}
-    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/tree_seed${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}
+    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/*_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}
     mkdir ${ns_dir}
     scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles ${active_particles} --sub_chain_length ${subchainlen}
 else
-    java -jar ${metastabayes_jar} -overwrite -working ${dir}/tree_seed${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}.xml
-    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/tree_seed${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}
+    java -jar ${metastabayes_jar} -overwrite -working ${dir}/*_unlabeled_true_tree_final_input_xml_${model}.xml
+    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/*_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}
     mkdir ${ns_dir}
     scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles ${active_particles} --sub_chain_length ${subchainlen} --model metastabayes
 fi
 done
 
 # Prep simulated true tree for MACHINA input files
-sim_tree_with_tissues="${dir}/tree_seed${dir_prefix}_tissue_labeled_true_tree.nwk"
+sim_tree_with_tissues="${dir}/*_tissue_labeled_true_tree.nwk"
 machina_dir="${dir}/machina"
 mkdir ${machina_dir}
 python ./scripts/machina/prep_machina.py ${sim_tree_with_tissues} ${machina_dir} ${primary_tissue}
