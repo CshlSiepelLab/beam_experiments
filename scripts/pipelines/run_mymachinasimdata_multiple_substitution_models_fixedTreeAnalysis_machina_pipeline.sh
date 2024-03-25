@@ -45,12 +45,12 @@ else
     chainlength=1000000
 fi
 scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile} ${traitfile} ${newickfile} ${xml_template} ${primary_tissue} ${chainlength} ${model}
-beast_tree="${dir}/*_unlabeled_true_tree_final_input_xml_${model}_tissues.tree"
+beast_tree="${dir}/true_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.tree"
 beast_trees+=("$beast_tree")
 xml_path="${dir}/*_unlabeled_true_tree_final_input_xml_${model}.xml"
 ns_dir="${dir}/${model}_nested_sampling"
 active_particles=10
-subchainlen=10000
+subchainlen=5000
 if [ "$model" = "sym" ] || [ "$model" = "asym" ]; then
     ${beast_path} -overwrite -working ${xml_path}
     ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/*_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}
