@@ -25,12 +25,9 @@ dir_prefix=$(echo $dir | awk -F'/' '{print $3}')
 # # Format FixedTreeAnalysis input for BEAST2;  Input is simulated tree and tsv of tissue labels; Output is .tree file and .dat file for tissue mapping
 sim_tree="${dir}/*_unlabeled_true_tree.nwk"
 sim_tissues="${dir}/*_tissues.tsv"
-echo $datatype
-echo $dir_prefix
-echo $sim_tree
-echo $sim_tissues
+
 python ./scripts/format_xml_template_inputs_fixedTreeAnalysis_from_sim.py ${sim_tree} ${sim_tissues}
-exit
+
 # Format template xml for each model
 seqfile="${dir}/*_unlabeled_true_tree_sequences_formatted_for_xml.txt"
 taxafile="${dir}/*_unlabeled_true_tree_taxonset_formatted_for_xml.txt"
