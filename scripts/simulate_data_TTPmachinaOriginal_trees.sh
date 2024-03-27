@@ -18,7 +18,7 @@ mkdir ${sim_dir}/pR
 # set migration pattern options
 migration_patterns=(0 1 2 3)
 for pattern in ${migration_patterns[@]}; do
-for ((i = 0; i < 10; i++)); do
+for ((i = 0; i < 20; i++)); do
 
 # make dir specific to the seed number for each sim and the migration pattern
 seed=$RANDOM
@@ -50,13 +50,13 @@ migration_rate\t${migration_rate}\n
 max_anatomical_sites\t${max_anatomical_sites}" > ${run_conditions_file}
 
 # run simulator
-${simulate_executable} -C ${coloring_file} -m ${max_anatomical_sites} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix}
+${simulate_executable} -C 200 -c ${coloring_file} -m ${max_anatomical_sites} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix}
 
 # prep machina output
-tree_file="${outprefix}/*.tree"
-label_file="${outprefix}/*.vertex.labeling"
+tree_file="${outprefix}/T_*.tree"
+label_file="${outprefix}/T_*.vertex.labeling"
 
 python ./scripts/machina_sims_to_newick_format.py ${tree_file} ${label_file}
-exit
+
 done
 done
