@@ -18,7 +18,7 @@ mkdir ${sim_dir}/pR
 # set migration pattern options
 migration_patterns=(0 1 2 3)
 for pattern in ${migration_patterns[@]}; do
-for ((i = 0; i < 20; i++)); do
+for ((i = 0; i < 10; i++)); do
 
 # make dir specific to the seed number for each sim and the migration pattern
 seed=$RANDOM

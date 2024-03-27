@@ -1,0 +1,11 @@
+sim_name	sim_trees_originalMACHINA_3_27_24
+
+output_directory	/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/sim_trees_originalMACHINA_3_27_24/pR/26944
+
+seed	26944
+
+pattern	3
+
+migration_rate	1e-3
+
+max_anatomical_sites	8
