@@ -1,0 +1,17 @@
+sim_name	sim_trees_modifiedTTPmachina_higherCaryingCapacity_3_27_24
+
+output_directory	/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/sim_trees_modifiedTTPmachina_higherCaryingCapacity_3_27_24/pR/13456
+
+seed	13456
+
+pattern	3
+
+num_cells	1000
+
+migration_rate	1e-3
+
+carrying_capacity	5e1
+
+max_anatomical_sites	10
+
+driverprob	1e-7

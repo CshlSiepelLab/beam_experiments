@@ -6,7 +6,7 @@
 simulate_executable="/grid/siepel/home_norepl/staklins/barcode_simulator/scripts/simulator/build/simulate"
 
 # set dir to hold all sims
-sim_dir="sim_trees_modifiedTTPmachina_higherMigrationRate_3_27_24"
+sim_dir="sim_trees_modifiedTTPmachina_higherCaryingCapacity_3_27_24"
 mkdir ${sim_dir}
 
 # make pattern directories
@@ -38,8 +38,9 @@ mkdir ${outprefix}
 # set simulator parameters
 num_cells=1000
 max_anatomical_sites=10
-migration_rate="1e-1"   ### amped up migration rate from the default for testing purposes of model fit
-carrying_capacity="5e2" ### reduced carying capacity to a similar degree as migration rate to model smaller cancer population with similar dynamics as a larger one
+migration_rate="1e-3"   ### amped up migration rate from the default for testing purposes of model fit
+carrying_capacity="5e1" ### reduced carying capacity to a similar degree as migration rate to model smaller cancer population with similar dynamics as a larger one
+driverprob="1e-7"
 
 # save running parameters to file
 run_conditions_file="${outprefix}/sim_run_conditions.txt"
@@ -50,10 +51,11 @@ pattern\t${pattern}\n
 num_cells\t${num_cells}\n
 migration_rate\t${migration_rate}\n
 carrying_capacity\t${carrying_capacity}\n
-max_anatomical_sites\t${max_anatomical_sites}" > ${run_conditions_file}
+max_anatomical_sites\t${max_anatomical_sites}\n
+driverprob\t${driverprob}" > ${run_conditions_file}
 
 # run simulator
-${simulate_executable} -C ${num_cells} -K ${carrying_capacity} -m ${max_anatomical_sites} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix}
+${simulate_executable} -C ${num_cells} -K ${carrying_capacity} -D ${driverprob} -m ${max_anatomical_sites} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix}
 
 # prep machina output
 tree_file="${outprefix}/*.tree"
@@ -61,6 +63,6 @@ label_file="${outprefix}/*.vertex.labeling"
 sed -i 's/\//;/g' ${tree_file}
 sed -i 's/\//;/g' ${label_file}
 python ./scripts/machina_sims_to_newick_format.py ${tree_file} ${label_file}
-exit
+
 done
 done
