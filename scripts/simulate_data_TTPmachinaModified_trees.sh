@@ -6,7 +6,7 @@
 simulate_executable="/grid/siepel/home_norepl/staklins/barcode_simulator/scripts/simulator/build/simulate"
 
 # set dir to hold all sims
-sim_dir="sim_trees_3_25_24"
+sim_dir="sim_trees_modifiedTTPmachina_higherMigrationRate_3_27_24"
 mkdir ${sim_dir}
 
 # make pattern directories
@@ -38,7 +38,7 @@ mkdir ${outprefix}
 # set simulator parameters
 num_cells=1000
 max_anatomical_sites=10
-migration_rate="1e-3"   ### amped up migration rate from the default for testing purposes of model fit
+migration_rate="1e-1"   ### amped up migration rate from the default for testing purposes of model fit
 carrying_capacity="5e2" ### reduced carying capacity to a similar degree as migration rate to model smaller cancer population with similar dynamics as a larger one
 
 # save running parameters to file
@@ -61,6 +61,6 @@ label_file="${outprefix}/*.vertex.labeling"
 sed -i 's/\//;/g' ${tree_file}
 sed -i 's/\//;/g' ${label_file}
 python ./scripts/machina_sims_to_newick_format.py ${tree_file} ${label_file}
-
+exit
 done
 done
