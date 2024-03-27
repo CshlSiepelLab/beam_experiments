@@ -40,7 +40,7 @@ cp_xml1="${xml1_dir}/${xml1_file}"
 
 # replace necessary portions of the xml to run nested sampling
 existing_mcmc="<run id=\"mcmc\" spec=\"MCMC\""
-replace_mcmc="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"1000000\" particleCount=\"$active_particles\" subChainLength=\"$sub_chain_length\" epsilon=\"1e-13\">"
+replace_mcmc="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"1000000\" particleCount=\"$active_particles\" subChainLength=\"$sub_chain_length\" epsilon=\"1e-10\">"
 sed -i "s|$existing_mcmc.*|$replace_mcmc|" "$cp_xml1"
 
 existing_logger='<logger id="tracelog" spec="Logger'
