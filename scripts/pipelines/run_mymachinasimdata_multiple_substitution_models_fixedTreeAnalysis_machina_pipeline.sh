@@ -48,17 +48,18 @@ scripts/format_template_fixedTreeAnalysis_xml_from_sim.sh ${seqfile} ${taxafile}
 beast_tree="${dir}/true_${dir_prefix}_unlabeled_true_tree_final_input_xml_${model}_tissues.tree"
 beast_trees+=("$beast_tree")
 xml_path="${dir}/*_unlabeled_true_tree_final_input_xml_${model}.xml"
+trees_path="${dir}/*_unlabeled_true_tree_final_input_xml_${model}_tissues.trees"
 ns_dir="${dir}/${model}_nested_sampling"
 active_particles=10
 subchainlen=5000
 if [ "$model" = "sym" ] || [ "$model" = "asym" ]; then
     ${beast_path} -overwrite -working ${xml_path}
-    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/*_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}
+    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${trees_path} ${beast_tree}
     mkdir ${ns_dir}
     scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles ${active_particles} --sub_chain_length ${subchainlen}
 else
-    java -jar ${metastabayes_jar} -overwrite -working ${dir}/*_unlabeled_true_tree_final_input_xml_${model}.xml
-    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/*_unlabeled_true_tree_final_input_xml_${model}_tissues.trees ${beast_tree}
+    java -jar ${metastabayes_jar} -overwrite -working ${xml_path}
+    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${trees_path} ${beast_tree}
     mkdir ${ns_dir}
     scripts/nested_sampling_marginal_likelihood_from_xml.sh --xml ${xml_path} --dir ${ns_dir} --active_particles ${active_particles} --sub_chain_length ${subchainlen} --model metastabayes
 fi

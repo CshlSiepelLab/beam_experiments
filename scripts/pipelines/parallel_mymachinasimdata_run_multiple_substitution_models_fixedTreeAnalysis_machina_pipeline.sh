@@ -7,11 +7,11 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
-pipeline_run_name="multiple_models_performance_marginal_likelihood_3_25_24"
+pipeline_run_name="higherMigrationRate_OGmachinaSim_multiple_models_performance_marginal_likelihood_3_27_24"
 mkdir ${pipeline_run_name}
 
 # copy machina datasets to working directory for the run
-dir_pre="sim_trees_3_25_24"
+dir_pre="sim_trees_originalMACHINA_3_27_24"
 cp -r ${dir_pre}/* ${pipeline_run_name}/
 
 # intialize files to track metrics for the entire run
