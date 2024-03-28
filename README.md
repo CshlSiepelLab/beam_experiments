@@ -2,12 +2,7 @@
 
 ### Simulating data
 
-To simulate data from an activated simulate conda environment:
-```
-./scripts/sim_wrapper.sh --design RANDOM --out test_sim --sites 10 --mutrate 1.0 --samples 50 --migrationrate 1.0 --migration inputs/test_migration_prob_matrix.csv
-```
-
-The output should provide all that is necessary as input to the inference method, which is the true tree and the tissue labels of the leaves. The barcode data is also provided in the form of a mutation matrix.
+To simulate data use te barcode_simulator repo.
 
 ### Formatting simulated data to input to BEAST2 FixedTreeAnalysis
 
