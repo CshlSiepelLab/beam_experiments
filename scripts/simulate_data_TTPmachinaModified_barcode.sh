@@ -6,7 +6,7 @@
 barcode_simulator_dir="../barcode_simulator/scripts/simulator"
 
 # set dir to hold all sims
-sim_dir="sim_barcodes_modifiedTTPmachina_3_28_24"
+sim_dir="sim_data_barcodes_modifiedTTPmachina_3_29_24"
 mkdir ${sim_dir}
 
 # make pattern directories
@@ -16,10 +16,9 @@ mkdir ${sim_dir}/pM
 mkdir ${sim_dir}/pR
 
 # set migration pattern options
-#migration_patterns=(0 1 2 3)
-migration_patterns=(0)
+migration_patterns=(0 1 2 3)
 
-mutation_rates=(0.01 0.025 0.05 0.075 0.1)
+mutation_rates=(0.05)
 
 for mutrate in ${mutation_rates[@]}; do
 for pattern in ${migration_patterns[@]}; do
@@ -42,7 +41,8 @@ outprefix="${HOME}/bayesian_phylogenetic_metastasis/${sim_dir}/${pattern_dir}/${
 mkdir ${outprefix}
 
 # set simulator parameters
-num_cells=1000
+num_cells=-1
+max_anatomical_sites=8
 migration_rate="1e-6"
 num_sites=10
 design="RANDOM"
@@ -60,7 +60,7 @@ num_sites\t${num_sites}\n
 mutrate\t${mutrate}" > ${run_conditions_file}
 
 # run simulator
-$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix}
+$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites}
 
 # run barcode simulator to overlay barcode data for machina simulator tree and tissues output
 machina_tree=${outprefix}/tree_seed*.nwk
