@@ -1,19 +1,20 @@
 #!/bin/bash
 
-indel_matrix_path="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/987/987_indel_character_matrix.tsv"
-tissues_path="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/987/tree_seed2064983427.labeling"
-template_xml="inputs/joint_inference_beast_template.xml"
+indel_matrix_path=$1
+tissues_path=$2
+template_xml=$3
 
 dir=$(dirname "$indel_matrix_path")
 XML_FILE="$dir/joint_inference_beast.xml"
 cp $template_xml $XML_FILE
 
 # tissue labels for tips
-REPLACE_TRAITSET=()
+traits=()
 while IFS= read -r line; do
     trait=$(echo $line | awk '{print $1 "=" $2 ","}')
         traits+=("$trait")
 done < "$tissues_path"
+REPLACE_TRAITSET=$(printf "%s " "${traits[@]}")
 
 # total number of tissues
 REPLACE_NUM_TISSUES=$(awk '{print $2}' "$tissues_path" | sort -u | wc -l)
