@@ -38,14 +38,14 @@ edges = pd.DataFrame(columns = ['node1', 'node2'])
 for node in tree.traverse():
     if node.is_leaf() == True:
         name,tissue = node.name.split("_")
-        leaf_label.loc[len(leaf_label)] = [name, tissue]
+        leaf_label.loc[len(leaf_label)] = [node.name, tissue]
     else:
         node_name = node.name
         children = node.children
         for child in children:
             child_name = child.name
-            if "_" in child_name:
-                child_name = child_name.split("_")[0]
+            # if "_" in child_name:
+            #     child_name = child_name.split("_")[0]
             edges.loc[len(edges)] = [node_name, child_name]
 
 tissues = leaf_label['tissue'].unique().tolist()

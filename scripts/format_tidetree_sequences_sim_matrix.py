@@ -15,11 +15,11 @@ def format_sequences_from_matrix(mut_df):
         unique_values = np.unique(raw_values)
         unique_values = unique_values[unique_values != 0]
         for value in unique_values:
-            if value not in mut_dict.keys():
+            if value != -1 and value not in mut_dict.keys():
                 mut_dict[value] = i
                 i = i+1
         # Replacing unique integers indicating mutations in the matrix with consecutive unique integers for tidetree compatibility
-        new_values = np.array([mut_dict[key] for key in raw_values])
+        new_values = np.array([mut_dict[key] if key != -1 else key for key in raw_values])
         row_concat = ','.join(map(str, new_values))
         new_string = f"<sequence id='cell{row_index}' spec='Sequence' taxon='cell{row_index}' value='{row_concat},'/>\n"
         seqs[index] = new_string

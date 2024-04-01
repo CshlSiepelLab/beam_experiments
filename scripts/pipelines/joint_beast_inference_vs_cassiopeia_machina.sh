@@ -9,9 +9,11 @@ source ~/miniconda3/etc/profile.d/conda.sh
 # true_tissues=$3
 
 # for testing
-sim_matrix="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/987/987_indel_character_matrix.tsv"
-true_tree="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/987/tree_seed2064983427.nwk"
-true_tissues="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/987/tree_seed2064983427.vertex.labeling"
+sim_matrix="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/24874_indel_character_matrix.tsv"
+true_tree="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874.nwk"
+true_tissues="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874.vertex.labeling"
+leaf_tissues="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874.labeling"
+edge_tree="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874.tree"
 
 # get executable paths for beast
 treeannotator_path=$(which treeannotator)
@@ -47,8 +49,11 @@ mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${dir}/
 #rm -r ${machina_dir}
 
 # setup joint beast inference
+python scripts/format_tidetree_sequences_sim_matrix.py ${sim_matrix}
 
+template_xml="inputs/joint_inference_beast_template.xml"
+scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${template_xml}
 
-# run beast joint inference
-java -jar ${metastabayes_jar} -overwrite -working ${dir}/joint_inference_beast.xml
-${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/joint_inference_beast.trees ${dir}/joint_inference_beast.tree
+# # run beast joint inference
+# java -jar ${metastabayes_jar} -overwrite -working ${dir}/joint_inference_beast.xml
+# ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/joint_inference_beast.trees ${dir}/joint_inference_beast.tree
