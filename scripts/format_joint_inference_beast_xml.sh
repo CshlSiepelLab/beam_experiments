@@ -49,7 +49,7 @@ for ((i=1; i<$REPLACE_NUM_TISSUES; i++)); do
     trailing_code_map+=" ${i}"
 done
 REPLACE_CODE_MAP+="${trailing_code_map}"
-echo $REPLACE_CODE_MAP
+
 # num muts
 REPLACE_NUM_MUTS=$(tail -n +2 "$indel_matrix_path" | awk '{for (i=2; i<=NF; i++) print $i}' | sort -u | wc -l)
 
@@ -69,6 +69,8 @@ muts=$(echo "$seq" | cut -d',' -f2-)
 REPLACE_SEQUENCES+="<sequence id='${name}' spec='Sequence' taxon='${name}' value='${muts},'/> "
 i=$(( i + 1 ))
 done
+##### temp solution to not model site dropouts
+REPLACE_SEQUENCES=$(printf '%s\n' "$REPLACE_SEQUENCES" | sed 's/-1/0/g')
 
 # edit rates
 equal_rate_value=$(echo "scale=4; 1 / ($REPLACE_NUM_MUTS - 1)" | bc)

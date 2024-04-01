@@ -50,7 +50,7 @@
       value="REPLACE_DATE_TRAITSET"/>
 
 
-<substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="54" editDuration="36">
+<substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="54" editDuration="54">
     <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="REPLACE_EDIT_ROOT_FREQUENCIES" estimate="false"/>
 </substModel>
 
@@ -58,7 +58,7 @@
 
 <run id="mcmc" spec="MCMC" chainLength="1000000">
         <state id="state" spec="State" storeEvery="5000">
-            <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="54" taxa="@s1_c1_data.txt" editHeight="54" editDuration="36" sequencesAreClustered="false">
+            <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="54" taxa="@s1_c1_data.txt" editHeight="54" editDuration="54" sequencesAreClustered="false">
                 <trait idref="dateTrait"/>
                 <taxonset idref="TaxonSet"/>
             </stateNode>
