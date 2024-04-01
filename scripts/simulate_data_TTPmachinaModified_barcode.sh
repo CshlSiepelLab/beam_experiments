@@ -22,7 +22,7 @@ mutation_rates=(0.05)
 
 for mutrate in ${mutation_rates[@]}; do
 for pattern in ${migration_patterns[@]}; do
-for ((i = 0; i < 1; i++)); do
+for ((i = 0; i < 10; i++)); do
 
 # make dir specific to the seed number for each sim and the migration pattern
 if (( $pattern == 0 )); then
@@ -60,7 +60,7 @@ num_sites\t${num_sites}\n
 mutrate\t${mutrate}" > ${run_conditions_file}
 
 # run simulator
-$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites}
+timeout 5m $barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites}
 
 # run barcode simulator to overlay barcode data for machina simulator tree and tissues output
 machina_tree=${outprefix}/tree_seed*.nwk
