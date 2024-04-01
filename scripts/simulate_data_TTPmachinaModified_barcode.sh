@@ -16,13 +16,14 @@ mkdir ${sim_dir}/pM
 mkdir ${sim_dir}/pR
 
 # set migration pattern options
-migration_patterns=(0 1 2 3)
+# migration_patterns=(0 1 2 3)
+migration_patterns=(0)
 
 mutation_rates=(0.05)
 
 for mutrate in ${mutation_rates[@]}; do
 for pattern in ${migration_patterns[@]}; do
-for ((i = 0; i < 10; i++)); do
+for ((i = 0; i < 1; i++)); do
 
 # make dir specific to the seed number for each sim and the migration pattern
 if (( $pattern == 0 )); then
@@ -60,12 +61,12 @@ num_sites\t${num_sites}\n
 mutrate\t${mutrate}" > ${run_conditions_file}
 
 # run simulator
-timeout 5m $barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites}
+$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites}
 
 # run barcode simulator to overlay barcode data for machina simulator tree and tissues output
 machina_tree=${outprefix}/tree_seed*.nwk
 machina_tissues=${outprefix}/tree_seed*.vertex.labeling
-$barcode_simulator_dir/overlay_barcode_machina_simulator.py ${outprefix} ${design} ${num_sites} ${mutrate} ${machina_tree} ${machina_tissues}
+python $barcode_simulator_dir/overlay_barcode_machina_simulator.py ${outprefix} ${design} ${num_sites} ${mutrate} ${machina_tree} ${machina_tissues}
 
 done
 done
