@@ -17,7 +17,10 @@ output_file_leaf = output_dir + "/" + input_prefix + ".labeling"
 output_file_edges = output_dir + "/" + input_prefix + ".tree"
 output_file_colors = output_dir + "/" + input_prefix + "_colors.txt"
 
-tree = ete3.Tree(leaf_labeled_tree, format=8)
+try:
+    tree = ete3.Tree(leaf_labeled_tree, format=8)
+except Exception as e:
+    tree = ete3.Tree(leaf_labeled_tree, format=9)
 
 # Remove tissue labels for internal node names
 for node in tree.traverse():
