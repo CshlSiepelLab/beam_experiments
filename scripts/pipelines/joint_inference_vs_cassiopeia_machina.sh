@@ -36,7 +36,7 @@ conda activate machina
 conda deactivate
 # Condense MACHINA output into a labeled tree newick format
 conda activate simulate
-python ./scripts/machina/post_machina_to_tree.py ${machina_dir}/P-T-P-R.tree ${machina_dir}/P-T-P-R.labeling ${machina_dir}
+python ./scripts/machina/post_machina_tr_to_tree.py ${machina_dir}/P-T-P-R.tree ${machina_dir}/P-T-P-R.labeling ${machina_dir}
 conda deactivate
 # Remove intermediate MACHINA output files
 mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${dir}/
