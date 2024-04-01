@@ -13,6 +13,10 @@ sim_matrix="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/987/987_indel_charac
 true_tree="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/987/tree_seed2064983427.nwk"
 true_tissues="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/987/tree_seed2064983427.vertex.labeling"
 
+# get executable paths for beast
+treeannotator_path=$(which treeannotator)
+metastabayes_jar="../metastabayes/metastabayes.jar"
+
 # get working dir
 dir=$(dirname "$sim_matrix")
 
@@ -43,3 +47,8 @@ mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${dir}/
 #rm -r ${machina_dir}
 
 # setup joint beast inference
+
+
+# run beast joint inference
+java -jar ${metastabayes_jar} -overwrite -working ${dir}/joint_inference_beast.xml
+${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/joint_inference_beast.trees ${dir}/joint_inference_beast.tree
