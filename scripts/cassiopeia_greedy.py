@@ -2,11 +2,11 @@
 import os, sys
 import pandas as pd
 import cassiopeia as cas
+from ete3 import Tree
 
 
 def main():
     character_matrix_tsv = sys.argv[1]
-    character_matrix_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/987/987_indel_character_matrix.tsv"
 
     # get dir path to input file for output to the same dir
     outprefix = os.path.dirname(character_matrix_tsv)
@@ -19,9 +19,22 @@ def main():
     greedy_solver = cas.solver.VanillaGreedySolver()
     greedy_solver.solve(reconstructed_tree)
 
+    # make ete3 tree to write newick with internal node labels
+    connections = reconstructed_tree.edges
+    tree = Tree.from_parent_child_table(connections)
+
+    # rename internal nodes from cassiopeia defaults
+    i = 0
+    for node in tree.traverse():
+        if node.is_leaf() == True:
+            continue
+        else:
+            node.name = f"node{i}"
+            i+=1
+
     out_tree_infer = outprefix + "/cassiopeia_greedy_inferred.nwk"
     with open(out_tree_infer,'w') as it:
-        it.write(reconstructed_tree.get_newick())
+        it.write(tree.write(format=8))
 
 if __name__ == "__main__":
     main()
