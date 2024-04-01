@@ -9,12 +9,14 @@ XML_FILE="$dir/joint_inference_beast.xml"
 cp $template_xml $XML_FILE
 
 # tissue labels for tips
-traits=()
+REPLACE_TRAITSET=""
+REPLACE_DATE_TRAITSET=""
 while IFS= read -r line; do
     trait=$(echo $line | awk '{print $1 "=" $2 ","}')
-        traits+=("$trait")
+    REPLACE_TRAITSET+="$trait"
+    time=$(echo $line | awk '{print $1 "=54" ","}')
+    REPLACE_DATE_TRAITSET+="$time"
 done < "$tissues_path"
-REPLACE_TRAITSET=$(printf "%s " "${traits[@]}")
 
 # total number of tissues
 REPLACE_NUM_TISSUES=$(awk '{print $2}' "$tissues_path" | sort -u | wc -l)
@@ -29,7 +31,8 @@ REPLACE_ROOT_TISSUE_FREQUENCIES+=" 0"
 done
 
 # code map
-tissues=$(awk '{print $2}' "$tissues_path" | sort -u)
+tissues_string=$(awk '{print $2}' "$tissues_path" | sort -u)
+tissues=($tissues_string)
 primary_tissue="P"
 non_primary_tissues=()
 for item in "${tissues[@]}"; do
@@ -46,7 +49,7 @@ for ((i=1; i<$REPLACE_NUM_TISSUES; i++)); do
     trailing_code_map+=" ${i}"
 done
 REPLACE_CODE_MAP+="${trailing_code_map}"
-
+echo $REPLACE_CODE_MAP
 # num muts
 REPLACE_NUM_MUTS=$(tail -n +2 "$indel_matrix_path" | awk '{for (i=2; i<=NF; i++) print $i}' | sort -u | wc -l)
 
@@ -63,7 +66,7 @@ REPLACE_SEQUENCES=""
 for seq in ${sequences[@]}; do
 name=$(echo "$seq" | cut -d',' -f1)
 muts=$(echo "$seq" | cut -d',' -f2-)
-REPLACE_SEQUENCES+="<sequence id='${name}' spec='Sequence' taxon='${i}' value='${muts},'/> "
+REPLACE_SEQUENCES+="<sequence id='${name}' spec='Sequence' taxon='${name}' value='${muts},'/> "
 i=$(( i + 1 ))
 done
 
@@ -86,9 +89,10 @@ REPLACE_SEQUENCES="${REPLACE_SEQUENCES//\'/\"}"
 
 sed -i "s|REPLACE_SEQUENCES|$REPLACE_SEQUENCES|g" $XML_FILE
 sed -i "s|REPLACE_TRAITSET|$REPLACE_TRAITSET|g" $XML_FILE
+sed -i "s|REPLACE_DATE_TRAITSET|$REPLACE_DATE_TRAITSET|g" $XML_FILE
 sed -i "s|REPLACE_NUM_TISSUES|$REPLACE_NUM_TISSUES|g" $XML_FILE
-sed -i "s|REPLACE_TISSUE_FREQUENCIES|$REPLACE_TISSUE_FREQS|g" $XML_FILE
-sed -i "s|REPLACE_CODEMAP|$REPLACE_CODEMAP|g" $XML_FILE
+sed -i "s|REPLACE_TISSUE_FREQUENCIES|$REPLACE_TISSUE_FREQUENCIES|g" $XML_FILE
+sed -i "s|REPLACE_CODE_MAP|$REPLACE_CODE_MAP|g" $XML_FILE
 sed -i "s|REPLACE_ROOT_TISSUE_FREQUENCIES|$REPLACE_ROOT_TISSUE_FREQUENCIES|g" $XML_FILE
 sed -i "s|REPLACE_NUM_MUTS|$REPLACE_NUM_MUTS|g" $XML_FILE
 sed -i "s|REPLACE_EDIT_ROOT_FREQUENCIES|$REPLACE_EDIT_ROOT_FREQUENCIES|g" $XML_FILE

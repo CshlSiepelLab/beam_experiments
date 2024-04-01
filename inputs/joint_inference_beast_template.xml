@@ -47,7 +47,7 @@
     
 <!-- specify tip dates, here 54h after the start of the experiment -->
 <traitSet id="dateTrait" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet" traitname="date-forward"
-      value="54"/>
+      value="REPLACE_DATE_TRAITSET"/>
 
 
 <substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="54" editDuration="36">
@@ -145,7 +145,7 @@
                     <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="REPLACE_ROOT_TISSUE_FREQUENCIES" estimate="false"/>
                     <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
                         <traitSet id="traitSet.tissue" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet" traitname="discrete">REPLACE_TRAITSET</traitSet>
-                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="REPLACE_CODEMAP" codelength="-1" states="REPLACE_NUM_TISSUES"/>
+                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="REPLACE_CODE_MAP" codelength="-1" states="REPLACE_NUM_TISSUES"/>
                     </data>
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
