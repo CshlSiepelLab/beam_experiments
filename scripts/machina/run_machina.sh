@@ -56,12 +56,16 @@ then
     exit
 fi
 
-MACHINA="pmh_sankoff"
-
 if [[ -d $OUTDIR ]]; then
     :
 else
     mkdir ${OUTDIR}
 fi
 
+# # for normal machina
+MACHINA="pmh_sankoff"
 ${MACHINA} -p ${PTISSUE} -c ${COLORS} -o ${OUTDIR} ${EDGES} ${LABELS} &> ${OUTDIR}/machina_results.txt
+
+# # for machina with resolving polytomies mode
+# MACHINA="pmh_tr"
+# ${MACHINA} -m 3 -p ${PTISSUE} -c ${COLORS} -o ${OUTDIR} ${EDGES} ${LABELS} &> ${OUTDIR}/machina_results.txt

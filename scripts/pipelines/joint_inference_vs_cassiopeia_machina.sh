@@ -40,4 +40,4 @@ python ./scripts/machina/post_machina_to_tree.py ${cas_tree_tissues} ${machina_d
 conda deactivate
 # Remove intermediate MACHINA output files
 mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${dir}/
-rm -r ${machina_dir}
+#rm -r ${machina_dir}
