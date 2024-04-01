@@ -1,5 +1,5 @@
 #!/bin/bash
-source ~/anaconda3/etc/profile.d/conda.sh
+source ~/miniconda3/etc/profile.d/conda.sh
 
 ### This pipeline takes in simulated data in the form of an indel character matrix and ground truth tree with tissue labels and the compares cassiopeia->machina and joint tree and tissue BEAST inference method for performance in inferring the migration graph vs the ground truth
 
@@ -28,14 +28,15 @@ primary_tissue="P"
 mkdir ${machina_dir}
 python ./scripts/machina/prep_machina.py ${cas_tree_tissues} ${machina_dir} ${primary_tissue}
 conda deactivate
+
 # Run MACHINA
 conda activate machina
-sed -i '0,/0/s/0/GL/' ${machina_dir}/*.tree     # Prevents MACHINA segmentation fault due to input formatting
+#sed -i '0,/0/s/0/GL/' ${machina_dir}/*.tree     # Prevents MACHINA segmentation fault due to input formatting
 ./scripts/machina/run_machina.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir}
 conda deactivate
 # Condense MACHINA output into a labeled tree newick format
 conda activate simulate
-python ./scripts/machina/post_machina_to_tree.py ${sim_tree_with_tissues} ${machina_dir}/T-P-0.labeling ${machina_dir}
+python ./scripts/machina/post_machina_to_tree.py ${cas_tree_tissues} ${machina_dir}/T-P-0.labeling ${machina_dir}
 conda deactivate
 # Remove intermediate MACHINA output files
 mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${dir}/
