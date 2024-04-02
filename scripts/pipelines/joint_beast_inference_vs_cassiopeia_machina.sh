@@ -56,7 +56,5 @@ scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${temp
 java -jar ${metastabayes_jar} -overwrite -working ${dir}/joint_inference_beast.xml
 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/joint_inference_beast.trees ${dir}/joint_inference_beast.tree
 
-# obtain migration graphs
-
 # calculate migration graph F1 scores compared to the true migration graph
 

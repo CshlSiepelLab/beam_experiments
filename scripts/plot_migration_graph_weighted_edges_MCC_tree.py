@@ -3,6 +3,7 @@
 ### This script takes in a MCC tree from TreeAnnotator made from the BEAST2 posterior and then collapses the tree to a migration graph with edges weighted based on node tissue location probabilities. We essentially make a graph of all possible routes and then each route intensity is based on probability of occuring in the tree given node probabilities.
 
 import re, sys
+improt random
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -158,7 +159,7 @@ for i, node in enumerate(G.nodes()):
     if node == primary_tissue:
         pos[node] = (max_width / 2, 0)
     else:
-        pos[node] = ((max_width / num_nodes) * (i + 0.5), -row_height) 
+        pos[node] = ((max_width / num_nodes) * (i + 0.5), -row_height + random.uniform(0, 0.025)) 
 
 # make my own color map of 10 colors for now
 node_colors = ["black", "red", "green", "blue", "orange", "purple", "brown", "pink", "gray", "gold"]
