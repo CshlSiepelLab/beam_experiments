@@ -60,17 +60,26 @@ mcc_tree="${dir}/joint_inference_beast_tissues.tree"
 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${beast_posterior_trees} ${mcc_tree}
 
 # get tissue labeled true tree
-conda activate simulate
+conda activate compare_trees
 python scripts/format_add_tissues_to_newick.py ${true_tree} ${true_tissues}
 true_tissue_tree=${dir}/*_tissue_labeled_tree.nwk
 
 # calculate migration graph F1 scores compared to the true migration graph for machina single result
 machina_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${machina_tree} | awk -F' ' '{print $3}')
+conda deactivate
 
 # calculate migration graph F1 scores compared to the true migration graph for BEAST joint inference MCC single result
+python scripts/format_treeannotator_nexus_to_newick.py ${mcc_tree}
 beast_mcc_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${mcc_tree}.nwk | awk -F' ' '{print $3}')
 
 # calculate the same F1 score but for sampling all trees from the beast posterior with F1 score weighted by posterior probability
 beast_posterior_f1=$(python scripts/migration_graph_f1_true_beast_posterior_trees.py ${true_tissue_tree} ${beast_posterior_trees} | awk -F' ' '{print $3}')
+
+echo "machina"
+echo $machina_f1
+echo "beast mcc"
+echo $beast_mcc_f1
+echo "beast posterior"
+echo $beast_posterior_f1
 
 conda deactivate
