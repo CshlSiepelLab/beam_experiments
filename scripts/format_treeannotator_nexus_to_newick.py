@@ -31,7 +31,7 @@ def dendropy_beast_to_ete_newick_with_strict_locations(tree):
 def main():
     beast_file = sys.argv[1]
 
-    # beast_file = "sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/joint_inference_beast_tissues.tree"
+    #beast_file = "sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/joint_inference_beast_tissues.tree"
 
     out_file = beast_file + ".nwk"
 
@@ -40,3 +40,6 @@ def main():
     beast_tree_ete = dendropy_beast_to_ete_newick_with_strict_locations(beast_tree)
 
     beast_tree_ete.write(outfile=out_file, format=8)
+
+if __name__ == "__main__":
+    main()

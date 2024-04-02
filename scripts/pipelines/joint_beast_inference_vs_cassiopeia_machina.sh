@@ -66,7 +66,6 @@ true_tissue_tree=${dir}/*_tissue_labeled_tree.nwk
 
 # calculate migration graph F1 scores compared to the true migration graph for machina single result
 machina_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${machina_tree} | awk -F' ' '{print $3}')
-conda deactivate
 
 # calculate migration graph F1 scores compared to the true migration graph for BEAST joint inference MCC single result
 python scripts/format_treeannotator_nexus_to_newick.py ${mcc_tree}
