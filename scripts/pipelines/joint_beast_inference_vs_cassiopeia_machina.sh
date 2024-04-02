@@ -45,7 +45,8 @@ conda activate simulate
 python ./scripts/machina/post_machina_tr_to_tree.py ${machina_dir}/P-T-P-R.tree ${machina_dir}/P-T-P-R.labeling ${machina_dir}
 conda deactivate
 # Remove intermediate MACHINA output files
-mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${dir}/
+machina_tree="${dir}/machina_tree_all_tissue_labels.nwk" 
+mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${machina_tree}
 #rm -r ${machina_dir}
 
 # setup joint beast inference
@@ -56,5 +57,15 @@ scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${temp
 java -jar ${metastabayes_jar} -overwrite -working ${dir}/joint_inference_beast.xml
 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${dir}/joint_inference_beast.trees ${dir}/joint_inference_beast.tree
 
-# calculate migration graph F1 scores compared to the true migration graph
+# get tissue labeled true tree
+conda activate simulate
+python scripts/machina_realdata_to_newick.py ${true_tree} ${true_tissue} ${primary_tissue}
+true_tissue_tree=${dir}/*_tissue_labeled_tree.nwk
 
+# calculate migration graph F1 scores compared to the true migration graph for machina single result
+python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${machina_tree}
+
+# calculate the same F1 score but for sampling all trees from the beast posterior with F1 score weighted by posterior probability
+
+
+conda deactivate
