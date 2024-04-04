@@ -6,7 +6,7 @@
 barcode_simulator_dir="../barcode_simulator/scripts/simulator"
 
 # set dir to hold all sims
-sim_dir="sim_data_barcodes_modifiedTTPmachina_3_29_24"
+sim_dir="sim_data_barcodes_modifiedTTPmachina_4_3_24"
 mkdir ${sim_dir}
 
 # make pattern directories
@@ -16,14 +16,14 @@ mkdir ${sim_dir}/pM
 mkdir ${sim_dir}/pR
 
 # set migration pattern options
-# migration_patterns=(0 1 2 3)
-migration_patterns=(0)
+migration_patterns=(0 1 2 3)
+#migration_patterns=(0)
 
-mutation_rates=(0.05)
+mutation_rates=(0.01)
 
 for mutrate in ${mutation_rates[@]}; do
 for pattern in ${migration_patterns[@]}; do
-for ((i = 0; i < 1; i++)); do
+for ((i = 0; i < 5; i++)); do
 
 # make dir specific to the seed number for each sim and the migration pattern
 if (( $pattern == 0 )); then
@@ -45,6 +45,10 @@ mkdir ${outprefix}
 num_cells=-1
 max_anatomical_sites=8
 migration_rate="1e-6"
+mutFreqThreshold=0.05
+carryingCapacity="5e4"
+driverProb="1e-7"
+
 num_sites=10
 design="RANDOM"
 
@@ -61,11 +65,13 @@ num_sites\t${num_sites}\n
 mutrate\t${mutrate}" > ${run_conditions_file}
 
 # run simulator
-$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites}
+echo "Starting agent based model simulator."
+$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb}
 
 # run barcode simulator to overlay barcode data for machina simulator tree and tissues output
 machina_tree=${outprefix}/tree_seed*.nwk
 machina_tissues=${outprefix}/tree_seed*.vertex.labeling
+echo "Starting barcode overlay"
 python $barcode_simulator_dir/overlay_barcode_machina_simulator.py ${outprefix} ${design} ${num_sites} ${mutrate} ${machina_tree} ${machina_tissues}
 
 done
