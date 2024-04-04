@@ -1,0 +1,15 @@
+sim_name	sim_data_barcodes_modifiedTTPmachina_4_3_24
+
+output_directory	/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/sim_data_barcodes_modifiedTTPmachina_4_3_24/pS/12422
+
+seed	12422
+
+pattern	1
+
+num_cells	-1
+
+migration_rate	1e-6
+
+num_sites	10
+
+mutrate	0.01
