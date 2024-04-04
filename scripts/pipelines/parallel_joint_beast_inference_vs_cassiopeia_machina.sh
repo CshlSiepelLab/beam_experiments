@@ -31,5 +31,5 @@ do
   echo "${command}" >> "${pipeline_run_name}/parallel.txt"
 done
 
-parallel --progress -j 20 --memfree 10G --memsuspend 10G < "${pipeline_run_name}/parallel.txt"
+parallel --progress -j 25% --memfree 10G --memsuspend 10G < "${pipeline_run_name}/parallel.txt"
 rm "${pipeline_run_name}/parallel.txt"
