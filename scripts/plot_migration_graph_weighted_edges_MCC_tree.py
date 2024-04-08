@@ -3,7 +3,7 @@
 ### This script takes in a MCC tree from TreeAnnotator made from the BEAST2 posterior and then collapses the tree to a migration graph with edges weighted based on node tissue location probabilities. We essentially make a graph of all possible routes and then each route intensity is based on probability of occuring in the tree given node probabilities.
 
 import re, sys
-improt random
+import random
 import pandas as pd
 import numpy as np
 import networkx as nx
