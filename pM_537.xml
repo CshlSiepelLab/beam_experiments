@@ -36,8 +36,8 @@
     
 <!-- input data -->
 <data  id="s1_c1_data.txt" spec="Alignment" name="alignment">
-    <userDataType spec="tidetree.evolution.datatype.EditData" nrOfStates="REPLACE_NUM_MUTS" />
-    REPLACE_SEQUENCES
+    <userDataType spec="tidetree.evolution.datatype.EditData" nrOfStates="85" />
+    <sequence id="0_P" spec="Sequence" taxon="0_P" value="30,68,66,56,15,0,54,19,93,41,"/> <sequence id="11/12/21/22/59/63_M8" spec="Sequence" taxon="11/12/21/22/59/63_M8" value="1,26,0,94,51,75,0,31,0,32,"/> <sequence id="1_P" spec="Sequence" taxon="1_P" value="38,75,47,47,80,23,56,26,0,26,"/> <sequence id="2/4_P" spec="Sequence" taxon="2/4_P" value="47,39,6,47,11,56,26,0,62,41,"/> <sequence id="9/10/13/16/18/19/24/25/28/35/40/54/62/64/66_M7" spec="Sequence" taxon="9/10/13/16/18/19/24/25/28/35/40/54/62/64/66_M7" value="96,11,73,47,22,10,21,42,54,72,"/> <sequence id="6_P" spec="Sequence" taxon="6_P" value="36,12,0,66,66,59,26,0,46,23,"/> <sequence id="7_P" spec="Sequence" taxon="7_P" value="0,19,81,32,19,94,26,0,0,18,"/> <sequence id="8/14/15/17_M2" spec="Sequence" taxon="8/14/15/17_M2" value="54,74,8,25,56,56,75,42,42,89,"/> <sequence id="23_M2" spec="Sequence" taxon="23_M2" value="9,36,26,0,33,0,42,54,17,1,"/> <sequence id="26/52/53/60/69/72/83/86_M9" spec="Sequence" taxon="26/52/53/60/69/72/83/86_M9" value="0,52,13,41,11,42,97,56,1,0,"/> <sequence id="3_P" spec="Sequence" taxon="3_P" value="86,77,23,47,6,9,5,88,8,0,"/> <sequence id="5_P" spec="Sequence" taxon="5_P" value="17,54,45,47,0,87,2,94,9,41,"/> <sequence id="32_M2" spec="Sequence" taxon="32_M2" value="88,42,57,17,23,0,8,80,19,36,"/> <sequence id="20_M2" spec="Sequence" taxon="20_M2" value="36,70,0,0,93,45,11,72,45,74,"/> <sequence id="27/55/56/81_M9" spec="Sequence" taxon="27/55/56/81_M9" value="93,67,11,19,47,0,33,42,32,23,"/> <sequence id="38_M2" spec="Sequence" taxon="38_M2" value="56,0,87,0,64,11,96,76,19,0,"/> <sequence id="39_M3" spec="Sequence" taxon="39_M3" value="56,3,69,80,91,26,0,59,42,0,"/> <sequence id="43_M3" spec="Sequence" taxon="43_M3" value="47,3,11,47,14,96,36,59,47,0,"/> <sequence id="46_M3" spec="Sequence" taxon="46_M3" value="0,36,19,9,95,5,90,59,0,96,"/> <sequence id="31/34/37/41/57_M5" spec="Sequence" taxon="31/34/37/41/57_M5" value="62,36,23,0,96,26,0,0,79,36,"/> <sequence id="29/30/33/36/58_M6" spec="Sequence" taxon="29/30/33/36/58_M6" value="57,15,0,56,75,1,14,75,0,100,"/> <sequence id="42_M4" spec="Sequence" taxon="42_M4" value="67,96,8,67,48,75,19,57,19,23,"/> <sequence id="48_M4" spec="Sequence" taxon="48_M4" value="56,19,23,95,93,31,7,9,19,1,"/> <sequence id="49_M4" spec="Sequence" taxon="49_M4" value="91,19,100,23,74,42,23,74,19,91,"/> <sequence id="44_M3" spec="Sequence" taxon="44_M3" value="4,100,67,54,38,80,97,59,10,79,"/> <sequence id="50_M3" spec="Sequence" taxon="50_M3" value="21,10,11,15,0,54,16,59,47,31,"/> <sequence id="70/71_M5" spec="Sequence" taxon="70/71_M5" value="54,36,45,1,16,36,36,26,0,47,"/> <sequence id="74_M5" spec="Sequence" taxon="74_M5" value="0,27,26,0,96,1,40,0,0,31,"/> <sequence id="75_M5" spec="Sequence" taxon="75_M5" value="35,42,62,79,74,28,69,54,94,11,"/> <sequence id="77_M5" spec="Sequence" taxon="77_M5" value="90,96,11,75,0,0,42,0,96,0,"/> <sequence id="73_M6" spec="Sequence" taxon="73_M6" value="6,18,58,42,75,56,71,96,23,96,"/> <sequence id="82_M6" spec="Sequence" taxon="82_M6" value="18,33,56,74,47,42,69,10,9,60,"/> <sequence id="84_M6" spec="Sequence" taxon="84_M6" value="83,25,86,59,0,87,18,38,74,19,"/> <sequence id="51_M4" spec="Sequence" taxon="51_M4" value="52,23,96,74,88,38,38,41,19,47,"/> <sequence id="45_M4" spec="Sequence" taxon="45_M4" value="0,16,96,42,51,0,10,0,19,99,"/> <sequence id="47_M4" spec="Sequence" taxon="47_M4" value="5,70,66,47,100,93,5,66,19,66,"/> <sequence id="76_M6" spec="Sequence" taxon="76_M6" value="9,26,0,11,23,56,33,41,87,26,"/> <sequence id="79_M6" spec="Sequence" taxon="79_M6" value="26,0,42,36,75,0,10,1,0,38,"/> <sequence id="85_M6" spec="Sequence" taxon="85_M6" value="0,96,10,97,56,1,73,7,88,56,"/> <sequence id="61/65/67/68_M1" spec="Sequence" taxon="61/65/67/68_M1" value="56,31,79,0,75,28,8,47,19,26,"/> <sequence id="61/65/67/68_M4" spec="Sequence" taxon="61/65/67/68_M4" value="74,13,19,56,0,14,39,94,19,33,"/> <sequence id="78_M1" spec="Sequence" taxon="78_M1" value="75,91,82,79,64,20,1,75,19,33,"/> <sequence id="80_M1" spec="Sequence" taxon="80_M1" value="30,81,1,79,75,4,12,78,19,10,"/> 
 </data>
     
 <taxonset id="TaxonSet" spec="TaxonSet">
@@ -45,28 +45,28 @@
 </taxonset>
     
     
-<!-- specify tip dates, here h after the start of the experiment -->
+<!-- specify tip dates, here 54h after the start of the experiment -->
 <traitSet id="dateTrait" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet" traitname="date-forward"
-      value="REPLACE_DATE_TRAITSET"/>
+      value="26/52/53/60/69/72/83/86_M9=54,27/55/56/81_M9=54,11/12/21/22/59/63_M8=54,9/10/13/16/18/19/24/25/28/35/40/54/62/64/66_M7=54,84_M6=54,82_M6=54,85_M6=54,79_M6=54,76_M6=54,73_M6=54,29/30/33/36/58_M6=54,77_M5=54,75_M5=54,74_M5=54,70/71_M5=54,31/34/37/41/57_M5=54,61/65/67/68_M4=54,51_M4=54,49_M4=54,48_M4=54,47_M4=54,45_M4=54,42_M4=54,46_M3=54,50_M3=54,44_M3=54,43_M3=54,39_M3=54,38_M2=54,32_M2=54,23_M2=54,20_M2=54,8/14/15/17_M2=54,80_M1=54,78_M1=54,61/65/67/68_M1=54,7_P=54,6_P=54,5_P=54,3_P=54,2/4_P=54,1_P=54,0_P=54,"/>
 
 
-<substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="REPLACE_TIME" editDuration="REPLACE_TIME">
-    <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="REPLACE_EDIT_ROOT_FREQUENCIES" estimate="false"/>
+<substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="54" editDuration="54">
+    <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" estimate="false"/>
 </substModel>
 
 <siteModel spec="SiteModel" id="siteModel" mutationRate="@mutationRate" proportionInvariant="@proportionInvariant" gammaCategoryCount="0" substModel="@substModel"></siteModel>
 
 <run id="mcmc" spec="MCMC" chainLength="1000000">
         <state id="state" spec="State" storeEvery="5000">
-            <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="REPLACE_TIME" taxa="@s1_c1_data.txt" editHeight="REPLACE_TIME" editDuration="REPLACE_TIME" sequencesAreClustered="false">
+            <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="54" taxa="@s1_c1_data.txt" editHeight="54" editDuration="54" sequencesAreClustered="false">
                 <trait idref="dateTrait"/>
                 <taxonset idref="TaxonSet"/>
             </stateNode>
             <!-- find the definition of the scarring, loss rate and clock rate in the TiDeTree manuscript -->
-            <parameter id="editRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">REPLACE_EDIT_RATES</parameter>
+            <parameter id="editRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0119 0.0123</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000"> 0.0</parameter>
             <!-- the clock rate is the rate of acquiring edited state 2  -->
-            <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">REPLACE_CLOCK_RATE</parameter>
+            <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">0.6136</parameter>
             <!-- the mutation rate could be another rate multiplier, but we leave it fixed to 1 -->
             <parameter spec="parameter.RealParameter" estimate="false" id="mutationRate" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" lower="0.0" id="proportionInvariant" name="stateNode" upper="1.0">0.0</parameter>
@@ -80,8 +80,8 @@
             <parameter id="samplingRate" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0"> 0 </parameter>
             <parameter id="rho" spec="parameter.RealParameter" lower="0.0" name="stateNode" upper="1.0"> 1.0</parameter>
             <!-- The origin is the start of the population process (see Stadler2013), i.e. in most applications the time that passed
-             from the start of the experiment until the cells are sequenced. Here this is in h. -->
-            <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="REPLACE_TIME.0001">REPLACE_TIME.001</parameter>
+             from the start of the experiment until the cells are sequenced. Here this is 54h. -->
+            <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="54.0001">54.001</parameter>
             <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="1" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>
@@ -142,10 +142,10 @@
                 </distribution>
                 
                 <distribution id="traitedtreeLikelihood.tissue" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@tree">
-                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="REPLACE_ROOT_TISSUE_FREQUENCIES" estimate="false"/>
+                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0 0" estimate="false"/>
                     <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
-                        <traitSet id="traitSet.tissue" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet" traitname="discrete">REPLACE_TRAITSET</traitSet>
-                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="REPLACE_CODE_MAP" codelength="-1" states="REPLACE_NUM_TISSUES"/>
+                        <traitSet id="traitSet.tissue" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet" traitname="discrete">26/52/53/60/69/72/83/86_M9=M9,27/55/56/81_M9=M9,11/12/21/22/59/63_M8=M8,9/10/13/16/18/19/24/25/28/35/40/54/62/64/66_M7=M7,84_M6=M6,82_M6=M6,85_M6=M6,79_M6=M6,76_M6=M6,73_M6=M6,29/30/33/36/58_M6=M6,77_M5=M5,75_M5=M5,74_M5=M5,70/71_M5=M5,31/34/37/41/57_M5=M5,61/65/67/68_M4=M4,51_M4=M4,49_M4=M4,48_M4=M4,47_M4=M4,45_M4=M4,42_M4=M4,46_M3=M3,50_M3=M3,44_M3=M3,43_M3=M3,39_M3=M3,38_M2=M2,32_M2=M2,23_M2=M2,20_M2=M2,8/14/15/17_M2=M2,80_M1=M1,78_M1=M1,61/65/67/68_M1=M1,7_P=P,6_P=P,5_P=P,3_P=P,2/4_P=P,1_P=P,0_P=P,</traitSet>
+                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="P=0,M1=1,M2=2,M3=3,M4=4,M5=5,M6=6,M7=7,M8=8,M9=9,? = 0 1 2 3 4 5 6 7 8 9" codelength="-1" states="10"/>
                     </data>
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
@@ -153,7 +153,7 @@
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
                         <substModel id="svs.s:tissue" spec="metastabayes.substitutionmodel.OneRateAllTissues" rates="@relativeGeoRates.s:tissue" rateIndicator="true" symmetric="true">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
-                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="REPLACE_NUM_TISSUES" name="frequencies">REPLACE_TISSUE_FREQUENCIES</parameter>
+                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="10" name="frequencies">.1000000000</parameter>
                             </frequencies>
                         </substModel>
                     </siteModel>
