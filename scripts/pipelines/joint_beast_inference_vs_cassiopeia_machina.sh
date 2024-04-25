@@ -5,16 +5,17 @@ source ~/miniconda3/etc/profile.d/conda.sh
 ### This pipeline takes in simulated data in the form of an indel character matrix and ground truth tree with tissue labels and the compares cassiopeia->machina and joint tree and tissue BEAST inference method for performance in inferring the migration graph vs the ground truth
 
 # # user inputs
-# directory=$1
-# accuracy_file=$2
+directory=$1
+accuracy_file=$2
 
-directory="./11031"
-accuracy_file="./accuracy.csv"
+# directory="./11031"
+# accuracy_file="./accuracy.csv"
 
 sim_matrix=${directory}/*_indel_character_matrix.tsv
 true_tree=${directory}/cell_tree_seed*.nwk
 true_tissues=${directory}/cell_tree_seed*.vertex.labeling
 leaf_tissues=$(ls ${directory}/cell_tree_*[0-9].labeling)
+drivers=${directory}/drivers_seed*.txt
 
 
 # for testing
@@ -48,7 +49,7 @@ conda activate machina
 #sed -i '0,/0/s/0/GL/' ${machina_dir}/*.tree     # Prevents MACHINA segmentation fault due to input formatting
 ./scripts/machina/run_machina_tr.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir}
 conda deactivate
-exit
+
 # Condense MACHINA output into a labeled tree newick format
 conda activate simulate
 python ./scripts/machina/post_machina_tr_to_tree.py ${machina_dir}/P-T-P-R.tree ${machina_dir}/P-T-P-R.labeling ${machina_dir}
@@ -60,10 +61,11 @@ mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${machina_tree}
 
 # setup joint beast inference
 template_xml="inputs/joint_inference_beast_template.xml"
-scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${template_xml}
+sim_time=$(grep "Number of generations" $drivers | cut -d':' -f2 | tr -d ' ')
+scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${template_xml} ${sim_time}
 
 # # run beast joint inference
-java -jar ${metastabayes_jar} -overwrite -working ${dir}/joint_inference_beast.xml
+time java -jar ${metastabayes_jar} -overwrite -working ${dir}/joint_inference_beast.xml > ${dir}/joint_inference_beast_terminal_time.log
 beast_posterior_trees="${dir}/joint_inference_beast_tissues.trees"
 mcc_tree="${dir}/joint_inference_beast_tissues.tree"
 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${beast_posterior_trees} ${mcc_tree}

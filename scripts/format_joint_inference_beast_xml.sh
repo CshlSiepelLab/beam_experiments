@@ -80,7 +80,12 @@ done
 ##### temp solution to not model site dropouts
 REPLACE_SEQUENCES=$(printf '%s\n' "$REPLACE_SEQUENCES" | sed 's/-1/0/g')
 
-# edit rates
+# get the number of sites from the indel matrix
+num_target_sites=$(tail -n 2 "$indel_matrix_path" | awk '{print NF-1; exit}' )
+num_samples=$(tail -n +2 "$indel_matrix_path" | wc -l)
+num_total_target_sites=$((num_target_sites * num_samples))
+
+# equal edit rates
 equal_rate_value=$(echo "scale=4; 1 / ($REPLACE_NUM_MUTS)" | bc)
 last_rate_value=$(echo "scale=4; 1 - $equal_rate_value * ($REPLACE_NUM_MUTS - 1)" | bc)
 REPLACE_EDIT_RATES=""
@@ -92,15 +97,29 @@ for ((i = 0; i < REPLACE_NUM_MUTS; i++)); do
     fi
 done
 
-# get the number of sites from the indel matrix
-num_target_sites=$(tail -n 2 "$indel_matrix_path" | awk '{print NF-1; exit}' )
-num_samples=$(tail -n +2 "$indel_matrix_path" | wc -l)
-num_total_target_sites=$((num_target_sites * num_samples))
+# # calculated edit rates
+# all_muts=($(tail -n +2 "$indel_matrix_path" | awk '{for (i=2; i<=NF; i++) print $i}' | sed 's/-1/0/g' | tr '\n' ' '))
+# done_muts=()
+# editRates=()
+# counts=()
+# for mut in "${all_muts[@]}"; do
+# if [[ ! " ${done_muts[@]} " =~ " ${mut} " ]]; then
+#     done_muts+=("${mut}")
+#     count=$(printf '%s\n' "${all_muts[@]}" | grep -ow "$mut" | wc -l)
+#     counts+=($count)
+#     rate=$(echo "scale=4; $count / $num_total_target_sites" | bc)
+#     editRates+=($rate)
+#     done_muts+=("${mut}")
+# fi
+# done
+# # add 0 for lost state requirement
+# editRates=("${editRates[0]}" "0.0" "${editRates[@]:1}")
+
+# compute the rate needed to get the desired proportion_edited (computation is approximate for prior, not robustly calculated)
 all_edits=$(tail -n +2 "$indel_matrix_path" | awk '{for (i=2; i<=NF; i++) if ($i != 0) print $i}' | sed 's/-1//g' | sed 's/0//g')
 num_edits=$(echo "$all_edits" | wc -w)
 proportion_edited=$(echo "scale=4; $num_edits / $num_total_target_sites" | bc)
-# compute the rate needed to get the desired proportion_edited (computation is approximate for prior, not robustly calculated)
-REPLACE_CLOCK_RATE=$(echo "scale=4; $proportion_edited * $num_target_sites / $REPLACE_TIME" | bc)
+REPLACE_CLOCK_RATE=$(echo "scale=4; $proportion_edited / $REPLACE_TIME" | bc)
 
 # format template xml file
 REPLACE_SEQUENCES=$(printf '%s\n' "$REPLACE_SEQUENCES" | sed 's/[\/&]/\\&/g')
