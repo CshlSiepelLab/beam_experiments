@@ -12,7 +12,8 @@ def main():
     outprefix = os.path.dirname(character_matrix_tsv)
 
     # read in final matrix
-    final_matrix = pd.read_csv(character_matrix_tsv, sep = '\t', index_col=0)
+    final_matrix = pd.read_csv(character_matrix_tsv, sep='\t', index_col=0)
+    final_matrix.index = final_matrix.index.astype(str)
 
     # solve cassiopeia greedy
     reconstructed_tree = cas.data.CassiopeiaTree(character_matrix = final_matrix, missing_state_indicator = -1)

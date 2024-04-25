@@ -6,6 +6,7 @@ import pandas as pd
 leaf_labeled_tree = sys.argv[1]
 output_dir = sys.argv[2]
 primary_tissue = str(sys.argv[3])
+leaf_labels_tsv = str(sys.argv[4])
 
 # leaf_labeled_tree = "machina_m8_sim_data/seed10046/T_seed10046_tissue_labeled_true_tree.nwk"
 # output_dir = "machina_m8_sim_data/seed10046/machina"
@@ -32,13 +33,13 @@ for node in tree.traverse():
 tree.get_tree_root().name = '0'
 
 
-leaf_label = pd.DataFrame(columns = ['leaf', 'tissue'])
+leaf_label = pd.read_csv(leaf_labels_tsv, sep="\s+", names=['leaf', 'tissue'])
+
 edges = pd.DataFrame(columns = ['node1', 'node2'])
 
 for node in tree.traverse():
     if node.is_leaf() == True:
-        name,tissue = node.name.split("_")
-        leaf_label.loc[len(leaf_label)] = [node.name, tissue]
+            name = node.name
     else:
         node_name = node.name
         children = node.children
@@ -49,6 +50,7 @@ for node in tree.traverse():
             edges.loc[len(edges)] = [node_name, child_name]
 
 tissues = leaf_label['tissue'].unique().tolist()
+
 # Fix when primary tissue is not a leaf label, but required in coloring scheme for MACHINA to run
 if primary_tissue not in tissues:
     tissues.append(primary_tissue)
@@ -58,8 +60,9 @@ for tissue in tissues:
     color_map[tissue] = i
     i += 1
 
+leaf_label.to_csv(output_file_leaf, sep="\t", index=False, header=False)
+
 # Output files for MACHINA
-leaf_label.to_csv(output_file_leaf, sep="\t", index=False, header = False)
 edges.to_csv(output_file_edges, sep="\t", index=False, header = False)
 
 with open(output_file_colors, "w") as file:
