@@ -92,7 +92,15 @@ for ((i = 0; i < REPLACE_NUM_MUTS; i++)); do
     fi
 done
 
-REPLACE_CLOCK_RATE=1.0
+# get the number of sites from the indel matrix
+num_target_sites=$(tail -n 2 "$indel_matrix_path" | awk '{print NF-1; exit}' )
+num_samples=$(tail -n +2 "$indel_matrix_path" | wc -l)
+num_total_target_sites=$((num_target_sites * num_samples))
+all_edits=$(tail -n +2 "$indel_matrix_path" | awk '{for (i=2; i<=NF; i++) if ($i != 0) print $i}' | sed 's/-1//g' | sed 's/0//g')
+num_edits=$(echo "$all_edits" | wc -w)
+proportion_edited=$(echo "scale=4; $num_edits / $num_total_target_sites" | bc)
+# compute the rate needed to get the desired proportion_edited (computation is approximate for prior, not robustly calculated)
+REPLACE_CLOCK_RATE=$(echo "scale=4; $proportion_edited * $num_target_sites / $REPLACE_TIME" | bc)
 
 # format template xml file
 REPLACE_SEQUENCES=$(printf '%s\n' "$REPLACE_SEQUENCES" | sed 's/[\/&]/\\&/g')
