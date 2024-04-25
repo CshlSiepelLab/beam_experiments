@@ -3,6 +3,7 @@
 indel_matrix_path=$1
 tissues_path=$2
 template_xml=$3
+REPLACE_TIME=$4
 
 dir=$(dirname "$indel_matrix_path")
 XML_FILE="$dir/joint_inference_beast.xml"
@@ -14,7 +15,7 @@ REPLACE_DATE_TRAITSET=""
 while IFS= read -r line; do
     trait=$(echo $line | awk '{print $1 "=" $2 ","}')
     REPLACE_TRAITSET+="$trait"
-    time=$(echo $line | awk '{print $1 "=54" ","}')
+    time=$(echo $line | awk '{print $1 "=REPLACE_TIME" ","}')
     REPLACE_DATE_TRAITSET+="$time"
 done < "$tissues_path"
 
@@ -51,7 +52,14 @@ done
 REPLACE_CODE_MAP+="${trailing_code_map}"
 
 # num muts
-REPLACE_NUM_MUTS=$(tail -n +2 "$indel_matrix_path" | awk '{for (i=2; i<=NF; i++) print $i}' | sort -u | wc -l)
+unique_muts=$(tail -n +2 "$indel_matrix_path" | awk '{for (i=2; i<=NF; i++) print $i}' | sed 's/-1/0/g' | sort -u)
+# ensure unedited state is included for edge case when all sites are edited and no dropouts occur since replacing dropouts as unedited here temporarily
+if ! echo "$unique_muts" | grep -q '^0$'; then
+    unique_muts+=" 0"
+fi
+REPLACE_NUM_MUTS=$(echo "$unique_muts" | wc -w)
+# add +1 for lost state requirement
+REPLACE_NUM_MUTS=$((REPLACE_NUM_MUTS + 1))
 
 # edit root frequencies
 REPLACE_EDIT_ROOT_FREQUENCIES="1"
@@ -73,10 +81,10 @@ done
 REPLACE_SEQUENCES=$(printf '%s\n' "$REPLACE_SEQUENCES" | sed 's/-1/0/g')
 
 # edit rates
-equal_rate_value=$(echo "scale=4; 1 / ($REPLACE_NUM_MUTS - 1)" | bc)
-last_rate_value=$(echo "scale=4; 1 - $equal_rate_value * ($REPLACE_NUM_MUTS - 2)" | bc)
+equal_rate_value=$(echo "scale=4; 1 / ($REPLACE_NUM_MUTS)" | bc)
+last_rate_value=$(echo "scale=4; 1 - $equal_rate_value * ($REPLACE_NUM_MUTS - 1)" | bc)
 REPLACE_EDIT_RATES=""
-for ((i = 1; i < REPLACE_NUM_MUTS; i++)); do
+for ((i = 0; i < REPLACE_NUM_MUTS; i++)); do
         if [ $i -eq $((REPLACE_NUM_MUTS - 1)) ]; then
         REPLACE_EDIT_RATES+="0$last_rate_value"
     else
@@ -84,7 +92,6 @@ for ((i = 1; i < REPLACE_NUM_MUTS; i++)); do
     fi
 done
 
-REPLACE_TIME=54
 REPLACE_CLOCK_RATE=1.0
 
 # format template xml file
