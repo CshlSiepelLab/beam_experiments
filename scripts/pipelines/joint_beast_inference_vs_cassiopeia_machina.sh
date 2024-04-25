@@ -8,10 +8,9 @@ directory=$1
 accuracy_file=$2
 
 sim_matrix=${directory}/*_indel_character_matrix.tsv
-true_tree=${directory}/tree_seed*.nwk
-true_tissues=${directory}/tree_seed*.vertex.labeling
-leaf_tissues=$(ls ${directory}/*[0-9].labeling)
-edge_tree=${directory}/tree_seed*.tree
+true_tree=${directory}/cell_tree_seed*.nwk
+true_tissues=${directory}/cell_tree_seed*.vertex.labeling
+leaf_tissues=$(ls ${directory}/cell_tree_*[0-9].labeling)
 
 
 # for testing
@@ -19,7 +18,6 @@ edge_tree=${directory}/tree_seed*.tree
 # true_tree="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874.nwk"
 # true_tissues="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874.vertex.labeling"
 # leaf_tissues="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874.labeling"
-# edge_tree="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874.tree"
 
 # get executable paths for beast
 treeannotator_path=$(which treeannotator)
