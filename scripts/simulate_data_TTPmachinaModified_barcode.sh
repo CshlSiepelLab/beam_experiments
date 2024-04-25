@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ### This script is to simulate trees with node tissue labels according to the modified TTP / MACHINA agent based model of tumor growth and metastasis
-
+### need to activate conda environment names simulate that has cassiopeia and ete3
 
 barcode_simulator_dir="../barcode_simulator/scripts/simulator"
 
 # set dir to hold all sims
-sim_dir="sim_data_barcodes_modifiedTTPmachina_4_3_24"
+sim_dir="sim_data_50cellTrees_barcodes_4_25_24"
 mkdir ${sim_dir}
 
 # make pattern directories
@@ -48,6 +48,7 @@ migration_rate="1e-6"
 mutFreqThreshold=0.05
 carryingCapacity="5e4"
 driverProb="1e-7"
+num_cells_downsample=50
 
 num_sites=10
 design="RANDOM"
@@ -62,16 +63,20 @@ pattern\t${pattern}\n
 num_cells\t${num_cells}\n
 migration_rate\t${migration_rate}\n
 num_sites\t${num_sites}\n
-mutrate\t${mutrate}" > ${run_conditions_file}
+mutrate\t${mutrate}\n
+num_cells_downsample\t${num_cells_downsample}" > ${run_conditions_file}
 
 # run simulator
-echo "Starting agent based model simulator."
-$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb}
+echo "Running barcode simulator with seed ${seed} and migration pattern ${pattern}"
+echo "$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample}" >> ${run_conditions_file}
+timeout 1m $barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
+
 
 # run barcode simulator to overlay barcode data for machina simulator tree and tissues output
-machina_tree=${outprefix}/tree_seed*.nwk
-machina_tissues=${outprefix}/tree_seed*.vertex.labeling
-echo "Starting barcode overlay"
+machina_tree=${outprefix}/cell_tree_seed*.nwk
+machina_tissues=${outprefix}/cell_tree_seed*.vertex.labeling
+echo "Running overlay barcode data for machina simulator tree and tissues output"
+echo "python $barcode_simulator_dir/overlay_barcode_machina_simulator.py ${outprefix} ${design} ${num_sites} ${mutrate} ${machina_tree} ${machina_tissues}" >> ${run_conditions_file}
 python $barcode_simulator_dir/overlay_barcode_machina_simulator.py ${outprefix} ${design} ${num_sites} ${mutrate} ${machina_tree} ${machina_tissues}
 
 done
