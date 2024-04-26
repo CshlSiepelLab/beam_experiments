@@ -67,7 +67,10 @@ def calculate_metrics(true_counts, inferred_counts):
     # calculate precision (union of inferred and true positives over total true positives)
     precision = union_positives / total_true
     # calculate F1 score (2((precision * recall)/(precision + recall)))
-    f1 = 2 * ((precision * recall) / (precision + recall))
+    if precision + recall == 0:
+        f1 = 0
+    else:
+        f1 = 2 * ((precision * recall) / (precision + recall))
     return f1, recall, precision
 
 def main():

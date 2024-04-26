@@ -65,6 +65,9 @@ recall = union_positives / total_inferred
 precision = union_positives / total_true
 
 # calculate F1 score (2((precision * recall)/(precision + recall)))
-f1 = 2 * ((precision * recall) / (precision + recall))
+if precision + recall == 0:
+    f1 = 0
+else:
+    f1 = 2 * ((precision * recall) / (precision + recall))
 
 print(f"F1 score: {f1}")
