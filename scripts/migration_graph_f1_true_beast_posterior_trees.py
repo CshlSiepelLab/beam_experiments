@@ -21,6 +21,7 @@ def dendropy_beast_to_ete_newick_with_strict_locations(tree):
     for node in tree_copy.preorder_node_iter():
         try:
             prediction = node.taxon.label + "_" + node.annotations.get_value('location')
+            node.taxon.label = prediction
         except Exception as e:
             prediction = f"node{i}" + "_" + node.annotations.get_value('location')
             i += 1
