@@ -119,7 +119,8 @@ num_total_target_sites=$((num_target_sites * num_samples))
 all_edits=$(tail -n +2 "$indel_matrix_path" | awk '{for (i=2; i<=NF; i++) if ($i != 0) print $i}' | sed 's/-1//g' | sed 's/0//g')
 num_edits=$(echo "$all_edits" | wc -w)
 proportion_edited=$(echo "scale=4; $num_edits / $num_total_target_sites" | bc)
-REPLACE_CLOCK_RATE=$(echo "scale=4; $proportion_edited / $REPLACE_TIME" | bc)
+# scaling since editRates are all 1.0 (again not the best approach but okay)
+REPLACE_CLOCK_RATE=$(echo "scale=4; $proportion_edited / ($REPLACE_TIME * 100)" | bc)
 
 # format template xml file
 REPLACE_SEQUENCES=$(printf '%s\n' "$REPLACE_SEQUENCES" | sed 's/[\/&]/\\&/g')
