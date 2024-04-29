@@ -86,16 +86,16 @@ num_samples=$(tail -n +2 "$indel_matrix_path" | wc -l)
 num_total_target_sites=$((num_target_sites * num_samples))
 
 # equal edit rates
-equal_rate_value=$(echo "scale=4; 1 / ($REPLACE_NUM_MUTS)" | bc)
-last_rate_value=$(echo "scale=4; 1 - $equal_rate_value * ($REPLACE_NUM_MUTS - 1)" | bc)
-REPLACE_EDIT_RATES=""
-for ((i = 0; i < REPLACE_NUM_MUTS; i++)); do
-        if [ $i -eq $((REPLACE_NUM_MUTS - 1)) ]; then
-        REPLACE_EDIT_RATES+="0$last_rate_value"
-    else
-        REPLACE_EDIT_RATES+="0$equal_rate_value "
-    fi
-done
+# equal_rate_value=$(echo "scale=4; 1 / ($REPLACE_NUM_MUTS)" | bc)
+# last_rate_value=$(echo "scale=4; 1 - $equal_rate_value * ($REPLACE_NUM_MUTS - 1)" | bc)
+# REPLACE_EDIT_RATES=""
+# for ((i = 0; i < REPLACE_NUM_MUTS; i++)); do
+#         if [ $i -eq $((REPLACE_NUM_MUTS - 1)) ]; then
+#         REPLACE_EDIT_RATES+="0$last_rate_value"
+#     else
+#         REPLACE_EDIT_RATES+="0$equal_rate_value "
+#     fi
+# done
 
 # # calculated edit rates
 # all_muts=($(tail -n +2 "$indel_matrix_path" | awk '{for (i=2; i<=NF; i++) print $i}' | sed 's/-1/0/g' | tr '\n' ' '))
@@ -135,7 +135,7 @@ sed -i "s|REPLACE_CODE_MAP|$REPLACE_CODE_MAP|g" $XML_FILE
 sed -i "s|REPLACE_ROOT_TISSUE_FREQUENCIES|$REPLACE_ROOT_TISSUE_FREQUENCIES|g" $XML_FILE
 sed -i "s|REPLACE_NUM_MUTS|$REPLACE_NUM_MUTS|g" $XML_FILE
 sed -i "s|REPLACE_EDIT_ROOT_FREQUENCIES|$REPLACE_EDIT_ROOT_FREQUENCIES|g" $XML_FILE
-sed -i "s|REPLACE_EDIT_RATES|$REPLACE_EDIT_RATES|g" $XML_FILE
+# sed -i "s|REPLACE_EDIT_RATES|$REPLACE_EDIT_RATES|g" $XML_FILE
 sed -i "s|REPLACE_TIME|$REPLACE_TIME|g" $XML_FILE
 sed -i "s|REPLACE_CLOCK_RATE|$REPLACE_CLOCK_RATE|g" $XML_FILE
 
