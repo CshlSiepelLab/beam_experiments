@@ -7,7 +7,7 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
-pipeline_run_name="joint_inference_vs_cassiopeia_machina_cellTree_simdataset_4_25_24"
+pipeline_run_name="joint_inference_vs_cassiopeia_machina_cellTree_simdataset_4_30_24"
 mkdir ${pipeline_run_name}
 
 # copy machina datasets to working directory for the run
