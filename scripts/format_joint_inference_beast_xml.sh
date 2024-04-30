@@ -64,7 +64,7 @@ REPLACE_NUM_EDITS=$((REPLACE_NUM_MUTS - 1))
 
 REPLACE_SEQUENCES=$(python scripts/format_tidetree_sequences_sim_matrix.py $indel_matrix_path | tr -d '\n')
 ##### temp solution to not model site dropouts
-# REPLACE_SEQUENCES=$(printf '%s\n' "$REPLACE_SEQUENCES" | sed 's/-1/0/g')
+REPLACE_SEQUENCES=$(printf '%s\n' "$REPLACE_SEQUENCES" | sed 's/-1/0/g')
 
 # get the number of sites from the indel matrix
 num_target_sites=$(tail -n 2 "$indel_matrix_path" | awk '{print NF-1; exit}' )
