@@ -1,0 +1,19 @@
+0
+123
+238
+317
+27601
+49145
+80003
+160422
+209124
+275403
+362675
+411693
+417607
+441689
+461897
+Number of generations: 162
+Number of mutations: 565950
+Number of extant cells: 215500
+Number of active anatomical sites: 10
