@@ -5,10 +5,10 @@ source ~/miniconda3/etc/profile.d/conda.sh
 ### This pipeline takes in simulated data in the form of an indel character matrix and ground truth tree with tissue labels and the compares cassiopeia->machina and joint tree and tissue BEAST inference method for performance in inferring the migration graph vs the ground truth
 
 # # user inputs
-directory=$1
-accuracy_file=$2
+# directory=$1
+# accuracy_file=$2
 
-# directory="./11031"
+directory="27248"
 # accuracy_file="./accuracy.csv"
 
 sim_matrix=${directory}/*_indel_character_matrix.tsv
@@ -76,7 +76,7 @@ python scripts/format_add_tissues_to_newick.py ${true_tree} ${true_tissues}
 true_tissue_tree=${dir}/*_tissue_labeled_tree.nwk
 
 # get random and consensus tissue labeled trees
-python scripts/consensus_random_tissue_trees.py $cas_tree $leaf_tissues
+python scripts/consensus_random_tissue_trees.py ${cas_tree} ${leaf_tissues}
 random_tissue_tree=${dir}/*_random_tissues.nwk
 consensus_tissue_tree=${dir}/*_consensus_tissues.nwk
 

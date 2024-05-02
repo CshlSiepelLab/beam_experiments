@@ -50,15 +50,16 @@ def label_tissues_random(tree, tissues_df):
             node.name = f"{node.name}_{random_tissue}"
     return copy_tree
 
-# tree_file = sys.argv[1]
-# leaf_tissues_tsv = sys.argv[1]
+# User inputs
+tree_file = sys.argv[1]
+leaf_tissues_tsv = sys.argv[2]
 
-tree_file = "cell_tree_seed7518.nwk"
-leaf_tissues_tsv = "cell_tree_seed7518.labeling"
+# tree_file = "27248/cassiopeia_greedy_inferred.nwk"
+# leaf_tissues_tsv = "27248/cell_tree_seed27248.labeling"
 
 
-tree = ete3.Tree(tree_file, format=3)
-tissue_map = pd.read_csv(leaf_tissues_tsv, sep='\s+', header=None, names=['cell', 'tissue'], dtype={'cell': str, 'tissue': str})
+tree = ete3.Tree(tree_file, format=8)
+tissue_map = pd.read_csv(leaf_tissues_tsv, sep=r'\s+', header=None, names=['cell', 'tissue'], dtype={'cell': str, 'tissue': str})
 
 # get results
 random_tree = label_tissues_random(tree, tissue_map)
