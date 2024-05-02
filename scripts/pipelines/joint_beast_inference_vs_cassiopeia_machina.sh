@@ -5,10 +5,10 @@ source ~/miniconda3/etc/profile.d/conda.sh
 ### This pipeline takes in simulated data in the form of an indel character matrix and ground truth tree with tissue labels and the compares cassiopeia->machina and joint tree and tissue BEAST inference method for performance in inferring the migration graph vs the ground truth
 
 # # user inputs
-# directory=$1
-# accuracy_file=$2
+directory=$1
+accuracy_file=$2
 
-directory="27248"
+# directory="27248"
 # accuracy_file="./accuracy.csv"
 
 sim_matrix=${directory}/*_indel_character_matrix.tsv
@@ -47,7 +47,7 @@ conda deactivate
 # Run MACHINA
 conda activate machina
 #sed -i '0,/0/s/0/GL/' ${machina_dir}/*.tree     # Prevents MACHINA segmentation fault due to input formatting
-./scripts/machina/run_machina_tr.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir}
+timeout 10m ./scripts/machina/run_machina_tr.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir} || echo "Error: Machina execution timed out for ${dir}"
 conda deactivate
 
 # Condense MACHINA output into a labeled tree newick format
