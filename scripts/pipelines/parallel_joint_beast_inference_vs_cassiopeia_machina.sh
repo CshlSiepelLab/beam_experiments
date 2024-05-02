@@ -16,7 +16,7 @@ cp -r ${dir_pre}/* ${pipeline_run_name}/
 
 # intialize files to track metrics for the entire run
 accuracy_file="${pipeline_run_name}/accuracy.csv"
-echo "dir_name,machina_f1,beast_mcc_f1,beast_posterior_f1" > $accuracy_file
+echo "dir_name,machina_f1,beast_mcc_f1,beast_posterior_f1,random_f1,consensus_f1" > $accuracy_file
 
 commands=()
 
