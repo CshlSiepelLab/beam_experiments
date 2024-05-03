@@ -1,0 +1,1161 @@
+sim_name	sim_data_50cellTrees_moreSims_barcodes_5_3_24
+
+output_directory	/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/sim_data_50cellTrees_moreSims_barcodes_5_3_24/pR/22385
+
+seed	22385
+
+pattern	3
+
+num_cells	-1
+
+migration_rate	1e-6
+
+num_sites	10
+
+mutrate	0.005
+
+num_cells_downsample	50
+../barcode_simulator/scripts/simulator/build/simulate -C -1 -p 3 -mig 1e-6 -s 22385 -o /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/sim_data_50cellTrees_moreSims_barcodes_5_3_24/pR/22385 -m 8 -f 0.05 -K 5e4 -D 1e-7 -d 50
+Generation: 1, #cells: 1, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 2
+No tumor
+Generation: 1, #cells: 1, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 2
+No tumor
+Generation: 1, #cells: 1, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 2
+Generation: 2, #cells: 2, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 2
+Generation: 3, #cells: 4, #anatomical sites: 1/1 (1/2)
+Anatomical site: 0 { 0 }, number of cells: 4
+Generation: 4, #cells: 2, #anatomical sites: 1/1 (1/2)
+Anatomical site: 0 { 0 }, number of cells: 2
+No tumor
+Generation: 1, #cells: 1, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 2
+Generation: 2, #cells: 4, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 4
+Generation: 3, #cells: 4, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 4
+Generation: 4, #cells: 4, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 4
+Generation: 5, #cells: 6, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 6
+Generation: 6, #cells: 6, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 6
+Generation: 7, #cells: 10, #anatomical sites: 1/1 (1/1)
+Anatomical site: 0 { 0 }, number of cells: 10
+Generation: 8, #cells: 16, #anatomical sites: 1/1 (1/3)
+Anatomical site: 0 { 0 }, number of cells: 16
+Generation: 9, #cells: 20, #anatomical sites: 1/1 (1/4)
+Anatomical site: 0 { 0 }, number of cells: 20
+Generation: 10, #cells: 26, #anatomical sites: 1/1 (1/4)
+Anatomical site: 0 { 0 }, number of cells: 26
+Generation: 11, #cells: 26, #anatomical sites: 1/1 (1/4)
+Anatomical site: 0 { 0 }, number of cells: 26
+Generation: 12, #cells: 30, #anatomical sites: 1/1 (1/6)
+Anatomical site: 0 { 0 }, number of cells: 30
+Generation: 13, #cells: 30, #anatomical sites: 1/1 (1/7)
+Anatomical site: 0 { 0 }, number of cells: 30
+Generation: 14, #cells: 44, #anatomical sites: 1/1 (1/9)
+Anatomical site: 0 { 0 }, number of cells: 44
+Generation: 15, #cells: 48, #anatomical sites: 1/1 (1/11)
+Anatomical site: 0 { 0 }, number of cells: 48
+Generation: 16, #cells: 66, #anatomical sites: 1/1 (1/16)
+Anatomical site: 0 { 0 }, number of cells: 66
+Generation: 17, #cells: 86, #anatomical sites: 1/1 (1/19)
+Anatomical site: 0 { 0 }, number of cells: 86
+Generation: 18, #cells: 112, #anatomical sites: 1/1 (1/28)
+Anatomical site: 0 { 0 }, number of cells: 112
+Generation: 19, #cells: 136, #anatomical sites: 1/1 (1/34)
+Anatomical site: 0 { 0 }, number of cells: 136
+Generation: 20, #cells: 168, #anatomical sites: 1/1 (1/42)
+Anatomical site: 0 { 0 }, number of cells: 168
+Generation: 21, #cells: 202, #anatomical sites: 1/1 (1/56)
+Anatomical site: 0 { 0 }, number of cells: 202
+Generation: 22, #cells: 246, #anatomical sites: 1/1 (1/70)
+Anatomical site: 0 { 0 }, number of cells: 246
+Generation: 23, #cells: 292, #anatomical sites: 1/1 (1/78)
+Anatomical site: 0 { 0 }, number of cells: 292
+Generation: 24, #cells: 344, #anatomical sites: 1/1 (1/94)
+Anatomical site: 0 { 0 }, number of cells: 344
+Generation: 25, #cells: 408, #anatomical sites: 1/1 (1/115)
+Anatomical site: 0 { 0 }, number of cells: 408
+Generation: 26, #cells: 494, #anatomical sites: 1/1 (1/145)
+Anatomical site: 0 { 0 }, number of cells: 494
+Generation: 27, #cells: 592, #anatomical sites: 1/1 (1/169)
+Anatomical site: 0 { 0 }, number of cells: 592
+Generation: 28, #cells: 714, #anatomical sites: 1/1 (1/191)
+Anatomical site: 0 { 0 }, number of cells: 714
+Generation: 29, #cells: 818, #anatomical sites: 1/1 (1/225)
+Anatomical site: 0 { 0 }, number of cells: 818
+Generation: 30, #cells: 996, #anatomical sites: 1/1 (1/281)
+Anatomical site: 0 { 0 }, number of cells: 996
+Generation: 31, #cells: 1188, #anatomical sites: 1/1 (1/338)
+Anatomical site: 0 { 0 }, number of cells: 1188
+Generation: 32, #cells: 1374, #anatomical sites: 1/1 (1/409)
+Anatomical site: 0 { 0 }, number of cells: 1374
+Generation: 33, #cells: 1656, #anatomical sites: 1/1 (1/481)
+Anatomical site: 0 { 0 }, number of cells: 1656
+Generation: 34, #cells: 1980, #anatomical sites: 1/1 (1/574)
+Anatomical site: 0 { 0 }, number of cells: 1980
+Generation: 35, #cells: 2374, #anatomical sites: 1/1 (1/701)
+Anatomical site: 0 { 0 }, number of cells: 2374
+Generation: 36, #cells: 2870, #anatomical sites: 1/1 (1/832)
+Anatomical site: 0 { 0 }, number of cells: 2870
+Generation: 37, #cells: 3478, #anatomical sites: 1/1 (1/995)
+Anatomical site: 0 { 0 }, number of cells: 3478
+Generation: 38, #cells: 4188, #anatomical sites: 1/1 (1/1199)
+Anatomical site: 0 { 0 }, number of cells: 4188
+Generation: 39, #cells: 5106, #anatomical sites: 1/1 (1/1430)
+Anatomical site: 0 { 0 }, number of cells: 5106
+Generation: 40, #cells: 5964, #anatomical sites: 1/1 (1/1737)
+Anatomical site: 0 { 0 }, number of cells: 5964
+Generation: 41, #cells: 7034, #anatomical sites: 1/1 (1/2154)
+Anatomical site: 0 { 0 }, number of cells: 7034
+Generation: 42, #cells: 8328, #anatomical sites: 1/1 (1/2566)
+Anatomical site: 0 { 0 }, number of cells: 8328
+Generation: 43, #cells: 9824, #anatomical sites: 1/1 (1/3035)
+Anatomical site: 0 { 0 }, number of cells: 9824
+Generation: 44, #cells: 11482, #anatomical sites: 1/1 (1/3639)
+Anatomical site: 0 { 0 }, number of cells: 11482
+Generation: 45, #cells: 13286, #anatomical sites: 1/1 (1/4282)
+Anatomical site: 0 { 0 }, number of cells: 13286
+Generation: 46, #cells: 15488, #anatomical sites: 1/1 (1/5114)
+Anatomical site: 0 { 0 }, number of cells: 15488
+Generation: 47, #cells: 17976, #anatomical sites: 1/1 (1/6010)
+Anatomical site: 0 { 0 }, number of cells: 17976
+Generation: 48, #cells: 20672, #anatomical sites: 1/1 (1/7083)
+Anatomical site: 0 { 0 }, number of cells: 20672
+Generation: 49, #cells: 23196, #anatomical sites: 1/1 (1/8249)
+Anatomical site: 0 { 0 }, number of cells: 23196
+Generation: 50, #cells: 25708, #anatomical sites: 1/1 (1/9470)
+Anatomical site: 0 { 0 }, number of cells: 25708
+Generation: 51, #cells: 28112, #anatomical sites: 1/1 (1/10922)
+Anatomical site: 0 { 0 }, number of cells: 28112
+Generation: 52, #cells: 30626, #anatomical sites: 1/1 (1/12466)
+Anatomical site: 0 { 0 }, number of cells: 30626
+Generation: 53, #cells: 32976, #anatomical sites: 1/1 (1/14078)
+Anatomical site: 0 { 0 }, number of cells: 32976
+Generation: 54, #cells: 35284, #anatomical sites: 1/1 (1/15805)
+Anatomical site: 0 { 0 }, number of cells: 35284
+Generation: 55, #cells: 37264, #anatomical sites: 1/1 (1/17712)
+Anatomical site: 0 { 0 }, number of cells: 37264
+Generation: 56, #cells: 39510, #anatomical sites: 1/1 (1/19646)
+Anatomical site: 0 { 0 }, number of cells: 39510
+Generation: 57, #cells: 41552, #anatomical sites: 1/1 (1/21760)
+Anatomical site: 0 { 0 }, number of cells: 41552
+Generation: 58, #cells: 42846, #anatomical sites: 1/1 (1/23806)
+Anatomical site: 0 { 0 }, number of cells: 42846
+Generation: 59, #cells: 44002, #anatomical sites: 1/1 (1/26024)
+Anatomical site: 0 { 0 }, number of cells: 44002
+Generation: 60, #cells: 45246, #anatomical sites: 1/1 (1/28287)
+Anatomical site: 0 { 0 }, number of cells: 45246
+Generation: 61, #cells: 45992, #anatomical sites: 1/1 (1/30524)
+Anatomical site: 0 { 0 }, number of cells: 45992
+Generation: 62, #cells: 46376, #anatomical sites: 1/1 (1/32849)
+Anatomical site: 0 { 0 }, number of cells: 46376
+Generation: 63, #cells: 47082, #anatomical sites: 1/1 (1/35172)
+Anatomical site: 0 { 0 }, number of cells: 47082
+Generation: 64, #cells: 47208, #anatomical sites: 1/1 (1/37526)
+Anatomical site: 0 { 0 }, number of cells: 47208
+Generation: 65, #cells: 47662, #anatomical sites: 1/1 (1/39814)
+Anatomical site: 0 { 0 }, number of cells: 47662
+Generation: 66, #cells: 48422, #anatomical sites: 1/1 (1/42226)
+Anatomical site: 0 { 0 }, number of cells: 48422
+Generation: 67, #cells: 48764, #anatomical sites: 1/1 (1/44698)
+Anatomical site: 0 { 0 }, number of cells: 48764
+Generation: 68, #cells: 49196, #anatomical sites: 1/1 (1/47169)
+Anatomical site: 0 { 0 }, number of cells: 49196
+Generation: 69, #cells: 49180, #anatomical sites: 1/1 (1/49570)
+Anatomical site: 0 { 0 }, number of cells: 49180
+Generation: 70, #cells: 49622, #anatomical sites: 1/1 (1/52062)
+Anatomical site: 0 { 0 }, number of cells: 49622
+Generation: 71, #cells: 49622, #anatomical sites: 1/1 (1/54511)
+Anatomical site: 0 { 0 }, number of cells: 49622
+Generation: 72, #cells: 49564, #anatomical sites: 1/1 (1/56942)
+Anatomical site: 0 { 0 }, number of cells: 49564
+Generation: 73, #cells: 49882, #anatomical sites: 1/1 (1/59517)
+Anatomical site: 0 { 0 }, number of cells: 49882
+Generation: 74, #cells: 49920, #anatomical sites: 1/1 (1/62061)
+Anatomical site: 0 { 0 }, number of cells: 49920
+Generation: 75, #cells: 50182, #anatomical sites: 1/1 (1/64570)
+Anatomical site: 0 { 0 }, number of cells: 50182
+Generation: 76, #cells: 49656, #anatomical sites: 1/1 (1/67122)
+Anatomical site: 0 { 0 }, number of cells: 49656
+Generation: 77, #cells: 49718, #anatomical sites: 1/1 (1/69623)
+Anatomical site: 0 { 0 }, number of cells: 49718
+Generation: 78, #cells: 49934, #anatomical sites: 1/1 (1/72082)
+Anatomical site: 0 { 0 }, number of cells: 49934
+Generation: 79, #cells: 50194, #anatomical sites: 1/1 (1/74566)
+Anatomical site: 0 { 0 }, number of cells: 50194
+Generation: 80, #cells: 50260, #anatomical sites: 1/1 (1/77104)
+Anatomical site: 0 { 0 }, number of cells: 50260
+Generation: 81, #cells: 50498, #anatomical sites: 1/1 (1/79609)
+Anatomical site: 0 { 0 }, number of cells: 50498
+Generation: 82, #cells: 50538, #anatomical sites: 1/1 (1/82090)
+Anatomical site: 0 { 0 }, number of cells: 50538
+Generation: 83, #cells: 50424, #anatomical sites: 1/2 (1/84599)
+Anatomical site: 0 { 0 }, number of cells: 50420
+Anatomical site: 1 { 0 }, number of cells: 4
+Generation: 84, #cells: 50024, #anatomical sites: 2/2 (1/87107)
+Anatomical site: 0 { 0 }, number of cells: 50018
+Anatomical site: 1 { 0 }, number of cells: 6
+Generation: 85, #cells: 50260, #anatomical sites: 2/2 (1/89616)
+Anatomical site: 0 { 0 }, number of cells: 50247
+Anatomical site: 1 { 0 }, number of cells: 13
+Generation: 86, #cells: 50316, #anatomical sites: 2/2 (1/92164)
+Anatomical site: 0 { 0 }, number of cells: 50300
+Anatomical site: 1 { 0 }, number of cells: 16
+Generation: 87, #cells: 50770, #anatomical sites: 2/2 (1/94735)
+Anatomical site: 0 { 0 }, number of cells: 50752
+Anatomical site: 1 { 0 }, number of cells: 18
+Generation: 88, #cells: 50908, #anatomical sites: 2/2 (1/97256)
+Anatomical site: 0 { 0 }, number of cells: 50884
+Anatomical site: 1 { 0 }, number of cells: 24
+Generation: 89, #cells: 50582, #anatomical sites: 2/2 (1/99845)
+Anatomical site: 0 { 0 }, number of cells: 50546
+Anatomical site: 1 { 0 }, number of cells: 36
+Generation: 90, #cells: 50328, #anatomical sites: 2/2 (1/102378)
+Anatomical site: 0 { 0 }, number of cells: 50284
+Anatomical site: 1 { 0 }, number of cells: 44
+Generation: 91, #cells: 50378, #anatomical sites: 2/2 (1/104940)
+Anatomical site: 0 { 0 }, number of cells: 50322
+Anatomical site: 1 { 0 }, number of cells: 56
+Generation: 92, #cells: 50344, #anatomical sites: 2/2 (1/107466)
+Anatomical site: 0 { 0 }, number of cells: 50274
+Anatomical site: 1 { 0 }, number of cells: 70
+Generation: 93, #cells: 50210, #anatomical sites: 2/2 (1/109960)
+Anatomical site: 0 { 0 }, number of cells: 50126
+Anatomical site: 1 { 0 }, number of cells: 84
+Generation: 94, #cells: 50306, #anatomical sites: 2/2 (1/112469)
+Anatomical site: 0 { 0 }, number of cells: 50206
+Anatomical site: 1 { 0 }, number of cells: 100
+Generation: 95, #cells: 50314, #anatomical sites: 2/2 (1/114928)
+Anatomical site: 0 { 0 }, number of cells: 50180
+Anatomical site: 1 { 0 }, number of cells: 134
+Generation: 96, #cells: 50750, #anatomical sites: 2/2 (1/117426)
+Anatomical site: 0 { 0 }, number of cells: 50600
+Anatomical site: 1 { 0 }, number of cells: 150
+Generation: 97, #cells: 50556, #anatomical sites: 2/2 (1/119911)
+Anatomical site: 0 { 0 }, number of cells: 50376
+Anatomical site: 1 { 0 }, number of cells: 180
+Generation: 98, #cells: 50464, #anatomical sites: 2/2 (1/122438)
+Anatomical site: 0 { 0 }, number of cells: 50244
+Anatomical site: 1 { 0 }, number of cells: 220
+Generation: 99, #cells: 50860, #anatomical sites: 2/2 (1/124944)
+Anatomical site: 0 { 0 }, number of cells: 50600
+Anatomical site: 1 { 0 }, number of cells: 260
+Generation: 100, #cells: 50884, #anatomical sites: 2/2 (1/127558)
+Anatomical site: 0 { 0 }, number of cells: 50568
+Anatomical site: 1 { 0 }, number of cells: 316
+Generation: 101, #cells: 50742, #anatomical sites: 2/2 (1/130126)
+Anatomical site: 0 { 0 }, number of cells: 50354
+Anatomical site: 1 { 0 }, number of cells: 388
+Generation: 102, #cells: 50844, #anatomical sites: 2/2 (1/132605)
+Anatomical site: 0 { 0 }, number of cells: 50332
+Anatomical site: 1 { 0 }, number of cells: 512
+Generation: 103, #cells: 50894, #anatomical sites: 2/2 (1/135114)
+Anatomical site: 0 { 0 }, number of cells: 50240
+Anatomical site: 1 { 0 }, number of cells: 654
+Generation: 104, #cells: 50470, #anatomical sites: 2/2 (1/137596)
+Anatomical site: 0 { 0 }, number of cells: 49690
+Anatomical site: 1 { 0 }, number of cells: 780
+Generation: 105, #cells: 50772, #anatomical sites: 2/3 (1/140053)
+Anatomical site: 0 { 0 }, number of cells: 49814
+Anatomical site: 1 { 0 }, number of cells: 954
+Generation: 106, #cells: 50746, #anatomical sites: 3/3 (1/142668)
+Anatomical site: 0 { 0 }, number of cells: 49554
+Anatomical site: 1 { 0 }, number of cells: 1190
+Anatomical site: 2 { 0 }, number of cells: 2
+Generation: 107, #cells: 51180, #anatomical sites: 3/3 (1/145174)
+Anatomical site: 0 { 0 }, number of cells: 49764
+Anatomical site: 1 { 0 }, number of cells: 1412
+Anatomical site: 2 { 0 }, number of cells: 4
+Generation: 108, #cells: 52058, #anatomical sites: 3/3 (1/147782)
+Anatomical site: 0 { 0 }, number of cells: 50304
+Anatomical site: 1 { 0 }, number of cells: 1750
+Anatomical site: 2 { 0 }, number of cells: 4
+Generation: 109, #cells: 52610, #anatomical sites: 3/3 (1/150380)
+Anatomical site: 0 { 0 }, number of cells: 50552
+Anatomical site: 1 { 0 }, number of cells: 2056
+Anatomical site: 2 { 0 }, number of cells: 2
+Generation: 110, #cells: 52450, #anatomical sites: 3/3 (1/152980)
+Anatomical site: 0 { 0 }, number of cells: 50040
+Anatomical site: 1 { 0 }, number of cells: 2408
+Anatomical site: 2 { 0 }, number of cells: 2
+Generation: 111, #cells: 53234, #anatomical sites: 3/3 (1/155674)
+Anatomical site: 0 { 0 }, number of cells: 50312
+Anatomical site: 1 { 0 }, number of cells: 2920
+Anatomical site: 2 { 0 }, number of cells: 2
+Generation: 112, #cells: 53984, #anatomical sites: 3/3 (1/158315)
+Anatomical site: 0 { 0 }, number of cells: 50580
+Anatomical site: 1 { 0 }, number of cells: 3404
+Anatomical site: 2 { 0 }, number of cells: 0
+Generation: 113, #cells: 54336, #anatomical sites: 2/3 (1/160977)
+Anatomical site: 0 { 0 }, number of cells: 50346
+Anatomical site: 1 { 0 }, number of cells: 3990
+Generation: 114, #cells: 55038, #anatomical sites: 2/3 (1/163746)
+Anatomical site: 0 { 0 }, number of cells: 50282
+Anatomical site: 1 { 0 }, number of cells: 4756
+Generation: 115, #cells: 55704, #anatomical sites: 2/3 (1/166486)
+Anatomical site: 0 { 0 }, number of cells: 50104
+Anatomical site: 1 { 0 }, number of cells: 5600
+Generation: 116, #cells: 56684, #anatomical sites: 2/3 (1/169434)
+Anatomical site: 0 { 0 }, number of cells: 49924
+Anatomical site: 1 { 0 }, number of cells: 6760
+Generation: 117, #cells: 57784, #anatomical sites: 2/4 (1/172407)
+Anatomical site: 0 { 0 }, number of cells: 49951
+Anatomical site: 1 { 0 }, number of cells: 7830
+Generation: 118, #cells: 59222, #anatomical sites: 3/4 (1/175385)
+Anatomical site: 0 { 0 }, number of cells: 50070
+Anatomical site: 1 { 0 }, number of cells: 9148
+Anatomical site: 3 { 0 }, number of cells: 4
+Generation: 119, #cells: 60814, #anatomical sites: 3/4 (1/178476)
+Anatomical site: 0 { 0 }, number of cells: 50022
+Anatomical site: 1 { 0 }, number of cells: 10792
+Anatomical site: 3 { 0 }, number of cells: 0
+Generation: 120, #cells: 62312, #anatomical sites: 2/4 (1/181475)
+Anatomical site: 0 { 0 }, number of cells: 49772
+Anatomical site: 1 { 0 }, number of cells: 12540
+Generation: 121, #cells: 64460, #anatomical sites: 2/4 (1/184735)
+Anatomical site: 0 { 0 }, number of cells: 49870
+Anatomical site: 1 { 0 }, number of cells: 14590
+Generation: 122, #cells: 66690, #anatomical sites: 2/4 (1/187981)
+Anatomical site: 0 { 0 }, number of cells: 50030
+Anatomical site: 1 { 0 }, number of cells: 16660
+Generation: 123, #cells: 69496, #anatomical sites: 2/4 (1/191543)
+Anatomical site: 0 { 0 }, number of cells: 50408
+Anatomical site: 1 { 0 }, number of cells: 19088
+Generation: 124, #cells: 71834, #anatomical sites: 2/4 (1/195131)
+Anatomical site: 0 { 0 }, number of cells: 50306
+Anatomical site: 1 { 0 }, number of cells: 21528
+Generation: 125, #cells: 74080, #anatomical sites: 2/4 (1/198832)
+Anatomical site: 0 { 0 }, number of cells: 50094
+Anatomical site: 1 { 0 }, number of cells: 23986
+Generation: 126, #cells: 76762, #anatomical sites: 2/4 (1/202697)
+Anatomical site: 0 { 0 }, number of cells: 49936
+Anatomical site: 1 { 0 }, number of cells: 26826
+Generation: 127, #cells: 79536, #anatomical sites: 2/4 (1/206641)
+Anatomical site: 0 { 0 }, number of cells: 50058
+Anatomical site: 1 { 0 }, number of cells: 29478
+Generation: 128, #cells: 81736, #anatomical sites: 2/4 (1/210710)
+Anatomical site: 0 { 0 }, number of cells: 49992
+Anatomical site: 1 { 0 }, number of cells: 31744
+Generation: 129, #cells: 83816, #anatomical sites: 2/5 (1/214958)
+Anatomical site: 0 { 0 }, number of cells: 49711
+Anatomical site: 1 { 0 }, number of cells: 34104
+Generation: 130, #cells: 86136, #anatomical sites: 3/5 (1/219300)
+Anatomical site: 0 { 0 }, number of cells: 49946
+Anatomical site: 1 { 0 }, number of cells: 36188
+Anatomical site: 4 { 0 }, number of cells: 2
+Generation: 131, #cells: 88384, #anatomical sites: 3/5 (1/223736)
+Anatomical site: 0 { 0 }, number of cells: 50342
+Anatomical site: 1 { 0 }, number of cells: 38040
+Anatomical site: 4 { 0 }, number of cells: 2
+Generation: 132, #cells: 89816, #anatomical sites: 3/5 (1/228235)
+Anatomical site: 0 { 0 }, number of cells: 50204
+Anatomical site: 1 { 0 }, number of cells: 39608
+Anatomical site: 4 { 0 }, number of cells: 4
+Generation: 133, #cells: 91354, #anatomical sites: 3/5 (1/232855)
+Anatomical site: 0 { 0 }, number of cells: 50352
+Anatomical site: 1 { 0 }, number of cells: 40996
+Anatomical site: 4 { 0 }, number of cells: 6
+Generation: 134, #cells: 93212, #anatomical sites: 3/5 (1/237533)
+Anatomical site: 0 { 0 }, number of cells: 50422
+Anatomical site: 1 { 0 }, number of cells: 42784
+Anatomical site: 4 { 0 }, number of cells: 6
+Generation: 135, #cells: 93976, #anatomical sites: 3/5 (1/242309)
+Anatomical site: 0 { 0 }, number of cells: 49902
+Anatomical site: 1 { 0 }, number of cells: 44066
+Anatomical site: 4 { 0 }, number of cells: 8
+Generation: 136, #cells: 95278, #anatomical sites: 3/5 (1/247080)
+Anatomical site: 0 { 0 }, number of cells: 50069
+Anatomical site: 1 { 0 }, number of cells: 45197
+Anatomical site: 4 { 0 }, number of cells: 12
+Generation: 137, #cells: 96196, #anatomical sites: 3/5 (1/251799)
+Anatomical site: 0 { 0 }, number of cells: 50284
+Anatomical site: 1 { 0 }, number of cells: 45898
+Anatomical site: 4 { 0 }, number of cells: 14
+Generation: 138, #cells: 96712, #anatomical sites: 3/5 (1/256677)
+Anatomical site: 0 { 0 }, number of cells: 50164
+Anatomical site: 1 { 0 }, number of cells: 46532
+Anatomical site: 4 { 0 }, number of cells: 16
+Generation: 139, #cells: 97086, #anatomical sites: 3/5 (1/261528)
+Anatomical site: 0 { 0 }, number of cells: 50126
+Anatomical site: 1 { 0 }, number of cells: 46938
+Anatomical site: 4 { 0 }, number of cells: 22
+Generation: 140, #cells: 97534, #anatomical sites: 3/5 (1/266349)
+Anatomical site: 0 { 0 }, number of cells: 49992
+Anatomical site: 1 { 0 }, number of cells: 47518
+Anatomical site: 4 { 0 }, number of cells: 24
+Generation: 141, #cells: 98008, #anatomical sites: 3/5 (1/271152)
+Anatomical site: 0 { 0 }, number of cells: 50074
+Anatomical site: 1 { 0 }, number of cells: 47902
+Anatomical site: 4 { 0 }, number of cells: 32
+Generation: 142, #cells: 98118, #anatomical sites: 3/5 (1/276093)
+Anatomical site: 0 { 0 }, number of cells: 50140
+Anatomical site: 1 { 0 }, number of cells: 47938
+Anatomical site: 4 { 0 }, number of cells: 40
+Generation: 143, #cells: 98936, #anatomical sites: 3/5 (1/281028)
+Anatomical site: 0 { 0 }, number of cells: 50598
+Anatomical site: 1 { 0 }, number of cells: 48292
+Anatomical site: 4 { 0 }, number of cells: 46
+Generation: 144, #cells: 99478, #anatomical sites: 3/5 (1/285967)
+Anatomical site: 0 { 0 }, number of cells: 50564
+Anatomical site: 1 { 0 }, number of cells: 48850
+Anatomical site: 4 { 0 }, number of cells: 64
+Generation: 145, #cells: 99444, #anatomical sites: 3/5 (1/290940)
+Anatomical site: 0 { 0 }, number of cells: 50820
+Anatomical site: 1 { 0 }, number of cells: 48552
+Anatomical site: 4 { 0 }, number of cells: 72
+Generation: 146, #cells: 100354, #anatomical sites: 3/5 (1/295937)
+Anatomical site: 0 { 0 }, number of cells: 51514
+Anatomical site: 1 { 0 }, number of cells: 48756
+Anatomical site: 4 { 0 }, number of cells: 84
+Generation: 147, #cells: 100612, #anatomical sites: 3/5 (1/300936)
+Anatomical site: 0 { 0 }, number of cells: 51638
+Anatomical site: 1 { 0 }, number of cells: 48854
+Anatomical site: 4 { 0 }, number of cells: 120
+Generation: 148, #cells: 100402, #anatomical sites: 3/5 (1/305982)
+Anatomical site: 0 { 0 }, number of cells: 51448
+Anatomical site: 1 { 0 }, number of cells: 48806
+Anatomical site: 4 { 0 }, number of cells: 148
+Generation: 149, #cells: 100720, #anatomical sites: 3/5 (1/311066)
+Anatomical site: 0 { 0 }, number of cells: 51678
+Anatomical site: 1 { 0 }, number of cells: 48866
+Anatomical site: 4 { 0 }, number of cells: 176
+Generation: 150, #cells: 100948, #anatomical sites: 3/5 (1/316152)
+Anatomical site: 0 { 0 }, number of cells: 51744
+Anatomical site: 1 { 0 }, number of cells: 48988
+Anatomical site: 4 { 0 }, number of cells: 216
+Generation: 151, #cells: 100814, #anatomical sites: 3/5 (1/321254)
+Anatomical site: 0 { 0 }, number of cells: 51448
+Anatomical site: 1 { 0 }, number of cells: 49098
+Anatomical site: 4 { 0 }, number of cells: 268
+Generation: 152, #cells: 100842, #anatomical sites: 3/5 (1/326261)
+Anatomical site: 0 { 0 }, number of cells: 51306
+Anatomical site: 1 { 0 }, number of cells: 49236
+Anatomical site: 4 { 0 }, number of cells: 300
+Generation: 153, #cells: 101194, #anatomical sites: 3/5 (1/331368)
+Anatomical site: 0 { 0 }, number of cells: 51304
+Anatomical site: 1 { 0 }, number of cells: 49536
+Anatomical site: 4 { 0 }, number of cells: 354
+Generation: 154, #cells: 101646, #anatomical sites: 3/5 (1/336529)
+Anatomical site: 0 { 0 }, number of cells: 51324
+Anatomical site: 1 { 0 }, number of cells: 49876
+Anatomical site: 4 { 0 }, number of cells: 446
+Generation: 155, #cells: 101500, #anatomical sites: 3/5 (1/341757)
+Anatomical site: 0 { 0 }, number of cells: 51542
+Anatomical site: 1 { 0 }, number of cells: 49404
+Anatomical site: 4 { 0 }, number of cells: 554
+Generation: 156, #cells: 101938, #anatomical sites: 3/5 (1/346821)
+Anatomical site: 0 { 0 }, number of cells: 51522
+Anatomical site: 1 { 0 }, number of cells: 49760
+Anatomical site: 4 { 0 }, number of cells: 656
+Generation: 157, #cells: 102822, #anatomical sites: 3/5 (1/351985)
+Anatomical site: 0 { 0 }, number of cells: 51982
+Anatomical site: 1 { 0 }, number of cells: 50010
+Anatomical site: 4 { 0 }, number of cells: 830
+Generation: 158, #cells: 103428, #anatomical sites: 3/5 (1/357083)
+Anatomical site: 0 { 0 }, number of cells: 52118
+Anatomical site: 1 { 0 }, number of cells: 50260
+Anatomical site: 4 { 0 }, number of cells: 1050
+Generation: 159, #cells: 103564, #anatomical sites: 3/5 (1/362379)
+Anatomical site: 0 { 0 }, number of cells: 52150
+Anatomical site: 1 { 0 }, number of cells: 50090
+Anatomical site: 4 { 0 }, number of cells: 1324
+Generation: 160, #cells: 103362, #anatomical sites: 3/5 (1/367482)
+Anatomical site: 0 { 0 }, number of cells: 52094
+Anatomical site: 1 { 0 }, number of cells: 49654
+Anatomical site: 4 { 0 }, number of cells: 1614
+Generation: 161, #cells: 103346, #anatomical sites: 3/5 (1/372620)
+Anatomical site: 0 { 0 }, number of cells: 51756
+Anatomical site: 1 { 0 }, number of cells: 49636
+Anatomical site: 4 { 0 }, number of cells: 1954
+Generation: 162, #cells: 103898, #anatomical sites: 3/6 (1/377779)
+Anatomical site: 0 { 0 }, number of cells: 51646
+Anatomical site: 1 { 0 }, number of cells: 49906
+Anatomical site: 4 { 0 }, number of cells: 2344
+Generation: 163, #cells: 104444, #anatomical sites: 4/6 (1/383005)
+Anatomical site: 0 { 0 }, number of cells: 51422
+Anatomical site: 1 { 0 }, number of cells: 50202
+Anatomical site: 4 { 0 }, number of cells: 2820
+Anatomical site: 5 { 0 }, number of cells: 0
+Generation: 164, #cells: 105004, #anatomical sites: 3/6 (1/388243)
+Anatomical site: 0 { 0 }, number of cells: 51326
+Anatomical site: 1 { 0 }, number of cells: 50256
+Anatomical site: 4 { 0 }, number of cells: 3422
+Generation: 165, #cells: 105648, #anatomical sites: 3/6 (1/393539)
+Anatomical site: 0 { 0 }, number of cells: 51394
+Anatomical site: 1 { 0 }, number of cells: 50212
+Anatomical site: 4 { 0 }, number of cells: 4042
+Generation: 166, #cells: 106328, #anatomical sites: 3/6 (1/398936)
+Anatomical site: 0 { 0 }, number of cells: 51310
+Anatomical site: 1 { 0 }, number of cells: 50192
+Anatomical site: 4 { 0 }, number of cells: 4826
+Generation: 167, #cells: 107270, #anatomical sites: 3/6 (1/404325)
+Anatomical site: 0 { 0 }, number of cells: 51534
+Anatomical site: 1 { 0 }, number of cells: 49982
+Anatomical site: 4 { 0 }, number of cells: 5754
+Generation: 168, #cells: 108704, #anatomical sites: 3/6 (1/409763)
+Anatomical site: 0 { 0 }, number of cells: 51938
+Anatomical site: 1 { 0 }, number of cells: 49928
+Anatomical site: 4 { 0 }, number of cells: 6838
+Generation: 169, #cells: 109844, #anatomical sites: 3/6 (1/415254)
+Anatomical site: 0 { 0 }, number of cells: 52068
+Anatomical site: 1 { 0 }, number of cells: 49666
+Anatomical site: 4 { 0 }, number of cells: 8110
+Generation: 170, #cells: 110696, #anatomical sites: 3/6 (1/420841)
+Anatomical site: 0 { 0 }, number of cells: 51520
+Anatomical site: 1 { 0 }, number of cells: 49608
+Anatomical site: 4 { 0 }, number of cells: 9568
+Generation: 171, #cells: 111974, #anatomical sites: 3/6 (1/426410)
+Anatomical site: 0 { 0 }, number of cells: 51254
+Anatomical site: 1 { 0 }, number of cells: 49672
+Anatomical site: 4 { 0 }, number of cells: 11048
+Generation: 172, #cells: 113616, #anatomical sites: 3/6 (1/432169)
+Anatomical site: 0 { 0 }, number of cells: 51090
+Anatomical site: 1 { 0 }, number of cells: 49708
+Anatomical site: 4 { 0 }, number of cells: 12818
+Generation: 173, #cells: 115776, #anatomical sites: 3/6 (1/437859)
+Anatomical site: 0 { 0 }, number of cells: 51284
+Anatomical site: 1 { 0 }, number of cells: 49836
+Anatomical site: 4 { 0 }, number of cells: 14656
+Generation: 174, #cells: 117786, #anatomical sites: 3/7 (1/443768)
+Anatomical site: 0 { 0 }, number of cells: 51218
+Anatomical site: 1 { 0 }, number of cells: 49694
+Anatomical site: 4 { 0 }, number of cells: 16872
+Generation: 175, #cells: 120014, #anatomical sites: 4/7 (1/449759)
+Anatomical site: 0 { 0 }, number of cells: 51142
+Anatomical site: 1 { 0 }, number of cells: 49648
+Anatomical site: 4 { 0 }, number of cells: 19222
+Anatomical site: 6 { 0 }, number of cells: 2
+Generation: 176, #cells: 122762, #anatomical sites: 4/7 (1/455915)
+Anatomical site: 0 { 0 }, number of cells: 51324
+Anatomical site: 1 { 0 }, number of cells: 49898
+Anatomical site: 4 { 0 }, number of cells: 21538
+Anatomical site: 6 { 0 }, number of cells: 2
+Generation: 177, #cells: 125952, #anatomical sites: 4/7 (1/462310)
+Anatomical site: 0 { 0 }, number of cells: 51398
+Anatomical site: 1 { 0 }, number of cells: 50376
+Anatomical site: 4 { 0 }, number of cells: 24176
+Anatomical site: 6 { 0 }, number of cells: 2
+Generation: 178, #cells: 128692, #anatomical sites: 4/7 (1/468692)
+Anatomical site: 0 { 0 }, number of cells: 51344
+Anatomical site: 1 { 0 }, number of cells: 50604
+Anatomical site: 4 { 0 }, number of cells: 26744
+Anatomical site: 6 { 0 }, number of cells: 0
+Generation: 179, #cells: 131210, #anatomical sites: 3/7 (1/475146)
+Anatomical site: 0 { 0 }, number of cells: 51552
+Anatomical site: 1 { 0 }, number of cells: 50492
+Anatomical site: 4 { 0 }, number of cells: 29166
+Generation: 180, #cells: 133760, #anatomical sites: 3/7 (1/481851)
+Anatomical site: 0 { 0 }, number of cells: 51522
+Anatomical site: 1 { 0 }, number of cells: 50574
+Anatomical site: 4 { 0 }, number of cells: 31664
+Generation: 181, #cells: 136394, #anatomical sites: 3/7 (1/488746)
+Anatomical site: 0 { 0 }, number of cells: 51642
+Anatomical site: 1 { 0 }, number of cells: 50672
+Anatomical site: 4 { 0 }, number of cells: 34080
+Generation: 182, #cells: 139152, #anatomical sites: 3/7 (1/495784)
+Anatomical site: 0 { 0 }, number of cells: 51478
+Anatomical site: 1 { 0 }, number of cells: 51074
+Anatomical site: 4 { 0 }, number of cells: 36600
+Generation: 183, #cells: 141276, #anatomical sites: 3/7 (1/502857)
+Anatomical site: 0 { 0 }, number of cells: 51354
+Anatomical site: 1 { 0 }, number of cells: 50964
+Anatomical site: 4 { 0 }, number of cells: 38958
+Generation: 184, #cells: 143314, #anatomical sites: 3/7 (1/509932)
+Anatomical site: 0 { 0 }, number of cells: 51322
+Anatomical site: 1 { 0 }, number of cells: 51090
+Anatomical site: 4 { 0 }, number of cells: 40902
+Generation: 185, #cells: 144988, #anatomical sites: 3/7 (1/517299)
+Anatomical site: 0 { 0 }, number of cells: 51466
+Anatomical site: 1 { 0 }, number of cells: 51344
+Anatomical site: 4 { 0 }, number of cells: 42178
+Generation: 186, #cells: 147038, #anatomical sites: 3/7 (1/524736)
+Anatomical site: 0 { 0 }, number of cells: 51578
+Anatomical site: 1 { 0 }, number of cells: 51822
+Anatomical site: 4 { 0 }, number of cells: 43638
+Generation: 187, #cells: 147754, #anatomical sites: 3/7 (1/532132)
+Anatomical site: 0 { 0 }, number of cells: 51458
+Anatomical site: 1 { 0 }, number of cells: 51606
+Anatomical site: 4 { 0 }, number of cells: 44690
+Generation: 188, #cells: 149246, #anatomical sites: 3/7 (1/539609)
+Anatomical site: 0 { 0 }, number of cells: 51920
+Anatomical site: 1 { 0 }, number of cells: 51254
+Anatomical site: 4 { 0 }, number of cells: 46072
+Generation: 189, #cells: 151004, #anatomical sites: 3/7 (1/546952)
+Anatomical site: 0 { 0 }, number of cells: 52150
+Anatomical site: 1 { 0 }, number of cells: 51612
+Anatomical site: 4 { 0 }, number of cells: 47242
+Generation: 190, #cells: 150886, #anatomical sites: 3/7 (1/554527)
+Anatomical site: 0 { 0 }, number of cells: 51832
+Anatomical site: 1 { 0 }, number of cells: 51544
+Anatomical site: 4 { 0 }, number of cells: 47510
+Generation: 191, #cells: 150718, #anatomical sites: 3/7 (1/562080)
+Anatomical site: 0 { 0 }, number of cells: 51578
+Anatomical site: 1 { 0 }, number of cells: 51300
+Anatomical site: 4 { 0 }, number of cells: 47840
+Generation: 192, #cells: 151274, #anatomical sites: 3/7 (1/569594)
+Anatomical site: 0 { 0 }, number of cells: 51342
+Anatomical site: 1 { 0 }, number of cells: 51426
+Anatomical site: 4 { 0 }, number of cells: 48506
+Generation: 193, #cells: 151780, #anatomical sites: 3/7 (1/577288)
+Anatomical site: 0 { 0 }, number of cells: 51450
+Anatomical site: 1 { 0 }, number of cells: 51352
+Anatomical site: 4 { 0 }, number of cells: 48978
+Generation: 194, #cells: 153048, #anatomical sites: 3/7 (1/584846)
+Anatomical site: 0 { 0 }, number of cells: 51488
+Anatomical site: 1 { 0 }, number of cells: 51816
+Anatomical site: 4 { 0 }, number of cells: 49744
+Generation: 195, #cells: 153086, #anatomical sites: 3/7 (1/592423)
+Anatomical site: 0 { 0 }, number of cells: 51638
+Anatomical site: 1 { 0 }, number of cells: 51666
+Anatomical site: 4 { 0 }, number of cells: 49782
+Generation: 196, #cells: 152496, #anatomical sites: 3/7 (1/600042)
+Anatomical site: 0 { 0 }, number of cells: 51438
+Anatomical site: 1 { 0 }, number of cells: 51630
+Anatomical site: 4 { 0 }, number of cells: 49428
+Generation: 197, #cells: 152342, #anatomical sites: 3/7 (1/607580)
+Anatomical site: 0 { 0 }, number of cells: 51142
+Anatomical site: 1 { 0 }, number of cells: 51604
+Anatomical site: 4 { 0 }, number of cells: 49596
+Generation: 198, #cells: 152398, #anatomical sites: 3/7 (1/615232)
+Anatomical site: 0 { 0 }, number of cells: 50856
+Anatomical site: 1 { 0 }, number of cells: 51998
+Anatomical site: 4 { 0 }, number of cells: 49544
+Generation: 199, #cells: 151802, #anatomical sites: 3/7 (1/622876)
+Anatomical site: 0 { 0 }, number of cells: 50432
+Anatomical site: 1 { 0 }, number of cells: 51782
+Anatomical site: 4 { 0 }, number of cells: 49588
+Generation: 200, #cells: 151278, #anatomical sites: 3/7 (1/630374)
+Anatomical site: 0 { 0 }, number of cells: 50060
+Anatomical site: 1 { 0 }, number of cells: 51772
+Anatomical site: 4 { 0 }, number of cells: 49446
+Generation: 201, #cells: 151418, #anatomical sites: 3/7 (1/638011)
+Anatomical site: 0 { 0 }, number of cells: 50464
+Anatomical site: 1 { 0 }, number of cells: 51490
+Anatomical site: 4 { 0 }, number of cells: 49464
+Generation: 202, #cells: 151576, #anatomical sites: 3/7 (1/645528)
+Anatomical site: 0 { 0 }, number of cells: 50366
+Anatomical site: 1 { 0 }, number of cells: 51546
+Anatomical site: 4 { 0 }, number of cells: 49664
+Generation: 203, #cells: 151394, #anatomical sites: 3/7 (1/653106)
+Anatomical site: 0 { 0 }, number of cells: 50370
+Anatomical site: 1 { 0 }, number of cells: 51194
+Anatomical site: 4 { 0 }, number of cells: 49829
+Generation: 204, #cells: 150818, #anatomical sites: 4/7 (1/660631)
+Anatomical site: 0 { 0 }, number of cells: 50250
+Anatomical site: 1 { 0 }, number of cells: 50808
+Anatomical site: 4 { 0 }, number of cells: 49758
+Anatomical site: 5 { 0 }, number of cells: 2
+Generation: 205, #cells: 151274, #anatomical sites: 4/7 (1/668163)
+Anatomical site: 0 { 0 }, number of cells: 50472
+Anatomical site: 1 { 0 }, number of cells: 50684
+Anatomical site: 4 { 0 }, number of cells: 50116
+Anatomical site: 5 { 0 }, number of cells: 2
+Generation: 206, #cells: 151412, #anatomical sites: 4/8 (1/675739)
+Anatomical site: 0 { 0 }, number of cells: 50312
+Anatomical site: 1 { 0 }, number of cells: 50781
+Anatomical site: 4 { 0 }, number of cells: 50316
+Anatomical site: 5 { 0 }, number of cells: 2
+Generation: 207, #cells: 151786, #anatomical sites: 5/8 (1/683439)
+Anatomical site: 0 { 0 }, number of cells: 50018
+Anatomical site: 1 { 0 }, number of cells: 50818
+Anatomical site: 4 { 0 }, number of cells: 50948
+Anatomical site: 5 { 0 }, number of cells: 0
+Anatomical site: 7 { 0 }, number of cells: 2
+Generation: 208, #cells: 152778, #anatomical sites: 4/8 (1/691035)
+Anatomical site: 0 { 0 }, number of cells: 50126
+Anatomical site: 1 { 0 }, number of cells: 50842
+Anatomical site: 4 { 0 }, number of cells: 51808
+Anatomical site: 7 { 0 }, number of cells: 2
+Generation: 209, #cells: 153104, #anatomical sites: 4/8 (1/698650)
+Anatomical site: 0 { 0 }, number of cells: 50218
+Anatomical site: 1 { 0 }, number of cells: 50844
+Anatomical site: 4 { 0 }, number of cells: 52038
+Anatomical site: 7 { 0 }, number of cells: 4
+Generation: 210, #cells: 152446, #anatomical sites: 4/8 (1/706300)
+Anatomical site: 0 { 0 }, number of cells: 50060
+Anatomical site: 1 { 0 }, number of cells: 50782
+Anatomical site: 4 { 0 }, number of cells: 51596
+Anatomical site: 7 { 0 }, number of cells: 8
+Generation: 211, #cells: 152112, #anatomical sites: 4/8 (1/713896)
+Anatomical site: 0 { 0 }, number of cells: 50144
+Anatomical site: 1 { 0 }, number of cells: 50578
+Anatomical site: 4 { 0 }, number of cells: 51380
+Anatomical site: 7 { 0 }, number of cells: 10
+Generation: 212, #cells: 152316, #anatomical sites: 4/8 (1/721348)
+Anatomical site: 0 { 0 }, number of cells: 50114
+Anatomical site: 1 { 0 }, number of cells: 50790
+Anatomical site: 4 { 0 }, number of cells: 51400
+Anatomical site: 7 { 0 }, number of cells: 12
+Generation: 213, #cells: 152352, #anatomical sites: 4/9 (1/729139)
+Anatomical site: 0 { 0 }, number of cells: 50317
+Anatomical site: 1 { 0 }, number of cells: 50602
+Anatomical site: 4 { 0 }, number of cells: 51422
+Anatomical site: 7 { 0 }, number of cells: 10
+Generation: 214, #cells: 152424, #anatomical sites: 5/9 (1/736814)
+Anatomical site: 0 { 0 }, number of cells: 49954
+Anatomical site: 1 { 0 }, number of cells: 50810
+Anatomical site: 4 { 0 }, number of cells: 51650
+Anatomical site: 7 { 0 }, number of cells: 10
+Anatomical site: 8 { 0 }, number of cells: 0
+Generation: 215, #cells: 151848, #anatomical sites: 4/9 (1/744237)
+Anatomical site: 0 { 0 }, number of cells: 49712
+Anatomical site: 1 { 0 }, number of cells: 50910
+Anatomical site: 4 { 0 }, number of cells: 51212
+Anatomical site: 7 { 0 }, number of cells: 14
+Generation: 216, #cells: 152172, #anatomical sites: 4/9 (1/751782)
+Anatomical site: 0 { 0 }, number of cells: 49616
+Anatomical site: 1 { 0 }, number of cells: 51366
+Anatomical site: 4 { 0 }, number of cells: 51180
+Anatomical site: 7 { 0 }, number of cells: 10
+Generation: 217, #cells: 152876, #anatomical sites: 4/9 (1/759370)
+Anatomical site: 0 { 0 }, number of cells: 50064
+Anatomical site: 1 { 0 }, number of cells: 51608
+Anatomical site: 4 { 0 }, number of cells: 51198
+Anatomical site: 7 { 0 }, number of cells: 6
+Generation: 218, #cells: 153222, #anatomical sites: 4/9 (1/767074)
+Anatomical site: 0 { 0 }, number of cells: 49834
+Anatomical site: 1 { 0 }, number of cells: 51814
+Anatomical site: 4 { 0 }, number of cells: 51562
+Anatomical site: 7 { 0 }, number of cells: 12
+Generation: 219, #cells: 153292, #anatomical sites: 4/10 (1/774864)
+Anatomical site: 0 { 0 }, number of cells: 49521
+Anatomical site: 1 { 0 }, number of cells: 51912
+Anatomical site: 4 { 0 }, number of cells: 51850
+Anatomical site: 7 { 0 }, number of cells: 8
+Generation: 220, #cells: 154362, #anatomical sites: 5/10 (1/782767)
+Anatomical site: 0 { 0 }, number of cells: 49992
+Anatomical site: 1 { 0 }, number of cells: 52014
+Anatomical site: 4 { 0 }, number of cells: 52348
+Anatomical site: 7 { 0 }, number of cells: 8
+Anatomical site: 9 { 0 }, number of cells: 0
+Generation: 221, #cells: 154354, #anatomical sites: 4/10 (1/790440)
+Anatomical site: 0 { 0 }, number of cells: 49764
+Anatomical site: 1 { 0 }, number of cells: 52230
+Anatomical site: 4 { 0 }, number of cells: 52348
+Anatomical site: 7 { 0 }, number of cells: 12
+Generation: 222, #cells: 154496, #anatomical sites: 4/10 (1/798222)
+Anatomical site: 0 { 0 }, number of cells: 49792
+Anatomical site: 1 { 0 }, number of cells: 52410
+Anatomical site: 4 { 0 }, number of cells: 52280
+Anatomical site: 7 { 0 }, number of cells: 14
+Generation: 223, #cells: 154014, #anatomical sites: 4/10 (1/806116)
+Anatomical site: 0 { 0 }, number of cells: 49772
+Anatomical site: 1 { 0 }, number of cells: 52244
+Anatomical site: 4 { 0 }, number of cells: 51986
+Anatomical site: 7 { 0 }, number of cells: 12
+Generation: 224, #cells: 154754, #anatomical sites: 4/10 (1/813876)
+Anatomical site: 0 { 0 }, number of cells: 50048
+Anatomical site: 1 { 0 }, number of cells: 52228
+Anatomical site: 4 { 0 }, number of cells: 52464
+Anatomical site: 7 { 0 }, number of cells: 14
+Generation: 225, #cells: 153630, #anatomical sites: 4/10 (2/821584)
+Anatomical site: 0 { 0 }, number of cells: 49728
+Anatomical site: 1 { 0 }, number of cells: 51714
+Anatomical site: 4 { 0 }, number of cells: 52173
+Anatomical site: 4 { 0 821514 }, number of cells: 1
+Anatomical site: 7 { 0 }, number of cells: 14
+Generation: 226, #cells: 153234, #anatomical sites: 4/11 (2/829276)
+Anatomical site: 0 { 0 }, number of cells: 49345
+Anatomical site: 1 { 0 }, number of cells: 51570
+Anatomical site: 4 { 0 }, number of cells: 52292
+Anatomical site: 4 { 0 821514 }, number of cells: 2
+Anatomical site: 7 { 0 }, number of cells: 22
+Generation: 227, #cells: 153128, #anatomical sites: 5/11 (2/836968)
+Anatomical site: 0 { 0 }, number of cells: 49458
+Anatomical site: 1 { 0 }, number of cells: 51566
+Anatomical site: 4 { 0 }, number of cells: 52074
+Anatomical site: 4 { 0 821514 }, number of cells: 2
+Anatomical site: 7 { 0 }, number of cells: 26
+Anatomical site: 10 { 0 }, number of cells: 2
+Generation: 228, #cells: 152906, #anatomical sites: 5/11 (2/844643)
+Anatomical site: 0 { 0 }, number of cells: 49584
+Anatomical site: 1 { 0 }, number of cells: 51752
+Anatomical site: 4 { 0 }, number of cells: 51534
+Anatomical site: 4 { 0 821514 }, number of cells: 4
+Anatomical site: 7 { 0 }, number of cells: 30
+Anatomical site: 10 { 0 }, number of cells: 2
+Generation: 229, #cells: 153196, #anatomical sites: 5/11 (2/852383)
+Anatomical site: 0 { 0 }, number of cells: 50034
+Anatomical site: 1 { 0 }, number of cells: 51686
+Anatomical site: 4 { 0 }, number of cells: 51428
+Anatomical site: 4 { 0 821514 }, number of cells: 4
+Anatomical site: 7 { 0 }, number of cells: 42
+Anatomical site: 10 { 0 }, number of cells: 2
+Generation: 230, #cells: 153438, #anatomical sites: 5/11 (2/859928)
+Anatomical site: 0 { 0 }, number of cells: 49736
+Anatomical site: 1 { 0 }, number of cells: 51974
+Anatomical site: 4 { 0 }, number of cells: 51686
+Anatomical site: 4 { 0 821514 }, number of cells: 4
+Anatomical site: 7 { 0 }, number of cells: 38
+Anatomical site: 10 { 0 }, number of cells: 0
+Generation: 231, #cells: 153668, #anatomical sites: 4/11 (2/867547)
+Anatomical site: 0 { 0 }, number of cells: 49910
+Anatomical site: 1 { 0 }, number of cells: 52008
+Anatomical site: 4 { 0 }, number of cells: 51694
+Anatomical site: 4 { 0 821514 }, number of cells: 4
+Anatomical site: 7 { 0 }, number of cells: 52
+Generation: 232, #cells: 153644, #anatomical sites: 4/11 (2/875166)
+Anatomical site: 0 { 0 }, number of cells: 49992
+Anatomical site: 1 { 0 }, number of cells: 52162
+Anatomical site: 4 { 0 }, number of cells: 51422
+Anatomical site: 4 { 0 821514 }, number of cells: 4
+Anatomical site: 7 { 0 }, number of cells: 64
+Generation: 233, #cells: 154166, #anatomical sites: 4/12 (2/882944)
+Anatomical site: 0 { 0 }, number of cells: 50386
+Anatomical site: 1 { 0 }, number of cells: 52097
+Anatomical site: 4 { 0 }, number of cells: 51606
+Anatomical site: 4 { 0 821514 }, number of cells: 8
+Anatomical site: 7 { 0 }, number of cells: 68
+Generation: 234, #cells: 154130, #anatomical sites: 5/12 (2/890751)
+Anatomical site: 0 { 0 }, number of cells: 50482
+Anatomical site: 1 { 0 }, number of cells: 52018
+Anatomical site: 4 { 0 }, number of cells: 51543
+Anatomical site: 4 { 0 821514 }, number of cells: 10
+Anatomical site: 7 { 0 }, number of cells: 75
+Anatomical site: 11 { 0 }, number of cells: 2
+Generation: 235, #cells: 154170, #anatomical sites: 5/12 (2/898501)
+Anatomical site: 0 { 0 }, number of cells: 50428
+Anatomical site: 1 { 0 }, number of cells: 51750
+Anatomical site: 4 { 0 }, number of cells: 51894
+Anatomical site: 4 { 0 821514 }, number of cells: 10
+Anatomical site: 7 { 0 }, number of cells: 86
+Anatomical site: 11 { 0 }, number of cells: 2
+Generation: 236, #cells: 154160, #anatomical sites: 5/12 (2/906119)
+Anatomical site: 0 { 0 }, number of cells: 50686
+Anatomical site: 1 { 0 }, number of cells: 51516
+Anatomical site: 4 { 0 }, number of cells: 51834
+Anatomical site: 4 { 0 821514 }, number of cells: 10
+Anatomical site: 7 { 0 }, number of cells: 110
+Anatomical site: 11 { 0 }, number of cells: 4
+Generation: 237, #cells: 154126, #anatomical sites: 5/12 (2/913795)
+Anatomical site: 0 { 0 }, number of cells: 50768
+Anatomical site: 1 { 0 }, number of cells: 51646
+Anatomical site: 4 { 0 }, number of cells: 51554
+Anatomical site: 4 { 0 821514 }, number of cells: 14
+Anatomical site: 7 { 0 }, number of cells: 140
+Anatomical site: 11 { 0 }, number of cells: 4
+Generation: 238, #cells: 153892, #anatomical sites: 5/12 (2/921519)
+Anatomical site: 0 { 0 }, number of cells: 50842
+Anatomical site: 1 { 0 }, number of cells: 51408
+Anatomical site: 4 { 0 }, number of cells: 51456
+Anatomical site: 4 { 0 821514 }, number of cells: 20
+Anatomical site: 7 { 0 }, number of cells: 158
+Anatomical site: 11 { 0 }, number of cells: 8
+Generation: 239, #cells: 153588, #anatomical sites: 5/13 (2/929177)
+Anatomical site: 0 { 0 }, number of cells: 50812
+Anatomical site: 1 { 0 }, number of cells: 51116
+Anatomical site: 4 { 0 }, number of cells: 51440
+Anatomical site: 4 { 0 821514 }, number of cells: 26
+Anatomical site: 7 { 0 }, number of cells: 180
+Anatomical site: 11 { 0 }, number of cells: 10
+Generation: 240, #cells: 154284, #anatomical sites: 6/13 (2/936975)
+Anatomical site: 0 { 0 }, number of cells: 50472
+Anatomical site: 1 { 0 }, number of cells: 51562
+Anatomical site: 4 { 0 }, number of cells: 51972
+Anatomical site: 4 { 0 821514 }, number of cells: 36
+Anatomical site: 7 { 0 }, number of cells: 224
+Anatomical site: 11 { 0 }, number of cells: 16
+Anatomical site: 12 { 0 }, number of cells: 2
+Generation: 241, #cells: 154058, #anatomical sites: 6/13 (2/944741)
+Anatomical site: 0 { 0 }, number of cells: 50462
+Anatomical site: 1 { 0 }, number of cells: 51630
+Anatomical site: 4 { 0 }, number of cells: 51656
+Anatomical site: 4 { 0 821514 }, number of cells: 34
+Anatomical site: 7 { 0 }, number of cells: 260
+Anatomical site: 11 { 0 }, number of cells: 14
+Anatomical site: 12 { 0 }, number of cells: 2
+Generation: 242, #cells: 154342, #anatomical sites: 6/13 (2/952499)
+Anatomical site: 0 { 0 }, number of cells: 50652
+Anatomical site: 1 { 0 }, number of cells: 51848
+Anatomical site: 4 { 0 }, number of cells: 51458
+Anatomical site: 4 { 0 821514 }, number of cells: 46
+Anatomical site: 7 { 0 }, number of cells: 320
+Anatomical site: 11 { 0 }, number of cells: 14
+Anatomical site: 12 { 0 }, number of cells: 4
+Generation: 243, #cells: 154334, #anatomical sites: 6/13 (2/960306)
+Anatomical site: 0 { 0 }, number of cells: 50693
+Anatomical site: 1 { 0 }, number of cells: 51950
+Anatomical site: 4 { 0 }, number of cells: 51226
+Anatomical site: 4 { 0 821514 }, number of cells: 68
+Anatomical site: 7 { 0 }, number of cells: 372
+Anatomical site: 11 { 0 }, number of cells: 14
+Anatomical site: 12 { 0 }, number of cells: 8
+Generation: 244, #cells: 154360, #anatomical sites: 7/13 (2/967872)
+Anatomical site: 0 { 0 }, number of cells: 50694
+Anatomical site: 1 { 0 }, number of cells: 52304
+Anatomical site: 3 { 0 }, number of cells: 0
+Anatomical site: 4 { 0 }, number of cells: 50812
+Anatomical site: 4 { 0 821514 }, number of cells: 72
+Anatomical site: 7 { 0 }, number of cells: 456
+Anatomical site: 11 { 0 }, number of cells: 14
+Anatomical site: 12 { 0 }, number of cells: 8
+Generation: 245, #cells: 154446, #anatomical sites: 6/13 (2/975441)
+Anatomical site: 0 { 0 }, number of cells: 50118
+Anatomical site: 1 { 0 }, number of cells: 52812
+Anatomical site: 4 { 0 }, number of cells: 50864
+Anatomical site: 4 { 0 821514 }, number of cells: 88
+Anatomical site: 7 { 0 }, number of cells: 534
+Anatomical site: 11 { 0 }, number of cells: 22
+Anatomical site: 12 { 0 }, number of cells: 8
+Generation: 246, #cells: 154140, #anatomical sites: 6/13 (2/983083)
+Anatomical site: 0 { 0 }, number of cells: 49900
+Anatomical site: 1 { 0 }, number of cells: 52394
+Anatomical site: 4 { 0 }, number of cells: 51042
+Anatomical site: 4 { 0 821514 }, number of cells: 116
+Anatomical site: 7 { 0 }, number of cells: 654
+Anatomical site: 11 { 0 }, number of cells: 26
+Anatomical site: 12 { 0 }, number of cells: 8
+Generation: 247, #cells: 153996, #anatomical sites: 6/13 (2/990953)
+Anatomical site: 0 { 0 }, number of cells: 49988
+Anatomical site: 1 { 0 }, number of cells: 52222
+Anatomical site: 4 { 0 }, number of cells: 50802
+Anatomical site: 4 { 0 821514 }, number of cells: 160
+Anatomical site: 7 { 0 }, number of cells: 788
+Anatomical site: 11 { 0 }, number of cells: 26
+Anatomical site: 12 { 0 }, number of cells: 10
+Generation: 248, #cells: 154070, #anatomical sites: 6/13 (2/998584)
+Anatomical site: 0 { 0 }, number of cells: 50050
+Anatomical site: 1 { 0 }, number of cells: 52164
+Anatomical site: 4 { 0 }, number of cells: 50660
+Anatomical site: 4 { 0 821514 }, number of cells: 216
+Anatomical site: 7 { 0 }, number of cells: 934
+Anatomical site: 11 { 0 }, number of cells: 36
+Anatomical site: 12 { 0 }, number of cells: 10
+Generation: 249, #cells: 154186, #anatomical sites: 6/13 (2/1006252)
+Anatomical site: 0 { 0 }, number of cells: 50064
+Anatomical site: 1 { 0 }, number of cells: 52216
+Anatomical site: 4 { 0 }, number of cells: 50442
+Anatomical site: 4 { 0 821514 }, number of cells: 280
+Anatomical site: 7 { 0 }, number of cells: 1122
+Anatomical site: 11 { 0 }, number of cells: 46
+Anatomical site: 12 { 0 }, number of cells: 16
+Generation: 250, #cells: 154978, #anatomical sites: 6/13 (2/1014064)
+Anatomical site: 0 { 0 }, number of cells: 50298
+Anatomical site: 1 { 0 }, number of cells: 52350
+Anatomical site: 4 { 0 }, number of cells: 50592
+Anatomical site: 4 { 0 821514 }, number of cells: 358
+Anatomical site: 7 { 0 }, number of cells: 1306
+Anatomical site: 11 { 0 }, number of cells: 56
+Anatomical site: 12 { 0 }, number of cells: 18
+Generation: 251, #cells: 154970, #anatomical sites: 6/13 (2/1021862)
+Anatomical site: 0 { 0 }, number of cells: 49944
+Anatomical site: 1 { 0 }, number of cells: 52506
+Anatomical site: 4 { 0 }, number of cells: 50376
+Anatomical site: 4 { 0 821514 }, number of cells: 466
+Anatomical site: 7 { 0 }, number of cells: 1594
+Anatomical site: 11 { 0 }, number of cells: 58
+Anatomical site: 12 { 0 }, number of cells: 26
+Generation: 252, #cells: 156182, #anatomical sites: 6/13 (2/1029554)
+Anatomical site: 0 { 0 }, number of cells: 49948
+Anatomical site: 1 { 0 }, number of cells: 52828
+Anatomical site: 4 { 0 }, number of cells: 50784
+Anatomical site: 4 { 0 821514 }, number of cells: 636
+Anatomical site: 7 { 0 }, number of cells: 1882
+Anatomical site: 11 { 0 }, number of cells: 72
+Anatomical site: 12 { 0 }, number of cells: 32
+Generation: 253, #cells: 156602, #anatomical sites: 6/14 (2/1037380)
+Anatomical site: 0 { 0 }, number of cells: 49860
+Anatomical site: 1 { 0 }, number of cells: 52673
+Anatomical site: 4 { 0 }, number of cells: 50838
+Anatomical site: 4 { 0 821514 }, number of cells: 822
+Anatomical site: 7 { 0 }, number of cells: 2264
+Anatomical site: 11 { 0 }, number of cells: 92
+Anatomical site: 12 { 0 }, number of cells: 52
+Generation: 254, #cells: 157500, #anatomical sites: 7/14 (2/1045358)
+Anatomical site: 0 { 0 }, number of cells: 50018
+Anatomical site: 1 { 0 }, number of cells: 52902
+Anatomical site: 4 { 0 }, number of cells: 50592
+Anatomical site: 4 { 0 821514 }, number of cells: 1122
+Anatomical site: 7 { 0 }, number of cells: 2676
+Anatomical site: 11 { 0 }, number of cells: 124
+Anatomical site: 12 { 0 }, number of cells: 64
+Anatomical site: 13 { 0 }, number of cells: 2
+Generation: 255, #cells: 158680, #anatomical sites: 7/14 (2/1053362)
+Anatomical site: 0 { 0 }, number of cells: 50004
+Anatomical site: 1 { 0 }, number of cells: 53198
+Anatomical site: 4 { 0 }, number of cells: 50482
+Anatomical site: 4 { 0 821514 }, number of cells: 1538
+Anatomical site: 7 { 0 }, number of cells: 3200
+Anatomical site: 11 { 0 }, number of cells: 166
+Anatomical site: 12 { 0 }, number of cells: 88
+Anatomical site: 13 { 0 }, number of cells: 4
+Generation: 256, #cells: 159598, #anatomical sites: 7/14 (2/1061259)
+Anatomical site: 0 { 0 }, number of cells: 49940
+Anatomical site: 1 { 0 }, number of cells: 52930
+Anatomical site: 4 { 0 }, number of cells: 50368
+Anatomical site: 4 { 0 821514 }, number of cells: 2046
+Anatomical site: 7 { 0 }, number of cells: 3980
+Anatomical site: 11 { 0 }, number of cells: 200
+Anatomical site: 12 { 0 }, number of cells: 130
+Anatomical site: 13 { 0 }, number of cells: 4
+Generation: 257, #cells: 160458, #anatomical sites: 7/14 (2/1069316)
+Anatomical site: 0 { 0 }, number of cells: 49777
+Anatomical site: 1 { 0 }, number of cells: 52677
+Anatomical site: 4 { 0 }, number of cells: 50070
+Anatomical site: 4 { 0 821514 }, number of cells: 2742
+Anatomical site: 7 { 0 }, number of cells: 4744
+Anatomical site: 11 { 0 }, number of cells: 262
+Anatomical site: 12 { 0 }, number of cells: 184
+Anatomical site: 13 { 0 }, number of cells: 2
+Generation: 258, #cells: 161882, #anatomical sites: 7/14 (2/1077521)
+Anatomical site: 0 { 0 }, number of cells: 49588
+Anatomical site: 1 { 0 }, number of cells: 52650
+Anatomical site: 4 { 0 }, number of cells: 49894
+Anatomical site: 4 { 0 821514 }, number of cells: 3584
+Anatomical site: 7 { 0 }, number of cells: 5644
+Anatomical site: 11 { 0 }, number of cells: 304
+Anatomical site: 12 { 0 }, number of cells: 218
+Anatomical site: 13 { 0 }, number of cells: 0
+Generation: 259, #cells: 165222, #anatomical sites: 6/14 (2/1085739)
+Anatomical site: 0 { 0 }, number of cells: 50050
+Anatomical site: 1 { 0 }, number of cells: 52950
+Anatomical site: 4 { 0 }, number of cells: 50018
+Anatomical site: 4 { 0 821514 }, number of cells: 4794
+Anatomical site: 7 { 0 }, number of cells: 6776
+Anatomical site: 11 { 0 }, number of cells: 366
+Anatomical site: 12 { 0 }, number of cells: 268
+Generation: 260, #cells: 168220, #anatomical sites: 6/14 (2/1094052)
+Anatomical site: 0 { 0 }, number of cells: 49952
+Anatomical site: 1 { 0 }, number of cells: 53060
+Anatomical site: 4 { 0 }, number of cells: 50236
+Anatomical site: 4 { 0 821514 }, number of cells: 6318
+Anatomical site: 7 { 0 }, number of cells: 7918
+Anatomical site: 11 { 0 }, number of cells: 416
+Anatomical site: 12 { 0 }, number of cells: 320
+Generation: 261, #cells: 171380, #anatomical sites: 6/15 (2/1102619)
+Anatomical site: 0 { 0 }, number of cells: 50006
+Anatomical site: 1 { 0 }, number of cells: 52857
+Anatomical site: 4 { 0 }, number of cells: 50140
+Anatomical site: 4 { 0 821514 }, number of cells: 8342
+Anatomical site: 7 { 0 }, number of cells: 9210
+Anatomical site: 11 { 0 }, number of cells: 452
+Anatomical site: 12 { 0 }, number of cells: 370
+Generation: 262, #cells: 175130, #anatomical sites: 7/15 (2/1111314)
+Anatomical site: 0 { 0 }, number of cells: 49542
+Anatomical site: 1 { 0 }, number of cells: 52812
+Anatomical site: 4 { 0 }, number of cells: 50416
+Anatomical site: 4 { 0 821514 }, number of cells: 10780
+Anatomical site: 7 { 0 }, number of cells: 10584
+Anatomical site: 11 { 0 }, number of cells: 526
+Anatomical site: 12 { 0 }, number of cells: 466
+Anatomical site: 14 { 0 }, number of cells: 4
+Generation: 263, #cells: 179704, #anatomical sites: 7/15 (3/1120390)
+Anatomical site: 0 { 0 }, number of cells: 49570
+Anatomical site: 1 { 0 }, number of cells: 52778
+Anatomical site: 4 { 0 }, number of cells: 50097
+Anatomical site: 4 { 0 821514 }, number of cells: 13798
+Anatomical site: 4 { 0 1118070 }, number of cells: 1
+Anatomical site: 7 { 0 }, number of cells: 12220
+Anatomical site: 11 { 0 }, number of cells: 678
+Anatomical site: 12 { 0 }, number of cells: 558
+Anatomical site: 14 { 0 }, number of cells: 4
+Generation: 264, #cells: 185702, #anatomical sites: 7/15 (3/1129682)
+Anatomical site: 0 { 0 }, number of cells: 49492
+Anatomical site: 1 { 0 }, number of cells: 53150
+Anatomical site: 4 { 0 }, number of cells: 49982
+Anatomical site: 4 { 0 821514 }, number of cells: 17608
+Anatomical site: 4 { 0 1118070 }, number of cells: 2
+Anatomical site: 7 { 0 }, number of cells: 14036
+Anatomical site: 11 { 0 }, number of cells: 770
+Anatomical site: 12 { 0 }, number of cells: 656
+Anatomical site: 14 { 0 }, number of cells: 6
+Generation: 265, #cells: 192386, #anatomical sites: 7/15 (4/1139495)
+Anatomical site: 0 { 0 }, number of cells: 49321
+Anatomical site: 0 { 0 1130866 }, number of cells: 1
+Anatomical site: 1 { 0 }, number of cells: 53374
+Anatomical site: 4 { 0 }, number of cells: 49512
+Anatomical site: 4 { 0 821514 }, number of cells: 22304
+Anatomical site: 4 { 0 1118070 }, number of cells: 4
+Anatomical site: 7 { 0 }, number of cells: 16134
+Anatomical site: 11 { 0 }, number of cells: 938
+Anatomical site: 12 { 0 }, number of cells: 792
+Anatomical site: 14 { 0 }, number of cells: 6
+Generation: 266, #cells: 200072, #anatomical sites: 7/15 (4/1149402)
+Anatomical site: 0 { 0 }, number of cells: 49064
+Anatomical site: 0 { 0 1130866 }, number of cells: 2
+Anatomical site: 1 { 0 }, number of cells: 53444
+Anatomical site: 4 { 0 }, number of cells: 49238
+Anatomical site: 4 { 0 821514 }, number of cells: 27858
+Anatomical site: 4 { 0 1118070 }, number of cells: 6
+Anatomical site: 7 { 0 }, number of cells: 18336
+Anatomical site: 11 { 0 }, number of cells: 1134
+Anatomical site: 12 { 0 }, number of cells: 986
+Anatomical site: 14 { 0 }, number of cells: 4
+Generation: 267, #cells: 209914, #anatomical sites: 7/15 (4/1159804)
+Anatomical site: 0 { 0 }, number of cells: 49278
+Anatomical site: 0 { 0 1130866 }, number of cells: 4
+Anatomical site: 1 { 0 }, number of cells: 53346
+Anatomical site: 4 { 0 }, number of cells: 49322
+Anatomical site: 4 { 0 821514 }, number of cells: 34622
+Anatomical site: 4 { 0 1118070 }, number of cells: 8
+Anatomical site: 7 { 0 }, number of cells: 20744
+Anatomical site: 11 { 0 }, number of cells: 1362
+Anatomical site: 12 { 0 }, number of cells: 1224
+Anatomical site: 14 { 0 }, number of cells: 4
+Generation: 268, #cells: 219728, #anatomical sites: 7/15 (4/1170876)
+Anatomical site: 0 { 0 }, number of cells: 49442
+Anatomical site: 0 { 0 1130866 }, number of cells: 4
+Anatomical site: 1 { 0 }, number of cells: 53360
+Anatomical site: 4 { 0 }, number of cells: 49178
+Anatomical site: 4 { 0 821514 }, number of cells: 41604
+Anatomical site: 4 { 0 1118070 }, number of cells: 16
+Anatomical site: 7 { 0 }, number of cells: 22984
+Anatomical site: 11 { 0 }, number of cells: 1678
+Anatomical site: 12 { 0 }, number of cells: 1454
+Anatomical site: 14 { 0 }, number of cells: 8
+Generation: 269, #cells: 230594, #anatomical sites: 7/15 (4/1182457)
+Anatomical site: 0 { 0 }, number of cells: 49630
+Anatomical site: 0 { 0 1130866 }, number of cells: 2
+Anatomical site: 1 { 0 }, number of cells: 53278
+Anatomical site: 4 { 0 }, number of cells: 48680
+Anatomical site: 4 { 0 821514 }, number of cells: 49518
+Anatomical site: 4 { 0 1118070 }, number of cells: 24
+Anatomical site: 7 { 0 }, number of cells: 25730
+Anatomical site: 11 { 0 }, number of cells: 2050
+Anatomical site: 12 { 0 }, number of cells: 1670
+Anatomical site: 14 { 0 }, number of cells: 12
+Generation: 270, #cells: 242124, #anatomical sites: 7/15 (4/1194423)
+Anatomical site: 0 { 0 }, number of cells: 49634
+Anatomical site: 0 { 0 1130866 }, number of cells: 4
+Anatomical site: 1 { 0 }, number of cells: 53176
+Anatomical site: 4 { 0 }, number of cells: 49074
+Anatomical site: 4 { 0 821514 }, number of cells: 57266
+Anatomical site: 4 { 0 1118070 }, number of cells: 24
+Anatomical site: 7 { 0 }, number of cells: 28484
+Anatomical site: 11 { 0 }, number of cells: 2400
+Anatomical site: 12 { 0 }, number of cells: 2042
+Anatomical site: 14 { 0 }, number of cells: 20
+Generation: 271, #cells: 252940, #anatomical sites: 7/16 (4/1207091)
+Anatomical site: 0 { 0 }, number of cells: 49370
+Anatomical site: 0 { 0 1130866 }, number of cells: 6
+Anatomical site: 1 { 0 }, number of cells: 53268
+Anatomical site: 4 { 0 }, number of cells: 49192
+Anatomical site: 4 { 0 821514 }, number of cells: 64960
+Anatomical site: 4 { 0 1118070 }, number of cells: 26
+Anatomical site: 7 { 0 }, number of cells: 30857
+Anatomical site: 11 { 0 }, number of cells: 2756
+Anatomical site: 12 { 0 }, number of cells: 2484
+Anatomical site: 14 { 0 }, number of cells: 20
+Generation: 272, #cells: 264730, #anatomical sites: 8/17 (4/1220397)
+Anatomical site: 0 { 0 }, number of cells: 49657
+Anatomical site: 0 { 0 1130866 }, number of cells: 4
+Anatomical site: 1 { 0 }, number of cells: 53904
+Anatomical site: 4 { 0 }, number of cells: 49481
+Anatomical site: 4 { 0 821514 }, number of cells: 72249
+Anatomical site: 4 { 0 1118070 }, number of cells: 26
+Anatomical site: 7 { 0 }, number of cells: 33081
+Anatomical site: 7 { 0 821514 }, number of cells: 1
+Anatomical site: 11 { 0 }, number of cells: 3310
+Anatomical site: 12 { 0 }, number of cells: 2994
+Anatomical site: 14 { 0 }, number of cells: 20
+Anatomical site: 15 { 0 }, number of cells: 2
+Maximum number of active anatomical sites reached
+Mutation 0 is a driver mutation
+Mutation 58 is a driver mutation
+python ../barcode_simulator/scripts/simulator/overlay_barcode_machina_simulator.py /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/sim_data_50cellTrees_moreSims_barcodes_5_3_24/pR/22385 RANDOM 10 0.005 /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/sim_data_50cellTrees_moreSims_barcodes_5_3_24/pR/22385/cell_tree_seed*.nwk /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/sim_data_50cellTrees_moreSims_barcodes_5_3_24/pR/22385/cell_tree_seed*.vertex.labeling
