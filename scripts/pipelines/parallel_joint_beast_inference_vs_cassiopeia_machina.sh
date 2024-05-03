@@ -11,7 +11,7 @@ pipeline_run_name="joint_inference_vs_cassiopeia_machina_vs_random_cellTree_simd
 mkdir ${pipeline_run_name}
 
 # copy machina datasets to working directory for the run
-dir_pre="sim_data_50cellTrees_barcodes_4_25_24"
+dir_pre="sim_data_50cellTrees_barcodes_5_2_24"
 cp -r ${dir_pre}/* ${pipeline_run_name}/
 
 # intialize files to track metrics for the entire run
