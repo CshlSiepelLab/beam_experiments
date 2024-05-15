@@ -100,6 +100,8 @@ migration_count=$(python scripts/migration_count_from_tree.py $true_tissue_tree 
 no_nodes_cas_tree=${cas_tree//.nwk/_no_nodes.nwk}
 sed 's/node[0-9]*//g' $cas_tree > $no_nodes_cas_tree
 cas_rf_dist=$(ete3 compare -t $no_nodes_cas_tree -r $true_tree --unrooted | grep "(..)" | cut -d\| -f 4 | tr -d '[:space:]')
+mcc_nwk=${mcc_tree//.tree/.nwk}
+joint_rf_dist=$(python scripts/nexus_to_newick.py $mcc_tree | ete3 compare -t $mcc_nwk -r $true_tree --unrooted | grep "(..)" | cut -d\| -f 4 | tr -d '[:space:]')
 conda deactivate
 
 conda activate scipy
@@ -117,6 +119,6 @@ echo $random_f1
 echo "consensus"
 echo $consensus_f1
 
-echo "${dir},${machina_f1},${beast_mcc_f1},${beast_posterior_f1},${random_f1},${consensus_f1},${ess_convergence},${migration_count},${cas_rf_dist},${shannon_mut_matrix}" >> ${accuracy_file}
+echo "${dir},${machina_f1},${beast_mcc_f1},${beast_posterior_f1},${random_f1},${consensus_f1},${ess_convergence},${migration_count},${cas_rf_dist},${joint_rf_dist},${shannon_mut_matrix}" >> ${accuracy_file}
 
 conda deactivate
