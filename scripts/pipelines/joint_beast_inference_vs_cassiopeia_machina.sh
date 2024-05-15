@@ -1,6 +1,5 @@
 #!/bin/bash
 source ~/miniconda3/etc/profile.d/conda.sh
-# source ~/anaconda3/etc/profile.d/conda.sh
 
 ### This pipeline takes in simulated data in the form of an indel character matrix and ground truth tree with tissue labels and the compares cassiopeia->machina and joint tree and tissue BEAST inference method for performance in inferring the migration graph vs the ground truth
 
@@ -66,7 +65,8 @@ sim_time=$(grep "Number of generations" $drivers | cut -d':' -f2 | tr -d ' ')
 scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${template_xml} ${sim_time}
 
 # # run beast joint inference
-time java -jar ${metastabayes_jar} -overwrite -working ${dir}/joint_inference_beast.xml > ${dir}/joint_inference_beast_terminal_time.log
+beast_log="${dir}/joint_inference_beast_terminal_time.log"
+time java -jar ${metastabayes_jar} -overwrite -working ${dir}/joint_inference_beast.xml > $beast_log
 beast_posterior_trees="${dir}/joint_inference_beast_tissues.trees"
 mcc_tree="${dir}/joint_inference_beast_tissues.tree"
 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${beast_posterior_trees} ${mcc_tree}
@@ -94,6 +94,18 @@ beast_posterior_f1=$(python scripts/migration_graph_f1_true_beast_posterior_tree
 random_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${random_tissue_tree} | awk -F' ' '{print $3}')
 consensus_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${consensus_tissue_tree} | awk -F' ' '{print $3}')
 
+# get other stats from the sim
+ess_convergence=$(awk '/Operator/ { found=1; next } { if (!found) print }' $beast_log | awk '{if (NF > 0) print}' | tail -n 1 | awk '{print $3}')
+migration_count=$(python scripts/migration_count_from_tree.py $true_tissue_tree | grep -oP 'Migration Count: \K.*')
+no_nodes_cas_tree=${cas_tree//.nwk/_no_nodes.nwk}
+sed 's/node[0-9]*//g' $cas_tree > $no_nodes_cas_tree
+cas_rf_dist=$(ete3 compare -t $no_nodes_cas_tree -r $true_tree --unrooted | grep "(..)" | cut -d\| -f 4 | tr -d '[:space:]')
+conda deactivate
+
+conda activate scipy
+shannon_mut_matrix=$(python scripts/shannon_entropy_mutation_matrix.py $sim_matrix | grep -oP 'Shannon Entropy scipy: \K.*')
+conda deactivate
+
 echo "machina"
 echo $machina_f1
 echo "beast mcc"
@@ -105,6 +117,6 @@ echo $random_f1
 echo "consensus"
 echo $consensus_f1
 
-echo "${dir},${machina_f1},${beast_mcc_f1},${beast_posterior_f1},${random_f1},${consensus_f1}" >> ${accuracy_file}
+echo "${dir},${machina_f1},${beast_mcc_f1},${beast_posterior_f1},${random_f1},${consensus_f1},${ess_convergence},${migration_count},${cas_rf_dist},${shannon_mut_matrix}" >> ${accuracy_file}
 
 conda deactivate
