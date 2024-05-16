@@ -62,13 +62,45 @@ mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${machina_tree}
 conda activate compare_trees
 template_xml="inputs/joint_inference_beast_template.xml"
 sim_time=$(grep "Number of generations" $drivers | cut -d':' -f2 | tr -d ' ')
-scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${template_xml} ${sim_time}
+beast_dir="${dir}/beast"
+mkdir $beast_dir
+scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${template_xml} ${sim_time} ${beast_dir}
 
 # # run beast joint inference
-beast_log="${dir}/joint_inference_beast_terminal_time.log"
-time java -jar ${metastabayes_jar} -overwrite -working ${dir}/joint_inference_beast.xml > $beast_log
-beast_posterior_trees="${dir}/joint_inference_beast_tissues.trees"
-mcc_tree="${dir}/joint_inference_beast_tissues.tree"
+num_chains=5
+for ((i=1; i<=$num_chains; i++))
+do
+  beast_log="${beast_dir}/joint_inference_beast_terminal_time_${i}.log"
+  iter_xml="${beast_dir}/joint_inference_beast_${i}.xml"
+  main_xml="${beast_dir}/joint_inference_beast.xml"
+  cp $main_xml $iter_xml
+  time java -jar ${metastabayes_jar} -overwrite -working $iter_xml > $beast_log &
+done
+
+# Allow for all chains to finish before continuing
+wait
+
+# Combine all log and tissue trees files
+log_files=""
+trees_files=""
+for ((i=1; i<=$num_chains; i++))
+do
+log_files+="-log ${beast_dir}/joint_inference_beast_${i}.log "
+trees_files+="-log ${beast_dir}/joint_inference_beast_${i}_tissues.trees "
+done
+combined_log="${beast_dir}/joint_inference_beast_combined.log"
+combined_trees="${beast_dir}/joint_inference_beast_combined_tissues.trees"
+logcombiner $log_files -o $combined_log
+logcombiner $trees_files -o $combined_trees
+
+# move combined results to main dir and remove independent chain results
+mv $main_xml $dir/
+mv $combined_log $dir/
+beast_posterior_trees="${dir}/joint_inference_beast_combined_tissues.trees"
+mv $combined_trees $beast_posterior_trees
+rm -r $beast_dir
+
+mcc_tree=$(echo "$beast_posterior_trees" | sed 's/.trees/.tree/')
 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${beast_posterior_trees} ${mcc_tree}
 
 # get tissue labeled true tree

@@ -4,9 +4,10 @@ indel_matrix_path=$1
 tissues_path=$2
 template_xml=$3
 REPLACE_TIME=$4
+output_dir=$5
 
 dir=$(dirname "$indel_matrix_path")
-XML_FILE="$dir/joint_inference_beast.xml"
+XML_FILE="$output_dir/joint_inference_beast.xml"
 cp $template_xml $XML_FILE
 
 # tissue labels for tips
