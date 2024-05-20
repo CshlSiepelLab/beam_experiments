@@ -7,7 +7,7 @@ def main():
     nwk_file = sys.argv[1]
     tissues_file = sys.argv[2]
 
-    out_file = nwk_file.split(".")[0] + "_tissue_labeled_tree.nwk"
+    out_file = os.path.dirname(nwk_file) + "/" + os.path.basename(nwk_file).split(".")[0] + "_tissue_labeled_tree.nwk"
 
     tree = Tree(nwk_file, format=3)
 

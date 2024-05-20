@@ -1,17 +1,19 @@
 #!/bin/bash
+
+# required for environment setup on Elzar cshl hpc
 source ~/miniconda3/etc/profile.d/conda.sh
 
 ### This pipeline takes in simulated data in the form of an indel character matrix and ground truth tree with tissue labels and the compares cassiopeia->machina and joint tree and tissue BEAST inference method for performance in inferring the migration graph vs the ground truth
 
-# # user inputs
+# user inputs
 directory=$1
 accuracy_file=$2
 
-# directory="27248"
+# directory="./27736"
 # accuracy_file="./accuracy.csv"
 
 sim_matrix=${directory}/*_indel_character_matrix.tsv
-true_tree=${directory}/cell_tree_seed*.nwk
+true_tree=${directory}/cell_tree_seed*[0-9].nwk
 true_tissues=${directory}/cell_tree_seed*.vertex.labeling
 leaf_tissues=$(ls ${directory}/cell_tree_*[0-9].labeling)
 drivers=${directory}/drivers_seed*.txt
@@ -25,6 +27,7 @@ drivers=${directory}/drivers_seed*.txt
 
 # get executable paths for beast
 treeannotator_path=$(which treeannotator)
+logcombiner_path=$(which logcombiner)
 metastabayes_jar="../metastabayes/metastabayes.jar"
 
 # get working dir
@@ -44,10 +47,16 @@ python ./scripts/machina/prep_machina.py ${cas_tree} ${machina_dir} ${primary_ti
 conda deactivate
 
 # Run MACHINA
+module load EBModules
+module load Gurobi
 conda activate machina
+
 #sed -i '0,/0/s/0/GL/' ${machina_dir}/*.tree     # Prevents MACHINA segmentation fault due to input formatting
 timeout 60m ./scripts/machina/run_machina_tr.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir} || echo "Error: Machina execution timed out for ${dir}"
+
 conda deactivate
+module unload Gurobi
+module unload EBModules
 
 # Condense MACHINA output into a labeled tree newick format
 conda activate simulate
@@ -56,7 +65,6 @@ conda deactivate
 # Remove intermediate MACHINA output files
 machina_tree="${dir}/machina_tree_all_tissue_labels.nwk" 
 mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${machina_tree}
-#rm -r ${machina_dir}
 
 # setup joint beast inference
 conda activate compare_trees
@@ -67,10 +75,12 @@ mkdir $beast_dir
 scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${template_xml} ${sim_time} ${beast_dir}
 
 # # run beast joint inference
+beast_logs=()
 num_chains=5
 for ((i=1; i<=$num_chains; i++))
 do
   beast_log="${beast_dir}/joint_inference_beast_terminal_time_${i}.log"
+  beast_logs+=("$beast_log")
   iter_xml="${beast_dir}/joint_inference_beast_${i}.xml"
   main_xml="${beast_dir}/joint_inference_beast.xml"
   cp $main_xml $iter_xml
@@ -90,15 +100,14 @@ trees_files+="-log ${beast_dir}/joint_inference_beast_${i}_tissues.trees "
 done
 combined_log="${beast_dir}/joint_inference_beast_combined.log"
 combined_trees="${beast_dir}/joint_inference_beast_combined_tissues.trees"
-logcombiner $log_files -o $combined_log
-logcombiner $trees_files -o $combined_trees
+$logcombiner_path $log_files -o $combined_log
+$logcombiner_path $trees_files -o $combined_trees
 
 # move combined results to main dir and remove independent chain results
 mv $main_xml $dir/
 mv $combined_log $dir/
 beast_posterior_trees="${dir}/joint_inference_beast_combined_tissues.trees"
 mv $combined_trees $beast_posterior_trees
-rm -r $beast_dir
 
 mcc_tree=$(echo "$beast_posterior_trees" | sed 's/.trees/.tree/')
 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${beast_posterior_trees} ${mcc_tree}
@@ -127,16 +136,16 @@ random_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tiss
 consensus_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${consensus_tissue_tree} | awk -F' ' '{print $3}')
 
 # get other stats from the sim
-ess_convergence=$(awk '/Operator/ { found=1; next } { if (!found) print }' $beast_log | awk '{if (NF > 0) print}' | tail -n 1 | awk '{print $3}')
-migration_count=$(python scripts/migration_count_from_tree.py $true_tissue_tree | grep -oP 'Migration Count: \K.*')
+ess_convergence=()
+for log in ${beast_logs[@]}; do
+ess_convergence+=("$(awk '/Operator/ { found=1; next } { if (!found) print }' $log | awk '{if (NF > 0) print}' | tail -n 1 | awk '{print $3}')")
+done
+migration_count=$(python scripts/migration_count_from_tree.py $true_tissue_tree | grep -oP 'Migration count: \K.*')
 no_nodes_cas_tree=${cas_tree//.nwk/_no_nodes.nwk}
 sed 's/node[0-9]*//g' $cas_tree > $no_nodes_cas_tree
 cas_rf_dist=$(ete3 compare -t $no_nodes_cas_tree -r $true_tree --unrooted | grep "(..)" | cut -d\| -f 4 | tr -d '[:space:]')
 mcc_nwk=${mcc_tree//.tree/.nwk}
 joint_rf_dist=$(python scripts/nexus_to_newick.py $mcc_tree | ete3 compare -t $mcc_nwk -r $true_tree --unrooted | grep "(..)" | cut -d\| -f 4 | tr -d '[:space:]')
-conda deactivate
-
-conda activate scipy
 shannon_mut_matrix=$(python scripts/shannon_entropy_mutation_matrix.py $sim_matrix | grep -oP 'Shannon Entropy scipy: \K.*')
 conda deactivate
 
@@ -151,6 +160,8 @@ echo $random_f1
 echo "consensus"
 echo $consensus_f1
 
-echo "${dir},${machina_f1},${beast_mcc_f1},${beast_posterior_f1},${random_f1},${consensus_f1},${ess_convergence},${migration_count},${cas_rf_dist},${joint_rf_dist},${shannon_mut_matrix}" >> ${accuracy_file}
+echo "${dir},${machina_f1},${beast_mcc_f1},${beast_posterior_f1},${random_f1},${consensus_f1},${ess_convergence[@]},${migration_count},${cas_rf_dist},${joint_rf_dist},${shannon_mut_matrix}" >> ${accuracy_file}
 
-conda deactivate
+# optional clean up of temporary files
+# rm -r ${machina_dir}
+# rm -r $beast_dir
