@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
+<!-- Spec path declarations -->
 <beast beautitemplate='FixedTreeAnalysis' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.base.evolution.alignment:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" required="BEAST.base v2.7.6:FixedTreeAnalysis v0.0.2:BEAST_CLASSIC v1.6.3" version="2.7">
-
-    <data id="sim1_true" spec="Alignment" name="taxa">
-        REPLACE_SEQUENCES
-    </data>
 
     <!-- Maps -->
     <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
@@ -19,7 +16,16 @@
     <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
 
 
-    <!-- MCMC run definition-->
+    <!-- Input tip names -->
+    <plate var="n" range="1">
+        <taxa id="alignment_$(n)" spec="Alignment">
+            REPLACE_SEQUENCES
+        </taxa>
+    </plate>
+
+
+
+    <!-- Nested sampling MCMC run definition-->
     <run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="1" subChainLength="10000" epsilon="1e-10">
 
         <!-- Run state parameters -->
@@ -30,8 +36,8 @@
                     REPLACE_TAXONSET
                 </taxonset>
             </stateNode>
-            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="REPLACE_NUM_RATES">true</stateNode>
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="REPLACE_NUM_RATES" name="stateNode">1.0</parameter>
+            <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="55">true</stateNode>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="55" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>
 
@@ -45,7 +51,7 @@
                     <x id="nonZeroRates.s:tissue" spec="beast.base.evolution.Sum">
                         <arg idref="rateIndicator.s:tissue"/>
                     </x>
-                    <distr id="Poisson.0" spec="distribution.Poisson" offset="REPLACE_OFFSET">
+                    <distr id="Poisson.0" spec="distribution.Poisson" offset="10">
                         <parameter id="RealParameter.10" spec="parameter.RealParameter" estimate="false" name="lambda">0.693</parameter>
                     </distr>
                 </prior>
@@ -65,6 +71,8 @@
 
             <!-- Likelihood -->
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
+
+                <!-- Tree likelihood (FAKE) -->    
                 <distribution id="treeLikelihood.sim1_true" spec="fixedtreeanalysis.evolution.likelihood.FixedTreeLikelihood" data="@sim1_true" tree="@Tree.t:tree">
                     <siteModel id="FixedSiteModel.s:sim1_true" spec="fixedtreeanalysis.evolution.sitemodel.FixedSiteModel">
                         <parameter id="RealParameter.0" spec="parameter.RealParameter" estimate="false" lower="0.0" name="mutationRate" upper="1.0">1.0</parameter>
@@ -76,24 +84,27 @@
                         <parameter id="RealParameter.3" spec="parameter.RealParameter" estimate="false" name="clock.rate">1.0</parameter>
                     </branchRateModel>
                 </distribution>
+
+                <!-- Trait likelihood -->
                 <distribution id="traitedtreeLikelihood.tissue" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@Tree.t:tree">
-                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="REPLACE_ROOT_FREQUENCIES" estimate="false"/>
+                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0 0 0" estimate="false"/>
                     <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
                         <traitSet id="traitSet.tissue" spec="beast.base.evolution.tree.TraitSet" taxa="@TaxonSet.1" traitname="discrete">REPLACE_TRAITSET</traitSet>
-                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="REPLACE_CODE_MAP" codelength="-1" states="REPLACE_NUM_TISSUES"/>
+                        <userDataType id="traitDataType.tissue" spec="beast.base.evolution.datatype.UserDataType" codeMap="P=0,M1=1,M2=2,M3=3,M4=4,M5=5,M6=6,M7=7,M8=8,M9=9,M10=10,? = 0 1 2 3 4 5 6 7 8 9 10" codelength="-1" states="11"/>
                     </data>
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
                         <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
-                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue" symmetric="REPLACE_SYMMETRIC">
+                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue" symmetric="true">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
-                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="REPLACE_NUM_TISSUES" name="frequencies">REPLACE_TISSUE_FREQS</parameter>
+                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="11" name="frequencies">0.0909</parameter>
                             </frequencies>
                         </substModel>
                     </siteModel>
                     <branchRateModel id="StrictClockModel.c:tissue" spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@traitClockRate.c:tissue"/>
                 </distribution>
+
             </distribution>
 
         </distribution>
