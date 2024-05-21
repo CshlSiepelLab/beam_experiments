@@ -52,7 +52,7 @@ module load Gurobi
 conda activate machina
 
 #sed -i '0,/0/s/0/GL/' ${machina_dir}/*.tree     # Prevents MACHINA segmentation fault due to input formatting
-timeout 60m ./scripts/machina/run_machina_tr.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir} || echo "Error: Machina execution timed out for ${dir}"
+./scripts/machina/run_machina_tr.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir} || echo "Error: Machina execution timed out for ${dir}"
 
 conda deactivate
 module unload Gurobi
@@ -93,10 +93,16 @@ wait
 # Combine all log and tissue trees files
 log_files=""
 trees_files=""
+ess_convergences=()
 for ((i=1; i<=$num_chains; i++))
 do
-log_files+="-log ${beast_dir}/joint_inference_beast_${i}.log "
-trees_files+="-log ${beast_dir}/joint_inference_beast_${i}_tissues.trees "
+ess_convergence=$(awk '/Operator/ { found=1; next } { if (!found) print }' "${beast_dir}/joint_inference_beast_terminal_time_${i}.log" | awk '{if (NF > 0) print}' | tail -n 1 | awk '{print int($3 + 0.5)}')
+# only use mcmc chains that have converged since many appear to get lost in the search space
+if [[ $ess_convergence -lt 200 ]]; then
+  ess_convergences+=($ess_convergence)
+  log_files+="-log ${beast_dir}/joint_inference_beast_${i}.log "
+  trees_files+="-log ${beast_dir}/joint_inference_beast_${i}_tissues.trees "
+fi
 done
 combined_log="${beast_dir}/joint_inference_beast_combined.log"
 combined_trees="${beast_dir}/joint_inference_beast_combined_tissues.trees"
@@ -136,10 +142,6 @@ random_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tiss
 consensus_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${consensus_tissue_tree} | awk -F' ' '{print $3}')
 
 # get other stats from the sim
-ess_convergence=()
-for log in ${beast_logs[@]}; do
-ess_convergence+=("$(awk '/Operator/ { found=1; next } { if (!found) print }' $log | awk '{if (NF > 0) print}' | tail -n 1 | awk '{print $3}')")
-done
 migration_count=$(python scripts/migration_count_from_tree.py $true_tissue_tree | grep -oP 'Migration count: \K.*')
 no_nodes_cas_tree=${cas_tree//.nwk/_no_nodes.nwk}
 sed 's/node[0-9]*//g' $cas_tree > $no_nodes_cas_tree
@@ -160,7 +162,7 @@ echo $random_f1
 echo "consensus"
 echo $consensus_f1
 
-echo "${dir},${machina_f1},${beast_mcc_f1},${beast_posterior_f1},${random_f1},${consensus_f1},${ess_convergence[@]},${migration_count},${cas_rf_dist},${joint_rf_dist},${shannon_mut_matrix}" >> ${accuracy_file}
+echo "${dir},${machina_f1},${beast_mcc_f1},${beast_posterior_f1},${random_f1},${consensus_f1},${ess_convergences[@]},${migration_count},${cas_rf_dist},${joint_rf_dist},${shannon_mut_matrix}" >> ${accuracy_file}
 
 # optional clean up of temporary files
 # rm -r ${machina_dir}

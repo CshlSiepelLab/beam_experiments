@@ -33,7 +33,7 @@ xml1_dir="${dir}/xml1"
 
 mkdir -p $xml1_dir
 
-# copy the provided xml files to the workign directories to make modifications for a nested sampling run
+# copy the provided xml files to the working directories to make modifications for a nested sampling run
 cp $xml1 $xml1_dir
 xml1_file=$(basename "$xml1")
 cp_xml1="${xml1_dir}/${xml1_file}"

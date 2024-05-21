@@ -1,17 +1,13 @@
 #!/bin/bash
 
-# Necessary line to access conda commands for bash script on CSHL HPC cluster
-# source ~/anaconda3/etc/profile.d/conda.sh
-
-# Necessary line to access conda commands on Evolgen lab server (need to make these the same long term)
 source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
-pipeline_run_name="less_informative_sims_joint_inference_cassiopeia_machina_5_20_24"
+pipeline_run_name="highEssOnly_less_informative_sims_joint_inference_cassiopeia_machina_5_21_24"
 mkdir ${pipeline_run_name}
 
 # copy machina datasets to working directory for the run
-dir_pre="data/sim_data_50cellTrees_barcodes_5_16_24"
+dir_pre="data/sim_data_50cellTrees_barcodes_5_20_24"
 cp -r ${dir_pre}/* ${pipeline_run_name}/
 
 # intialize files to track metrics for the entire run
@@ -32,5 +28,5 @@ do
 done
 
 threads=4
-parallel --progress -j 4 < "${pipeline_run_name}/parallel.txt"
+parallel --progress -j 20 < "${pipeline_run_name}/parallel.txt"
 rm "${pipeline_run_name}/parallel.txt"

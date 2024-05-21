@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# Necessary line to access conda commands for bash script on CSHL HPC cluster
-# source ~/anaconda3/etc/profile.d/conda.sh
-
-# Necessary line to access conda commands on Evolgen lab server (need to make these the same long term)
 source ~/miniconda3/etc/profile.d/conda.sh
 
 # set paths to necessary packages
