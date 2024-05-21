@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
+<!-- <!DOCTYPE note [
+<!ENTITY range "$(inputNames)">
+]> -->
+
+<!DOCTYPE note [
+<!ENTITY range "seed0">
+]>
+
 <!-- Spec path declarations -->
 <beast beautitemplate='FixedTreeAnalysis' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.base.evolution.alignment:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" required="BEAST.base v2.7.6:FixedTreeAnalysis v0.0.2:BEAST_CLASSIC v1.6.3" version="2.7">
 
@@ -14,24 +22,25 @@
     <map name="prior" >beast.base.inference.distribution.Prior</map>
     <map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
     <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
+
     <userDataType id="codeMap" spec="beast.base.evolution.datatype.UserDataType" codeMap="P=0,M1=1,M2=2,M3=3,M4=4,M5=5,M6=6,M7=7,M8=8,M9=9,M10=10,? = 0 1 2 3 4 5 6 7 8 9 10" codelength="-1" states="11"/>
 
 
 <!-- USER INPUTS -->
+<!-- Specify the range of filenames on the command line and make sure filenames have name.nwk, name.fasta, name.tsv files-->
     <!-- Individual input datasets -->
-    <plate var="n" range="1">
+    <plate var="n" range="&range;">
 
-        <stateNode id="tree_$(n)" spec="fixedtreeanalysis.evolution.tree.FixedTree" IsLabelledNewick="true" adjustTipHeights="false" newick="REPLACE_NEWICK">
-            <taxa id="alignment_$(n)" spec="Alignment">
-                REPLACE_SEQUENCES
-            </taxa>
-            <taxonset id="taxonset_$(n)" spec="TaxonSet">
-                REPLACE_TAXONSET
-            </taxonset>
+        <!-- Read tree from newick file -->
+        <tree id="nwk_$(n)" spec="feast.fileio.TreeFromNewickFile" newickFile="$(n).nwk" tree="@tree_$(n)"/>
+
+        <stateNode id="tree_$(n)" spec="fixedtreeanalysis.evolution.tree.FixedTree" adjustTipHeights="false" m_initial="@nwk_$(n)">
+            <taxa id="alignment_$(n)" spec="feast.fileio.AlignentFromFasta" sequence="$(n).fasta"/>
+            <taxonset id="taxonset_$(n)" spec="feast.fileio.TaxonSetFromTree" tree="nwk_$(n)"/>
         </stateNode>
 
         <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
-            <traitSet id="traitset_$(n)" spec="beast.base.evolution.tree.TraitSet" taxa="@taxonset_$(n)" traitname="discrete">REPLACE_TRAITSET</traitSet>
+            <traitSet id="traitset_$(n)" spec="feast.fileio.TraitSetFromXSV" fileName="$(n).tsv" taxonNameCol="0" skipHeaderRow="true" sep="\t"/>
             <userDataType idref="codeMap"/>
         </data>
 
@@ -68,11 +77,10 @@
 <!-- MCMC -->
     <!-- Nested sampling MCMC run definition-->
     <run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="1" subChainLength="10000" epsilon="1e-10">
-
         <!-- Set run state parameters -->
         <state id="state" spec="State" storeEvery="5000">
             <!-- Individual states for each dataset -->
-            <plate var="n" range="1">
+            <plate var="n" range="&range;">
                 <stateNode idref="data_$(n)"/>
             </plate>
             <!-- Universal states/rates across datasets -->
@@ -83,11 +91,10 @@
 
         <!-- Posterior -->
         <distribution id="posterior" spec="CompoundDistribution">
-
             <!-- Priors -->
             <distribution id="prior" spec="CompoundDistribution">
                 <!-- Fixed tree prior for each dataset-->
-                <plate var="n" range="1">
+                <plate var="n" range="&range;">
                     <distribution id="FixedTreeModel.t:tree_$(n)" spec="fixedtreeanalysis.evolution.tree.FixedTreeDistribution" tree="@tree_$(n)"/>
                 </plate>
                 <!-- Universal priors for tissue rate parameters -->
@@ -116,7 +123,7 @@
             <!-- Likelihood -->
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 <!-- Composite likelihoods for each dataset -->
-                <plate var="n" range="1">
+                <plate var="n" range="&range;">
                     <!-- Tree likelihood (FAKE) -->    
                     <distribution id="treeLikelihood_$(n)" spec="fixedtreeanalysis.evolution.likelihood.FixedTreeLikelihood" data="@alignment_$(n)" tree="@tree_$(n)">
                         <siteModel idref="treeSiteModel"/>
@@ -131,21 +138,22 @@
                     </distribution>
                 </plate>
             </distribution>
-
         </distribution>
 
         <!-- Operators -->
         <operator id="georateScaler.s:tissue" spec="ScaleOperator" parameter="@relativeGeoRates.s:tissue" scaleAllIndependently="true" scaleFactor="0.99" weight="30.0"/>
         <operator id="indicatorFlip.s:tissue" spec="operator.BitFlipOperator" parameter="@rateIndicator.s:tissue" weight="30.0"/>
         <operator id="geoMuScaler.c:tissue" spec="ScaleOperator" parameter="@traitClockRate.c:tissue" scaleFactor="0.9" weight="3.0"/>
-        <operator id="BSSVSoperator.c:tissue" spec="beastclassic.evolution.operators.BitFlipBSSVSOperator" indicator="@rateIndicator.s:tissue" mu="@traitClockRate.c:tissue" weight="30.0"/>
         
         <!-- Loggers -->
         <logger id="tracelog" spec="NSLogger" fileName="$(filebase).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
             <log idref="posterior"/>
             <log idref="likelihood"/>
             <log idref="prior"/>
-            <log idref="treeLikelihood.sim1_true"/>
+            <plate var="n" range="&range;">
+                <log idref="treeLikelihood_$(n)"/>
+                <log idref="traitLikelihood_$(n)"/>
+            </plate>
             <log idref="rateIndicator.s:tissue"/>
             <log idref="relativeGeoRates.s:tissue"/>
             <log idref="traitClockRate.c:tissue"/>
@@ -159,15 +167,13 @@
             <log idref="prior"/>
         </logger>
 
-        <logger id="treelog.t:tree" spec="Logger" fileName="$(filebase).trees" logEvery="1000" mode="tree">
-            <log id="TreeWithMetaDataLogger.t:tree" spec="beast.base.evolution.TreeWithMetaDataLogger" tree="@Tree.t:tree"/>
-        </logger>
-
-        <logger id="treeWithTraitLogger.tissue" spec="Logger" fileName="tissue_tree_with_trait.trees" logEvery="1000" mode="tree">
-            <log id="treeWithTraitLoggerItem.t:tree" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@Tree.t:tree">
-                <metadata idref="posterior"/>
-                <metadata idref="traitedtreeLikelihood.tissue"/>
-            </log>
+        <logger id="treeWithTraitLogger.tissue" spec="Logger" fileName="$(filebase)_tissues.trees" logEvery="1000" mode="tree">
+            <plate var="n" range="&range;">
+                <log id="treeWithTraitLoggerItem_$(n)" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@tree_$(n)">
+                    <metadata idref="posterior"/>
+                    <metadata idref="traitLikelihood_$(n)"/>
+                </log>
+            </plate>
         </logger>
 
         <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
