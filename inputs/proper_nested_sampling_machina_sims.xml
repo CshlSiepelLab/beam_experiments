@@ -27,7 +27,7 @@
 
 
 <!-- USER INPUTS -->
-<!-- Specify the range of filenames on the command line and make sure filenames have name.nwk, name.fasta, name.tsv files-->
+<!-- Specify the range of filenames on the command line and make sure filenames have name.nwk, name.fasta, name.csv files-->
     <!-- Individual input datasets -->
     <plate var="n" range="&range;">
 
@@ -40,7 +40,7 @@
         </stateNode>
 
         <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
-            <traitSet id="traitset_$(n)" spec="feast.fileio.TraitSetFromXSV" fileName="$(n).tsv" taxonNameCol="0" skipHeaderRow="true" sep="\t"/>
+            <traitSet id="traitset_$(n)" spec="feast.fileio.TraitSetFromXSV" fileName="$(n)_tips_only.csv" taxonNameCol="0" skipHeaderRow="false" sep=","/>
             <userDataType idref="codeMap"/>
         </data>
 
@@ -81,7 +81,7 @@
         <state id="state" spec="State" storeEvery="5000">
             <!-- Individual states for each dataset -->
             <plate var="n" range="&range;">
-                <stateNode idref="data_$(n)"/>
+                <stateNode idref="tree_$(n)"/>
             </plate>
             <!-- Universal states/rates across datasets -->
             <stateNode id="rateIndicator.s:tissue" spec="parameter.BooleanParameter" dimension="55">true</stateNode>
