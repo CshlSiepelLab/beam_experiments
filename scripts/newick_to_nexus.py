@@ -10,7 +10,7 @@ from Bio import Phylo
 newick_file="seed0.nwk"
 
 # format outfile
-outfile=newick_file.replace(".nwk",".tree")
+outfile=newick_file.replace(".nwk",".nexus")
 
 # read in newick tree
 tree = Phylo.read(newick_file, 'newick')

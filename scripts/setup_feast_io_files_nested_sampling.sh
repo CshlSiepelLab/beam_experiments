@@ -6,11 +6,11 @@
 # tissues_tsv_file=$2
 
 # testing
-newick_file="seed0.nwk"
-tissues_tsv_file="seed0.tsv"
+newick_file="seed2.nwk"
+tissues_tsv_file="seed2.tsv"
 
 # get all tip names from the newick file by pattern matching for newick with only tip names and all branch lengths
-tip_names=$(grep -o ',[^,:]*:' $newick_file | tr -d ',:(')
+tip_names=$(grep -o '[,(][^,:]*:' $newick_file | tr -d ',:(')
 
 # use those names
 tip_traits=""
@@ -27,3 +27,7 @@ outfile_fasta=${tissues_tsv_file//.tsv/.fasta}
 for name in $tip_names; do
 echo -e ">$name\n?" >> $outfile_fasta
 done
+
+# reformat newick file to remove extra bracket and false root branch length *****BASED ON MACHINA SIM DATA ONLY*****
+outfile_newick=${newick_file//.nwk/_reformatted.nwk}
+cat $newick_file | sed '1s/^(//' $newick_file | sed 's/):[0-9]*;$/;/' > $outfile_newick
