@@ -98,7 +98,7 @@ for ((i=1; i<=$num_chains; i++))
 do
 ess_convergence=$(awk '/Operator/ { found=1; next } { if (!found) print }' "${beast_dir}/joint_inference_beast_terminal_time_${i}.log" | awk '{if (NF > 0) print}' | tail -n 1 | awk '{print int($3 + 0.5)}')
 # only use mcmc chains that have converged since many appear to get lost in the search space
-if [[ $ess_convergence -lt 200 ]]; then
+if [[ $ess_convergence -gt 200 ]]; then
   ess_convergences+=($ess_convergence)
   log_files+="-log ${beast_dir}/joint_inference_beast_${i}.log "
   trees_files+="-log ${beast_dir}/joint_inference_beast_${i}_tissues.trees "
