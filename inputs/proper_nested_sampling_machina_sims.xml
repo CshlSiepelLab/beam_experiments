@@ -39,10 +39,6 @@
             <taxonset id="taxonset_$(n)" spec="feast.fileio.TaxonSetFromTree" tree="nwk_$(n)"/>
         </stateNode> -->
 
-        <!-- <data id="tissue_$(n)" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
-            <traitSet id="traitset_$(n)" spec="feast.fileio.TraitSetFromXSV" fileName="$(n)_tips_only.csv" taxonNameCol="0" skipHeaderRow="false" sep=","/>
-            <userDataType idref="codeMap"/>
-        </data> -->
 
 
 
@@ -100,35 +96,9 @@
             </stateNode>
 
         <data id="tissue_$(n)" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
-            <traitSet id="traitset_$(n)" spec="beast.base.evolution.tree.TraitSet" taxa="@taxonset_$(n)" traitname="discrete">
-                13-P=P,
-                26-31-39-M7=M7,
-                65-M7=M7,
-                25-40-M6=M6,
-                48-M6=M6,
-                59-M6=M6,
-                19-M3=M3,
-                34-P=P,
-                36-P=P,
-                37-43-M8=M8,
-                22-23-28-35-M5=M5,
-                46-M5=M5,
-                51-M5=M5,
-                21-27-M4=M4,
-                49-M4=M4,
-                52-M4=M4,
-                53-M4=M4,
-                5-11-18-20-24-29-32-33-M2=M2,
-                38-M2=M2,
-                45-M2=M2,
-                9-M1=M1,
-                10-M1=M1,
-                12-M1=M1
-            </traitSet>
+            <traitSet id="traitset_$(n)" spec="feast.fileio.TraitSetFromXSV" fileName="$(n)_tips_only.csv" taxa="@taxonset_$(n)" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
             <userDataType idref="codeMap"/>
         </data>
-
-
 
     </plate>
 
