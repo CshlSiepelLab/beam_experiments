@@ -25,5 +25,5 @@ echo -e $tip_traits > $outfile_traits
 # write fake fasta for tip names
 outfile_fasta=${tissues_tsv_file//.tsv/.fasta}
 for name in $tip_names; do
-echo -e ">$name\n" >> $outfile_fasta
+echo -e ">$name\n?" >> $outfile_fasta
 done
