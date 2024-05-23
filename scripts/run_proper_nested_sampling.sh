@@ -34,11 +34,11 @@ for model in $models; do
         num_rates="numRates=3"
     fi
 
-    java -jar $metastabayes_jar \
+    java -jar $metastabayes_jar -overwrite -working \
     -D "$input_names" \
     -D "$file_dir" \
     -D "$spec" \
     -D "$symmetric" \
     -D "$num_rates" \
-    $output_dir/$model/proper_nested_sampling_machina_sims.xml
+    $output_dir/$model/proper_nested_sampling_machina_sims.xml > $output_dir/$model/${model}_terminal.log
 done
