@@ -5,7 +5,30 @@
 ]>
 
 <!-- Spec path declarations -->
-<beast beautitemplate='FixedTreeAnalysis' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.base.evolution.alignment:beast.pkgmgmt:beast.base.core:beast.base.inference:beast.base.evolution.tree.coalescent:beast.pkgmgmt:beast.base.core:beast.base.inference.util:beast.evolution.nuc:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel:beast.base.evolution.substitutionmodel:beast.base.evolution.likelihood" required="BEAST.base v2.7.6:FixedTreeAnalysis v0.0.2:BEAST_CLASSIC v1.6.3" version="2.7">
+<beast beautitemplate='FixedTreeAnalysis' beautistatus='' 
+        namespace="beast.core:
+        beast.evolution.alignment:
+        beast.evolution.tree.coalescent:
+        beast.core.util:beast.evolution.nuc:
+        beast.evolution.operators:
+        beast.evolution.sitemodel:
+        beast.evolution.substitutionmodel:
+        beast.base.evolution.alignment:
+        beast.pkgmgmt:
+        beast.base.core:
+        beast.base.inference:
+        beast.base.evolution.tree.coalescent:
+        beast.pkgmgmt:
+        beast.base.core:
+        beast.base.inference.util:
+        beast.evolution.nuc:
+        beast.base.evolution.operator:
+        beast.base.inference.operator:
+        beast.base.evolution.sitemodel:
+        beast.base.evolution.substitutionmodel:
+        beast.base.evolution.likelihood:
+        metastabayes" 
+        required="BEAST.base v2.7.6:FixedTreeAnalysis v0.0.2:BEAST_CLASSIC v1.6.3" version="2.7">
 
     <!-- Maps -->
     <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
@@ -42,7 +65,7 @@
 
 <!-- MODEL SETUPS -->
     <!-- Set universal models -->
-    <siteModel id="treeSiteModel" spec="fixedtreeanalysis.evolution.sitemodel.FixedSiteModel">
+    <!-- <siteModel id="treeSiteModel" spec="fixedtreeanalysis.evolution.sitemodel.FixedSiteModel">
         <parameter id="RealParameter.0" spec="parameter.RealParameter" estimate="false" lower="0.0" name="mutationRate" upper="1.0">1.0</parameter>
         <parameter id="RealParameter.1" spec="parameter.RealParameter" lower="0.0" name="shape" upper="0.0">1.0</parameter>
         <parameter id="RealParameter.2" spec="parameter.RealParameter" lower="0.0" name="proportionInvariant" upper="0.0">0.0</parameter>
@@ -51,7 +74,7 @@
 
     <branchRateModel id="treeClock" spec="fixedtreeanalysis.evolution.branchratemodel.FixedClockModel">
         <parameter id="RealParameter.3" spec="parameter.RealParameter" estimate="false" name="clock.rate">1.0</parameter>
-    </branchRateModel>
+    </branchRateModel> -->
 
     <siteModel id="traitSiteModel" spec="SiteModel" gammaCategoryCount="1">
         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
@@ -91,14 +114,6 @@
                     <distribution id="FixedTreeModel.t:tree_$(n)" spec="fixedtreeanalysis.evolution.tree.FixedTreeDistribution" tree="@tree_$(n)"/>
                 </plate>
                 <!-- Universal priors for tissue rate parameters -->
-                <prior id="nonZeroRatePrior.s:tissue" name="distribution">
-                    <x id="nonZeroRates.s:tissue" spec="beast.base.evolution.Sum">
-                        <arg idref="rateIndicator.s:tissue"/>
-                    </x>
-                    <distr id="Poisson.0" spec="distribution.Poisson" offset="10">
-                        <parameter id="RealParameter.10" spec="parameter.RealParameter" estimate="false" name="lambda">0.693</parameter>
-                    </distr>
-                </prior>
                 <prior id="relativeGeoRatesPrior.s:tissue" name="distribution" x="@relativeGeoRates.s:tissue">
                     <Gamma id="Gamma.2" name="distr">
                         <parameter id="RealParameter.8" spec="parameter.RealParameter" estimate="false" name="alpha">1.0</parameter>
@@ -118,10 +133,10 @@
                 <!-- Composite likelihoods for each dataset -->
                 <plate var="n" range="&range;">
                     <!-- Tree likelihood (FAKE) -->    
-                    <distribution id="treeLikelihood_$(n)" spec="fixedtreeanalysis.evolution.likelihood.FixedTreeLikelihood" data="@alignment_$(n)" tree="@tree_$(n)">
+                    <!-- <distribution id="treeLikelihood_$(n)" spec="fixedtreeanalysis.evolution.likelihood.FixedTreeLikelihood" data="@alignment_$(n)" tree="@tree_$(n)">
                         <siteModel idref="treeSiteModel"/>
                         <branchRateModel idref="treeClock"/>
-                    </distribution>
+                    </distribution> -->
                     <!-- Trait likelihood -->
                     <distribution id="traitLikelihood_$(n)" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@tree_$(n)">
                         <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0 0 0" estimate="false"/>
@@ -143,7 +158,7 @@
             <log idref="likelihood"/>
             <log idref="prior"/>
             <plate var="n" range="&range;">
-                <log idref="treeLikelihood_$(n)"/>
+                <!-- <log idref="treeLikelihood_$(n)"/> -->
                 <log idref="traitLikelihood_$(n)"/>
             </plate>
             <log idref="rateIndicator.s:tissue"/>

@@ -7,7 +7,7 @@ file_dir="fileDir=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metast
 output_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/machina_sims_proper_nested_sampling_5_23_24"
 input_xml="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/proper_nested_sampling_machina_sims.xml"
 
-models=(sym)
+models=(threeRates)
 # models=(sym asym oneRate threeRates)
 
 for model in $models; do
@@ -26,11 +26,11 @@ for model in $models; do
         num_rates="numRates=110"
     elif [[ "$model" == "oneRate" ]]; then
         symmetric="symmetric=true"
-        spec="metastabayes.substitutionmodel.OneRateAllTissues"
+        spec="traitModelSpec=metastabayes.substitutionmodel.OneRateAllTissues"
         num_rates="numRates=1"
     elif [[ "$model" == "threeRates" ]]; then
         symmetric="symmetric=false"
-        spec="metastabayes.substitutionmodel.ThreeRatesForSeedingRoutes"
+        spec="traitModelSpec=metastabayes.substitutionmodel.ThreeRatesForSeedingRoutes"
         num_rates="numRates=3"
     fi
 
