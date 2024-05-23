@@ -92,7 +92,7 @@
 
 <!-- MCMC -->
     <!-- Nested sampling MCMC run definition-->
-    <run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="1" subChainLength="10000" epsilon="1e-10">
+    <run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="10" subChainLength="10000" epsilon="1e-10">
         <!-- Set run state parameters -->
         <state id="state" spec="State" storeEvery="5000">
             <!-- Individual states for each dataset -->
