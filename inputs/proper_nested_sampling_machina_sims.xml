@@ -27,13 +27,13 @@
     <!-- Individual input datasets -->
     <plate var="n" range="&range;">
 
-        <stateNode id="tree_$(n)" spec="feast.fileio.TreeFromNewickFile" adjustTipHeights="false" IsLabelledNewick="true" fileName="$(n)_reformatted.nwk">
-                <taxa id="alignment_$(n)" spec="feast.fileio.AlignmentFromFasta" fileName="$(n).fasta"/>
+        <stateNode id="tree_$(n)" spec="feast.fileio.TreeFromNewickFile" adjustTipHeights="false" IsLabelledNewick="true" fileName="$(fileDir)/$(n)_reformatted.nwk">
+                <taxa id="alignment_$(n)" spec="feast.fileio.AlignmentFromFasta" fileName="$(fileDir)/$(n).fasta"/>
                 <taxonset id="taxonset_$(n)" spec="TaxonSet" alignment="@alignment_$(n)"/>
         </stateNode>
 
         <data id="tissue_$(n)" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
-            <traitSet id="traitset_$(n)" spec="feast.fileio.TraitSetFromXSV" fileName="$(n)_tips_only.csv" taxa="@taxonset_$(n)" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
+            <traitSet id="traitset_$(n)" spec="feast.fileio.TraitSetFromXSV" fileName="$(fileDir)/$(n)_tips_only.csv" taxa="@taxonset_$(n)" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
             <userDataType idref="codeMap"/>
         </data>
 
