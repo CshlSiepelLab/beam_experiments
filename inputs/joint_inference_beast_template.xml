@@ -82,7 +82,12 @@
             <!-- The origin is the start of the population process (see Stadler2013), i.e. in most applications the time that passed
              from the start of the experiment until the cells are sequenced. Here this is in h. -->
             <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="REPLACE_TIME.0001">REPLACE_TIME.001</parameter>
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="1" name="stateNode">1.0</parameter>
+
+            <!-- tissue rates for oneRate model -->
+            <!-- <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="1" name="stateNode">1.0</parameter> -->
+            <!-- tissue rates for asym model-->
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="REPLACE_NUM_TISSUE_RATES" name="stateNode">1.0</parameter>
+
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>
         
@@ -151,7 +156,8 @@
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
                         <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
-                        <substModel id="svs.s:tissue" spec="metastabayes.substitutionmodel.OneRateAllTissues" rates="@relativeGeoRates.s:tissue" rateIndicator="true" symmetric="true">
+                        <!-- <substModel id="svs.s:tissue" spec="metastabayes.substitutionmodel.OneRateAllTissues" rates="@relativeGeoRates.s:tissue" rateIndicator="true" symmetric="true"> -->
+                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rates="@relativeGeoRates.s:tissue" rateIndicator="true" symmetric="false">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
                                 <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="REPLACE_NUM_TISSUES" name="frequencies">REPLACE_TISSUE_FREQUENCIES</parameter>
                             </frequencies>
