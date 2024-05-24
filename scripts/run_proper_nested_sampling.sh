@@ -7,15 +7,14 @@ file_dir="fileDir=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metast
 output_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/machina_sims_proper_nested_sampling_5_23_24"
 input_xml="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/proper_nested_sampling_machina_sims.xml"
 
-models=(threeRates)
-# models=(sym asym oneRate threeRates)
+models=(sym asym oneRate threeRates)
 
-for model in $models; do
+for model in ${models[@]}; do
     mkdir -p $output_dir/$model
     cp $input_xml $output_dir/$model
 done
 
-for model in $models; do
+for model in ${models[@]}; do
     if [[ "$model" == "sym" ]]; then
         symmetric="symmetric=true"
         spec="traitModelSpec=beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel"
@@ -34,11 +33,11 @@ for model in $models; do
         num_rates="numRates=3"
     fi
 
-    java -jar $metastabayes_jar -overwrite -working \
+    echo -e "java -jar $metastabayes_jar -overwrite -working \
     -D "$input_names" \
     -D "$file_dir" \
     -D "$spec" \
     -D "$symmetric" \
     -D "$num_rates" \
-    $output_dir/$model/proper_nested_sampling_machina_sims.xml > $output_dir/$model/${model}_terminal.log
+    $output_dir/$model/proper_nested_sampling_machina_sims.xml > $output_dir/$model/${model}_terminal.log" >> $output_dir/parallel.txt
 done

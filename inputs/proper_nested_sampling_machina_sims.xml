@@ -174,14 +174,14 @@
             <log idref="prior"/>
         </logger>
 
-        <!-- <logger id="treeWithTraitLogger.tissue" spec="Logger" fileName="$(filebase)_tissues.trees" logEvery="1000" mode="tree">
+        <logger id="treeWithTraitLogger.tissue" spec="Logger" fileName="$(filebase)_tissues.trees" logEvery="1000" mode="tree">
             <plate var="n" range="&range;">
                 <log id="treeWithTraitLoggerItem_$(n)" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@tree_$(n)">
                     <metadata idref="posterior"/>
                     <metadata idref="traitLikelihood_$(n)"/>
                 </log>
             </plate>
-        </logger> -->
+        </logger>
 
         <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
     </run>
