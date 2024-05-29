@@ -5,9 +5,9 @@
 newick_file=$1
 tissues_tsv_file=$2
 
-# # testing
-# newick_file="seed2.nwk"
-# tissues_tsv_file="seed2.tsv"
+# # # testing
+# newick_file="machina_sims_proper_nested_sampling_5_29_24/m8/mS/seed5.nwk"
+# tissues_tsv_file="machina_sims_proper_nested_sampling_5_29_24/m8/mS/seed5.tsv"
 
 # get all tip names from the newick file by pattern matching for newick with only tip names and all branch lengths
 tip_names=$(grep -o '[,(][^,:]*:' $newick_file | tr -d ',:(')

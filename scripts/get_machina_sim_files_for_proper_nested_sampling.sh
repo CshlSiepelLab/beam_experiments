@@ -3,47 +3,36 @@
 ### Basic bash scripting to find and format all machina sim files to run nested sampling across a dataset
 
 # user input desired working dir
-working_dir="machina_sims_proper_nested_sampling_5_23_24"
+working_dir="machina_sims_proper_nested_sampling_5_29_24"
 mkdir -p $working_dir
 
-# find all sim dirs based on existing location
-sim_dirs=$(find machina_data/sims/*/ -type d -name seed*)
+# copy machina sims to working dir
+cp -r machina_data/sims/* $working_dir/
 
-# set empty string for beast command line string
-sim_names_string=""
+# remove unnecessary files
+find $working_dir/ -type f -name "*_labeled_true_tree.nwk" -delete
+find $working_dir/ -type f -name "*.tree" -delete
+find $working_dir/ -type f -name "*.vertex.labeling" -delete
 
-i=0
-
-# main file processing steps here
-for dir in $sim_dirs; do
-# make new name id for sim to condense dir string
-m5_or_m8=$(echo $dir | cut -d'/' -f3 | cut -d'_' -f2)
-seed=$(echo $dir | cut -d'/' -f4)
-new_name=$m5_or_m8"_"$seed
-
-# get newick and tissues files for each sim
-newick=$dir/*_unlabeled_true_tree.nwk
-tissues=$dir/*_tissues.tsv
-
-# copy newick and tissues files to working dir with new name
-new_newick=$working_dir/$new_name".nwk"
-new_tissues=$working_dir/$new_name".tsv"
-cp $newick $new_newick
-cp $tissues $new_tissues
+# rename files to seed only .nwk and .tsv
+files=$(find $working_dir/ -type f -name "*_unlabeled_true_tree.nwk")
+for file in $files; do dir=$(dirname $file); echo $dir; seed=$(echo $file | cut -d'_' -f 9); echo $seed; mv $file $dir/$seed.nwk; done
+files=$(find $working_dir/ -type f -name "*.tsv")
+for file in $files; do dir=$(dirname $file); echo $dir; seed=$(echo $file | cut -d'_' -f 9); echo $seed; mv $file $dir/$seed.tsv; done
 
 # call feast file io reformatting for each sim
-./scripts/setup_feast_io_files_nested_sampling.sh $new_newick $new_tissues
-
-# add to string input for beast command line of all sim names
-if [[ "$sim_names_string" == "" ]]; then
-    sim_names_string+="$new_name"
-else
-    sim_names_string+=",$new_name"
-fi
-
-# count the number of sims
-i=$(( i+1 ))
+files=$(find $working_dir/ -type f -name "*.nwk")
+for file in $files; do
+nwk=$file
+tsv=${file//.nwk/.tsv}
+./scripts/setup_feast_io_files_nested_sampling.sh $nwk $tsv
 done
 
-echo "inputNames=\"$sim_names_string\"" > $working_dir/commandline_input.txt
-echo "$i sims processed"
+# add to string input for beast command line of all sim names
+files=$(find $working_dir/ -type f -name "*_reformatted.nwk")
+sim_string=""
+for file in $files; do
+sim_name=$(echo $file | cut -d'_' -f 8 | cut -d'/' -f 2-4)
+sim_string+="$sim_name,"
+done
+
