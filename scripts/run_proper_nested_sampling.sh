@@ -11,10 +11,9 @@ unset input_names
 declare -A input_names
 input_names["mS"]="inputNames=m5/mS/seed2,m5/mS/seed8,m5/mS/seed9,m5/mS/seed10,m5/mS/seed5,m5/mS/seed0,m5/mS/seed12,m5/mS/seed4,m5/mS/seed3,m5/mS/seed7,m8/mS/seed2,m8/mS/seed8,m8/mS/seed9,m8/mS/seed10,m8/mS/seed5,m8/mS/seed0,m8/mS/seed12,m8/mS/seed4,m8/mS/seed3,m8/mS/seed7"
 input_names["S"]="inputNames=m5/S/seed62,m5/S/seed17,m5/S/seed81,m5/S/seed23,m5/S/seed49,m5/S/seed25,m5/S/seed40,m5/S/seed35,m5/S/seed31,m5/S/seed32,m8/S/seed54,m8/S/seed37,m8/S/seed2,m8/S/seed23,m8/S/seed69,m8/S/seed5,m8/S/seed0,m8/S/seed12,m8/S/seed35,m8/S/seed31"
-input_names["M"]="inputNames=m5/M/seed545,m5/M/seed565,m5/M/seed512,m5/M/seed473,m5/M/seed76,m5/M/seed694,m5/M/seed209,m5/M/seed534,m5/M/seed865,m5/M/seed907,m8/M/seed239,m8/M/seed45,m8/M/seed243,m8/M/seed76,m8/M/seed172,m8/M/seed35,m8/M/seed19,m8/M/seed216,m8/M/seed7,m8/M/seed24"
-input_names["R"]="inputNames=m5/R/seed538,m5/R/seed955,m5/R/seed17,m5/R/seed518,m5/R/seed571,m5/R/seed981,m5/R/seed2155,m5/R/seed247,m5/R/seed1140,m5/R/seed950,m8/R/seed30342,m8/R/seed9,m8/R/seed1070,m8/R/seed157,m8/R/seed905,m8/R/seed10157,m8/R/seed383,m8/R/seed10046,m8/R/seed981,m8/R/seed394"
-
-
+input_names["M"]="inputNames=m5/M/seed545,m5/M/seed565,m5/M/seed512,m5/M/seed473,m5/M/seed76,m5/M/seed694,m5/M/seed209,m5/M/seed534,m5/M/seed865,m5/M/seed907,m8/M/seed239,m8/M/seed45,m8/M/seed243,m8/M/seed76,m8/M/seed172,m8/M/seed35,m8/M/seed19,m8/M/seed216,m8/M/seed7"
+# omit R m8_seed394 for bug, return to fix later
+input_names["R"]="inputNames=m5/R/seed538,m5/R/seed955,m5/R/seed17,m5/R/seed518,m5/R/seed571,m5/R/seed981,m5/R/seed2155,m5/R/seed247,m5/R/seed1140,m5/R/seed950,m8/R/seed30342,m8/R/seed9,m8/R/seed1070,m8/R/seed157,m8/R/seed905,m8/R/seed10157,m8/R/seed383,m8/R/seed10046,m8/R/seed981"
 
 
 migrations=(mS M S R)

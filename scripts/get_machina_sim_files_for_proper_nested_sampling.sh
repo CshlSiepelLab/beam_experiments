@@ -28,6 +28,12 @@ tsv=${file//.nwk/.tsv}
 ./scripts/setup_feast_io_files_nested_sampling.sh $nwk $tsv
 done
 
+# fix bug in tips csv
+files=$(find $working_dir -type f -name *_tips_only.csv)
+for file in $files; do
+sed -i 's/ /\n/g' $file
+done
+
 # add to string input for beast command line of all sim names
 files=$(find $working_dir/ -type f -name "*_reformatted.nwk")
 sim_string=""
