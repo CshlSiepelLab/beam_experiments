@@ -107,7 +107,7 @@ all_edits=$(echo "$REPLACE_SEQUENCES" | grep -o "value='[0-9,]*'" | sed "s/value
 num_edits=$(echo "$all_muts" | wc -w)
 proportion_edited=$(echo "scale=4; $num_edits / $num_total_target_sites" | bc)
 # scaling since editRates are all 1.0 (again not the best approach but okay for now)
-REPLACE_CLOCK_RATE=$(echo "scale=10; $proportion_edited / ($REPLACE_TIME)" | bc)
+REPLACE_CLOCK_RATE=$(echo "scale=10; ($proportion_edited / ($REPLACE_TIME)) * 10" | bc)
 
 # format template xml file
 REPLACE_SEQUENCES=$(printf '%s\n' "$REPLACE_SEQUENCES" | sed 's/[\/&]/\\&/g' | sed 's/\n//g' )
