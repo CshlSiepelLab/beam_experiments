@@ -3,6 +3,7 @@ library(ggplot2)
 library(tidyr)
 library(dplyr)
 library(tibble)
+library(reshape2)
 
 # # Specify your log file and output file
 log_file <- commandArgs(trailingOnly = TRUE)[1]
@@ -28,7 +29,7 @@ log_df <- log_df[grep("geoSubstModelLogger.relGeoRate_", names(log_df))]
 names(log_df) <- gsub("geoSubstModelLogger.relGeoRate_", "", names(log_df))
 
 # Melt the DataFrame to long format
-melted_df <- reshape2::melt(log_df)
+melted_df <- melt(log_df)
 melted_df <- separate(melted_df, variable, into = c("Source", "Recipient"), sep = "_")
 grouped_df <- melted_df %>%
   # filter(value > 0) %>%
@@ -76,6 +77,9 @@ max_value = max(na.omit(heatmap_df$value))
 if ( max_value > 1) {
   max_limit <- ceiling(max_value * 2) / 2
 }
+
+# optional to set a permanent scale bar limit
+max_limit <- 7
 
 # Create a ggplot2 heatmap
 heatmap <- ggplot(heatmap_df, aes(x = factor(colname, levels = order), y = factor(rowname, levels = order), fill=value)) +
