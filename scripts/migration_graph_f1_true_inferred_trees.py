@@ -20,27 +20,51 @@ def get_migration_counts(tree):
                 migration_counts[migration] += 1
     return migration_counts
 
-true_tree_file=sys.argv[1]
+def process_tree(filepath):
+    # set primary tissue
+    primary_tissue="P"
+    # read in tree files to ete3 tree
+    tree = Tree(filepath, format=8)
+    # set tree root to primary
+    tree.get_tree_root().name = f'0_{primary_tissue}'
+    # get counts of migration events in a dict with source_recipient tissue key and count integer value
+    counts=get_migration_counts(tree)
+    return counts
+
+def process_csv(filepath):
+    # read in csv file to dict
+    counts = {}
+    with open(filepath, 'r') as f:
+        for line in f:
+            # skip header line that typically is "source,recipient"
+            if "source" in line:
+                continue
+            source, recipient = line.strip().split(",")
+            migration = f"{source}_{recipient}"
+            if migration not in counts:
+                counts[migration] = 1
+            else:
+                counts[migration] += 1
+    return counts
+
+# user input filepaths
+true_tree_file=sys.argv[1] # can also be a csv of source to recipient connections to bypass the tree processing steps
 inferred_tree_file=sys.argv[2]
 
-# true_tree_file="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874_tissue_labeled_tree.nwk"
+true_tree_file="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/new_simulator_uniformTransitionProbs_6_6_24/mS/6016/migration_graph_seed1913716328.csv"
 # inferred_tree_file="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/machina_tree_all_tissue_labels.nwk"
 
-# set primary tissue
-primary_tissue="P"
 
-# read in tree files to ete3 tree
-true_tree = Tree(true_tree_file, format=8)
-inferred_tree = Tree(inferred_tree_file, format=8)
+# process true input file to get migration count dict
+if true_tree_file.endswith(".csv"):
+    true_counts = process_csv(true_tree_file)
+else:
+    true_counts = process_tree(true_tree_file)
 
-# set tree root to primary
-true_tree.get_tree_root().name = f'0_{primary_tissue}'
-inferred_tree.get_tree_root().name = f'0_{primary_tissue}'
+# process inferred input as tree to get migration count dict
+inferred_counts = process_tree(inferred_tree_file)
 
-# get counts of migration events in a dict with source_recipient tissue key and count integer value
-true_counts=get_migration_counts(true_tree)
-inferred_counts=get_migration_counts(inferred_tree)
-
+# compute statistics from the migration counts dicts
 # get general totals for formulas
 total_inferred = sum(inferred_counts.values())
 total_true = sum(true_counts.values())

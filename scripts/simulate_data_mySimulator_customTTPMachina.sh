@@ -6,7 +6,7 @@
 barcode_simulator_dir="../barcode_simulator/scripts/simulator"
 
 # set dir to hold all sims
-sim_dir="data/sim_data_200cellTrees_barcodes_5_27_24"
+sim_dir="data/new_simulator_uniformTransitionProbs_6_6_24"
 mkdir ${sim_dir}
 
 # make pattern directories
@@ -17,13 +17,13 @@ mkdir ${sim_dir}/pR
 
 # set migration pattern options
 migration_patterns=(0 1 2 3)
-#migration_patterns=(0)
+# migration_patterns=(3)
 
 mutation_rates=(0.005)
 
 for mutrate in ${mutation_rates[@]}; do
 for pattern in ${migration_patterns[@]}; do
-for ((i = 0; i < 5; i++)); do
+for ((i = 0; i < 20; i++)); do
 
 # make dir specific to the seed number for each sim and the migration pattern
 if (( $pattern == 0 )); then
@@ -48,7 +48,7 @@ migration_rate="1e-6"
 mutFreqThreshold=0.05
 carryingCapacity="5e4"
 driverProb="1e-7"
-num_cells_downsample=200
+num_cells_downsample=100
 
 num_sites=10
 design="RANDOM"

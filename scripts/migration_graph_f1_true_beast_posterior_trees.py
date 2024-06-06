@@ -5,6 +5,33 @@ from ete3 import Tree
 import dendropy
 from copy import deepcopy
 
+def process_tree(filepath):
+    # set primary tissue
+    primary_tissue="P"
+    # read in tree files to ete3 tree
+    tree = Tree(filepath, format=8)
+    # set tree root to primary
+    tree.get_tree_root().name = f'0_{primary_tissue}'
+    # get counts of migration events in a dict with source_recipient tissue key and count integer value
+    counts=get_migration_counts(tree)
+    return counts
+
+def process_csv(filepath):
+    # read in csv file to dict
+    counts = {}
+    with open(filepath, 'r') as f:
+        for line in f:
+            # skip header line that typically is "source,recipient"
+            if "source" in line:
+                continue
+            source, recipient = line.strip().split(",")
+            migration = f"{source}_{recipient}"
+            if migration not in counts:
+                counts[migration] = 1
+            else:
+                counts[migration] += 1
+    return counts
+
 def remove_zero_length_nodes(tree):
     for node in tree.internal_nodes():
         if node.edge_length == 0:
@@ -75,7 +102,7 @@ def calculate_metrics(true_counts, inferred_counts):
     return f1, recall, precision
 
 def main():
-    true_tree_file=sys.argv[1]
+    true_tree_file=sys.argv[1] # can also be csv of source,recipient format
     beast_trees_file=sys.argv[2]
 
     # true_tree_file="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874_tissue_labeled_tree.nwk"
@@ -85,9 +112,11 @@ def main():
     primary_tissue="P"
 
     # true counts are the same for all beast tree comparisons
-    true_tree = Tree(true_tree_file, format=8)
-    true_tree.get_tree_root().name = f'0_{primary_tissue}'
-    true_counts=get_migration_counts(true_tree)
+    # process true input file to get migration count dict
+    if true_tree_file.endswith(".csv"):
+        true_counts = process_csv(true_tree_file)
+    else:
+        true_counts = process_tree(true_tree_file)
 
     beast_tree_list = dendropy.TreeList()
     beast_tree_list.read(path=beast_trees_file, schema="nexus")
