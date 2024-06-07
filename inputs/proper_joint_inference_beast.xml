@@ -71,7 +71,7 @@
 <!-- MODEL SETUPS -->
     <!-- Set universal models -->
     <siteModel spec="treeSiteModel" id="siteModel" mutationRate="1.0" proportionInvariant="0.0" gammaCategoryCount="0">
-        <substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRate" silencingRate="0.0" editHeight="250" editDuration="250">
+        <substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRate" silencingRate="0.0" editHeight="$(generations)" editDuration="$(generations)">
             <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
         </substModel>
     </siteModel>
@@ -95,13 +95,12 @@
 
 
 <!-- MCMC -->
-    <!-- Nested sampling MCMC run definition-->
-    <run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="10" subChainLength="10000" epsilon="1e-10">
+    <run id="mcmc" spec="MCMC" chainLength="50000000">
         <!-- Set run state parameters -->
         <state id="state" spec="State" storeEvery="5000">
             <!-- Individual states for each dataset -->
             <plate var="n" range="&range;">
-                <stateNode id="tree_$(n)" spec="tidetree.tree.StartingTree" rootHeight="250" taxa="@alignment_$(n)" editHeight="250" editDuration="250" sequencesAreClustered="false">
+                <stateNode id="tree_$(n)" spec="tidetree.tree.StartingTree" rootHeight="$(generations)" taxa="@alignment_$(n)" editHeight="$(generations)" editDuration="$(generations)" sequencesAreClustered="false">
                 <trait idref="dateTrait_$(n)"/>
                 <taxonset idref="taxonset_$(n)"/>
             </plate>
@@ -123,7 +122,7 @@
                 <!-- Tree prior for each dataset-->
                 <plate var="n" range="&range;">
                     <distribution id="birthDeathSamplingModel" spec="bdsky.evolution.speciation.BirthDeathSkylineModel"
-                          conditionOnSurvival="True" tree="@tree_$(n)" origin="250.0001" contemp="true"
+                          conditionOnSurvival="True" tree="@tree_$(n)" origin="$(generations).0001" contemp="true"
                           birthRate="@birthRate" deathRate="@deathRate" rho="1.0"
                           samplingRate="0" >
                     </distribution>
@@ -167,7 +166,7 @@
                 <!-- Composite likelihoods for each dataset -->
                 <plate var="n" range="&range;">
                     <!-- Tree likelihood -->    
-                    <distribution id="treeLikelihood_$(n)" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" data="@alignment_$(n)" origin="250.0001" tree="@tree_$(n)" siteModel="@treeSiteModel">
+                    <distribution id="treeLikelihood_$(n)" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" data="@alignment_$(n)" origin="$(generations).0001" tree="@tree_$(n)" siteModel="@treeSiteModel">
                         <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@treeClockRate"/>
                     </distribution>
                     <!-- Trait likelihood -->
@@ -213,9 +212,14 @@
             <log idref="likelihood"/>
             <log idref="prior"/>
             <plate var="n" range="&range;">
-                <!-- <log idref="treeLikelihood_$(n)"/> -->
+                <log idref="treeLikelihood_$(n)"/>
                 <log idref="traitLikelihood_$(n)"/>
+                <log id="treeHeight" spec="beast.base.evolution.tree.TreeHeightLogger" tree="@tree_$(n)"/>
             </plate>
+            <log idref="editRate"/>
+            <log idref="treeClockRate"/>
+            <log idref="birthRate"/>
+            <log idref="deathRate"/>
             <log idref="rateIndicator.s:tissue"/>
             <log idref="relativeGeoRates.s:tissue"/>
             <log idref="traitClockRate.c:tissue"/>
