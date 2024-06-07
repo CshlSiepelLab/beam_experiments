@@ -6,7 +6,7 @@
 barcode_simulator_dir="../barcode_simulator/scripts/simulator"
 
 # set dir to hold all sims
-sim_dir="data/new_simulator_uniformTransitionProbs_6_6_24"
+sim_dir="data/new_simulator_unifromTransitionProbs_6_6_24"
 mkdir ${sim_dir}
 
 # make pattern directories
@@ -42,8 +42,8 @@ outprefix="${HOME}/bayesian_phylogenetic_metastasis/${sim_dir}/${pattern_dir}/${
 mkdir ${outprefix}
 
 # set simulator parameters
-num_cells=-1
-max_anatomical_sites=5
+num_generations=250
+max_anatomical_sites=-1
 migration_rate="1e-6"
 mutFreqThreshold=0.05
 carryingCapacity="5e4"
@@ -74,8 +74,8 @@ transition_probs_file\t${transition_probs}" > ${run_conditions_file}
 # run simulator
 echo "Running barcode simulator with seed ${seed} and migration pattern ${pattern}"
 echo "$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample}" >> ${run_conditions_file}
-timeout 5m $barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
-# timeout 5m $barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} -M ${transition_probs} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
+timeout 5m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
+# timeout 5m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} -M ${transition_probs} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
 
 
 # run barcode simulator to overlay barcode data for machina simulator tree and tissues output

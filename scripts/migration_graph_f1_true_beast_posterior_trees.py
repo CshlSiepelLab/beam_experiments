@@ -4,6 +4,8 @@ import sys
 from ete3 import Tree
 import dendropy
 from copy import deepcopy
+import numpy as np
+from arviz import hdi
 
 def process_tree(filepath):
     # set primary tissue
@@ -101,47 +103,69 @@ def calculate_metrics(true_counts, inferred_counts):
         f1 = 2 * ((precision * recall) / (precision + recall))
     return f1, recall, precision
 
-def main():
-    true_tree_file=sys.argv[1] # can also be csv of source,recipient format
-    beast_trees_file=sys.argv[2]
 
-    # true_tree_file="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/tree_seed24874_tissue_labeled_tree.nwk"
-    # beast_trees_file="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/joint_inference_beast_tissues.trees"
+true_tree_file=sys.argv[1] # can also be csv of source,recipient format
+beast_trees_file=sys.argv[2]
 
-    burnin_percent=0.1
-    primary_tissue="P"
+# true_tree_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_migration_inference/asymTissueModel_more_informative_sims_joint_inference_cassiopeia_machina_5_24_24/mS/1983/cell_tree_seed1983_tissue_labeled_tree.nwk"
+# beast_trees_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_migration_inference/asymTissueModel_more_informative_sims_joint_inference_cassiopeia_machina_5_24_24/mS/1983/joint_inference_beast_combined_tissues.trees"
 
-    # true counts are the same for all beast tree comparisons
-    # process true input file to get migration count dict
-    if true_tree_file.endswith(".csv"):
-        true_counts = process_csv(true_tree_file)
-    else:
-        true_counts = process_tree(true_tree_file)
+burnin_percent=0.1
+primary_tissue="P"
 
-    beast_tree_list = dendropy.TreeList()
-    beast_tree_list.read(path=beast_trees_file, schema="nexus")
+# true counts are the same for all beast tree comparisons
+# process true input file to get migration count dict
+if true_tree_file.endswith(".csv"):
+    true_counts = process_csv(true_tree_file)
+else:
+    true_counts = process_tree(true_tree_file)
 
-    num_beast_trees = len(beast_tree_list)
-    num_discard = round(num_beast_trees * burnin_percent)
-    beast_tree_list = beast_tree_list[num_discard:]
+beast_tree_list = dendropy.TreeList()
+beast_tree_list.read(path=beast_trees_file, schema="nexus")
 
-    posteriors = []
-    f1_scores=[]
+num_beast_trees = len(beast_tree_list)
+num_discard = round(num_beast_trees * burnin_percent)
+beast_tree_list = beast_tree_list[num_discard:]
 
-    for tree in beast_tree_list:
-        posteriors.append(float(tree.annotations.get_value('posterior')))
-        remove_zero_length_nodes(tree)
-        inferred_tree = dendropy_beast_to_ete_newick_with_strict_locations(tree)
+posteriors = []
+f1_scores=[]
+posterior_inferred_counts = {}
 
-        # calculate beast counts for each tree, get metrics, and weight by posterior probability
-        inferred_tree.get_tree_root().name = f'0_{primary_tissue}'
-        inferred_counts=get_migration_counts(inferred_tree)
+for tree in beast_tree_list:
+    posterior = float(tree.annotations.get_value('posterior'))
+    posteriors.append(posterior)
+    remove_zero_length_nodes(tree)
+    inferred_tree = dendropy_beast_to_ete_newick_with_strict_locations(tree)
 
-        f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
-        f1_scores.append(f1)
+    # calculate beast counts for each tree, get metrics, and weight by posterior probability
+    inferred_tree.get_tree_root().name = f'0_{primary_tissue}'
+    inferred_counts=get_migration_counts(inferred_tree)
 
-    avg_posterior_f1 = sum(f1_scores) / len(f1_scores)
-    print(f"F1 score: {avg_posterior_f1}")
+    f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
+    f1_scores.append(f1)
 
-if __name__ == "__main__":
-    main()
+    # make dict of psoterior value to dict of migration graph route counts for 95% CI calculation later
+    match_true_graph = inferred_counts == true_counts
+    posterior_inferred_counts[posterior] = match_true_graph
+
+avg_posterior_f1 = sum(f1_scores) / len(f1_scores)
+print(f"F1 score: {avg_posterior_f1}")
+
+
+### Credible interval
+# # for equal tailed credible interval
+# lower, upper = np.percentile(posteriors, [2.5, 97.5])
+# inferred_counts_95ci = {k: v for k, v in sorted_posterior_inferred_counts.items() if lower < k < upper}
+
+# for highest posterior density credible interval
+hpd_interval = hdi(np.array(posteriors), hdi_prob=0.95)
+inferred_counts_95ci = {k: v for k, v in posterior_inferred_counts.items() if hpd_interval[0] <= k <= hpd_interval[1]}
+
+num_perfect_graphs = sum(inferred_counts_95ci.values())
+print(f"Number of perfect graphs in 95% HPDI CI: {num_perfect_graphs}")
+
+found_perfect_in_95ci = False
+if num_perfect_graphs > 0:
+    found_perfect_in_95ci = True
+print(f"Found a perfect graph in 95% HPDI CI: {found_perfect_in_95ci}")
+
