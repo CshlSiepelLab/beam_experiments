@@ -45,21 +45,22 @@ for indel_matrix_file in $files; do
     echo -e $all_seqs > ${outputdir}/${outname}.fasta
     all_names+="${outname},"
 done
+all_names=${all_names%,}
 
 ################################################
 ### Run BEAST joint inference across all files
 ################################################
 # specify tissue CTMC model
-model="asym"
+model="oneRate"
 
 if [[ "$model" == "sym" ]]; then
     symmetric="true"
     spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel"
-    num_rates="55"
+    num_rates="190"
 elif [[ "$model" == "asym" ]]; then
     symmetric="false"
     spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel"
-    num_rates="110"
+    num_rates="380"
 elif [[ "$model" == "oneRate" ]]; then
     symmetric="true"
     spec="metastabayes.substitutionmodel.OneRateAllTissues"
@@ -70,6 +71,7 @@ elif [[ "$model" == "threeRates" ]]; then
     num_rates="3"
 fi
 
+metastabayes_jar="/grid/siepel/home_norepl/staklins/metastabayes/metastabayes.jar"
 xml="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/proper_joint_inference_beast.xml"
 beast_dir="${outputdir}/beast"
 mkdir $beast_dir
@@ -84,12 +86,12 @@ do
   cp $xml $iter_xml
   time java -Xmx5g -jar ${metastabayes_jar} -overwrite -working \
     -D "inputNames=${all_names}" \
-    -D "generations=${num_generations} \
-    -D "fileDir=${file_dir}" \
+    -D "generations=${num_generations}" \
+    -D "fileDir=${outputdir}" \
     -D "traitModelSpec=${spec}" \
     -D "symmetric=${symmetric}" \
     -D "numRates=${num_rates}" \
-    $iter_xml > $beast_log &
+    $iter_xml > $beast_log
 done
 
 
