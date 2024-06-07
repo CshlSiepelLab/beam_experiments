@@ -31,6 +31,10 @@ treeannotator_path=$(which treeannotator)
 logcombiner_path=$(which logcombiner)
 metastabayes_jar="../metastabayes/metastabayes.jar"
 
+# get tissue labeled true tree
+python scripts/format_add_tissues_to_newick.py ${true_tree} ${true_tissues}
+true_tissue_tree=${dir}/*_tissue_labeled_tree.nwk
+
 # get working dir
 dir=$(dirname "$sim_matrix")
 
@@ -118,10 +122,6 @@ mv $combined_trees $beast_posterior_trees
 
 mcc_tree=$(echo "$beast_posterior_trees" | sed 's/.trees/.tree/')
 ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${beast_posterior_trees} ${mcc_tree}
-
-# get tissue labeled true tree
-python scripts/format_add_tissues_to_newick.py ${true_tree} ${true_tissues}
-true_tissue_tree=${dir}/*_tissue_labeled_tree.nwk
 
 # get random and consensus tissue labeled trees
 python scripts/consensus_random_tissue_trees.py ${cas_tree} ${leaf_tissues}

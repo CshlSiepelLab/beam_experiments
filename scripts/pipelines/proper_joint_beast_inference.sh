@@ -1,6 +1,7 @@
 #!/bin/bash
 
-inputdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/new_simulator_unifromTransitionProbs_6_6_24"
+inputdir=$1
+# inputdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/new_simulator_unifromTransitionProbs_6_6_24"
 
 outputdir="${inputdir}/proper_joint_beast_inference"
 mkdir $outputdir
@@ -22,10 +23,6 @@ for indel_matrix_file in $files; do
     dirname2=$(dirname $dirname)
     outname2=$(basename $dirname2)
     outname=${outname2}_${outname1}
-
-    echo $indel_matrix_file
-    echo $tissues_tsv_file
-    echo $outname
 
     # write tip traits to new csv
     sed 's/ /,/g' $tissues_tsv_file > ${outputdir}/${outname}_tip_tissues.csv
@@ -77,7 +74,7 @@ beast_dir="${outputdir}/beast"
 mkdir $beast_dir
 
 beast_logs=()
-num_chains=1
+num_chains=5
 for ((i=1; i<=$num_chains; i++))
 do
   beast_log="${beast_dir}/joint_inference_beast_terminal_time_${i}.log"
@@ -91,7 +88,54 @@ do
     -D "traitModelSpec=${spec}" \
     -D "symmetric=${symmetric}" \
     -D "numRates=${num_rates}" \
-    $iter_xml > $beast_log
+    $iter_xml > $beast_log &
 done
+
+wait
+
+# combine all runs for each sim trees and the overall log files
+treeannotator_path=$(which treeannotator)
+logcombiner_path=$(which logcombiner)
+
+# setup stats files
+stats_file="${outputdir}/migration_graph_stats.csv"
+touch $stats_file
+echo "migration_topology,seed,beast_mcc_f1,beast_posterior_f1,beast_posterior_95ci_binary,true_beast_mcc_f1,true_beast_posterior_f1,true_beast_posterior_95ci_binary" > $stats_file
+
+# combine tree files
+trees_files=$(find $beast_dir -type f -name joint_inference_beast_1_tissues_*.trees)
+for file in $trees_files; do
+    name=$(basename $file | cut -d'_' -f6-7 | sed 's/.trees//g')
+    name_trees_files=$(find $beast_dir -type f -name joint_inference_beast_*_tissues_${name}.trees)
+    combined_trees="${beast_dir}/${name}_tissues_combined.trees"
+    $logcombiner_path $name_trees_files -o $combined_trees
+    mcc_tree=$(echo "$combined_trees" | sed 's/.trees/.tree/')
+    ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${combined_trees} ${mcc_tree}
+
+    # get migration graph performance statistics
+    migration_topology=$(echo $name | cut -d'_' -f1)
+    seed=$(echo $name | cut -d'_' -f2)
+    true_tissue_tree="${dirname}/${migration_topology}/${seed}/*_tissue_labeled_tree.nwk"
+    true_migration_graph="${dirname}/${migration_topology}/${seed}/migration_graph_seed*.csv"
+    # stats for true tree
+    python scripts/format_treeannotator_nexus_to_newick.py ${mcc_tree}
+    beast_mcc_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${mcc_tree}.nwk | awk -F' ' '{print $3}')
+    # calculate the same F1 score but for sampling all trees from the beast posterior with F1 score weighted by posterior probability
+    beast_posterior=$(python scripts/migration_graph_f1_true_beast_posterior_trees.py ${true_tissue_tree} ${combined_trees})
+    beast_posterior_f1=$(echo $beast_posterior | awk -F' ' '{print $3}')
+    beast_posterior_95ci_binary=$(echo $beast_posterior | awk -F' ' '{print $NF}')
+    # stats for true graph
+    true_beast_mcc_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_migration_graph} ${mcc_tree}.nwk | awk -F' ' '{print $3}')
+    true_beast_posterior=$(python scripts/migration_graph_f1_true_beast_posterior_trees.py ${true_migration_graph} ${combined_trees})
+    true_beast_posterior_f1=$(echo $true_beast_posterior | awk -F' ' '{print $3}')
+    true_beast_posterior_95ci_binary=$(echo $true_beast_posterior | awk -F' ' '{print $NF}')
+    echo -e "${migration_topology},${seed},${beast_mcc_f1},${beast_posterior_f1},${beast_posterior_95ci_binary},${true_beast_mcc_f1},${true_beast_posterior_f1},${true_beast_posterior_95ci_binary}" >> $stats_file
+done
+
+# combine log files
+log_files=$(find $beast_dir -type f -name *.log)
+combined_log="${beast_dir}/joint_inference_beast_combined.log"
+$logcombiner_path $log_files -o $combined_log
+
 
 
