@@ -94,7 +94,7 @@
 
 
 <!-- MCMC -->
-    <run id="mcmc" spec="MCMC" chainLength="10000">
+    <run id="mcmc" spec="MCMC" chainLength="100000000">
         <!-- Set run state parameters -->
         <state id="state" spec="State" storeEvery="5000">
             <!-- Individual states for each dataset -->

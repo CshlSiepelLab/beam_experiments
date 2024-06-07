@@ -98,7 +98,7 @@ treeannotator_path=$(which treeannotator)
 logcombiner_path=$(which logcombiner)
 
 # setup stats files
-stats_file="${outputdir}/migration_graph_stats.csv"
+stats_file="${outputdir}/proper_joint_inference_accuracy.csv"
 touch $stats_file
 echo "migration_topology,seed,beast_mcc_f1,beast_posterior_f1,beast_posterior_95ci_binary,true_beast_mcc_f1,true_beast_posterior_f1,true_beast_posterior_95ci_binary" > $stats_file
 
