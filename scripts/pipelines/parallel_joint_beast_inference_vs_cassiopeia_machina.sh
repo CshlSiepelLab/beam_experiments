@@ -29,11 +29,14 @@ commands+=("$cmd")
 fi
 done
 
+job_logs_dir="${pipeline_run_name}/job_logs"
+mkdir $job_logs_dir
+
 i=0
 for command in "${commands[@]}"
 do
   # echo "${command}" >> "${pipeline_run_name}/parallel.txt"
-  cmd_file="${pipeline_run_name}/parallel${i}.sh"
+  cmd_file="${job_logs_dir}/parallel${i}.sh"
   echo "#!/bin/bash" > $cmd_file
   echo "${command}" >> $cmd_file
   chmod u+x $cmd_file
@@ -44,4 +47,3 @@ done
 # parallel -j 29 < "${pipeline_run_name}/parallel.txt"
 # rm "${pipeline_run_name}/parallel.txt"
 
-rm ${pipeline_run_name}/parallel*
