@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # inputdir=$1
-inputdir="nested_sampling_uniform_vs_non_uniform_pR_rates_6_12_24/uniform_pR_6_6_24"
+inputdir="nested_sampling_uniform_vs_non_uniform_pR_rates_6_12_24/non_uniform_pR_6_6_24"
 
 outputdir="${inputdir}/proper_joint_beast_inference"
 mkdir $outputdir
@@ -78,7 +78,7 @@ cp $xml $model_xml
 
 # replace necessary portions of the xml to run nested sampling
 existing_mcmc='<run id="mcmc" spec="MCMC"'
-replace_mcmc='<run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="10" subChainLength="10000" epsilon="1e-10">'
+replace_mcmc='<run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
 sed -i "s|$existing_mcmc.*|$replace_mcmc|" "$model_xml"
 
 existing_logger='<logger id="tracelog" spec="Logger'
