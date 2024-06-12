@@ -32,8 +32,10 @@ logcombiner_path=$(which logcombiner)
 metastabayes_jar="../metastabayes/metastabayes.jar"
 
 # get tissue labeled true tree
+conda activate compare_trees
 python scripts/format_add_tissues_to_newick.py ${true_tree} ${true_tissues}
 true_tissue_tree=${dir}/*_tissue_labeled_tree.nwk
+conda deactivate
 
 # get working dir
 dir=$(dirname "$sim_matrix")

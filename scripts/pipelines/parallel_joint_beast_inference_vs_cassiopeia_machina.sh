@@ -40,4 +40,4 @@ done
 # parallel -j 29 < "${pipeline_run_name}/parallel.txt"
 # rm "${pipeline_run_name}/parallel.txt"
 
-rm "${pipeline_run_name}/parallel*.sh"
+rm ${pipeline_run_name}/parallel*

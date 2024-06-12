@@ -51,7 +51,7 @@ def process_csv(filepath):
 true_tree_file=sys.argv[1] # can also be a csv of source to recipient connections to bypass the tree processing steps
 inferred_tree_file=sys.argv[2]
 
-true_tree_file="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/new_simulator_uniformTransitionProbs_6_6_24/mS/6016/migration_graph_seed1913716328.csv"
+# true_tree_file="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/new_simulator_uniformTransitionProbs_6_6_24/mS/6016/migration_graph_seed1913716328.csv"
 # inferred_tree_file="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/machina_tree_all_tissue_labels.nwk"
 
 
