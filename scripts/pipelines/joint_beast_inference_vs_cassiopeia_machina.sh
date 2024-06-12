@@ -33,7 +33,7 @@ metastabayes_jar="../metastabayes/metastabayes.jar"
 
 # get tissue labeled true tree
 conda activate compare_trees
-# python scripts/format_add_tissues_to_newick.py ${true_tree} ${true_tissues}
+python scripts/format_add_tissues_to_newick.py ${true_tree} ${true_tissues}
 true_tissue_tree=${directory}/*_tissue_labeled_tree.nwk
 conda deactivate
 
@@ -42,15 +42,15 @@ dir=$(dirname "$sim_matrix")
 
 # run cassiopeia-greedy on matrix
 conda activate simulate
-# python scripts/cassiopeia_greedy.py $sim_matrix
+python scripts/cassiopeia_greedy.py $sim_matrix
 
 # run machina on cassiopeia-greedy inferred tree
 # Prep cas tree for MACHINA input files
 cas_tree="${dir}/cassiopeia_greedy_inferred.nwk"
 machina_dir="${dir}/machina"
 primary_tissue="P"
-# mkdir ${machina_dir}
-# python ./scripts/machina/prep_machina.py ${cas_tree} ${machina_dir} ${primary_tissue} ${leaf_tissues}
+mkdir ${machina_dir}
+python ./scripts/machina/prep_machina.py ${cas_tree} ${machina_dir} ${primary_tissue} ${leaf_tissues}
 conda deactivate
 
 # Run MACHINA
@@ -59,7 +59,7 @@ module load Gurobi
 conda activate machina
 
 #sed -i '0,/0/s/0/GL/' ${machina_dir}/*.tree     # Prevents MACHINA segmentation fault due to input formatting
-# ./scripts/machina/run_machina_tr.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir} || echo "Error: Machina execution timed out for ${dir}"
+./scripts/machina/run_machina_tr.sh --edges ${machina_dir}/*.tree --labels ${machina_dir}/*.labeling --colors ${machina_dir}/*_colors.txt --primary-tissue ${primary_tissue} --outdir ${machina_dir} || echo "Error: Machina execution timed out for ${dir}"
 
 conda deactivate
 module unload Gurobi
@@ -67,19 +67,19 @@ module unload EBModules
 
 # Condense MACHINA output into a labeled tree newick format
 conda activate simulate
-# python ./scripts/machina/post_machina_tr_to_tree.py ${machina_dir}/P-T-P-R.tree ${machina_dir}/P-T-P-R.labeling ${machina_dir}
+python ./scripts/machina/post_machina_tr_to_tree.py ${machina_dir}/P-T-P-R.tree ${machina_dir}/P-T-P-R.labeling ${machina_dir}
 conda deactivate
 # Remove intermediate MACHINA output files
 machina_tree="${dir}/machina_tree_all_tissue_labels.nwk" 
-# mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${machina_tree}
+mv ${machina_dir}/machina_tree_all_tissue_labels.nwk ${machina_tree}
 
 # setup joint beast inference
 conda activate compare_trees
 template_xml="inputs/joint_inference_beast_template.xml"
 sim_time=$(grep "Number of generations" $drivers | cut -d':' -f2 | tr -d ' ')
 beast_dir="${dir}/beast"
-# mkdir $beast_dir
-# scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${template_xml} ${sim_time} ${beast_dir}
+mkdir $beast_dir
+scripts/format_joint_inference_beast_xml.sh ${sim_matrix} ${leaf_tissues} ${template_xml} ${sim_time} ${beast_dir}
 
 # # run beast joint inference
 beast_logs=()
@@ -90,12 +90,12 @@ do
   beast_logs+=("$beast_log")
   iter_xml="${beast_dir}/joint_inference_beast_${i}.xml"
   main_xml="${beast_dir}/joint_inference_beast.xml"
-  # cp $main_xml $iter_xml
-  # time java -Xmx5g -jar ${metastabayes_jar} -overwrite -working $iter_xml > $beast_log &
+  cp $main_xml $iter_xml
+  time java -Xmx5g -jar ${metastabayes_jar} -overwrite -working $iter_xml > $beast_log &
 done
 
 # Allow for all chains to finish before continuing
-# wait
+wait
 
 # Combine all log and tissue trees files
 log_files=""
@@ -113,20 +113,20 @@ fi
 done
 combined_log="${beast_dir}/joint_inference_beast_combined.log"
 combined_trees="${beast_dir}/joint_inference_beast_combined_tissues.trees"
-# $logcombiner_path $log_files -o $combined_log
-# $logcombiner_path $trees_files -o $combined_trees
+$logcombiner_path $log_files -o $combined_log
+$logcombiner_path $trees_files -o $combined_trees
 
 # move combined results to main dir and remove independent chain results
-# mv $main_xml $dir/
-# mv $combined_log $dir/
+mv $main_xml $dir/
+mv $combined_log $dir/
 beast_posterior_trees="${dir}/joint_inference_beast_combined_tissues.trees"
-# mv $combined_trees $beast_posterior_trees
+mv $combined_trees $beast_posterior_trees
 
 mcc_tree=$(echo "$beast_posterior_trees" | sed 's/.trees/.tree/')
-# ${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${beast_posterior_trees} ${mcc_tree}
+${treeannotator_path} -burnin 10 -topology MCC -height mean -file ${beast_posterior_trees} ${mcc_tree}
 
 # get random and consensus tissue labeled trees
-# python scripts/consensus_random_tissue_trees.py ${cas_tree} ${leaf_tissues}
+python scripts/consensus_random_tissue_trees.py ${cas_tree} ${leaf_tissues}
 random_tissue_tree=${dir}/*_random_tissues.nwk
 consensus_tissue_tree=${dir}/*_consensus_tissues.nwk
 
@@ -134,7 +134,7 @@ consensus_tissue_tree=${dir}/*_consensus_tissues.nwk
 # calculate migration graph F1 scores compared to the true migration graph for machina single result
 machina_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${machina_tree} | awk -F' ' '{print $3}')
 # calculate migration graph F1 scores compared to the true migration graph for BEAST joint inference MCC single result
-# python scripts/format_treeannotator_nexus_to_newick.py ${mcc_tree}
+python scripts/format_treeannotator_nexus_to_newick.py ${mcc_tree}
 beast_mcc_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${mcc_tree}.nwk | awk -F' ' '{print $3}')
 # calculate the same F1 score but for sampling all trees from the beast posterior with F1 score weighted by posterior probability
 beast_posterior=$(python scripts/migration_graph_f1_true_beast_posterior_trees.py ${true_tissue_tree} ${beast_posterior_trees})
