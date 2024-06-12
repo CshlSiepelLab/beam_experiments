@@ -33,11 +33,11 @@ i=0
 for command in "${commands[@]}"
 do
   # echo "${command}" >> "${pipeline_run_name}/parallel.txt"
-
-  echo "#!/bin/bash" > "${pipeline_run_name}/parallel${i}.sh"
-  echo "${command}" >> "${pipeline_run_name}/parallel${i}.sh"
-  chmod u+x "${pipeline_run_name}/parallel${i}.sh"
-  qsub -cwd -l m_mem_free=5G -pe threads 5 "${pipeline_run_name}/parallel${i}.sh"
+  cmd_file="${pipeline_run_name}/parallel${i}.sh"
+  echo "#!/bin/bash" > $cmd_file
+  echo "${command}" >> $cmd_file
+  chmod u+x $cmd_file
+  qsub -cwd -l m_mem_free=5G -pe threads 5  -o ${cmd_file}.out -e ${cmd_file}.err $cmd_file
   i=$((i+1))
 done
 
