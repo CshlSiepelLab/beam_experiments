@@ -51,8 +51,8 @@ def process_csv(filepath):
 true_tree_file=sys.argv[1] # can also be a csv of source to recipient connections to bypass the tree processing steps
 inferred_tree_file=sys.argv[2]
 
-# true_tree_file="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/new_simulator_uniformTransitionProbs_6_6_24/mS/6016/migration_graph_seed1913716328.csv"
-# inferred_tree_file="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/machina_tree_all_tissue_labels.nwk"
+# true_tree_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_migration_inference/individual_vs_proper_joint_inference_vs_cassiopeia_machina_6_7_24/mS/5926/cell_tree_seed1180317166_tissue_labeled_tree.nwk"
+# inferred_tree_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_migration_inference/individual_vs_proper_joint_inference_vs_cassiopeia_machina_6_7_24/mS/5926/machina_tree_all_tissue_labels.nwk"
 
 
 # process true input file to get migration count dict
@@ -82,11 +82,11 @@ for key in inferred_counts.keys():
         else:
             union_positives += inferred_value
 
-# calculate recall (union of inferred and true positives over inferred total positives)
-recall = union_positives / total_inferred
+# calculate precision (union of inferred and true positives over inferred total positives)
+precision = union_positives / total_inferred
 
-# calculate precision (union of inferred and true positives over total true positives)
-precision = union_positives / total_true
+# calculate recall (union of inferred and true positives over total true positives)
+recall = union_positives / total_true
 
 # calculate F1 score (2((precision * recall)/(precision + recall)))
 if precision + recall == 0:
@@ -94,4 +94,4 @@ if precision + recall == 0:
 else:
     f1 = 2 * ((precision * recall) / (precision + recall))
 
-print(f"F1 score: {f1}")
+print(f"F1 score: {f1} Precision: {precision} Recall: {recall}")

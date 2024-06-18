@@ -6,6 +6,7 @@ import dendropy
 from copy import deepcopy
 import numpy as np
 from arviz import hdi
+import pandas as pd
 
 def process_tree(filepath):
     # set primary tissue
@@ -107,8 +108,8 @@ def calculate_metrics(true_counts, inferred_counts):
 true_tree_file=sys.argv[1] # can also be csv of source,recipient format
 beast_trees_file=sys.argv[2]
 
-# true_tree_file="individual_vs_proper_joint_inference_vs_cassiopeia_machina_6_7_24/mS/5926/migration_graph_seed1180317166.csv"
-# beast_trees_file="individual_vs_proper_joint_inference_vs_cassiopeia_machina_6_7_24/mS/5926/joint_inference_beast_combined_tissues.trees"
+# true_tree_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_migration_inference/individual_vs_proper_joint_inference_vs_cassiopeia_machina_6_7_24/mS/5926/migration_graph_seed1180317166.csv"
+# beast_trees_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_migration_inference/individual_vs_proper_joint_inference_vs_cassiopeia_machina_6_7_24/mS/5926/joint_inference_beast_combined_tissues.trees"
 
 burnin_percent=0.1
 primary_tissue="P"
@@ -129,6 +130,9 @@ beast_tree_list = beast_tree_list[num_discard:]
 
 posteriors = []
 f1_scores=[]
+precisions=[]
+recalls=[]
+rows = []
 posterior_inferred_counts = {}
 
 for tree in beast_tree_list:
@@ -143,14 +147,26 @@ for tree in beast_tree_list:
 
     f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
     f1_scores.append(f1)
+    precisions.append(precision)
+    recalls.append(recall)
+
+    posterior_precision_recalls_row = {'Posterior': posterior, 'Precision': precision, 'Recall': recall, 'F1': f1}
+    rows.append(posterior_precision_recalls_row)
 
     # make dict of psoterior value to dict of migration graph route counts for 95% CI calculation later
     match_true_graph = inferred_counts == true_counts
     posterior_inferred_counts[posterior] = match_true_graph
 
-avg_posterior_f1 = sum(f1_scores) / len(f1_scores)
-print(f"F1 score: {avg_posterior_f1}")
+posterior_precision_recalls = pd.DataFrame(rows)
 
+avg_posterior_f1 = sum(f1_scores) / len(f1_scores)
+avg_posterior_precision = sum(precisions) / len(precisions)
+avg_posterior_recall = sum(recalls) / len(recalls)
+print(f"F1 score: {avg_posterior_f1} Precision: {avg_posterior_precision} Recall: {avg_posterior_recall}")
+
+# output all precision and recall values for all posteriors
+outfile = beast_trees_file.replace(".trees", "_trees_precision_recall.csv")
+posterior_precision_recalls.to_csv(outfile, index=False)
 
 ### Credible interval
 # # for equal tailed credible interval

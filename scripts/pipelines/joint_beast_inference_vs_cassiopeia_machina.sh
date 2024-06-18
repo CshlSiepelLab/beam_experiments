@@ -132,26 +132,62 @@ consensus_tissue_tree=${dir}/*_consensus_tissues.nwk
 
 ### F1 scores for the downsampled true cell tree
 # calculate migration graph F1 scores compared to the true migration graph for machina single result
-machina_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${machina_tree} | awk -F' ' '{print $3}')
+tree_machina=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${machina_tree})
+tree_machina_f1=$(echo $tree_machina | awk -F' ' '{print $3}')
+tree_machina_precision=$(echo $tree_machina | awk -F' ' '{print $5}')
+tree_machina_recall=$(echo $tree_machina | awk -F' ' '{print $7}')
+
 # calculate migration graph F1 scores compared to the true migration graph for BEAST joint inference MCC single result
 python scripts/format_treeannotator_nexus_to_newick.py ${mcc_tree}
-beast_mcc_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${mcc_tree}.nwk | awk -F' ' '{print $3}')
+tree_beast_mcc=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${mcc_tree}.nwk)
+tree_beast_mcc_f1=$(echo $tree_beast_mcc | awk -F' ' '{print $3}')
+tree_beast_mcc_precision=$(echo $tree_beast_mcc | awk -F' ' '{print $5}')
+tree_beast_mcc_recall=$(echo $tree_beast_mcc | awk -F' ' '{print $7}')
+
 # calculate the same F1 score but for sampling all trees from the beast posterior with F1 score weighted by posterior probability
-beast_posterior=$(python scripts/migration_graph_f1_true_beast_posterior_trees.py ${true_tissue_tree} ${beast_posterior_trees})
-beast_posterior_f1=$(echo $beast_posterior | awk -F' ' '{print $3}')
-beast_posterior_95ci_binary=$(echo $beast_posterior | awk -F' ' '{print $NF}')
+tree_beast_posterior=$(python scripts/migration_graph_f1_true_beast_posterior_trees.py ${true_tissue_tree} ${beast_posterior_trees})
+tree_beast_posterior_f1=$(echo $beast_posterior | awk -F' ' '{print $3}')
+tree_beast_posterior_precision=$(echo $beast_posterior | awk -F' ' '{print $5}')
+tree_beast_posterior_recall=$(echo $beast_posterior | awk -F' ' '{print $7}')
+tree_beast_posterior_95ci_binary=$(echo $beast_posterior | awk -F' ' '{print $NF}')
+
 # calculate F1 scores for random and consensus trees
-random_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${random_tissue_tree} | awk -F' ' '{print $3}')
-consensus_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${consensus_tissue_tree} | awk -F' ' '{print $3}')
+tree_random=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${random_tissue_tree})
+tree_random_f1=$(echo $tree_random | awk -F' ' '{print $3}')
+tree_random_precision=$(echo $tree_random | awk -F' ' '{print $5}')
+tree_random_recall=$(echo $tree_random | awk -F' ' '{print $7}')
+
+tree_consensus=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${consensus_tissue_tree})
+tree_consensus_f1=$(echo $tree_consensus | awk -F' ' '{print $3}')
+tree_consensus_precision=$(echo $tree_consensus | awk -F' ' '{print $5}')
+tree_consensus_recall=$(echo $tree_consensus | awk -F' ' '{print $7}')
 
 ### F1 scores for the true migration graph from the entire simulation
-true_machina_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_migration_graph} ${machina_tree} | awk -F' ' '{print $3}')
-true_beast_mcc_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_migration_graph} ${mcc_tree}.nwk | awk -F' ' '{print $3}')
+true_machina=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_migration_graph} ${machina_tree})
+true_machina_f1=$(echo $true_machina | awk -F' ' '{print $3}')
+true_machina_precision=$(echo $true_machina | awk -F' ' '{print $5}')
+true_machina_recall=$(echo $true_machina | awk -F' ' '{print $7}')
+
+true_beast_mcc=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_migration_graph} ${mcc_tree}.nwk)
+true_beast_mcc_f1=$(echo $true_beast_mcc | awk -F' ' '{print $3}')
+true_beast_mcc_precision=$(echo $true_beast_mcc | awk -F' ' '{print $5}')
+true_beast_mcc_recall=$(echo $true_beast_mcc | awk -F' ' '{print $7}')
+
 true_beast_posterior=$(python scripts/migration_graph_f1_true_beast_posterior_trees.py ${true_migration_graph} ${beast_posterior_trees})
 true_beast_posterior_f1=$(echo $true_beast_posterior | awk -F' ' '{print $3}')
+true_beast_posterior_precision=$(echo $true_beast_posterior | awk -F' ' '{print $5}')
+true_beast_posterior_recall=$(echo $true_beast_posterior | awk -F' ' '{print $7}')
 true_beast_posterior_95ci_binary=$(echo $true_beast_posterior | awk -F' ' '{print $NF}')
-true_random_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_migration_graph} ${random_tissue_tree} | awk -F' ' '{print $3}')
-true_consensus_f1=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_migration_graph} ${consensus_tissue_tree} | awk -F' ' '{print $3}')
+
+true_random=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_migration_graph} ${random_tissue_tree})
+true_random_f1=$(echo $true_random | awk -F' ' '{print $3}')
+true_random_precision=$(echo $true_random | awk -F' ' '{print $5}')
+true_random_recall=$(echo $true_random | awk -F' ' '{print $7}')
+
+true_consensus=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_migration_graph} ${consensus_tissue_tree})
+true_consensus_f1=$(echo $true_consensus | awk -F' ' '{print $3}')
+true_consensus_precision=$(echo $true_consensus | awk -F' ' '{print $5}')
+true_consensus_recall=$(echo $true_consensus | awk -F' ' '{print $7}')
 
 
 # get other stats from the sim
@@ -164,18 +200,44 @@ joint_rf_dist=$(python scripts/nexus_to_newick.py $mcc_tree | ete3 compare -t $m
 shannon_mut_matrix=$(python scripts/shannon_entropy_mutation_matrix.py $sim_matrix | grep -oP 'Shannon Entropy scipy: \K.*')
 conda deactivate
 
-echo "machina"
-echo $machina_f1
-echo "beast mcc"
-echo $beast_mcc_f1
-echo "beast posterior"
-echo $beast_posterior_f1
-echo "random"
-echo $random_f1
-echo "consensus"
-echo $consensus_f1
-
-echo "${dir},${machina_f1},${beast_mcc_f1},${beast_posterior_f1},${random_f1},${consensus_f1},${beast_posterior_95ci_binary},${true_machina_f1},${true_beast_mcc_f1},${true_beast_posterior_f1},${true_random_f1},${true_consensus_f1},${true_beast_posterior_95ci_binary},${ess_convergences[@]},${migration_count},${cas_rf_dist},${joint_rf_dist},${shannon_mut_matrix}" >> ${accuracy_file}
+echo "${dir},\
+      ${tree_machina_f1},\
+      ${tree_machina_precision},\
+      ${tree_machina_recall},\
+      ${tree_beast_mcc_f1},\
+      ${tree_beast_mcc_precision},\
+      ${tree_beast_mcc_recall},\
+      ${tree_beast_posterior_f1},\
+      ${tree_beast_posterior_precision},\
+      ${tree_beast_posterior_recall},\
+      ${tree_random_f1},\
+      ${tree_random_precision},\
+      ${tree_random_recall},\
+      ${tree_consensus_f1},\
+      ${tree_consensus_precision},\
+      ${tree_consensus_recall},\
+      ${beast_posterior_95ci_binary},\
+      ${true_machina_f1},\
+      ${true_machina_precision},\
+      ${true_machina_recall},\
+      ${true_beast_mcc_f1},\
+      ${true_beast_mcc_precision},\
+      ${true_beast_mcc_recall},\
+      ${true_beast_posterior_f1},\
+      ${true_beast_posterior_precision},\
+      ${true_beast_posterior_recall},\
+      ${true_random_f1},\
+      ${true_random_precision},\
+      ${true_random_recall},\
+      ${true_consensus_f1},\
+      ${true_consensus_precision},\
+      ${true_consensus_recall},\
+      ${true_beast_posterior_95ci_binary},\
+      ${ess_convergences[@]},\
+      ${migration_count},\
+      ${cas_rf_dist},\
+      ${joint_rf_dist},\
+      ${shannon_mut_matrix}" >> ${accuracy_file}
 
 # optional clean up of temporary files
 # rm -r ${machina_dir}

@@ -6,7 +6,7 @@
 barcode_simulator_dir="../barcode_simulator/scripts/simulator"
 
 # set dir to hold all sims
-sim_dir="data/new_simulator_unifromTransitionProbs_6_6_24"
+sim_dir="data/targetSites50_uniformMigration_6_18_24"
 mkdir ${sim_dir}
 
 # make pattern directories
@@ -48,9 +48,9 @@ migration_rate="1e-6"
 mutFreqThreshold=0.05
 carryingCapacity="5e4"
 driverProb="1e-7"
-num_cells_downsample=100
+num_cells_downsample=50
 
-num_sites=10
+num_sites=50
 design="RANDOM"
 
 # optional migration transition probabilities matrix csv file
