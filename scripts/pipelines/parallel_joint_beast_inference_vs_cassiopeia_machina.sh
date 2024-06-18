@@ -3,11 +3,11 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 
 # This script will simulate true trees with groupd truth tissue location data, and then run both BEAST FixedTreeAnalysis and MACHINA to then compare the results of accuracy of internal node tissue location predictions and runtime
-pipeline_run_name="non_uniform_rates_joint_inference_vs_cassiopeia_machina_6_12_24"
+pipeline_run_name="barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24"
 mkdir ${pipeline_run_name}
 
 # copy machina datasets to working directory for the run
-dir_pre="data/new_simulator_highM1TransitionProbs_6_6_24"
+dir_pre="data/targetSites50_uniformMigration_6_18_24"
 cp -r ${dir_pre}/* ${pipeline_run_name}/
 
 # # NEW ADDITION: send off command to run proper joint inference across datasets
