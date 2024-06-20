@@ -1,4 +1,0 @@
-primary Primary, mid-left back
-lymph_node Lymph node metastasis, left axilla
-locoregional_1 skin metastasis 1, left back
-locoregional_2 skin metastasis 2, left axilla

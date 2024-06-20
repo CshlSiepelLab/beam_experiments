@@ -1,4 +1,0 @@
-primary Primary, right leg
-locoregional Locoregional skin metastasis, right leg
-lymph_node Lymph node metastasis, right inguinal node
-brain Brain metastasis

@@ -201,43 +201,43 @@ shannon_mut_matrix=$(python scripts/shannon_entropy_mutation_matrix.py $sim_matr
 conda deactivate
 
 echo "${dir},\
-      ${tree_machina_f1},\
-      ${tree_machina_precision},\
-      ${tree_machina_recall},\
-      ${tree_beast_mcc_f1},\
-      ${tree_beast_mcc_precision},\
-      ${tree_beast_mcc_recall},\
-      ${tree_beast_posterior_f1},\
-      ${tree_beast_posterior_precision},\
-      ${tree_beast_posterior_recall},\
-      ${tree_random_f1},\
-      ${tree_random_precision},\
-      ${tree_random_recall},\
-      ${tree_consensus_f1},\
-      ${tree_consensus_precision},\
-      ${tree_consensus_recall},\
-      ${beast_posterior_95ci_binary},\
-      ${true_machina_f1},\
-      ${true_machina_precision},\
-      ${true_machina_recall},\
-      ${true_beast_mcc_f1},\
-      ${true_beast_mcc_precision},\
-      ${true_beast_mcc_recall},\
-      ${true_beast_posterior_f1},\
-      ${true_beast_posterior_precision},\
-      ${true_beast_posterior_recall},\
-      ${true_random_f1},\
-      ${true_random_precision},\
-      ${true_random_recall},\
-      ${true_consensus_f1},\
-      ${true_consensus_precision},\
-      ${true_consensus_recall},\
-      ${true_beast_posterior_95ci_binary},\
-      ${ess_convergences[@]},\
-      ${migration_count},\
-      ${cas_rf_dist},\
-      ${joint_rf_dist},\
-      ${shannon_mut_matrix}" >> ${accuracy_file}
+${tree_machina_f1},\
+${tree_machina_precision},\
+${tree_machina_recall},\
+${tree_beast_mcc_f1},\
+${tree_beast_mcc_precision},\
+${tree_beast_mcc_recall},\
+${tree_beast_posterior_f1},\
+${tree_beast_posterior_precision},\
+${tree_beast_posterior_recall},\
+${tree_random_f1},\
+${tree_random_precision},\
+${tree_random_recall},\
+${tree_consensus_f1},\
+${tree_consensus_precision},\
+${tree_consensus_recall},\
+${beast_posterior_95ci_binary},\
+${true_machina_f1},\
+${true_machina_precision},\
+${true_machina_recall},\
+${true_beast_mcc_f1},\
+${true_beast_mcc_precision},\
+${true_beast_mcc_recall},\
+${true_beast_posterior_f1},\
+${true_beast_posterior_precision},\
+${true_beast_posterior_recall},\
+${true_random_f1},\
+${true_random_precision},\
+${true_random_recall},\
+${true_consensus_f1},\
+${true_consensus_precision},\
+${true_consensus_recall},\
+${true_beast_posterior_95ci_binary},\
+${ess_convergences[@]},\
+${migration_count},\
+${cas_rf_dist},\
+${joint_rf_dist},\
+${shannon_mut_matrix}" >> ${accuracy_file}
 
 # optional clean up of temporary files
 # rm -r ${machina_dir}
