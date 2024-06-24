@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # inputdir=$1
-inputdir="nested_sampling_uniform_vs_non_uniform_pR_rates_6_12_24/non_uniform_pR_6_6_24"
+inputdir="nested_sampling_uniform_vs_non_uniform_pR_rates_6_24_24/non_uniform_pR"
 
 outputdir="${inputdir}/proper_joint_beast_inference"
 mkdir $outputdir

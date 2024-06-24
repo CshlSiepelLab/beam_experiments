@@ -6,24 +6,24 @@
 barcode_simulator_dir="../barcode_simulator/scripts/simulator"
 
 # set dir to hold all sims
-sim_dir="data/targetSites50_uniformMigration_6_18_24"
+sim_dir="data/uniformMigration_only_pR_50sites_6_24_24"
 mkdir ${sim_dir}
 
 # make pattern directories
-mkdir ${sim_dir}/mS
-mkdir ${sim_dir}/pS
-mkdir ${sim_dir}/pM
+# mkdir ${sim_dir}/mS
+# mkdir ${sim_dir}/pS
+# mkdir ${sim_dir}/pM
 mkdir ${sim_dir}/pR
 
 # set migration pattern options
-migration_patterns=(0 1 2 3)
-# migration_patterns=(3)
+# migration_patterns=(0 1 2 3)
+migration_patterns=(3)
 
 mutation_rates=(0.005)
 
 for mutrate in ${mutation_rates[@]}; do
 for pattern in ${migration_patterns[@]}; do
-for ((i = 0; i < 10; i++)); do
+for ((i = 0; i < 3; i++)); do
 
 # make dir specific to the seed number for each sim and the migration pattern
 if (( $pattern == 0 )); then
@@ -54,7 +54,7 @@ num_sites=50
 design="RANDOM"
 
 # optional migration transition probabilities matrix csv file
-# transition_probs="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/highM2MigrationTransitionProbs.csv"
+# transition_probs="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/highM1MigrationTransitionProbs.csv"
 
 
 # save running parameters to file

@@ -138,7 +138,7 @@ tree_machina_precision=$(echo $tree_machina | awk -F' ' '{print $5}')
 tree_machina_recall=$(echo $tree_machina | awk -F' ' '{print $7}')
 
 # calculate migration graph F1 scores compared to the true migration graph for BEAST joint inference MCC single result
-python scripts/format_treeannotator_nexus_to_newick.py ${mcc_tree}
+# python scripts/format_treeannotator_nexus_to_newick.py ${mcc_tree}
 tree_beast_mcc=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${mcc_tree}.nwk)
 tree_beast_mcc_f1=$(echo $tree_beast_mcc | awk -F' ' '{print $3}')
 tree_beast_mcc_precision=$(echo $tree_beast_mcc | awk -F' ' '{print $5}')
@@ -146,10 +146,10 @@ tree_beast_mcc_recall=$(echo $tree_beast_mcc | awk -F' ' '{print $7}')
 
 # calculate the same F1 score but for sampling all trees from the beast posterior with F1 score weighted by posterior probability
 tree_beast_posterior=$(python scripts/migration_graph_f1_true_beast_posterior_trees.py ${true_tissue_tree} ${beast_posterior_trees})
-tree_beast_posterior_f1=$(echo $beast_posterior | awk -F' ' '{print $3}')
-tree_beast_posterior_precision=$(echo $beast_posterior | awk -F' ' '{print $5}')
-tree_beast_posterior_recall=$(echo $beast_posterior | awk -F' ' '{print $7}')
-tree_beast_posterior_95ci_binary=$(echo $beast_posterior | awk -F' ' '{print $NF}')
+tree_beast_posterior_f1=$(echo $tree_beast_posterior | awk -F' ' '{print $3}')
+tree_beast_posterior_precision=$(echo $tree_beast_posterior | awk -F' ' '{print $5}')
+tree_beast_posterior_recall=$(echo $tree_beast_posterior | awk -F' ' '{print $7}')
+tree_beast_posterior_95ci_binary=$(echo $tree_beast_posterior | awk -F' ' '{print $NF}')
 
 # calculate F1 scores for random and consensus trees
 tree_random=$(python scripts/migration_graph_f1_true_inferred_trees.py ${true_tissue_tree} ${random_tissue_tree})
@@ -216,7 +216,7 @@ ${tree_random_recall},\
 ${tree_consensus_f1},\
 ${tree_consensus_precision},\
 ${tree_consensus_recall},\
-${beast_posterior_95ci_binary},\
+${tree_beast_posterior_95ci_binary},\
 ${true_machina_f1},\
 ${true_machina_precision},\
 ${true_machina_recall},\

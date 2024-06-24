@@ -108,8 +108,8 @@ def calculate_metrics(true_counts, inferred_counts):
 true_tree_file=sys.argv[1] # can also be csv of source,recipient format
 beast_trees_file=sys.argv[2]
 
-# true_tree_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_migration_inference/individual_vs_proper_joint_inference_vs_cassiopeia_machina_6_7_24/mS/5926/migration_graph_seed1180317166.csv"
-# beast_trees_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_migration_inference/individual_vs_proper_joint_inference_vs_cassiopeia_machina_6_7_24/mS/5926/joint_inference_beast_combined_tissues.trees"
+# true_tree_file="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cell_tree_seed122773959_tissue_labeled_tree.nwk"
+# beast_trees_file="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/joint_inference_beast_combined_tissues.trees"
 
 burnin_percent=0.1
 primary_tissue="P"
