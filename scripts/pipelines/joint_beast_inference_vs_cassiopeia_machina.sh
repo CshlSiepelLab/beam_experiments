@@ -42,7 +42,7 @@ dir=$(dirname "$sim_matrix")
 
 # run cassiopeia-greedy on matrix
 conda activate simulate
-python scripts/cassiopeia_greedy.py $sim_matrix
+python scripts/cassiopeia/cassiopeia_greedy.py $sim_matrix
 
 # run machina on cassiopeia-greedy inferred tree
 # Prep cas tree for MACHINA input files
