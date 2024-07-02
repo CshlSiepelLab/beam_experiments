@@ -113,12 +113,21 @@ def calculate_metrics(true_counts, inferred_counts):
         f1 = 2 * ((precision * recall) / (precision + recall))
     return f1, recall, precision
 
-true_tree_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cell_tree_seed122773959_tissue_labeled_tree.nwk"
-machina_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/machina_tree_all_tissue_labels.nwk"
-beast_posterior_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/joint_inference_beast_combined_tissues.trees"
-consensus_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cassiopeia_greedy_inferred_consensus_tissues.nwk"
-random_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cassiopeia_greedy_inferred_random_tissues.nwk"
-outfile = f"./precision_recall.pdf"
+true_tree_file = sys.argv[1]
+machina_file = sys.argv[2]
+beast_posterior_file = sys.argv[3]
+consensus_file = sys.argv[4]
+random_file = sys.argv[5]
+outfile = sys.argv[6]
+
+# # testing
+# true_tree_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cell_tree_seed122773959_tissue_labeled_tree.nwk"
+# machina_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/machina_tree_all_tissue_labels.nwk"
+# beast_posterior_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/joint_inference_beast_combined_tissues.trees"
+# consensus_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cassiopeia_greedy_inferred_consensus_tissues.nwk"
+# random_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cassiopeia_greedy_inferred_random_tissues.nwk"
+# outfile = f"./precision_recall.pdf"
+
 
 # process true input file to get migration count dict
 if true_tree_file.endswith(".csv"):
