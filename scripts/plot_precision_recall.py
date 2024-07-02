@@ -1,0 +1,216 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import pandas as pd
+import numpy as np
+from scipy.stats import gaussian_kde
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import seaborn as sns
+from ete3 import Tree
+import dendropy
+from copy import deepcopy
+from arviz import hdi
+
+def get_migration_counts(tree):
+    migration_counts = {}
+    for node in tree.traverse():
+        if node.is_root():
+            continue
+        else:
+            node_tissue = node.name.split("_")[-1]
+            parent_tissue = node.up.name.split("_")[-1]
+            if node_tissue == parent_tissue:
+                continue
+            migration = f"{parent_tissue}_{node_tissue}"
+            if migration not in migration_counts:
+                migration_counts[migration] = 1
+            else:
+                migration_counts[migration] += 1
+    return migration_counts
+
+def process_tree(filepath):
+    # set primary tissue
+    primary_tissue="P"
+    # read in tree files to ete3 tree
+    tree = Tree(filepath, format=8)
+    # set tree root to primary
+    tree.get_tree_root().name = f'0_{primary_tissue}'
+    # get counts of migration events in a dict with source_recipient tissue key and count integer value
+    counts=get_migration_counts(tree)
+    return counts
+
+def process_csv(filepath):
+    # read in csv file to dict
+    counts = {}
+    with open(filepath, 'r') as f:
+        for line in f:
+            # skip header line that typically is "source,recipient"
+            if "source" in line:
+                continue
+            source, recipient = line.strip().split(",")
+            migration = f"{source}_{recipient}"
+            if migration not in counts:
+                counts[migration] = 1
+            else:
+                counts[migration] += 1
+    return counts
+
+def remove_zero_length_nodes(tree):
+    for node in tree.internal_nodes():
+        if node.edge_length == 0:
+            parent = node.parent_node
+            if parent is not None:
+                parent.remove_child(node)
+                children = node.child_nodes()
+                for child in children:
+                    parent.add_child(child)
+
+def dendropy_beast_to_ete_newick_with_strict_locations(tree):
+    tree_copy = deepcopy(tree)
+    i = 0
+    for node in tree_copy.preorder_node_iter():
+        try:
+            prediction = node.taxon.label + "_" + node.annotations.get_value('location')
+            node.taxon.label = prediction
+        except Exception as e:
+            prediction = f"node{i}" + "_" + node.annotations.get_value('location')
+            i += 1
+        node.label = prediction
+    ete_tree = Tree(tree_copy.as_string(schema="newick").replace("\'", ""), format=3)
+    return ete_tree
+
+def calculate_metrics(true_counts, inferred_counts):
+    TP = 0
+    FP = 0
+    FN = 0
+    for key in inferred_counts.keys():
+        inferred_count = inferred_counts[key]
+        if key in true_counts:
+            true_count = true_counts[key]
+            if inferred_count >= true_count:
+                TP += true_count
+                FP += inferred_count - true_count
+            else:
+                TP += inferred_count
+                FN += true_count - inferred_count
+        else:
+            FP += inferred_count
+    # compute precision as TP/(TP + FP) and recall as TP/(TP + FN)
+    if (TP + FP) != 0:
+        precision = TP/(TP + FP)
+    else:
+        precision = 0
+    if (TP + FN) != 0:
+        recall = TP/(TP + FN)
+    else:
+        recall = 0
+    # calculate F1 score (2((precision * recall)/(precision + recall)))
+    if precision + recall == 0:
+        f1 = 0
+    else:
+        f1 = 2 * ((precision * recall) / (precision + recall))
+    return f1, recall, precision
+
+true_tree_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cell_tree_seed122773959_tissue_labeled_tree.nwk"
+machina_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/machina_tree_all_tissue_labels.nwk"
+beast_posterior_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/joint_inference_beast_combined_tissues.trees"
+consensus_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cassiopeia_greedy_inferred_consensus_tissues.nwk"
+random_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cassiopeia_greedy_inferred_random_tissues.nwk"
+outfile = f"./precision_recall.pdf"
+
+# process true input file to get migration count dict
+if true_tree_file.endswith(".csv"):
+    true_counts = process_csv(true_tree_file)
+else:
+    true_counts = process_tree(true_tree_file)
+
+# process machina result to get precision and recall
+machina_counts = process_tree(machina_file)
+machina_f1, machina_recall, machina_precision = calculate_metrics(true_counts, machina_counts)
+
+# process random result to get precision and recall
+random_counts = process_tree(random_file)
+random_f1, random_recall, random_precision = calculate_metrics(true_counts, random_counts)
+
+# process consensus result to get precision and recall
+consensus_counts = process_tree(consensus_file)
+consensus_f1, consensus_recall, consensus_precision = calculate_metrics(true_counts, consensus_counts)
+
+# process beast posterior result to get precision and recall
+burnin_percent=0.1
+primary_tissue="P"
+beast_tree_list = dendropy.TreeList()
+beast_tree_list.read(path=beast_posterior_file, schema="nexus")
+num_beast_trees = len(beast_tree_list)
+num_discard = round(num_beast_trees * burnin_percent)
+beast_tree_list = beast_tree_list[num_discard:]
+
+posteriors = []
+f1_scores=[]
+precisions=[]
+recalls=[]
+all_inferred_counts = []
+for tree in beast_tree_list:
+    posterior = float(tree.annotations.get_value('posterior'))
+    posteriors.append(posterior)
+    remove_zero_length_nodes(tree)
+    inferred_tree = dendropy_beast_to_ete_newick_with_strict_locations(tree)
+    inferred_tree.get_tree_root().name = f'0_{primary_tissue}'
+    inferred_counts=get_migration_counts(inferred_tree)
+    f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
+    f1_scores.append(f1)
+    precisions.append(precision)
+    recalls.append(recall)
+    all_inferred_counts.append(inferred_counts)
+
+# fit a gaussian kernel density estimate to the posterior values to get a probability density function
+pdf = gaussian_kde(posteriors)
+posterior_probs = [pdf(posterior)[0] for posterior in posteriors]
+total_posterior_prob = sum(posterior_probs)
+posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in posterior_probs]
+
+# calculate total counts weighted by posterior probability
+total_counts = {}
+for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
+    for pattern, count in inferred_counts.items():
+        for num in range(1, count+1):
+            edge = f"{pattern}_{num}"
+            if edge not in total_counts:
+                total_counts[edge] = prob
+            else:
+                total_counts[edge] += prob
+
+# compute thresholded precision and recall values
+thresholds = [i for i in np.arange(0, 1.00, 0.01)]
+rows = []
+for thresh in thresholds:
+    thresh_counts = {key: value for key, value in total_counts.items() if value > thresh}
+    edges = ['_'.join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
+    thresh_counts = {}
+    for edge in edges:
+        if edge not in thresh_counts:
+            thresh_counts[edge] = 1
+        else:
+            thresh_counts[edge] += 1
+    f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
+    rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall})
+thresh_prec_rec = pd.DataFrame(rows)
+
+# plot precision recall curve
+textsize=18
+plt.figure()
+sns.lineplot(data=thresh_prec_rec, x='recall', y='precision', label="Posterior")
+plt.scatter(machina_recall, machina_precision, color='red', label='Machina')
+plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus')
+plt.scatter(random_recall, random_precision, color='green', label='Random')
+plt.xlim(-0.01,1.01)
+plt.ylim(-0.01,1.01)
+plt.xlabel('Recall', fontsize=textsize)
+plt.ylabel('Precision', fontsize=textsize)
+plt.xticks(fontsize=textsize)
+plt.yticks(fontsize=textsize)
+plt.legend()
+plt.tight_layout()
+plt.savefig(outfile)
