@@ -47,6 +47,32 @@ def process_csv(filepath):
                 counts[migration] += 1
     return counts
 
+def calculate_metrics(true_counts, inferred_counts):
+    TP = 0
+    FP = 0
+    FN = 0
+    for key in inferred_counts.keys():
+        inferred_count = inferred_counts[key]
+        if key in true_counts:
+            true_count = true_counts[key]
+            if inferred_count >= true_count:
+                TP += true_count
+                FP += inferred_count - true_count
+            else:
+                TP += inferred_count
+                FN += true_count - inferred_count
+        else:
+            FP += inferred_count
+    # compute precision as TP/(TP + FP) and recall as TP/(TP + FN)
+    precision = TP/(TP + FP)
+    recall = TP/(TP + FN)
+    # calculate F1 score (2((precision * recall)/(precision + recall)))
+    if precision + recall == 0:
+        f1 = 0
+    else:
+        f1 = 2 * ((precision * recall) / (precision + recall))
+    return f1, recall, precision
+
 # user input filepaths
 true_tree_file=sys.argv[1] # can also be a csv of source to recipient connections to bypass the tree processing steps
 inferred_tree_file=sys.argv[2]
@@ -64,34 +90,5 @@ else:
 # process inferred input as tree to get migration count dict
 inferred_counts = process_tree(inferred_tree_file)
 
-# compute statistics from the migration counts dicts
-# get general totals for formulas
-total_inferred = sum(inferred_counts.values())
-total_true = sum(true_counts.values())
-
-# get union of positives for true and inferred
-union_positives = 0
-for key in inferred_counts.keys():
-    inferred_value = inferred_counts[key]
-    if key not in true_counts:
-        continue
-    else:
-        true_value = true_counts[key]
-        if true_value < inferred_value:
-            union_positives += true_value
-        else:
-            union_positives += inferred_value
-
-# calculate precision (union of inferred and true positives over inferred total positives)
-precision = union_positives / total_inferred
-
-# calculate recall (union of inferred and true positives over total true positives)
-recall = union_positives / total_true
-
-# calculate F1 score (2((precision * recall)/(precision + recall)))
-if precision + recall == 0:
-    f1 = 0
-else:
-    f1 = 2 * ((precision * recall) / (precision + recall))
-
+f1, precision, recall = calculate_metrics(true_counts, inferred_counts)
 print(f"F1 score: {f1} Precision: {precision} Recall: {recall}")

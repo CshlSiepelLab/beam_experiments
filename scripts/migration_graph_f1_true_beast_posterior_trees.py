@@ -77,33 +77,30 @@ def get_migration_counts(tree):
     return migration_counts
 
 def calculate_metrics(true_counts, inferred_counts):
-        # get general totals for formulas
-    total_inferred = sum(inferred_counts.values())
-    total_true = sum(true_counts.values())
-
-    # get union of positives for true and inferred
-    union_positives = 0
+    TP = 0
+    FP = 0
+    FN = 0
     for key in inferred_counts.keys():
-        inferred_value = inferred_counts[key]
-        if key not in true_counts:
-            continue
-        else:
-            true_value = true_counts[key]
-            if true_value < inferred_value:
-                union_positives += true_value
+        inferred_count = inferred_counts[key]
+        if key in true_counts:
+            true_count = true_counts[key]
+            if inferred_count >= true_count:
+                TP += true_count
+                FP += inferred_count - true_count
             else:
-                union_positives += inferred_value
-    # calculate recall (union of inferred and true positives over inferred total positives)
-    recall = union_positives / total_inferred
-    # calculate precision (union of inferred and true positives over total true positives)
-    precision = union_positives / total_true
+                TP += inferred_count
+                FN += true_count - inferred_count
+        else:
+            FP += inferred_count
+    # compute precision as TP/(TP + FP) and recall as TP/(TP + FN)
+    precision = TP/(TP + FP)
+    recall = TP/(TP + FN)
     # calculate F1 score (2((precision * recall)/(precision + recall)))
     if precision + recall == 0:
         f1 = 0
     else:
         f1 = 2 * ((precision * recall) / (precision + recall))
     return f1, recall, precision
-
 
 true_tree_file=sys.argv[1] # can also be csv of source,recipient format
 beast_trees_file=sys.argv[2]
