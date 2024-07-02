@@ -24,7 +24,7 @@ barcode_interval = (20, 34)
 cutsite_locations = [112, 166, 220]
 
 # Number of threads to use, whenever parallelization is possible
-n_threads = 5
+n_threads = 10
 
 # Whether to allow a single intBC to have multiple allele states. For chemistries for which barcode == cell, this should be `False`.
 allow_allele_conflicts = False
@@ -51,6 +51,7 @@ bam_fp = cas.pp.convert_fastqs_to_unmapped_bam(
     name=name,
     n_threads=n_threads
 )
+print("Done converting fastqs to unmapped bam")
 
 bam_fp = cas.pp.filter_bam(
     bam_fp,
@@ -58,6 +59,7 @@ bam_fp = cas.pp.filter_bam(
     quality_threshold=10,
     n_threads=n_threads,
 )
+print("Done filtering bam")
 
 bam_fp = cas.pp.error_correct_cellbcs_to_whitelist(
     bam_fp,
@@ -65,6 +67,7 @@ bam_fp = cas.pp.error_correct_cellbcs_to_whitelist(
     output_directory=output_dir,
     n_threads=n_threads,
 )
+print("Done error correcting cell barcodes")
 
 umi_table = cas.pp.collapse_umis(
     bam_fp,
@@ -74,6 +77,7 @@ umi_table = cas.pp.collapse_umis(
     method='likelihood',
     n_threads=n_threads,
 )
+print("Done collapsing UMIs")
 
 umi_table = cas.pp.resolve_umi_sequence(
     umi_table,
@@ -82,6 +86,7 @@ umi_table = cas.pp.resolve_umi_sequence(
     min_avg_reads_per_umi=2.0,
     plot=True,
 )
+print("Done resolving UMI sequences")
 
 umi_table = cas.pp.align_sequences(
     umi_table,
@@ -90,6 +95,7 @@ umi_table = cas.pp.align_sequences(
     gap_extend_penalty=1,
     n_threads=n_threads,
 )
+print("Done aligning sequences")
 
 umi_table = cas.pp.call_alleles(
     umi_table,
@@ -100,12 +106,14 @@ umi_table = cas.pp.call_alleles(
     context=True,
     context_size=5,
 )
+print("Done calling alleles")
 
 # umi_table = cas.pp.error_correct_intbcs_to_whitelist(
 #     umi_table,
 #     whitelist=intbc_whitelist,
 #     intbc_dist_thresh=1
 # )
+# print("Done error correcting int barcodes")
 
 umi_table = cas.pp.error_correct_umis(
     umi_table,
@@ -113,6 +121,7 @@ umi_table = cas.pp.error_correct_umis(
     allow_allele_conflicts=allow_allele_conflicts,
     n_threads=n_threads,
 )
+print("Done error correcting UMIs")
 
 umi_table = cas.pp.filter_molecule_table(
     umi_table,
@@ -127,6 +136,7 @@ umi_table = cas.pp.filter_molecule_table(
     allow_allele_conflicts=allow_allele_conflicts,
     plot=True,
 )
+print("Done filtering molecule table")
 
 allele_table = cas.pp.call_lineage_groups(
     umi_table,
@@ -139,3 +149,4 @@ allele_table = cas.pp.call_lineage_groups(
     kinship_thresh=0.25,
     plot=True,
 )
+print("Done calling lineage groups")
