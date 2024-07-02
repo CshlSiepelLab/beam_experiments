@@ -64,8 +64,14 @@ def calculate_metrics(true_counts, inferred_counts):
         else:
             FP += inferred_count
     # compute precision as TP/(TP + FP) and recall as TP/(TP + FN)
-    precision = TP/(TP + FP)
-    recall = TP/(TP + FN)
+    if (TP + FP) != 0:
+        precision = TP/(TP + FP)
+    else:
+        precision = 0
+    if (TP + FN) != 0:
+        recall = TP/(TP + FN)
+    else:
+        recall = 0
     # calculate F1 score (2((precision * recall)/(precision + recall)))
     if precision + recall == 0:
         f1 = 0
