@@ -275,6 +275,7 @@ for dir in dirs:
     cbar.ax.set_ylabel('Posterior threshold', fontsize=14, rotation=90)
     plt.tight_layout()
     plt.savefig(outfile)
+    plt.close()
 
 
     all_thresh_rows.extend(rows)
@@ -311,3 +312,4 @@ cbar.ax.tick_params(labelsize=14)
 cbar.ax.set_ylabel('Posterior threshold', fontsize=14, rotation=90)
 plt.tight_layout()
 plt.savefig(outfile)
+plt.close()
