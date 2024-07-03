@@ -80,18 +80,22 @@ def calculate_metrics(true_counts, inferred_counts):
     TP = 0
     FP = 0
     FN = 0
-    for key in inferred_counts.keys():
-        inferred_count = inferred_counts[key]
-        if key in true_counts:
-            true_count = true_counts[key]
-            if inferred_count >= true_count:
-                TP += true_count
-                FP += inferred_count - true_count
+    all_keys = set(true_counts.keys()).union(set(inferred_counts.keys()))
+    for key in all_keys:
+        if key in inferred_counts:
+            inferred_count = inferred_counts[key]
+            if key in true_counts:
+                true_count = true_counts[key]
+                if inferred_count >= true_count:
+                    TP += true_count
+                    FP += inferred_count - true_count
+                else:
+                    TP += inferred_count
+                    FN += true_count - inferred_count
             else:
-                TP += inferred_count
-                FN += true_count - inferred_count
+                FP += inferred_count
         else:
-            FP += inferred_count
+            FN += true_counts[key]
     # compute precision as TP/(TP + FP) and recall as TP/(TP + FN)
     if (TP + FP) != 0:
         precision = TP/(TP + FP)
@@ -107,6 +111,7 @@ def calculate_metrics(true_counts, inferred_counts):
     else:
         f1 = 2 * ((precision * recall) / (precision + recall))
     return f1, recall, precision
+
 
 true_tree_file=sys.argv[1] # can also be csv of source,recipient format
 beast_trees_file=sys.argv[2]
