@@ -115,6 +115,7 @@ def calculate_metrics(true_counts, inferred_counts):
     return f1, recall, precision
 
 # dirs = (sys.argv[1]).split(",")
+# outdir = sys.argv[2]
 
 dirs = [
 "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/28815",
