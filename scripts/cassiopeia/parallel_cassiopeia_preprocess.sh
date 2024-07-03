@@ -17,11 +17,22 @@ for file in $unique_sra_file_ids; do
 done
 
 
-# used below to resubmit failed jobs with more memory
-# errors=(SRR17885825 SRR17885838 SRR17885797 SRR17885799 SRR17885786 SRR17885819 SRR17885839 SRR17885828 SRR17885822 SRR17885829 SRR17885837 SRR17885826 SRR17885820 SRR17885793 SRR17885798)
-# for error in ${errors[@]}; do
-#         rm -r $outdir/logs/$error*
-#         rm -r $outdir/$error
-#         qsub -cwd -l m_mem_free=5G -pe threads 10 -o $outdir/logs/$error.log -e $outdir/logs/$error.err $outdir/cmds/$error.sh
+# # used below to resubmit failed jobs with more memory
+# files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/preprocess_cassiopeia_6_26_24/logs/ -type f -name *.err)
+# errors=()
+# for file in $files; do
+#     echo $file
+#     id=$(basename $file | cut -d "." -f 1)
+#     if grep -q "Traceback (most recent call last)" $file; then
+#         errors+=($id)
+#     else
+#         echo $id
+#     fi
 # done
+
+for error in ${errors[@]}; do
+        rm -r $outdir/logs/$error*
+        rm -r $outdir/$error
+        qsub -cwd -l m_mem_free=10G -pe threads 25 -o $outdir/logs/$error.log -e $outdir/logs/$error.err $outdir/cmds/$error.sh
+done
 
