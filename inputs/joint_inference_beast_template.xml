@@ -91,19 +91,19 @@
                 <!-- prior distributions on the substitution model parameters -->
                 <prior id="editRatePrior" name="distribution" x="@editRate">
                     <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="lambda">0.005</parameter>
+                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.005</parameter>
                     </Exponential>
                 </prior>
                 <prior id="relativeGeoRatesPrior.s:tissue" name="distribution" x="@relativeGeoRates.s:tissue">
                    <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="lambda">0.002</parameter>
+                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.002</parameter>
                     </Exponential>
                 </prior>
             </distribution>
             
             
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
-                <distribution id="treeLikelihood" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" data="@s1_c1_data.txt" origin="@origin" tree="@tree" siteModel="@siteModel"/>
+                <distribution id="treeLikelihood" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" data="@s1_c1_data.txt" origin="REPLACE_TIME.001" tree="@tree" siteModel="@siteModel"/>
                 
                 <distribution id="traitedtreeLikelihood.tissue" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" data="@tissue" tag="location" tree="@tree" siteModel="@traitSiteModel">
                     <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="REPLACE_ROOT_TISSUE_FREQUENCIES" estimate="false"/>

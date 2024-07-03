@@ -69,7 +69,8 @@
 
 <!-- MODEL SETUPS -->
     <!-- Set universal models -->
-    <siteModel id="treeSiteModel" spec="SiteModel" proportionInvariant="0.0" gammaCategoryCount="0">
+    <!-- MUTATION RATE MUST BE SET TO THE SAME AS THE MEAN OF THE PRIOR ON EDIT RATES BASED ON THE SIMULATED OVERALL RATE TO SCALE THE RELATIVE EDIT RATES-->
+    <siteModel id="treeSiteModel" spec="SiteModel" mutationRate="0.005" proportionInvariant="0.0" gammaCategoryCount="0">
         <substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRate" silencingRate="0.0" editHeight="$(generations)" editDuration="$(generations)"/>
     </siteModel>
 
@@ -77,7 +78,7 @@
         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
         <substModel id="svs.s:tissue" spec="$(traitModelSpec)" rateIndicator="@rateIndicator.s:tissue" rates="@relativeGeoRates.s:tissue" symmetric="$(symmetric)">
             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
-                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="20" name="frequencies">1.0</parameter>
+                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="20" name="frequencies">0.05</parameter>
             </frequencies>
         </substModel>
     </siteModel>
@@ -116,14 +117,14 @@
                 <!-- Universal priors for edit model parameters -->
                 <prior id="editRatePrior" name="distribution" x="@editRate">
                     <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="lambda">0.005</parameter>
+                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.005</parameter>
                     </Exponential>
                 </prior>
 
                 <!-- Universal priors for tissue model parameters -->
                 <prior id="relativeGeoRatesPrior.s:tissue" name="distribution" x="@relativeGeoRates.s:tissue">
                     <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="lambda">0.002</parameter>
+                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.002</parameter>
                     </Exponential>
                 </prior>
 
