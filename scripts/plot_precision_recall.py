@@ -255,21 +255,27 @@ for dir in dirs:
     thresh_prec_rec = pd.DataFrame(rows)
 
     # plot precision recall curve
+    size = 75
     textsize=18
     plt.figure()
-    sns.lineplot(data=thresh_prec_rec, x='recall', y='precision', label="Posterior", errorbar=None)
+    plt.scatter(thresh_prec_rec['recall'], thresh_prec_rec['precision'], c=thresh_prec_rec['Threshold'], cmap='viridis', s=size, marker='x')
+    sns.lineplot(data=thresh_prec_rec, x='recall', y='precision', color = "grey", errorbar=None, label='Posterior')
     plt.scatter(machina_recall, machina_precision, color='red', label='Machina')
     plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus')
-    plt.scatter(random_recall, random_precision, color='green', label='Random')
+    plt.scatter(random_recall, random_precision, color='black', label='Random')
     plt.xlim(-0.05,1.05)
     plt.ylim(-0.05,1.05)
     plt.xlabel('Recall', fontsize=textsize)
     plt.ylabel('Precision', fontsize=textsize)
     plt.xticks(fontsize=textsize)
     plt.yticks(fontsize=textsize)
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 0.4), loc='upper left', fontsize=14, edgecolor='none')
+    cbar = plt.colorbar(shrink=0.4, orientation="vertical", drawedges=False, anchor=(1.05, 0.80))
+    cbar.ax.tick_params(labelsize=14)
+    cbar.ax.set_ylabel('Posterior threshold', fontsize=14, rotation=90)
     plt.tight_layout()
     plt.savefig(outfile)
+
 
     all_thresh_rows.extend(rows)
     i+=1
@@ -285,8 +291,9 @@ avg_consensus_recall = sum(consensus_recalls) / len(consensus_recalls)
 all_thresh_df = pd.DataFrame(all_thresh_rows)
 avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
 
-plt.figure()
 size = 75
+textsize = 18
+plt.figure()
 plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=size, marker='x')
 sns.lineplot(data=avg_df, x='recall', y='precision', color = "grey", errorbar=None, label='Posterior')
 plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='Machina', s=size, marker = "x")
@@ -294,7 +301,6 @@ plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='
 plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker = "x")
 plt.xlim(-0.05,1.05)
 plt.ylim(-0.05,1.05)
-textsize=18
 plt.xlabel('Recall', fontsize=textsize)
 plt.ylabel('Precision', fontsize=textsize)
 plt.xticks(fontsize=textsize)
