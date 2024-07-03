@@ -259,10 +259,10 @@ for dir in dirs:
     textsize=18
     plt.figure()
     plt.scatter(thresh_prec_rec['recall'], thresh_prec_rec['precision'], c=thresh_prec_rec['Threshold'], cmap='viridis', s=size, marker='x')
-    sns.lineplot(data=thresh_prec_rec, x='recall', y='precision', color = "grey", errorbar=None, label='Posterior')
-    plt.scatter(machina_recall, machina_precision, color='red', label='Machina')
-    plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus')
-    plt.scatter(random_recall, random_precision, color='black', label='Random')
+    plt.plot(thresh_prec_rec['recall'], thresh_prec_rec['precision'], color = "grey", label='Posterior')
+    plt.scatter(machina_recall, machina_precision, color='red', label='Machina', s=size, marker = "x")
+    plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
+    plt.scatter(random_recall, random_precision, color='black', label='Random', s=size, marker = "x")
     plt.xlim(-0.05,1.05)
     plt.ylim(-0.05,1.05)
     plt.xlabel('Recall', fontsize=textsize)
@@ -295,7 +295,7 @@ size = 75
 textsize = 18
 plt.figure()
 plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=size, marker='x')
-sns.lineplot(data=avg_df, x='recall', y='precision', color = "grey", errorbar=None, label='Posterior')
+plt.plot(avg_df['recall'], avg_df['precision'], color = "grey", label='Posterior')
 plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='Machina', s=size, marker = "x")
 plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
 plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker = "x")
