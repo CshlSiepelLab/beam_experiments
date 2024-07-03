@@ -12,6 +12,7 @@ from ete3 import Tree
 import dendropy
 from copy import deepcopy
 from arviz import hdi
+import glob
 
 def get_migration_counts(tree):
     migration_counts = {}
@@ -113,12 +114,44 @@ def calculate_metrics(true_counts, inferred_counts):
         f1 = 2 * ((precision * recall) / (precision + recall))
     return f1, recall, precision
 
-true_tree_file = sys.argv[1]
-machina_file = sys.argv[2]
-beast_posterior_file = sys.argv[3]
-consensus_file = sys.argv[4]
-random_file = sys.argv[5]
-outfile = sys.argv[6]
+# dirs = (sys.argv[1]).split(",")
+
+dirs = [
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/28815",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/24248",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/20272",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pS/8212",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pS/18360",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pS/27413",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pS/28222",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pS/32086",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pS/3302",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pM/6012",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pM/329",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pM/12362",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pM/7785",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pM/30118",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pR/31363",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pR/17994",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pR/19961",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pR/13712",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pR/20152",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pR/24010",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pR/16750",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pR/15146",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pR/5975",
+"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/pR/7313"
+]
+
+outdir = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24"
+
+# true_tree_file = sys.argv[1]
+# machina_file = sys.argv[2]
+# beast_posterior_file = sys.argv[3]
+# consensus_file = sys.argv[4]
+# random_file = sys.argv[5]
+# outfile = sys.argv[6]
 
 # # testing
 # true_tree_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cell_tree_seed122773959_tissue_labeled_tree.nwk"
@@ -128,94 +161,145 @@ outfile = sys.argv[6]
 # random_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/barcodeSites50_uniform_rates_precision_recall_joint_inference_vs_cassiopeia_machina_6_18_24/mS/10887/cassiopeia_greedy_inferred_random_tissues.nwk"
 # outfile = f"./precision_recall.pdf"
 
+machina_precisions = []
+machina_recalls = []
+consensus_precisions = []
+consensus_recalls = []
+random_precisions = []
+random_recalls = []
+all_thresh_rows = []
+i=0
 
-# process true input file to get migration count dict
-if true_tree_file.endswith(".csv"):
-    true_counts = process_csv(true_tree_file)
-else:
-    true_counts = process_tree(true_tree_file)
+for dir in dirs:
+    true_tree_file = glob.glob(f"{dir}/cell_tree_seed*_tissue_labeled_tree.nwk")[0]
+    machina_file = f"{dir}/machina_tree_all_tissue_labels.nwk"
+    beast_posterior_file = f"{dir}/joint_inference_beast_combined_tissues.trees"
+    consensus_file = f"{dir}/cassiopeia_greedy_inferred_consensus_tissues.nwk"
+    random_file = f"{dir}/cassiopeia_greedy_inferred_random_tissues.nwk"
+    outfile = f"{dir}/precision_recall.pdf"
 
-# process machina result to get precision and recall
-machina_counts = process_tree(machina_file)
-machina_f1, machina_recall, machina_precision = calculate_metrics(true_counts, machina_counts)
+    # process true input file to get migration count dict
+    if true_tree_file.endswith(".csv"):
+        true_counts = process_csv(true_tree_file)
+    else:
+        true_counts = process_tree(true_tree_file)
 
-# process random result to get precision and recall
-random_counts = process_tree(random_file)
-random_f1, random_recall, random_precision = calculate_metrics(true_counts, random_counts)
+    # process machina result to get precision and recall
+    machina_counts = process_tree(machina_file)
+    machina_f1, machina_recall, machina_precision = calculate_metrics(true_counts, machina_counts)
+    machina_precisions.append(machina_precision)
+    machina_recalls.append(machina_recall)
 
-# process consensus result to get precision and recall
-consensus_counts = process_tree(consensus_file)
-consensus_f1, consensus_recall, consensus_precision = calculate_metrics(true_counts, consensus_counts)
+    # process random result to get precision and recall
+    random_counts = process_tree(random_file)
+    random_f1, random_recall, random_precision = calculate_metrics(true_counts, random_counts)
+    random_precisions.append(random_precision)
+    random_recalls.append(random_recall)
 
-# process beast posterior result to get precision and recall
-burnin_percent=0.1
-primary_tissue="P"
-beast_tree_list = dendropy.TreeList()
-beast_tree_list.read(path=beast_posterior_file, schema="nexus")
-num_beast_trees = len(beast_tree_list)
-num_discard = round(num_beast_trees * burnin_percent)
-beast_tree_list = beast_tree_list[num_discard:]
+    # process consensus result to get precision and recall
+    consensus_counts = process_tree(consensus_file)
+    consensus_f1, consensus_recall, consensus_precision = calculate_metrics(true_counts, consensus_counts)
+    consensus_precisions.append(consensus_precision)
+    consensus_recalls.append(consensus_recall)
 
-posteriors = []
-f1_scores=[]
-precisions=[]
-recalls=[]
-all_inferred_counts = []
-for tree in beast_tree_list:
-    posterior = float(tree.annotations.get_value('posterior'))
-    posteriors.append(posterior)
-    remove_zero_length_nodes(tree)
-    inferred_tree = dendropy_beast_to_ete_newick_with_strict_locations(tree)
-    inferred_tree.get_tree_root().name = f'0_{primary_tissue}'
-    inferred_counts=get_migration_counts(inferred_tree)
-    f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
-    f1_scores.append(f1)
-    precisions.append(precision)
-    recalls.append(recall)
-    all_inferred_counts.append(inferred_counts)
+    # process beast posterior result to get precision and recall
+    burnin_percent=0.1
+    primary_tissue="P"
+    beast_tree_list = dendropy.TreeList()
+    beast_tree_list.read(path=beast_posterior_file, schema="nexus")
+    num_beast_trees = len(beast_tree_list)
+    num_discard = round(num_beast_trees * burnin_percent)
+    beast_tree_list = beast_tree_list[num_discard:]
 
-# fit a gaussian kernel density estimate to the posterior values to get a probability density function
-pdf = gaussian_kde(posteriors)
-posterior_probs = [pdf(posterior)[0] for posterior in posteriors]
-total_posterior_prob = sum(posterior_probs)
-posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in posterior_probs]
+    posteriors = []
+    f1_scores=[]
+    precisions=[]
+    recalls=[]
+    all_inferred_counts = []
+    for tree in beast_tree_list:
+        posterior = float(tree.annotations.get_value('posterior'))
+        posteriors.append(posterior)
+        remove_zero_length_nodes(tree)
+        inferred_tree = dendropy_beast_to_ete_newick_with_strict_locations(tree)
+        inferred_tree.get_tree_root().name = f'0_{primary_tissue}'
+        inferred_counts=get_migration_counts(inferred_tree)
+        f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
+        f1_scores.append(f1)
+        precisions.append(precision)
+        recalls.append(recall)
+        all_inferred_counts.append(inferred_counts)
 
-# calculate total counts weighted by posterior probability
-total_counts = {}
-for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
-    for pattern, count in inferred_counts.items():
-        for num in range(1, count+1):
-            edge = f"{pattern}_{num}"
-            if edge not in total_counts:
-                total_counts[edge] = prob
+    # fit a gaussian kernel density estimate to the posterior values to get a probability density function
+    pdf = gaussian_kde(posteriors)
+    posterior_probs = [pdf(posterior)[0] for posterior in posteriors]
+    total_posterior_prob = sum(posterior_probs)
+    posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in posterior_probs]
+
+    # calculate total counts weighted by posterior probability
+    total_counts = {}
+    for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
+        for pattern, count in inferred_counts.items():
+            for num in range(1, count+1):
+                edge = f"{pattern}_{num}"
+                if edge not in total_counts:
+                    total_counts[edge] = prob
+                else:
+                    total_counts[edge] += prob
+
+    # compute thresholded precision and recall values
+    thresholds = [i for i in np.arange(0, 1.00, 0.01)]
+    rows = []
+    for thresh in thresholds:
+        thresh_counts = {key: value for key, value in total_counts.items() if value > thresh}
+        edges = ['_'.join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
+        thresh_counts = {}
+        for edge in edges:
+            if edge not in thresh_counts:
+                thresh_counts[edge] = 1
             else:
-                total_counts[edge] += prob
+                thresh_counts[edge] += 1
+        f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
+        rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i})
+    thresh_prec_rec = pd.DataFrame(rows)
 
-# compute thresholded precision and recall values
-thresholds = [i for i in np.arange(0, 1.00, 0.01)]
-rows = []
-for thresh in thresholds:
-    thresh_counts = {key: value for key, value in total_counts.items() if value > thresh}
-    edges = ['_'.join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
-    thresh_counts = {}
-    for edge in edges:
-        if edge not in thresh_counts:
-            thresh_counts[edge] = 1
-        else:
-            thresh_counts[edge] += 1
-    f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
-    rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall})
-thresh_prec_rec = pd.DataFrame(rows)
+    # plot precision recall curve
+    textsize=18
+    plt.figure()
+    sns.lineplot(data=thresh_prec_rec, x='recall', y='precision', label="Posterior")
+    plt.scatter(machina_recall, machina_precision, color='red', label='Machina')
+    plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus')
+    plt.scatter(random_recall, random_precision, color='green', label='Random')
+    plt.xlim(-0.05,1.05)
+    plt.ylim(-0.05,1.05)
+    plt.xlabel('Recall', fontsize=textsize)
+    plt.ylabel('Precision', fontsize=textsize)
+    plt.xticks(fontsize=textsize)
+    plt.yticks(fontsize=textsize)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(outfile)
 
-# plot precision recall curve
-textsize=18
+    all_thresh_rows.extend(rows)
+    i+=1
+
+# make an overall averaged precision/recall curve
+outfile = f"{outdir}/precision_recall.pdf"
+avg_machina_precision = sum(machina_precisions) / len(machina_precisions)
+avg_machina_recall = sum(machina_recalls) / len(machina_recalls)
+avg_random_precision = sum(random_precisions) / len(random_precisions)
+avg_random_recall = sum(random_recalls) / len(random_recalls)
+avg_consensus_precision = sum(consensus_precisions) / len(consensus_precisions)
+avg_consensus_recall = sum(consensus_recalls) / len(consensus_recalls)
+all_thresh_df = pd.DataFrame(all_thresh_rows)
+avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+
 plt.figure()
-sns.lineplot(data=thresh_prec_rec, x='recall', y='precision', label="Posterior")
-plt.scatter(machina_recall, machina_precision, color='red', label='Machina')
-plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus')
-plt.scatter(random_recall, random_precision, color='green', label='Random')
-plt.xlim(-0.01,1.01)
-plt.ylim(-0.01,1.01)
+sns.lineplot(data=avg_df, x='recall', y='precision', label="Posterior")
+plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='Machina')
+plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus')
+plt.scatter(avg_random_recall, avg_random_precision, color='green', label='Random')
+plt.xlim(-0.05,1.05)
+plt.ylim(-0.05,1.05)
 plt.xlabel('Recall', fontsize=textsize)
 plt.ylabel('Precision', fontsize=textsize)
 plt.xticks(fontsize=textsize)
