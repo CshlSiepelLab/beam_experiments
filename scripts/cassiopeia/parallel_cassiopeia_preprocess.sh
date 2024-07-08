@@ -30,9 +30,9 @@ done
 #     fi
 # done
 
-for error in ${errors[@]}; do
-        rm -r $outdir/logs/$error*
-        rm -r $outdir/$error
-        qsub -cwd -l m_mem_free=10G -pe threads 25 -o $outdir/logs/$error.log -e $outdir/logs/$error.err $outdir/cmds/$error.sh
-done
+# for error in ${errors[@]}; do
+#         rm -r $outdir/logs/$error*
+#         rm -r $outdir/$error
+#         qsub -cwd -l m_mem_free=40G -pe threads 25 -o $outdir/logs/$error.log -e $outdir/logs/$error.err $outdir/cmds/$error.sh
+# done
 

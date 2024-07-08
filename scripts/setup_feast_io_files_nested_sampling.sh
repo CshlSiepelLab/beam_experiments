@@ -7,7 +7,7 @@ tissues_tsv_file=$2
 
 # # # testing
 # newick_file="machina_sims_proper_nested_sampling_5_29_24/m8/mS/seed5.nwk"
-# tissues_tsv_file="machina_sims_proper_nested_sampling_5_29_24/m8/mS/seed5.tsv"
+# tissues_tsv_file="machina_sims_proper_nested_sampling_5_29_24/m8/mS/seed5.labeling"
 
 # get all tip names from the newick file by pattern matching for newick with only tip names and all branch lengths
 tip_names=$(grep -o '[,(][^,:]*:' $newick_file | tr -d ',:(')
@@ -19,11 +19,11 @@ tip_traits+="$(grep $tip $tissues_tsv_file | tr -d ' ' | sed 's/\t/,/g')\n"
 done
 
 # write tip traits to new csv
-outfile_traits=${tissues_tsv_file//.tsv/_tips_only.csv}
+outfile_traits=${tissues_tsv_file//.labeling/_tips_only.csv}
 echo -e $tip_traits > $outfile_traits
 
 # write fake fasta for tip names
-outfile_fasta=${tissues_tsv_file//.tsv/.fasta}
+outfile_fasta=${tissues_tsv_file//.labeling/.fasta}
 for name in $tip_names; do
 echo -e ">$name\n?" >> $outfile_fasta
 done

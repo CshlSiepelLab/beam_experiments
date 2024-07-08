@@ -5,15 +5,18 @@
 
 barcode_simulator_dir="../barcode_simulator/scripts/simulator"
 
+model=1
+echo $model
+
 # set dir to hold all sims
-sim_dir="data/uniformMigration_only_pR_50sites_6_24_24"
-mkdir ${sim_dir}
+sim_dir="data/model_selection_data_7_8_24/model${model}"
+mkdir -p ${sim_dir}
 
 # make pattern directories
 # mkdir ${sim_dir}/mS
 # mkdir ${sim_dir}/pS
 # mkdir ${sim_dir}/pM
-mkdir ${sim_dir}/pR
+# mkdir ${sim_dir}/pR
 
 # set migration pattern options
 # migration_patterns=(0 1 2 3)
@@ -23,22 +26,23 @@ mutation_rates=(0.005)
 
 for mutrate in ${mutation_rates[@]}; do
 for pattern in ${migration_patterns[@]}; do
-for ((i = 0; i < 3; i++)); do
+for ((i = 0; i < 5; i++)); do
 
-# make dir specific to the seed number for each sim and the migration pattern
-if (( $pattern == 0 )); then
-    pattern_dir="mS"
-elif (( $pattern == 1 )); then
-    pattern_dir="pS"
-elif (( $pattern == 2 )); then
-    pattern_dir="pM"
-elif (( $pattern == 3 )); then
-    pattern_dir="pR"
-fi
+# # make dir specific to the seed number for each sim and the migration pattern
+# if (( $pattern == 0 )); then
+#     pattern_dir="mS"
+# elif (( $pattern == 1 )); then
+#     pattern_dir="pS"
+# elif (( $pattern == 2 )); then
+#     pattern_dir="pM"
+# elif (( $pattern == 3 )); then
+#     pattern_dir="pR"
+# fi
 
 seed=$RANDOM
 
-outprefix="${HOME}/bayesian_phylogenetic_metastasis/${sim_dir}/${pattern_dir}/${seed}"
+# outprefix="${HOME}/bayesian_phylogenetic_metastasis/${sim_dir}/${pattern_dir}/${seed}"
+outprefix="${HOME}/bayesian_phylogenetic_metastasis/${sim_dir}/${seed}"
 mkdir ${outprefix}
 
 # set simulator parameters
@@ -54,7 +58,7 @@ num_sites=50
 design="RANDOM"
 
 # optional migration transition probabilities matrix csv file
-# transition_probs="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/highM1MigrationTransitionProbs.csv"
+transition_probs="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/model_selection_transition_matrices/model${model}.csv"
 
 
 # save running parameters to file
@@ -74,8 +78,8 @@ transition_probs_file\t${transition_probs}" > ${run_conditions_file}
 # run simulator
 echo "Running barcode simulator with seed ${seed} and migration pattern ${pattern}"
 echo "$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample}" >> ${run_conditions_file}
-timeout 5m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
-# timeout 5m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} -M ${transition_probs} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
+# timeout 5m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
+timeout 10m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} -M ${transition_probs} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
 
 
 # run barcode simulator to overlay barcode data for machina simulator tree and tissues output
