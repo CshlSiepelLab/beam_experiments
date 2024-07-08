@@ -39,7 +39,7 @@
     <map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
     <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
 
-    <userDataType id="codeMap" spec="beast.base.evolution.datatype.UserDataType" codeMap="P=0,M1=1,M2=2,M3=3,M4=4,M5=5,M6=6,M7=7,M8=8,M9=9,M10=10,? = 0 1 2 3 4 5 6 7 8 9 10" codelength="-1" states="11"/>
+    <userDataType id="codeMap" spec="beast.base.evolution.datatype.UserDataType" codeMap="P=0,M1=1,M2=2,M3=3,M4=4,M5=5,M6=6,M7=7,M8=8,M9=9,? = 0 1 2 3 4 5 6 7 8 9" codelength="-1" states="10"/>
 
 
 <!-- USER INPUTS -->
@@ -99,7 +99,7 @@
             <parameter id="matrixStructure" spec="parameter.IntegerParameter" dimension="100" name="stateNode">$(matrixStructure)</parameter>
 
             <!-- indicators are irrelevant here with BSVSS turned off -->
-            <parameter id="tissueRateIndicators" spec="parameter.BooleanParameter" dimension="1" name="stateNode">true</parameter>
+            <parameter id="tissueRateIndicators" spec="parameter.BooleanParameter" dimension="$(numRates)" name="stateNode">true</parameter>
         </state>
 
         <!-- Posterior -->
