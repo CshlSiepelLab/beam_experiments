@@ -17,7 +17,12 @@ for file in $unique_sra_file_ids; do
 done
 
 
-# # used below to resubmit failed jobs with more memory
+
+############################################################################################################
+# used below to resubmit failed jobs with more memory
+############################################################################################################
+
+# to get IDs without the final step run due to seg fault
 # files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/preprocess_cassiopeia_6_26_24/logs/ -type f -name *.err)
 # errors=()
 # for file in $files; do
@@ -30,9 +35,19 @@ done
 #     fi
 # done
 
+# # or to get all IDs
+# files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/preprocess_cassiopeia_6_26_24/cmds/ -type f -name *.sh)
+# errors=()
+# for file in $files; do
+#     echo $file
+#     id=$(basename $file | cut -d "." -f 1)
+#     errors+=($id)
+# done
+
+# # to rerun error jobs
 # for error in ${errors[@]}; do
 #         rm -r $outdir/logs/$error*
 #         rm -r $outdir/$error
-#         qsub -cwd -l m_mem_free=40G -pe threads 50 -o $outdir/logs/$error.log -e $outdir/logs/$error.err $outdir/cmds/$error.sh
+#         qsub -cwd -l m_mem_free=20G -pe threads 25 -o $outdir/logs/$error.log -e $outdir/logs/$error.err $outdir/cmds/$error.sh
 # done
 

@@ -24,7 +24,7 @@ barcode_interval = (20, 34)
 cutsite_locations = [112, 166, 220]
 
 # Number of threads to use, whenever parallelization is possible
-n_threads = 50
+n_threads = 25
 
 # Whether to allow a single intBC to have multiple allele states. For chemistries for which barcode == cell, this should be `False`.
 allow_allele_conflicts = False
