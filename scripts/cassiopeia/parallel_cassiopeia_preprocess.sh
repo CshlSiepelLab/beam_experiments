@@ -23,16 +23,16 @@ done
 # for file in $files; do
 #     echo $file
 #     id=$(basename $file | cut -d "." -f 1)
-#     if grep -q "Traceback (most recent call last)" $file; then
-#         errors+=($id)
+#     if grep -q "Plotting filtered lineage group pivot table heatmap" $file; then
+#         echo $id "completed"
 #     else
-#         echo $id
+#         errors+=($id)
 #     fi
 # done
 
 # for error in ${errors[@]}; do
 #         rm -r $outdir/logs/$error*
 #         rm -r $outdir/$error
-#         qsub -cwd -l m_mem_free=40G -pe threads 25 -o $outdir/logs/$error.log -e $outdir/logs/$error.err $outdir/cmds/$error.sh
+#         qsub -cwd -l m_mem_free=40G -pe threads 50 -o $outdir/logs/$error.log -e $outdir/logs/$error.err $outdir/cmds/$error.sh
 # done
 

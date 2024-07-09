@@ -24,7 +24,7 @@ barcode_interval = (20, 34)
 cutsite_locations = [112, 166, 220]
 
 # Number of threads to use, whenever parallelization is possible
-n_threads = 25
+n_threads = 50
 
 # Whether to allow a single intBC to have multiple allele states. For chemistries for which barcode == cell, this should be `False`.
 allow_allele_conflicts = False
@@ -150,3 +150,6 @@ allele_table = cas.pp.call_lineage_groups(
     plot=True,
 )
 print("Done calling lineage groups")
+
+allele_table.to_csv(os.path.join(output_dir, "allele_table.tsv"), sep="\t", index=False)
+print("Allele table saved to file")
