@@ -1,6 +1,6 @@
 #!/bin/bash
 
-outdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/preprocess_cassiopeia_6_26_24"
+outdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/preprocess_cassiopeia_7_9_24"
 mkdir -p $outdir
 mkdir -p $outdir/cmds
 mkdir -p $outdir/logs
@@ -35,7 +35,7 @@ done
 #     fi
 # done
 
-# # or to get all IDs
+# # or to use all IDs
 # files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/preprocess_cassiopeia_6_26_24/cmds/ -type f -name *.sh)
 # errors=()
 # for file in $files; do
@@ -43,6 +43,9 @@ done
 #     id=$(basename $file | cut -d "." -f 1)
 #     errors+=($id)
 # done
+
+# # or to use only the filtered mice ids
+# errors=(SRR17885790 SRR17885791 SRR17885792 SRR17885793 SRR17885797 SRR17885798 SRR17885799 SRR17885819 SRR17885820 SRR17885822 SRR17885823 SRR17885824 SRR17885826 SRR17885828 SRR17885834 SRR17885835 SRR17885839)
 
 # # to rerun error jobs
 # for error in ${errors[@]}; do
