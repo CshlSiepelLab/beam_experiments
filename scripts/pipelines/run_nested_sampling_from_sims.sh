@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # specify the path to the directory where the results will be stored
-outdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_results_7_8_24"
+outdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_results_7_11_24"
 
 # specify the path to the directory where the data is
 dataset_dirs="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/model_selection_data_7_8_24"
