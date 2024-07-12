@@ -23,17 +23,18 @@ done
 ############################################################################################################
 
 # to get IDs without the final step run due to seg fault
-# files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/preprocess_cassiopeia_6_26_24/logs/ -type f -name *.err)
-# errors=()
-# for file in $files; do
-#     echo $file
-#     id=$(basename $file | cut -d "." -f 1)
-#     if grep -q "Plotting filtered lineage group pivot table heatmap" $file; then
-#         echo $id "completed"
-#     else
-#         errors+=($id)
-#     fi
-# done
+files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/preprocess_cassiopeia_7_9_24/logs/ -type f -name *.err)
+done=()
+errors=()
+for file in $files; do
+    echo $file
+    id=$(basename $file | cut -d "." -f 1)
+    if grep -q "Plotting filtered lineage group pivot table heatmap" $file; then
+        done+=($id)
+    else
+        errors+=($id)
+    fi
+done
 
 # # or to use all IDs
 # files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/preprocess_cassiopeia_6_26_24/cmds/ -type f -name *.sh)
@@ -48,9 +49,9 @@ done
 # errors=(SRR17885790 SRR17885791 SRR17885792 SRR17885793 SRR17885797 SRR17885799 SRR17885819 SRR17885820 SRR17885822 SRR17885823 SRR17885824 SRR17885825 SRR17885828 SRR17885829 SRR17885834 SRR17885835 SRR17885839)
 
 # # to rerun error jobs
-# for error in ${errors[@]}; do
-#         rm -r $outdir/logs/$error*
-#         rm -r $outdir/$error
-#         qsub -cwd -l m_mem_free=20G -pe threads 25 -o $outdir/logs/$error.log -e $outdir/logs/$error.err $outdir/cmds/$error.sh
-# done
+for error in ${errors[@]}; do
+        rm -r $outdir/logs/$error*
+        rm -r $outdir/$error
+        qsub -cwd -l m_mem_free=100G -pe threads 10 -o $outdir/logs/$error.log -e $outdir/logs/$error.err $outdir/cmds/$error.sh
+done
 
