@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import glob
+
+sims = [d for d in os.listdir(config['inputpath']) if os.path.isdir(os.path.join(config['inputpath'], d))]
+print(sims)
+
+outdir = config['outdir']
+print(outdir)
+sys.exit()
+
+
+rule all:
+    input:
+        expand("{outdir}/{sim}/accuracy.csv", sim = sims)
+
+# rule runCassiopeia:
+#     input:
+#         "{outdir}/{sim}/sim_matrix"
+#     output:
+#         "{outdir}/{sim}/cassiopeia_greedy_inferred.nwk"
+#     conda:
+#         "simulate"
+#     shell:
+#         "python scripts/cassiopeia/cassiopeia_greedy.py {input} > {output}"
+
+# rule runMachina:
+#     input:
+#         "{outdir}/{sim}/cassiopeia_greedy_inferred.nwk",
+#         "{outdir}/{sim}/leaf_tissues"
+#     output:
+#         directory("{outdir}/{sim}/machina")
+#     conda:
+#         "machina"
+#     shell:
+#         """
+#         mkdir {output}
+#         python scripts/machina/prep_machina.py {input[0]} {output} P {input[1]}
+#         ./scripts/machina/run_machina_tr.sh --edges {output}/*.tree --labels {output}/*.labeling --colors {output}/*_colors.txt --primary-tissue P --outdir {output} || echo "Error: Machina execution timed out for {output}"
+#         """
+
+# rule runMetastabayes:
+#     input:
+#         "{outdir}/{sim}/machina/machina_tree_all_tissue_labels.nwk"
+#     output:
+#         "{outdir}/{sim}/beast/joint_inference_beast_combined.log",
+#         "{outdir}/{sim}/beast/joint_inference_beast_combined_tissues.trees"
+#     conda:
+#         "compare_trees"
+#     shell:
+#         """
+#         java -Xmx5g -jar metastabayes.jar -overwrite -working {input} > {output[0]}
+#         logcombiner -log {outdir}/{sim}/beast/joint_inference_beast_*.log -o {output[0]}
+#         logcombiner -log {outdir}/{sim}/beast/joint_inference_beast_*_tissues.trees -o {output[1]}
+#         """
+
+# rule calcPerformance:
+#     input:
+#         "{outdir}/{sim}/cassiopeia_greedy_inferred.nwk",
+#         "{outdir}/{sim}/machina/machina_tree_all_tissue_labels.nwk",
+#         "{outdir}/{sim}/beast/joint_inference_beast_combined_tissues.trees"
+#     output:
+#         "{outdir}/{sim}/accuracy.csv"
+#     conda:
+#         "compare_trees"
+#     shell:
+#         """
+#         python scripts/migration_graph_f1_true_inferred_trees.py {input[0]} {input[1]} > {output}
+#         """
+
+# rule plotResults:
+#     input:
+#         "{outdir}/{sim}/accuracy.csv"
+#     conda:
+#         "compare_trees"
+#     shell:
+#         """
+#         # Plotting code goes here
+#         """
