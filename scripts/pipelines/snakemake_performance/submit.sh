@@ -4,6 +4,7 @@ export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metasta
 
 snakemake \
 --use-singularity \
+--singularity-args "--bind $HOME/" \
 --use-conda \
 --snakefile $REPO_PATH/Snakefile \
 --configfile $REPO_PATH/config/config.yaml \

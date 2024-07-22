@@ -4,4 +4,4 @@ data/
 *.pdf
 .snakemake
 *.sif
-
+.cache
