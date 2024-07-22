@@ -7,9 +7,10 @@ from ete3 import Tree
 
 def main():
     character_matrix_tsv = sys.argv[1]
+    outprefix = sys.argv[2]
 
-    # get dir path to input file for output to the same dir
-    outprefix = os.path.dirname(character_matrix_tsv)
+    # # get dir path to input file for output to the same dir
+    # outprefix = os.path.dirname(character_matrix_tsv)
 
     # read in final matrix
     final_matrix = pd.read_csv(character_matrix_tsv, sep='\t', index_col=0)

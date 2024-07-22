@@ -191,4 +191,3 @@ dependencies:
   - xz=5.2.6=h166bdaf_0
   - zlib=1.2.13=hd590300_5
   - zstd=1.5.2=hfc55251_7
-prefix: /grid/siepel/home_norepl/staklins/miniconda3/envs/machina

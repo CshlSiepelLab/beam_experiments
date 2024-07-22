@@ -1,59 +1,134 @@
-#!/usr/bin/env python3
+
 import os
 import sys
 import glob
 
-sims = [d for d in os.listdir(config['inputpath']) if os.path.isdir(os.path.join(config['inputpath'], d))]
-print(sims)
+def get_sims():
+    return [d for d in os.listdir(config['inputpath']) if os.path.isdir(os.path.join(config['inputpath'], d))]
 
+sims = get_sims()
 outdir = config['outdir']
-print(outdir)
-sys.exit()
-
 
 rule all:
     input:
-        expand("{outdir}/{sim}/accuracy.csv", sim = sims)
+        expand("{outdir}/raw_data/{sim}/done", sim=sims, outdir=outdir),
+        expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir)
 
-# rule runCassiopeia:
-#     input:
-#         "{outdir}/{sim}/sim_matrix"
-#     output:
-#         "{outdir}/{sim}/cassiopeia_greedy_inferred.nwk"
-#     conda:
-#         "simulate"
-#     shell:
-#         "python scripts/cassiopeia/cassiopeia_greedy.py {input} > {output}"
+rule copyDataToOutDir:
+    input:
+        lambda wildcards: os.path.join(config['inputpath'], wildcards.sim)
+    output:
+        os.path.join(outdir, "raw_data/{sim}", "done")
+    shell:
+        """
+        outdir=$(dirname $(dirname {output}))
+        cp -r {input} $outdir
+        touch {output}
+        """
 
-# rule runMachina:
-#     input:
-#         "{outdir}/{sim}/cassiopeia_greedy_inferred.nwk",
-#         "{outdir}/{sim}/leaf_tissues"
-#     output:
-#         directory("{outdir}/{sim}/machina")
-#     conda:
-#         "machina"
-#     shell:
-#         """
-#         mkdir {output}
-#         python scripts/machina/prep_machina.py {input[0]} {output} P {input[1]}
-#         ./scripts/machina/run_machina_tr.sh --edges {output}/*.tree --labels {output}/*.labeling --colors {output}/*_colors.txt --primary-tissue P --outdir {output} || echo "Error: Machina execution timed out for {output}"
-#         """
+rule labelTrueTreeWithTissues:
+    input:
+        os.path.join(outdir, "raw_data/{sim}", "done")
+    output:
+        "{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk"
+    params:
+        scripts = config['scripts']
+    conda:
+        'envs/compare_trees.yaml'
+    shell:
+        """
+        # hack to find files, need to replace with proper input section soon
+        datadir=$(dirname {input})
+        true_tree=$datadir/cell_tree_seed*[0-9].nwk
+        true_tissues=$datadir/cell_tree_seed*.vertex.labeling
 
-# rule runMetastabayes:
-#     input:
-#         "{outdir}/{sim}/machina/machina_tree_all_tissue_labels.nwk"
-#     output:
-#         "{outdir}/{sim}/beast/joint_inference_beast_combined.log",
-#         "{outdir}/{sim}/beast/joint_inference_beast_combined_tissues.trees"
-#     conda:
-#         "compare_trees"
-#     shell:
-#         """
-#         java -Xmx5g -jar metastabayes.jar -overwrite -working {input} > {output[0]}
-#         logcombiner -log {outdir}/{sim}/beast/joint_inference_beast_*.log -o {output[0]}
-#         logcombiner -log {outdir}/{sim}/beast/joint_inference_beast_*_tissues.trees -o {output[1]}
-#         """
+        # run add tissue to newick
+        python {params.scripts}/format_add_tissues_to_newick.py $true_tree $true_tissues
+        """
+
+rule runCassiopeia:
+    input:
+        os.path.join(outdir, "raw_data/{sim}", "done")
+    output:
+        "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/cassiopeia_greedy/{sim}"
+    singularity:
+        'envs/simulate.sif'
+    shell:
+        """
+        # hack to find files, need to replace with proper input section soon
+        datadir=$(dirname {input})
+        sim_matrix=$datadir/*_indel_character_matrix.tsv
+
+        # run cassiopeia greedy
+        python {params.scripts}/cassiopeia/cassiopeia_greedy.py $sim_matrix {params.outputdir}
+        """
+
+rule runMachina:
+    input:
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    output:
+        machinaResults = "{outdir}/machina/{sim}/machina_results.txt"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/machina/{sim}",
+        primaryTissue = config['primaryTissue']
+    conda:
+        "envs/machina.yaml"
+    shell:
+        """
+        # hack to find files, need to replace with proper input section soon
+        datadir=$(dirname {input})
+        leaf_tissues=$(ls ${datadir}/cell_tree_*[0-9].labeling)
+
+        # make machina output dir
+        mkdir -p {params.outputdir}
+
+        # prep machina inputs
+        python {params.scripts}/machina/prep_machina.py {input.casTree} {params.outputdir} {params.primaryTissue} $leaf_tissues
+
+        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
+        module load EBModules
+        module load Gurobi
+
+        # run machina
+        {params.scripts}/machina/run_machina_tr.sh --edges {output}/*.tree --labels {output}/*.labeling --colors {output}/*_colors.txt --primary-tissue P --outdir {output}
+        """
+
+rule processMachinaResults:
+    input:
+        machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
+        machinaTissues = "{outdir}/machina/{sim}/P-T-P-R.labeling"
+    output:
+        machinaTissueTree = "{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk",
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/machina/{sim}"
+    singularity:
+        "envs/simulate.sif"
+    shell:
+        """
+        python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues {params.outputdir}
+        """
+
+rule runMetastabayes:
+    input:
+        "{outdir}/{sim}/machina/machina_tree_all_tissue_labels.nwk"
+    output:
+        "{outdir}/{sim}/beast/joint_inference_beast_combined.log",
+        "{outdir}/{sim}/beast/joint_inference_beast_combined_tissues.trees"
+    conda:
+        "compare_trees"
+    shell:
+        """
+        java -Xmx5g -jar metastabayes.jar -overwrite -working {input} > {output[0]}
+        logcombiner -log {outdir}/{sim}/beast/joint_inference_beast_*.log -o {output[0]}
+        logcombiner -log {outdir}/{sim}/beast/joint_inference_beast_*_tissues.trees -o {output[1]}
+        """
 
 # rule calcPerformance:
 #     input:
@@ -69,12 +144,3 @@ rule all:
 #         python scripts/migration_graph_f1_true_inferred_trees.py {input[0]} {input[1]} > {output}
 #         """
 
-# rule plotResults:
-#     input:
-#         "{outdir}/{sim}/accuracy.csv"
-#     conda:
-#         "compare_trees"
-#     shell:
-#         """
-#         # Plotting code goes here
-#         """

@@ -74,8 +74,8 @@ for model1 in ${models[@]}; do
         num_rates=$(echo "$matrix_structure" | tr ' ' '\n' | sort | uniq | wc -l)
 
         run_file=$dir/run_${model1}_data_${model2}_inference.sh
-        echo -e "java -jar $metastabayes_jar -overwrite -working -D inputNames=$sim_names -D fileDir=$file_dir -D matrixStructure='$matrix_structure' -D numRates=$num_rates $dir/proper_nested_sampling_template.xml > $dir/run_${model1}_data_${model2}_inference_terminal.log" > $dir/run_${model1}_data_${model2}_inference.sh
+        echo -e "java -jar $metastabayes_jar -threads 17 -overwrite -working -D inputNames=$sim_names -D fileDir=$file_dir -D matrixStructure='$matrix_structure' -D numRates=$num_rates $dir/proper_nested_sampling_template.xml > $dir/run_${model1}_data_${model2}_inference_terminal.log" > $dir/run_${model1}_data_${model2}_inference.sh
         chmod u+x $run_file
-        qsub -cwd -l m_mem_free=5G -e $dir/cluster.log -o $dir/cluster.log $run_file
+        qsub -cwd -l m_mem_free=5G -pe threads 17 -e $dir/cluster.log -o $dir/cluster.log $run_file
     done
 done

@@ -2,3 +2,6 @@ results/
 data/
 .vscode
 *.pdf
+.snakemake
+*.sif
+

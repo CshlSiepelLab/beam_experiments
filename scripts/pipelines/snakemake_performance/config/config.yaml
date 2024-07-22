@@ -1,3 +1,20 @@
+
+# set path to data dirs
 inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/uniformMigration_only_pR_50sites_6_24_24/pR"
+
+# set where output should go (data is also copied there initially to retain original data in raw form)
 outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test"
+
+# primary tissue name
+primaryTissue: P
+
+# set path to scripts
+scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
+
+# set necessary paths to beast dependencies
+treeannotator: /grid/siepel/home_norepl/staklins/bin/beast/bin/treeannotator
+logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
+
+# set path to metastabayes custom BEAST2 package runnable jar file
+metastabayes: /grid/siepel/home_norepl/staklins/metastabayes/metastabayes.jar
 
