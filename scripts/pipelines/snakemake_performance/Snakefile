@@ -14,7 +14,8 @@ rule all:
         expand("{outdir}/raw_data/{sim}/done", sim=sims, outdir=outdir),
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk", sim=sims, outdir=outdir),
-        # expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir)
+        expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/metastabayes/{sim}/{sim}.fasta", sim=sims, outdir=outdir)
 
 rule copyDataToOutDir:
     input:
@@ -30,7 +31,8 @@ rule copyDataToOutDir:
 
 rule labelTrueTreeWithTissues:
     input:
-        os.path.join(outdir, "raw_data/{sim}", "done")
+        true_tree = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*[0-9].nwk")),
+        true_tissues = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*.vertex.labeling"))
     output:
         "{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk"
     params:
@@ -39,18 +41,13 @@ rule labelTrueTreeWithTissues:
         "envs/compare_trees.yaml"
     shell:
         """
-        # hack to find files, need to replace with proper input section soon
-        datadir=$(dirname {input})
-        true_tree=$datadir/cell_tree_seed*[0-9].nwk
-        true_tissues=$datadir/cell_tree_seed*.vertex.labeling
-
         # run add tissue to newick
-        python {params.scripts}/format_add_tissues_to_newick.py $true_tree $true_tissues
+        python {params.scripts}/format_add_tissues_to_newick.py {input.true_tree} {input.true_tissues}
         """
 
 rule runCassiopeia:
     input:
-        os.path.join(outdir, "raw_data/{sim}", "done")
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
     output:
         "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
     params:
@@ -60,62 +57,70 @@ rule runCassiopeia:
         "envs/simulate.sif"
     shell:
         """
-        # hack to find files, need to replace with proper input section soon
-        datadir=$(dirname {input})
-        sim_matrix=$datadir/*_indel_character_matrix.tsv
-
         # run cassiopeia greedy
-        python {params.cassiopeia_script} $sim_matrix {params.outputdir}
+        python {params.cassiopeia_script} {input.sim_matrix} {params.outputdir}
         """
 
-# rule runMachina:
-#     input:
-#         casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
-#     output:
-#         machinaResults = "{outdir}/machina/{sim}/machina_results.txt",
-#         machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
-#         machinaTissues = "{outdir}/machina/{sim}/P-T-P-R.labeling"
-#     params:
-#         scripts = config['scripts'],
-#         outputdir = "{outdir}/machina/{sim}",
-#         primaryTissue = config['primaryTissue']
-#     conda:
-#         "envs/machina.yaml"
-#     shell:
-#         """
-#         # hack to find files, need to replace with proper input section soon
-#         datadir=$(dirname {input})
-#         leaf_tissues=$(ls $datadir/cell_tree_*[0-9].labeling)
+rule runMachina:
+    input:
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk",
+        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
+    output:
+        machinaResults = "{outdir}/machina/{sim}/machina_results.txt",
+        machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
+        machinaTissues = "{outdir}/machina/{sim}/P-T-P-R.labeling"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/machina/{sim}",
+        primaryTissue = config['primaryTissue']
+    conda:
+        "envs/machina.yaml"
+    shell:
+        """
+        echo {input.leafTissues}
+        # prep machina inputs
+        python {params.scripts}/machina/prep_machina.py {input.casTree} {params.outputdir} {params.primaryTissue} {input.leafTissues}
 
-#         # make machina output dir
-#         mkdir -p {params.outputdir}
+        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
+        module load EBModules
+        module load Gurobi
 
-#         # prep machina inputs
-#         python {params.scripts}/machina/prep_machina.py {input.casTree} {params.outputdir} {params.primaryTissue} $leaf_tissues
+        # run machina
+        {params.scripts}/machina/run_machina_tr.sh --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue P --outdir {params.outputdir}
+        """
 
-#         # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
-#         module load EBModules
-#         module load Gurobi
+rule processMachinaResults:
+    input:
+        machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
+        machinaTissues = "{outdir}/machina/{sim}/P-T-P-R.labeling"
+    output:
+        machinaTissueTree = "{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk",
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/machina/{sim}"
+    singularity:
+        "envs/simulate.sif"
+    shell:
+        """
+        python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
+        """
 
-#         # run machina
-#         {params.scripts}/machina/run_machina_tr.sh --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue P --outdir {params.outputdir}
-#         """
-
-# rule processMachinaResults:
-#     input:
-#         machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
-#         machinaTissues = "{outdir}/machina/{sim}/P-T-P-R.labeling"
-#     output:
-#         machinaTissueTree = "{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk",
-#     params:
-#         scripts = config['scripts'],
-#         outputdir = "{outdir}/machina/{sim}"
-#     singularity:
-#         "envs/simulate.sif"
-#     shell:
-#         """
-#         python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
-#         """
+rule prepMetastabayesInputs:
+    input:
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
+    output:
+        fasta = "{outdir}/metastabayes/{sim}/{sim}.fasta",
+        dates = "{outdir}/metastabayes/{sim}/{sim}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{sim}/{sim}_tip_tissues.csv",
+    params:
+        scripts = config['scripts'],
+        generations = config['generations'],
+        outputdir = "{outdir}/metastabayes/{sim}"
+    shell:
+        """
+        {params.scripts}/format_metastabayes_input_files.sh {input.sim_matrix} {input.leafTissues} {params.generations} {params.outputdir}
+        """
 
 # rule runMetastabayes:
 #     input:
