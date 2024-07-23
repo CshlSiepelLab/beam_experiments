@@ -15,7 +15,6 @@ rule all:
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/laml/{sim}/{sim}_laml_trees.nwk", sim=sims, outdir=outdir),
 
 rule copyDataToOutDir:
     input:
@@ -68,6 +67,7 @@ rule runLAML:
         casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
     output:
         lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+        lamlAnnotations = "{outdir}/laml/{sim}/{sim}_laml_annotations.txt",
         lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk"
     params:
         outputdir = "{outdir}/laml/{sim}"
@@ -82,11 +82,9 @@ rule runLAML:
         # run laml
         run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml
 
-        fixed_newick=$(sed "s/);//g" $laml)
-
         # remove fake root from tree
         fixed_newick=$(sed "s/);//g" {output.lamlTree})
-        fixed_newick="${fixed_newick:1});"
+        fixed_newick="${{fixed_newick:1}});"
         last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
         second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
         new_branch=$(echo "$last_branch + $second_last_branch" | bc)
@@ -178,8 +176,6 @@ rule runMetastabayes:
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
         threads = config['threads']
-    conda:
-        "envs/metastabayes.yaml"
     shell:
         """
         cp {params.xml} {params.fileDir}/submit.xml
