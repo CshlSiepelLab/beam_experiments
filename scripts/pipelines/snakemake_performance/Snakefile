@@ -140,36 +140,38 @@ rule runMetastabayes:
         metastabayesJar = config['metastabayesJar'],
         matrixStructure = config['matrixStructure'],
         numRates = config['numRates'],
-        numStates = config['numStates'],
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
         threads = config['threads']
     shell:
         """
+        cp {params.xml} {params.fileDir}/submit.xml
+
         java -Xmx5g -jar {params.metastabayesJar} \
         -threads {params.threads} \
         -overwrite \
+        -working \
         -D inputNames={wildcards.sim} \
         -D fileDir={params.fileDir} \
         -D matrixStructure='{params.matrixStructure}' \
         -D numRates={params.numRates} \
-        -D numStates={params.numStates} \
         -D generations={params.generations} \
         -D mcmclength={params.mcmclength} \
         -D outname=chain_{wildcards.num} \
-        {params.xml} > {output.terminalLog}
+        {params.fileDir}/submit.xml > {output.terminalLog}
         """
 
 rule combineMetastabayesChains:
     input:
         terminalLog = "{outdir}/metastabayes/{sim}/terminal_1.log", # necessary to ensure runMetastabayes has finished first
-        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.log")),
-        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.trees"))
+        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "chain_*.log")),
+        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "chain_*.trees"))
     output:
         combinedLog = "{outdir}/metastabayes/{sim}/combined.log",
         combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees"
     params:
-        logcombiner = config['logcombiner']
+        logcombiner = config['logcombiner'],
+        essCutoff = config['essCutoff']
     shell:
         """
         log_files=""
@@ -179,7 +181,7 @@ rule combineMetastabayesChains:
             ess_convergence=$(awk '/Operator/ {{ found=1; next }} {{ if (!found) print }}' "$file" | awk '{{if (NF > 0) print}}' | tail -n 1 | awk '{{print int($3 + 0.5)}}')
             
             # only use mcmc chains that have converged since many appear to get lost in the search space
-            if [[ $ess_convergence -gt 200 ]]; then
+            if [[ $ess_convergence -gt {params.essCutoff} ]]; then
                 log_files+="-log $file "
                 trees_file=$(echo $file | sed 's/\.log$/.trees/')
                 trees_files+="-log $trees_file "
