@@ -16,7 +16,8 @@ rule all:
         expand("{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/{sim}.fasta", sim=sims, outdir=outdir),
-        expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir)
+        expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
+        expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir)
 
 rule copyDataToOutDir:
     input:
@@ -131,8 +132,8 @@ rule runMetastabayes:
         tissues = "{outdir}/metastabayes/{sim}/{sim}_tip_tissues.csv",
     output:
         terminalLog = "{outdir}/metastabayes/{sim}/terminal_{num}.log",
-        metastabayesLog = "{outdir}/metastabayes/{sim}/{num}.log",
-        metastabayesResult = "{outdir}/metastabayes/{sim}/{num}.trees"
+        metastabayesLog = "{outdir}/metastabayes/{sim}/chain_{num}.log",
+        metastabayesResult = "{outdir}/metastabayes/{sim}/chain_{num}.trees"
     params:
         xml = config['xml'],
         fileDir = "{outdir}/metastabayes/{sim}",
@@ -155,8 +156,40 @@ rule runMetastabayes:
         -D numStates={params.numStates} \
         -D generations={params.generations} \
         -D mcmclength={params.mcmclength} \
-        -D outname={wildcards.num} \
+        -D outname=chain_{wildcards.num} \
         {params.xml} > {output.terminalLog}
+        """
+
+rule combineMetastabayesChains:
+    input:
+        terminalLog = "{outdir}/metastabayes/{sim}/terminal_1.log", # necessary to ensure runMetastabayes has finished first
+        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.log")),
+        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.trees"))
+    output:
+        combinedLog = "{outdir}/metastabayes/{sim}/combined.log",
+        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees"
+    params:
+        logcombiner = config['logcombiner']
+    shell:
+        """
+        log_files=""
+        trees_files=""
+        ess_convergences=()
+        for file in {input.metastabayesLogs}; do
+            ess_convergence=$(awk '/Operator/ {{ found=1; next }} {{ if (!found) print }}' "$file" | awk '{{if (NF > 0) print}}' | tail -n 1 | awk '{{print int($3 + 0.5)}}')
+            
+            # only use mcmc chains that have converged since many appear to get lost in the search space
+            if [[ $ess_convergence -gt 200 ]]; then
+                log_files+="-log $file "
+                trees_file=$(echo $file | sed 's/\.log$/.trees/')
+                trees_files+="-log $trees_file "
+            else
+                echo "$file did not converge, so not including it in the final output"
+            fi
+        done
+
+        {params.logcombiner} $log_files -o {output.combinedLog}
+        {params.logcombiner} $trees_files -o {output.combinedTrees}
         """
 
 # rule calcPerformance:
