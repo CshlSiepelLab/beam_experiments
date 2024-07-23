@@ -83,7 +83,7 @@
 
 <!-- MCMC -->
     <run id="mcmc" spec="MCMC" chainLength="$(mcmclength)">
-        <state id="state" spec="State" storeEvery="5000">
+        <state id="state" spec="State" storeEvery="5000" fileName="$(fileDir)/$(outname).xml.state">
             <!-- Individual states for each dataset -->
             <plate var="n" range="&range;">
                 <stateNode id="tree_$(n)" spec="tidetree.tree.StartingTree" rootHeight="$(generations)" taxa="@alignment_$(n)" editHeight="$(generations)" editDuration="$(generations)" sequencesAreClustered="false">
