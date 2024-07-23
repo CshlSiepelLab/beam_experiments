@@ -166,6 +166,8 @@ rule runMetastabayes:
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
         threads = config['threads']
+    conda:
+        "envs/metastabayes.yaml"
     shell:
         """
         cp {params.xml} {params.fileDir}/submit.xml
