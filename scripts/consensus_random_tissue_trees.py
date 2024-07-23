@@ -53,6 +53,7 @@ def label_tissues_random(tree, tissues_df):
 # User inputs
 tree_file = sys.argv[1]
 leaf_tissues_tsv = sys.argv[2]
+outdir = sys.argv[3]
 
 # tree_file = "27248/cassiopeia_greedy_inferred.nwk"
 # leaf_tissues_tsv = "27248/cell_tree_seed27248.labeling"
@@ -66,9 +67,9 @@ random_tree = label_tissues_random(tree, tissue_map)
 consensus_tree = label_tissues_consensus(tree, tissue_map)
 
 # output trees to newick files
-random_output = tree_file.split(".nwk")[0] + "_random_tissues.nwk"
+random_output = outdir + "/random_tissues.nwk"
 random_tree.write(outfile = random_output, format=8, format_root_node=True)
 
-consensus_output = tree_file.split(".nwk")[0] + "_consensus_tissues.nwk"
+consensus_output = outdir + "/consensus_tissues.nwk"
 consensus_tree.write(outfile = consensus_output, format=8, format_root_node=True)
         

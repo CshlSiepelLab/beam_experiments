@@ -11,13 +11,10 @@ outdir = config['outdir']
 
 rule all:
     input:
-        expand("{outdir}/raw_data/{sim}/done", sim=sims, outdir=outdir),
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/metastabayes/{sim}/{sim}.fasta", sim=sims, outdir=outdir),
-        expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
-        expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir)
+        expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
+        expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
 
 rule copyDataToOutDir:
     input:
@@ -33,6 +30,7 @@ rule copyDataToOutDir:
 
 rule labelTrueTreeWithTissues:
     input:
+        copiedData = os.path.join(outdir, "raw_data/{sim}", "done")
         true_tree = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*[0-9].nwk")),
         true_tissues = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*.vertex.labeling"))
     output:
@@ -199,7 +197,24 @@ rule combineMetastabayesChains:
         {params.logcombiner} $trees_files -o {output.combinedTrees}
 
         # get MCC tree from the combined trees file
-        {params.treeannotator} -burnin 10 -topology MCC -heights mean {output.combinedTrees} {output.combinedMCC}
+        {params.treeannotator} -burnin 10 -topology MCC -height mean {output.combinedTrees} {output.combinedMCC}
+        """
+
+rule runRandomAndConsensusTissueInference:
+    input:
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk",
+        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
+    output:
+        randomResult = "{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk",
+        consensusResult = "{outdir}/random_consensus_tissue_inference/{sim}/consensus_tissues.nwk"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/random_consensus_tissue_inference/{sim}"
+    conda:
+        "envs/compare_trees.yaml"
+    shell:
+        """
+        python {params.scripts}/consensus_random_tissue_trees.py {input.casTree} {input.leafTissues} {params.outputdir}
         """
 
 # rule calcPerformance:
