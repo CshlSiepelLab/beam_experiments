@@ -168,12 +168,15 @@ rule combineMetastabayesChains:
         metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "chain_*.trees"))
     output:
         combinedLog = "{outdir}/metastabayes/{sim}/combined.log",
-        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees"
+        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees",
+        combinedMCC = "{outdir}/metastabayes/{sim}/combined.mcc.tree"
     params:
         logcombiner = config['logcombiner'],
-        essCutoff = config['essCutoff']
+        essCutoff = config['essCutoff'],
+        treeannotator = config['treeannotator']
     shell:
         """
+        # find chains that have converged based on ess threshold specified
         log_files=""
         trees_files=""
         ess_convergences=()
@@ -191,8 +194,12 @@ rule combineMetastabayesChains:
             fi
         done
 
+        # combine logs and trees that passed
         {params.logcombiner} $log_files -o {output.combinedLog}
         {params.logcombiner} $trees_files -o {output.combinedTrees}
+
+        # get MCC tree from the combined trees file
+        {params.treeannotator} -burnin 10 -topology MCC -heights mean {output.combinedTrees} {output.combinedMCC}
         """
 
 # rule calcPerformance:
