@@ -178,7 +178,8 @@ rule combineMetastabayesChains:
         trees_files=""
         ess_convergences=()
         for file in {input.metastabayesLogs}; do
-            ess_convergence=$(awk '/Operator/ {{ found=1; next }} {{ if (!found) print }}' "$file" | awk '{{if (NF > 0) print}}' | tail -n 1 | awk '{{print int($3 + 0.5)}}')
+            terminal_log=$(echo $file | sed 's/chain_/terminal_/')
+            ess_convergence=$(awk '/Operator/ {{ found=1; next }} {{ if (!found) print }}' "$terminal_log" | awk '{{if (NF > 0) print}}' | tail -n 1 | awk '{{print int($3 + 0.5)}}')
             
             # only use mcmc chains that have converged since many appear to get lost in the search space
             if [[ $ess_convergence -gt {params.essCutoff} ]]; then
