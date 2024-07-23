@@ -130,9 +130,12 @@ rule runMetastabayes:
         dates = "{outdir}/metastabayes/{sim}/{sim}_date_traits.csv",
         tissues = "{outdir}/metastabayes/{sim}/{sim}_tip_tissues.csv",
     output:
-        "{outdir}/metastabayes/{sim}/terminal_{num}.log"
+        terminalLog = "{outdir}/metastabayes/{sim}/terminal_{num}.log",
+        metastabayesLog = "{outdir}/metastabayes/{sim}/{num}.log",
+        metastabayesResult = "{outdir}/metastabayes/{sim}/{num}.trees"
     params:
         xml = config['xml'],
+        fileDir = "{outdir}/metastabayes/{sim}",
         metastabayesJar = config['metastabayesJar'],
         matrixStructure = config['matrixStructure'],
         numRates = config['numRates'],
@@ -144,17 +147,16 @@ rule runMetastabayes:
         """
         java -Xmx5g -jar {params.metastabayesJar} \
         -threads {params.threads} \
-        -overwrite \ 
-        -working \
+        -overwrite \
         -D inputNames={wildcards.sim} \
-        -D fileDir={outdir}/metastabayes/{wildcards.sim} \
-        -D matrixStructure={params.matrixStructure} \
+        -D fileDir={params.fileDir} \
+        -D matrixStructure='{params.matrixStructure}' \
         -D numRates={params.numRates} \
         -D numStates={params.numStates} \
         -D generations={params.generations} \
         -D mcmclength={params.mcmclength} \
         -D outname={wildcards.num} \
-        {params.xml} > {output}
+        {params.xml} > {output.terminalLog}
         """
 
 # rule calcPerformance:
