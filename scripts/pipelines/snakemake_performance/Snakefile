@@ -16,6 +16,7 @@ rule all:
         expand("{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/{sim}.fasta", sim=sims, outdir=outdir)
+        expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir)
 
 rule copyDataToOutDir:
     input:
@@ -122,20 +123,40 @@ rule prepMetastabayesInputs:
         {params.scripts}/format_metastabayes_input_files.sh {input.sim_matrix} {input.leafTissues} {params.generations} {params.outputdir}
         """
 
-# rule runMetastabayes:
-#     input:
-#         "{outdir}/{sim}/machina/machina_tree_all_tissue_labels.nwk"
-#     output:
-#         "{outdir}/{sim}/beast/joint_inference_beast_combined.log",
-#         "{outdir}/{sim}/beast/joint_inference_beast_combined_tissues.trees"
-#     conda:
-#         "compare_trees"
-#     shell:
-#         """
-#         java -Xmx5g -jar metastabayes.jar -overwrite -working {input} > {output[0]}
-#         logcombiner -log {outdir}/{sim}/beast/joint_inference_beast_*.log -o {output[0]}
-#         logcombiner -log {outdir}/{sim}/beast/joint_inference_beast_*_tissues.trees -o {output[1]}
-#         """
+rule runMetastabayes:
+    input:
+        fasta = "{outdir}/metastabayes/{sim}/{sim}.fasta",
+        dates = "{outdir}/metastabayes/{sim}/{sim}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{sim}/{sim}_tip_tissues.csv",
+    output:
+        "{outdir}/metastabayes/{sim}/terminal_{num}.log"
+    params:
+        xml = config['xml'],
+        metastabayesJar = config['metastabayesJar'],
+        matrixStructure = config['matrixStructure'],
+        numRates = config['numRates'],
+        numStates = config['numStates'],
+        generations = config['generations'],
+        mcmclength = config['mcmclength'],
+        threads = config['threads']
+    conda:
+        "compare_trees"
+    shell:
+        """
+        java -Xmx5g -jar {params.metastabayesJar} \
+        -threads {params.threads} \
+        -overwrite \ 
+        -working \
+        -D inputNames={wildcards.sim} \
+        -D fileDir={outdir}/metastabayes/{wildcards.sim} \
+        -D matrixStructure={params.matrixStructure} \
+        -D numRates={params.numRates} \
+        -D numStates={params.numStates} \
+        -D generations={params.generations} \
+        -D mcmclength={params.mcmclength} \
+        -D outname={wildcards.num} \
+        {params.xml} > {output}
+        """
 
 # rule calcPerformance:
 #     input:

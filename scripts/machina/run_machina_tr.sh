@@ -2,19 +2,20 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 
 if [[ $# -eq 0 ]] ; then
-    echo "Usage: run_machina.sh --edges <edges_file> --labels <labels_file> --colors <colors_file> --primary-tissue <tissue> --outdir <dir_path>"
+    echo "Usage: run_machina.sh --edges <edges_file> --labels <labels_file> --colors <colors_file> --primary-tissue <tissue> --outdir <dir_path> --threads <num_threads>"
     exit 0
 fi
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        -t|--edges) EDGES="$2"; shift ;;
+        -e|--edges) EDGES="$2"; shift ;;
         -l|--labels) LABELS="$2"; shift ;;
         -c|--colors) COLORS="$2"; shift ;;
         -p|--primary-tissue) PTISSUE="$2"; shift ;;
         -o|--outdir) OUTDIR=$2; shift ;;
+        -t|--threads) THREADS=$2; shift ;;
 
-    *) echo "Usage: run_machina.sh --edges <edges_file> --labels <labels_file> --colors <colors_file> --primary-tissue <tissue> --outdir <dir_path>" ; exit 1 ;;
+    *) echo "Usage: run_machina.sh --edges <edges_file> --labels <labels_file> --colors <colors_file> --primary-tissue <tissue> --outdir <dir_path> --threads <num_threads>" ; exit 1 ;;
     esac
     shift
 done
@@ -64,4 +65,4 @@ fi
 
 # for machina with resolving polytomies mode
 MACHINA="pmh_tr"
-${MACHINA} -m 3 -p ${PTISSUE} -c ${COLORS} -o ${OUTDIR} ${EDGES} ${LABELS} &> ${OUTDIR}/machina_results.txt
+${MACHINA} -m 3 -t ${THREADS} -p ${PTISSUE} -c ${COLORS} -o ${OUTDIR} ${EDGES} ${LABELS} &> ${OUTDIR}/machina_results.txt

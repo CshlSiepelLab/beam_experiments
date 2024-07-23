@@ -48,7 +48,7 @@
     <plate var="n" range="&range;">
 
         <data  id="alignment_$(n)" spec="feast.fileio.AlignmentFromFasta" fileName="$(fileDir)/$(n).fasta">
-            <userDataType spec="tidetree.evolution.datatype.EditData" nrOfStates="1" />
+            <userDataType spec="tidetree.evolution.datatype.EditData" nrOfStates="$(numStates)" />
         </data>
 
         <taxonset id="taxonset_$(n)" spec="TaxonSet" alignment="@alignment_$(n)"/>
@@ -133,7 +133,7 @@
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 <!-- Composite likelihoods for each dataset -->
                 <plate var="n" range="&range;">
-                    <distribution id="treeLikelihood_$(n)" spec="TreeLikelihood" useAmbiguities="true" data="@alignment_$(n)" origin="$(generations).001" tree="@tree_$(n)" siteModel="@treeSiteModel"/>
+                    <distribution id="treeLikelihood_$(n)" spec="TreeLikelihood" useAmbiguities="true" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel"/>
                 
                     <distribution id="traitLikelihood_$(n)" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" useJava="false" useAmbiguities="true" data="@tissue_$(n)" tag="location" tree="@tree_$(n)" siteModel="@tissueSiteModel">
                         <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0 0" estimate="false"/>
@@ -159,7 +159,7 @@
                 
 
         <!-- Loggers -->
-        <logger id="tracelog" spec="Logger" fileName="$(filebase).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+        <logger id="tracelog" spec="Logger" fileName="$(outname).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
             <log idref="posterior"/>
             <log idref="likelihood"/>
             <log idref="prior"/>
@@ -180,7 +180,7 @@
         </logger>
 
         <plate var="n" range="&range;">
-            <logger id="treeWithTraitLogger_$(n)" spec="Logger" fileName="$(filebase)_tissues_$(n).trees" logEvery="1000" mode="tree">
+            <logger id="treeWithTraitLogger_$(n)" spec="Logger" fileName="$(outname).trees" logEvery="1000" mode="tree">
                     <log id="treeWithTraitLoggerItem_$(n)" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@tree_$(n)">
                         <metadata idref="posterior"/>
                         <metadata idref="treeLikelihood_$(n)"/>

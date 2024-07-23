@@ -4,4 +4,12 @@ __default__:
   logout: '{outdir}/job_logs/{wildcards.sim}/{rule}.out'
   logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}.err'
 
+runMachina:
+  cores: {params.threads}
+  mem: '5G'
+
+runMetastabayes:
+  cores: {params.threads}
+  mem: '1G' # need total of 5GB for java BEAST2 submission command in the Snakefile
+
   
