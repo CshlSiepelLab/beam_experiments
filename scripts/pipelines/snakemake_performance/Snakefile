@@ -15,6 +15,7 @@ rule all:
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/laml/{sim}/{sim}_laml_trees.nwk", sim=sims, outdir=outdir),
 
 rule copyDataToOutDir:
     input:
@@ -30,7 +31,7 @@ rule copyDataToOutDir:
 
 rule labelTrueTreeWithTissues:
     input:
-        copiedData = os.path.join(outdir, "raw_data/{sim}", "done")
+        copiedData = os.path.join(outdir, "raw_data/{sim}", "done"),
         true_tree = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*[0-9].nwk")),
         true_tissues = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*.vertex.labeling"))
     output:
@@ -61,9 +62,33 @@ rule runCassiopeia:
         python {params.cassiopeia_script} {input.sim_matrix} {params.outputdir}
         """
 
+rule runLAML:
+    input:
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    output:
+        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk"
+    params:
+        outputdir = "{outdir}/laml/{sim}"
+    conda:
+        "envs/laml.yaml"
+    shell:
+        """
+        # copy sim matri and replace -1 with ? for missing data
+        cp {input.sim_matrix} {outdir}/laml/{wildcards.sim}/sim_matrix.csv
+        sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.sim}/sim_matrix.csv
+
+        # run laml
+        run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml
+
+        # obtain newick without branch lengths
+        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
+        """
+
 rule runMachina:
     input:
-        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk",
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
         machinaResults = "{outdir}/machina/{sim}/machina_results.txt",
@@ -80,7 +105,7 @@ rule runMachina:
         """
         echo {input.leafTissues}
         # prep machina inputs
-        python {params.scripts}/machina/prep_machina.py {input.casTree} {params.outputdir} {params.primaryTissue} {input.leafTissues}
+        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {input.leafTissues}
 
         # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
         module load EBModules
@@ -202,7 +227,7 @@ rule combineMetastabayesChains:
 
 rule runRandomAndConsensusTissueInference:
     input:
-        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk",
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
         randomResult = "{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk",
@@ -214,7 +239,7 @@ rule runRandomAndConsensusTissueInference:
         "envs/compare_trees.yaml"
     shell:
         """
-        python {params.scripts}/consensus_random_tissue_trees.py {input.casTree} {input.leafTissues} {params.outputdir}
+        python {params.scripts}/consensus_random_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
         """
 
 # rule calcPerformance:
