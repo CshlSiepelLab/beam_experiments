@@ -15,7 +15,7 @@ rule all:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/metastabayes/{sim}/{sim}.fasta", sim=sims, outdir=outdir)
+        expand("{outdir}/metastabayes/{sim}/{sim}.fasta", sim=sims, outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir)
 
 rule copyDataToOutDir:
@@ -73,7 +73,8 @@ rule runMachina:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{sim}",
-        primaryTissue = config['primaryTissue']
+        primaryTissue = config['primaryTissue'],
+        threads = config['threads']
     conda:
         "envs/machina.yaml"
     shell:
@@ -87,7 +88,7 @@ rule runMachina:
         module load Gurobi
 
         # run machina
-        {params.scripts}/machina/run_machina_tr.sh --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue P --outdir {params.outputdir}
+        {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue P --outdir {params.outputdir}
         """
 
 rule processMachinaResults:
@@ -137,10 +138,8 @@ rule runMetastabayes:
         numRates = config['numRates'],
         numStates = config['numStates'],
         generations = config['generations'],
-        mcmclength = config['mcmclength'],
+        mcmclength = config['mcmcLength'],
         threads = config['threads']
-    conda:
-        "compare_trees"
     shell:
         """
         java -Xmx5g -jar {params.metastabayesJar} \

@@ -159,7 +159,7 @@
                 
 
         <!-- Loggers -->
-        <logger id="tracelog" spec="Logger" fileName="$(outname).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+        <logger id="tracelog" spec="Logger" fileName="$(fileDir)/$(outname).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
             <log idref="posterior"/>
             <log idref="likelihood"/>
             <log idref="prior"/>
@@ -180,7 +180,7 @@
         </logger>
 
         <plate var="n" range="&range;">
-            <logger id="treeWithTraitLogger_$(n)" spec="Logger" fileName="$(outname).trees" logEvery="1000" mode="tree">
+            <logger id="treeWithTraitLogger_$(n)" spec="Logger" fileName="$(fileDir)/$(outname).trees" logEvery="1000" mode="tree">
                     <log id="treeWithTraitLoggerItem_$(n)" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@tree_$(n)">
                         <metadata idref="posterior"/>
                         <metadata idref="treeLikelihood_$(n)"/>
