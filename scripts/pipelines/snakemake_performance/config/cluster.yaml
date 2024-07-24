@@ -12,4 +12,10 @@ runMetastabayes:
   cores: '{params.threads}'
   mem: '1G' # need total of 5GB for java BEAST2 submission command in the Snakefile
 
+plotPrecisionRecall:
+  cores: 1
+  mem: '5G'
+  logout: '{outdir}/job_logs/{rule}.out'
+  logerror: '{outdir}/job_logs/{rule}.err'
+
   

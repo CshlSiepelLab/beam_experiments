@@ -15,6 +15,7 @@ rule all:
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
+        f"{outdir}/precision_recall_curve/precision_recall.pdf"
 
 rule copyDataToOutDir:
     input:
@@ -252,17 +253,19 @@ rule runRandomAndConsensusTissueInference:
         python {params.scripts}/consensus_random_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
         """
 
-# rule calcPerformance:
-#     input:
-#         "{outdir}/{sim}/cassiopeia_greedy_inferred.nwk",
-#         "{outdir}/{sim}/machina/machina_tree_all_tissue_labels.nwk",
-#         "{outdir}/{sim}/beast/joint_inference_beast_combined_tissues.trees"
-#     output:
-#         "{outdir}/{sim}/accuracy.csv"
-#     conda:
-#         "compare_trees"
-#     shell:
-#         """
-#         python scripts/migration_graph_f1_true_inferred_trees.py {input[0]} {input[1]} > {output}
-#         """
-
+rule plotPrecisionRecall:
+    input:
+        trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
+    output:
+        overallPrecisionRecall = f"{outdir}/precision_recall_curve/precision_recall.pdf",
+        individualPrecisionRecalls = [f"{outdir}/precision_recall_curve/{s}/precision_recall.pdf" for s in sims]
+    params:
+        scripts = config['scripts'],
+        outputdir = outdir + "/precision_recall_curve"
+    conda:
+        "envs/matplotlib.yaml"
+    shell:
+        """
+        true_trees=$(echo {input.trueTrees} | tr ' ' ',')
+        python {params.scripts}/plot_precision_recall.py $true_trees {params.outputdir}
+        """
