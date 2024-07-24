@@ -16,8 +16,7 @@ rule all:
         expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         f"{outdir}/precision_recall_curve/precision_recall.pdf",
-        expand("{outdir}/metient/{sim}/tree.txt", sim=sims, outdir=outdir),
-        expand("{outdir}/metient/{sim}/metadata.tsv", sim=sims, outdir=outdir)
+        # expand("{outdir}/metient/{sim}/metadata.tsv", sim=sims, outdir=outdir)
 
 rule copyDataToOutDir:
     input:
@@ -239,27 +238,27 @@ rule processMachinaResults:
         python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
         """
 
-rule prepMetient:
-    input:
-        machinaEdges = "{outdir}/machina/{sim}/{sim}_laml_trees_no_branch_lengths.tree",
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
-        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
-    output:
-        metientTree = "{outdir}/metient/{sim}/tree.txt",
-        metientTsv = "{outdir}/metient/{sim}/metadata.tsv"
-    params:
-        primaryTissue = config['primaryTissue'],
-        scripts = config['scripts']
-    conda:
-        "envs/compare_trees.yaml"
-    shell:
-        """
-        # use machina edge list for metient edge list
-        cat {input.machinaEdges} > {output.metientTree}
+# rule prepMetient:
+#     input:
+#         machinaEdges = "{outdir}/machina/{sim}/{sim}_laml_trees_no_branch_lengths.tree",
+#         sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+#         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
+#     output:
+#         metientTree = "{outdir}/metient/{sim}/tree.txt",
+#         metientTsv = "{outdir}/metient/{sim}/metadata.tsv"
+#     params:
+#         primaryTissue = config['primaryTissue'],
+#         scripts = config['scripts']
+#     conda:
+#         "envs/compare_trees.yaml"
+#     shell:
+#         """
+#         # use machina edge list for metient edge list
+#         cat {input.machinaEdges} > {output.metientTree}
 
-        # format tsv file with tissue labels and mutation information
-        python {params.scripts}/metient/format_metient_tsv.py {input.sim_matrix} {input.leafTissues} {params.primaryTissue} {output.metientTsv}
-        """
+#         # format tsv file with tissue labels and mutation information
+#         python {params.scripts}/metient/format_metient_tsv.py {input.sim_matrix} {input.leafTissues} {params.primaryTissue} {output.metientTsv}
+#         """
 
 # rule runMetient:
 #     input:
