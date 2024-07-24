@@ -29,118 +29,6 @@ rule copyDataToOutDir:
         touch {output}
         """
 
-rule labelTrueTreeWithTissues:
-    input:
-        copiedData = os.path.join(outdir, "raw_data/{sim}", "done"),
-        true_tree = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*[0-9].nwk")),
-        true_tissues = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*.vertex.labeling"))
-    output:
-        "{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk"
-    params:
-        scripts = config['scripts']
-    conda:
-        "envs/compare_trees.yaml"
-    shell:
-        """
-        # run add tissue to newick
-        python {params.scripts}/format_add_tissues_to_newick.py {input.true_tree} {input.true_tissues}
-        """
-
-rule runCassiopeia:
-    input:
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
-    output:
-        "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
-    params:
-        cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
-        outputdir = "{outdir}/cassiopeia_greedy/{sim}"
-    singularity:
-        "envs/simulate.sif"
-    shell:
-        """
-        # run cassiopeia greedy
-        python {params.cassiopeia_script} {input.sim_matrix} {params.outputdir}
-        """
-
-rule runLAML:
-    input:
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
-        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
-    output:
-        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
-        lamlAnnotations = "{outdir}/laml/{sim}/{sim}_laml_annotations.txt",
-        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk"
-    params:
-        outputdir = "{outdir}/laml/{sim}"
-    conda:
-        "envs/laml.yaml"
-    shell:
-        """
-        # copy sim matri and replace -1 with ? for missing data
-        cp {input.sim_matrix} {outdir}/laml/{wildcards.sim}/sim_matrix.csv
-        sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.sim}/sim_matrix.csv
-
-        # run laml
-        run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml
-
-        # remove fake root from tree
-        fixed_newick=$(sed "s/);//g" {output.lamlTree})
-        fixed_newick="${{fixed_newick:1}});"
-        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
-        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
-        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
-        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
-
-        echo $modified_newick > {output.lamlTree}
-
-        # obtain newick without branch lengths
-        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
-        """
-
-rule runMachina:
-    input:
-        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk",
-        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
-    output:
-        machinaResults = "{outdir}/machina/{sim}/machina_results.txt",
-        machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
-        machinaTissues = "{outdir}/machina/{sim}/P-T-P-R.labeling"
-    params:
-        scripts = config['scripts'],
-        outputdir = "{outdir}/machina/{sim}",
-        primaryTissue = config['primaryTissue'],
-        threads = config['threads']
-    conda:
-        "envs/machina.yaml"
-    shell:
-        """
-        echo {input.leafTissues}
-        # prep machina inputs
-        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {input.leafTissues}
-
-        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
-        module load EBModules
-        module load Gurobi
-
-        # run machina
-        {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue P --outdir {params.outputdir}
-        """
-
-rule processMachinaResults:
-    input:
-        machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
-        machinaTissues = "{outdir}/machina/{sim}/P-T-P-R.labeling"
-    output:
-        machinaTissueTree = "{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk",
-    params:
-        scripts = config['scripts'],
-        outputdir = "{outdir}/machina/{sim}"
-    singularity:
-        "envs/simulate.sif"
-    shell:
-        """
-        python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
-        """
 
 rule prepMetastabayesInputs:
     input:
@@ -236,6 +124,57 @@ rule combineMetastabayesChains:
         {params.treeannotator} -burnin 10 -topology MCC -height mean {output.combinedTrees} {output.combinedMCC}
         """
 
+rule runCassiopeia:
+    input:
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+    output:
+        "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    params:
+        cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
+        outputdir = "{outdir}/cassiopeia_greedy/{sim}"
+    singularity:
+        "envs/simulate.sif"
+    shell:
+        """
+        # run cassiopeia greedy
+        python {params.cassiopeia_script} {input.sim_matrix} {params.outputdir}
+        """
+
+rule runLAML:
+    input:
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    output:
+        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+        lamlAnnotations = "{outdir}/laml/{sim}/{sim}_laml_annotations.txt",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk"
+    params:
+        outputdir = "{outdir}/laml/{sim}"
+    conda:
+        "envs/laml.yaml"
+    shell:
+        """
+        # copy sim matri and replace -1 with ? for missing data
+        cp {input.sim_matrix} {outdir}/laml/{wildcards.sim}/sim_matrix.csv
+        sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.sim}/sim_matrix.csv
+
+        # run laml
+        run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml
+
+        # remove fake root from tree
+        fixed_newick=$(sed "s/);//g" {output.lamlTree})
+        fixed_newick="${{fixed_newick:1}});"
+        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
+        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
+        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
+        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
+
+        echo $modified_newick > {output.lamlTree}
+
+        # obtain newick without branch lengths
+        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
+        """
+
 rule runRandomAndConsensusTissueInference:
     input:
         lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk",
@@ -251,6 +190,68 @@ rule runRandomAndConsensusTissueInference:
     shell:
         """
         python {params.scripts}/consensus_random_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
+        """
+
+rule runMachina:
+    input:
+        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk",
+        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
+    output:
+        machinaResults = "{outdir}/machina/{sim}/machina_results.txt",
+        machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
+        machinaTissues = "{outdir}/machina/{sim}/P-T-P-R.labeling"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/machina/{sim}",
+        primaryTissue = config['primaryTissue'],
+        threads = config['threads']
+    conda:
+        "envs/machina.yaml"
+    shell:
+        """
+        echo {input.leafTissues}
+        # prep machina inputs
+        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {input.leafTissues}
+
+        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
+        module load EBModules
+        module load Gurobi
+
+        # run machina
+        {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue P --outdir {params.outputdir}
+        """
+
+rule processMachinaResults:
+    input:
+        machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
+        machinaTissues = "{outdir}/machina/{sim}/P-T-P-R.labeling"
+    output:
+        machinaTissueTree = "{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk",
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/machina/{sim}"
+    singularity:
+        "envs/simulate.sif"
+    shell:
+        """
+        python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
+        """
+
+rule labelTrueTreeWithTissues:
+    input:
+        copiedData = os.path.join(outdir, "raw_data/{sim}", "done"),
+        true_tree = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*[0-9].nwk")),
+        true_tissues = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*.vertex.labeling"))
+    output:
+        "{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk"
+    params:
+        scripts = config['scripts']
+    conda:
+        "envs/compare_trees.yaml"
+    shell:
+        """
+        # run add tissue to newick
+        python {params.scripts}/format_add_tissues_to_newick.py {input.true_tree} {input.true_tissues}
         """
 
 rule plotPrecisionRecall:
