@@ -258,23 +258,24 @@ rule prepMetient:
         cat {input.machinaEdges} > {output.metientTree}
 
         # format tsv file with tissue labels and mutation information
-        python {params.scripts}/format_metient_tsv.py {input.sim_matrix} {input.leafTissues} {params.primaryTissue} {output.metientTsv}
+        python {params.scripts}/metient/format_metient_tsv.py {input.sim_matrix} {input.leafTissues} {params.primaryTissue} {output.metientTsv}
         """
 
-# rule runMetient:
-#     input:
-#         metientTsv =
-#         metientTree =
-#     output:
-
-#     params:
-
-#     conda:
-#         "envs/metient.yaml"
-#     shell:
-#         """
-        
-#         """
+rule runMetient:
+    input:
+        metientTree = "{outdir}/metient/{sim}/tree.txt",
+        metientTsv = "{outdir}/metient/{sim}/metadata.tsv"
+    output:
+        metientResults = 
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/metient/{sim}"
+    conda:
+        "envs/metient.yaml"
+    shell:
+        """
+        python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.sim} {params.outputdir}
+        """
 
 rule labelTrueTreeWithTissues:
     input:
