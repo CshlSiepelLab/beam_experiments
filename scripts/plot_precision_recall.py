@@ -121,6 +121,12 @@ def calculate_metrics(true_counts, inferred_counts):
 dirs = (sys.argv[1]).split(",")
 outdir = sys.argv[2]
 
+# make a file to record performance statistics for all sim datasets
+outfile_metrics = f"{outdir}/metrics.csv"
+with open(outfile_metrics, "w") as file:
+    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,machina_f1,machina_recall,machina_precision,metastabayes_post_prob_f1,metastabayes_post_prob_recall,metastabayes_post_prob_precision\n"
+    file.write(header)
+
 machina_precisions = np.zeros(len(dirs))
 machina_recalls = np.zeros(len(dirs))
 consensus_precisions = np.zeros(len(dirs))
@@ -146,7 +152,6 @@ for true_tree_file in dirs:
     consensus_file = f"{dir}/random_consensus_tissue_inference/{sim}/consensus_tissues.nwk"
     random_file = f"{dir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk"
     outfile = f"{outdir}/{sim}/precision_recall.pdf"
-    outfile_metrics = f"{outdir}/{sim}/metrics.csv"
 
     # print all file paths to output
     print(f"True tree file: {true_tree_file}")
@@ -217,6 +222,9 @@ for true_tree_file in dirs:
         posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in posterior_probs]
 
         # calculate total counts weighted by posterior probability
+        post_prob_precision = 0
+        post_prob_recall = 0
+        post_prob_f1 = 0
         total_counts = {}
         for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
             for pattern, count in inferred_counts.items():
@@ -226,6 +234,11 @@ for true_tree_file in dirs:
                         total_counts[edge] = prob
                     else:
                         total_counts[edge] += prob
+            # get posterior prob weighted precision, recall, and f1
+            f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
+            post_prob_precision += prob * precision
+            post_prob_recall += prob * recall
+            post_prob_f1 += prob * f1
 
         # compute thresholded precision and recall values
         thresholds = [i for i in np.arange(0, 1.00, 0.01)]
@@ -274,12 +287,10 @@ for true_tree_file in dirs:
     all_thresh_rows.extend(rows)
     i+=1
 
-    # # write metrics used for the plot to a file
-    # sim
-    # machina_f1, machina_recall, machina_precision
-    # random_f1, random_recall, random_precision
-    # consensus_f1, consensus_recall, consensus_precision
-
+    # write metrics used for the plot to a file
+    with open(outfile_metrics, "a") as file:
+        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{machina_f1},{machina_recall},{machina_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
+        file.write(data)
 
 # make an overall averaged precision/recall curve
 outfile = f"{outdir}/precision_recall.pdf"
