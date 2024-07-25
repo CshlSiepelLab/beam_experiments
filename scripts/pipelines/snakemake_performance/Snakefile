@@ -13,6 +13,7 @@ rule all:
     input:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         f"{outdir}/precision_recall_curve/precision_recall.pdf",
@@ -33,6 +34,7 @@ rule copyDataToOutDir:
 
 rule prepMetastabayesInputs:
     input:
+        os.path.join(outdir, "raw_data/{sim}", "done"),
         sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
@@ -127,6 +129,7 @@ rule combineMetastabayesChains:
 
 rule runCassiopeia:
     input:
+        os.path.join(outdir, "raw_data/{sim}", "done"),
         sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
     output:
         "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
@@ -296,6 +299,13 @@ rule labelTrueTreeWithTissues:
 
 rule plotPrecisionRecall:
     input:
+        # necessary input files so that the rule is triggered after all other rules have finished
+        randomResultDone = expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
+        consensusResultDone = expand("{outdir}/random_consensus_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
+        trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+        machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
+        # actual input used
         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
     output:
         overallPrecisionRecall = f"{outdir}/precision_recall_curve/precision_recall.pdf",
