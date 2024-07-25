@@ -88,7 +88,7 @@ rule runMetastabayes:
 
 rule combineMetastabayesChains:
     input:
-        terminalLog = "{outdir}/metastabayes/{sim}/terminal_1.log", # necessary to ensure runMetastabayes has finished first
+        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
         metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "chain_*.log")),
         metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "chain_*.trees"))
     output:
