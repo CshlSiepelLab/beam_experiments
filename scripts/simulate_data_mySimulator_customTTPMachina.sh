@@ -20,13 +20,13 @@ mkdir -p ${sim_dir}
 
 # set migration pattern options
 # migration_patterns=(0 1 2 3)
-migration_patterns=(0)
+migration_patterns=(2)
 
 mutation_rates=(0.005)
 
 for mutrate in ${mutation_rates[@]}; do
 for pattern in ${migration_patterns[@]}; do
-for ((i = 0; i < 10; i++)); do
+for ((i = 0; i < 1; i++)); do
 
 # make dir specific to the seed number for each sim and the migration pattern
 if (( $pattern == 0 )); then
@@ -84,7 +84,7 @@ transition_probs_file\t${transition_probs}" > ${run_conditions_file}
 
 # run simulator
 echo "Running barcode simulator with seed ${seed} and migration pattern ${pattern}"
-echo "$barcode_simulator_dir/build/simulate -C ${num_cells} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample}" >> ${run_conditions_file}
+echo "$barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample}" >> ${run_conditions_file}
 timeout 10m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
 # timeout 10m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} -M ${transition_probs} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
 

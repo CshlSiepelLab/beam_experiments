@@ -299,7 +299,8 @@ rule plotPrecisionRecall:
         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
     output:
         overallPrecisionRecall = f"{outdir}/precision_recall_curve/precision_recall.pdf",
-        individualPrecisionRecalls = [f"{outdir}/precision_recall_curve/{s}/precision_recall.pdf" for s in sims]
+        individualPrecisionRecalls = [f"{outdir}/precision_recall_curve/{s}/precision_recall.pdf" for s in sims],
+        overallF1 = f"{outdir}/precision_recall_curve/f1_score.pdf",
     params:
         scripts = config['scripts'],
         outputdir = outdir + "/precision_recall_curve"
@@ -309,4 +310,5 @@ rule plotPrecisionRecall:
         """
         true_trees=$(echo {input.trueTrees} | tr ' ' ',')
         python {params.scripts}/plot_precision_recall.py $true_trees {params.outputdir}
+        python {params.scripts}/plot_f1_score.py {params.outputdir}/metrics.csv {params.outputdir}
         """
