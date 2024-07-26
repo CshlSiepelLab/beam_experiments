@@ -56,12 +56,12 @@ for node in tree.traverse():
             i = i+1
 
 ### output edges
-edges.to_csv(f"{outdir}/tree.txt", sep="\t", index=False, header=False)
+edges.to_csv(f"{outdir}/tree.txt", sep=" ", index=False, header=False)
 
 
 # read in tissues and format metadata tsv
 tissues_df = pd.read_csv(tissues, sep=" ", names=["id", "tissue"])
-tissues_dict = dict(zip(tissues_df["id"], tissues_df["tissue"]))
+tissues_dict = dict(zip(tissues_df["id"].astype(str), tissues_df["tissue"].astype(str)))
 unique_tissues = set(tissues_dict.values())
 tissue_to_int = {tissue: i for i, tissue in enumerate(unique_tissues)}
 
