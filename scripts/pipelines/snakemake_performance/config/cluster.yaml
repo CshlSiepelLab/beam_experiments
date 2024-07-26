@@ -18,4 +18,8 @@ plotPrecisionRecall:
   logout: '{outdir}/job_logs/{rule}.out'
   logerror: '{outdir}/job_logs/{rule}.err'
 
+runMetient:
+  cores: '{params.threads}'
+  mem: '5G'
+
   

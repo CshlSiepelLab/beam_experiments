@@ -152,7 +152,7 @@
         </plate>
 
         <!-- operators on mutation rate parameters-->
-        <operator id="overallEditRateScaler" spec="DeltaExchangeOperator" parameter="@overallEditRate" weight="3.0"/>
+        <operator id="overallEditRateScaler" spec="ScaleOperator" parameter="@overallEditRate" scaleFactor="0.99" weight="3.0"/>
 
         <!-- operators on tissue transition rate parameters -->
         <operator id="tissueRateScaler" spec="ScaleOperator" parameter="@relativeTissueRates" scaleAllIndependently="true" scaleFactor="0.99" weight="30.0"/>
@@ -189,7 +189,7 @@
             </logger>
         </plate>
 
-        <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+        <operatorschedule id="OperatorSchedule" spec="kernel.BactrianOperatorSchedule"/>
     </run>
 
 </beast>

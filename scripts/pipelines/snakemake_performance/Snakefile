@@ -17,7 +17,7 @@ rule all:
         expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         f"{outdir}/precision_recall_curve/precision_recall.pdf",
-        # expand("{outdir}/metient/{sim}/metadata.tsv", sim=sims, outdir=outdir)
+        expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue'])
 
 rule copyDataToOutDir:
     input:
@@ -30,7 +30,6 @@ rule copyDataToOutDir:
         cp -r {input} $outdir
         touch {output}
         """
-
 
 rule prepMetastabayesInputs:
     input:
@@ -260,22 +259,22 @@ rule prepMetient:
         python {params.scripts}/metient/format_metient_tsv.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.primaryTissue} {params.outputdir}
         """
 
-# rule runMetient:
-#     input:
-#         metientTree = "{outdir}/metient/{sim}/tree.txt",
-#         metientTsv = "{outdir}/metient/{sim}/metadata.tsv"
-#     output:
-#         metientResults = "{outdir}/metient/{sim}/done"
-#     params:
-#         scripts = config['scripts'],
-#         outputdir = "{outdir}/metient/{sim}"
-#     singularity:
-#         "envs/metient.sif"
-#     shell:
-#         """
-#         python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.sim} {params.outputdir}
-#         touch {output}
-#         """
+rule runMetient:
+    input:
+        metientTree = "{outdir}/metient/{sim}/tree.txt",
+        metientTsv = "{outdir}/metient/{sim}/metadata.tsv"
+    output:
+        metientResults = "{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt",
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outputdir = "{outdir}/metient/{sim}"
+    singularity:
+        "envs/metient.sif"
+    shell:
+        """
+        python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.sim} {params.primaryTissue} {params.outputdir}
+        """
 
 rule labelTrueTreeWithTissues:
     input:
