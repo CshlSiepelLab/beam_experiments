@@ -242,7 +242,7 @@ rule processMachinaResults:
 
 rule prepMetient:
     input:
-        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk",
+        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
         metientTree = "{outdir}/metient/{sim}/tree.txt",
@@ -256,7 +256,7 @@ rule prepMetient:
     shell:
         """
         # format tsv file and edge list
-        python {params.scripts}/metient/format_metient_tsv.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.primaryTissue} {params.outputdir}
+        python {params.scripts}/metient/format_metient.py {input.lamlTree} {input.leafTissues} {params.primaryTissue} {params.outputdir}
         """
 
 rule runMetient:
@@ -268,7 +268,8 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outputdir = "{outdir}/metient/{sim}"
+        outputdir = "{outdir}/metient/{sim}",
+        threads = config['threads']
     singularity:
         "envs/metient.sif"
     shell:

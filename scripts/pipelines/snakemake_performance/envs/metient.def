@@ -24,6 +24,7 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
     /opt/miniconda/bin/conda install -y python==3.8.8 ipython
     /opt/miniconda/bin/conda install -y pygraphviz
     /opt/miniconda/bin/pip install metient
+    /opt/miniconda/bin/conda install -y setuptools
 
 %environment
     # Set PATH to include the Conda bin directory and FLASH binary

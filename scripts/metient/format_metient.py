@@ -13,16 +13,16 @@ def get_site_category(label):
         site_category = "metastasis"
     return site_category
 
-# tree=sys.argv[1]
-# tissues=sys.argv[2]
-# primary_tissue=sys.argv[3]
-# outfile=sys.argv[4]
+treefile=sys.argv[1]
+tissues=sys.argv[2]
+primary_tissue=sys.argv[3]
+outdir=sys.argv[4]
 
-# for testing
-treefile="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test/laml/2945/2945_laml_trees.nwk"
-tissues="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test/raw_data/2945/cell_tree_seed1082116693.labeling"
-primary_tissue="P"
-outdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test/metient/2945"
+# # for testing
+# treefile="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test/laml/2945/2945_laml_trees.nwk"
+# tissues="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test/raw_data/2945/cell_tree_seed1082116693.labeling"
+# primary_tissue="P"
+# outdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test/metient/2945"
 
 
 # use tree to get edge list and branch lengths
