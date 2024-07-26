@@ -241,27 +241,24 @@ rule processMachinaResults:
         python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
         """
 
-# rule prepMetient:
-#     input:
-#         machinaEdges = "{outdir}/machina/{sim}/{sim}_laml_trees_no_branch_lengths.tree",
-#         sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
-#         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
-#     output:
-#         metientTree = "{outdir}/metient/{sim}/tree.txt",
-#         metientTsv = "{outdir}/metient/{sim}/metadata.tsv"
-#     params:
-#         primaryTissue = config['primaryTissue'],
-#         scripts = config['scripts']
-#     conda:
-#         "envs/compare_trees.yaml"
-#     shell:
-#         """
-#         # use machina edge list for metient edge list
-#         cat {input.machinaEdges} > {output.metientTree}
-
-#         # format tsv file with tissue labels and mutation information
-#         python {params.scripts}/metient/format_metient_tsv.py {input.sim_matrix} {input.leafTissues} {params.primaryTissue} {output.metientTsv}
-#         """
+rule prepMetient:
+    input:
+        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk",
+        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
+    output:
+        metientTree = "{outdir}/metient/{sim}/tree.txt",
+        metientTsv = "{outdir}/metient/{sim}/metadata.tsv"
+    params:
+        primaryTissue = config['primaryTissue'],
+        scripts = config['scripts'],
+        outputdir = "{outdir}/metient/{sim}"
+    conda:
+        "envs/compare_trees.yaml"
+    shell:
+        """
+        # format tsv file and edge list
+        python {params.scripts}/metient/format_metient_tsv.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.primaryTissue} {params.outputdir}
+        """
 
 # rule runMetient:
 #     input:

@@ -12,7 +12,7 @@ output_dir = sys.argv[4]
 df = pd.read_csv(tsv, sep="\t")
 
 print_config = met.PrintConfig(visualize=True, verbose=False, k_best_trees=5)
-weights = met.Weights(mig=1, comig=50, seed_site=100)
+weights = met.Weights() # Use default weights which have been calibrated to real data
 
 clone_tree_fn = os.path.join(tree)
 ref_var_fn = os.path.join(tsv)
