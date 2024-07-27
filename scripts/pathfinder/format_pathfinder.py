@@ -6,7 +6,7 @@ import pandas as pd
 # user input
 tissue_labels = sys.argv[1]
 indel_matrix = sys.argv[2]
-outdir = sys.argv[2]
+outdir = sys.argv[3]
 
 # # testing
 # tissue_labels = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test/raw_data/2945/cell_tree_seed1082116693.labeling'
