@@ -126,7 +126,7 @@ outdir = sys.argv[3]
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,machina_f1,machina_recall,machina_precision,metient_f1,metient_recall,metient_precision,metastabayes_post_prob_f1,metastabayes_post_prob_recall,metastabayes_post_prob_precision\n"
+    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,machina_f1,machina_recall,machina_precision,metient_f1,metient_recall,metient_precision,metastabayes_f1,metastabayes_recall,metastabayes_precision\n"
     file.write(header)
 
 machina_precisions = np.zeros(len(dirs))
@@ -288,7 +288,7 @@ for true_tree_file in dirs:
     if os.path.exists(machina_file):
         plt.scatter(machina_recall, machina_precision, color='red', label='Machina', s=size, marker = "x")
     if os.path.exists(metient_file):
-        plt.scatter(metient_recall, metient_precision, color='green', label='Metient', s=size, marker = "x")
+        plt.scatter(metient_recall, metient_precision, color='orange', label='Metient', s=size, marker = "x")
     if os.path.exists(consensus_file):
         plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
     if os.path.exists(random_file):
@@ -335,7 +335,7 @@ plt.figure()
 plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=size, marker='x')
 plt.plot(avg_df['recall'], avg_df['precision'], color = 'grey', label='Posterior')
 plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='Machina', s=size, marker = "x")
-plt.scatter(avg_metient_recall, avg_metient_precision, color='green', label='Machina', s=size, marker = "x")
+plt.scatter(avg_metient_recall, avg_metient_precision, color='orange', label='Metient', s=size, marker = "x")
 plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
 plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker = "x")
 plt.xlim(-0.05,1.05)
