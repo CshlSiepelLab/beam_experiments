@@ -268,8 +268,7 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outputdir = "{outdir}/metient/{sim}",
-        threads = config['threads']
+        outputdir = "{outdir}/metient/{sim}"
     singularity:
         "envs/metient.sif"
     shell:
@@ -302,6 +301,7 @@ rule plotPrecisionRecall:
         trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
+        metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
         # actual input used
         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
     output:
@@ -310,12 +310,13 @@ rule plotPrecisionRecall:
         overallF1 = f"{outdir}/precision_recall_curve/f1_score.pdf",
     params:
         scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
         outputdir = outdir + "/precision_recall_curve"
     conda:
         "envs/matplotlib.yaml"
     shell:
         """
         true_trees=$(echo {input.trueTrees} | tr ' ' ',')
-        python {params.scripts}/plot_precision_recall.py $true_trees {params.outputdir}
+        python {params.scripts}/plot_precision_recall.py $true_trees {params.primaryTissue} {params.outputdir}
         python {params.scripts}/plot_f1_score.py {params.outputdir}/metrics.csv {params.outputdir}
         """

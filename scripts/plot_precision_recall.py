@@ -13,6 +13,7 @@ import dendropy
 from copy import deepcopy
 from arviz import hdi
 import glob
+import ast
 
 def get_migration_counts(tree):
     migration_counts = {}
@@ -119,16 +120,19 @@ def calculate_metrics(true_counts, inferred_counts):
     return f1, recall, precision
 
 dirs = (sys.argv[1]).split(",")
-outdir = sys.argv[2]
+primary_tissue=sys.argv[2]
+outdir = sys.argv[3]
 
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,machina_f1,machina_recall,machina_precision,metastabayes_post_prob_f1,metastabayes_post_prob_recall,metastabayes_post_prob_precision\n"
+    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,machina_f1,machina_recall,machina_precision,metient_f1,metient_recall,metient_precision,metastabayes_post_prob_f1,metastabayes_post_prob_recall,metastabayes_post_prob_precision\n"
     file.write(header)
 
 machina_precisions = np.zeros(len(dirs))
 machina_recalls = np.zeros(len(dirs))
+metient_precisions = np.zeros(len(dirs))
+metient_recalls = np.zeros(len(dirs))
 consensus_precisions = np.zeros(len(dirs))
 consensus_recalls = np.zeros(len(dirs))
 random_precisions = np.zeros(len(dirs))
@@ -148,6 +152,7 @@ for true_tree_file in dirs:
     
     # get other files to compare
     machina_file = f"{dir}/machina/{sim}/machina_tree_all_tissue_labels.nwk"
+    metient_file = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_migration_graphs.txt"
     beast_posterior_file = f"{dir}/metastabayes/{sim}/combined.trees"
     consensus_file = f"{dir}/random_consensus_tissue_inference/{sim}/consensus_tissues.nwk"
     random_file = f"{dir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk"
@@ -156,6 +161,7 @@ for true_tree_file in dirs:
     # print all file paths to output
     print(f"True tree file: {true_tree_file}")
     print(f"Machina file: {machina_file}")
+    print(f"Metient file: {metient_file}")
     print(f"Beast posterior file: {beast_posterior_file}")
     print(f"Consensus file: {consensus_file}")
     print(f"Random file: {random_file}")
@@ -173,6 +179,23 @@ for true_tree_file in dirs:
         machina_precisions[i] = machina_precision
         machina_recalls[i] = machina_recall
 
+    # process metient result to get precision and recall
+    if os.path.exists(metient_file):
+        with open(metient_file, 'r') as file:
+            lines = file.readlines()
+        top_loss_metient = lines[1].strip().split('\t')
+        metient_counts_input = ast.literal_eval(top_loss_metient[1])
+        metient_counts = {}
+        for outer_key, inner_dict in metient_counts_input.items():
+            for inner_key, value in inner_dict.items():
+                if value != 0.0:
+                    metient_counts[f"{outer_key}_{inner_key}"] = value
+        metient_f1, metient_recall, metient_precision = calculate_metrics(true_counts, metient_counts)
+        metient_precisions[i] = metient_precision
+        metient_recalls[i] = metient_recall
+
+
+
     if os.path.exists(random_file):
         random_counts = process_tree(random_file)
         random_f1, random_recall, random_precision = calculate_metrics(true_counts, random_counts)
@@ -188,7 +211,6 @@ for true_tree_file in dirs:
     # process beast posterior result to get precision and recall
     if os.path.exists(beast_posterior_file):
         burnin_percent=0.1
-        primary_tissue="P"
         beast_tree_list = dendropy.TreeList()
         beast_tree_list.read(path=beast_posterior_file, schema="nexus")
         num_beast_trees = len(beast_tree_list)
@@ -265,6 +287,8 @@ for true_tree_file in dirs:
         plt.plot(thresh_prec_rec['recall'], thresh_prec_rec['precision'], color = "grey", label='Posterior')
     if os.path.exists(machina_file):
         plt.scatter(machina_recall, machina_precision, color='red', label='Machina', s=size, marker = "x")
+    if os.path.exists(metient_file):
+        plt.scatter(metient_recall, metient_precision, color='green', label='Metient', s=size, marker = "x")
     if os.path.exists(consensus_file):
         plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
     if os.path.exists(random_file):
@@ -289,13 +313,15 @@ for true_tree_file in dirs:
 
     # write metrics used for the plot to a file
     with open(outfile_metrics, "a") as file:
-        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{machina_f1},{machina_recall},{machina_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
+        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
         file.write(data)
 
 # make an overall averaged precision/recall curve
 outfile = f"{outdir}/precision_recall.pdf"
 avg_machina_precision = sum(machina_precisions) / len(machina_precisions)
 avg_machina_recall = sum(machina_recalls) / len(machina_recalls)
+avg_metient_precision = sum(metient_precisions) / len(metient_precisions)
+avg_metient_recall = sum(metient_recalls) / len(metient_recalls)
 avg_random_precision = sum(random_precisions) / len(random_precisions)
 avg_random_recall = sum(random_recalls) / len(random_recalls)
 avg_consensus_precision = sum(consensus_precisions) / len(consensus_precisions)
@@ -307,8 +333,9 @@ size = 75
 textsize = 18
 plt.figure()
 plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=size, marker='x')
-plt.plot(avg_df['recall'], avg_df['precision'], color = "grey", label='Posterior')
+plt.plot(avg_df['recall'], avg_df['precision'], color = 'grey', label='Posterior')
 plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='Machina', s=size, marker = "x")
+plt.scatter(avg_metient_recall, avg_metient_precision, color='green', label='Machina', s=size, marker = "x")
 plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
 plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker = "x")
 plt.xlim(-0.05,1.05)
