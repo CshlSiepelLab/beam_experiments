@@ -63,6 +63,8 @@ edges.to_csv(f"{outdir}/tree.txt", sep=" ", index=False, header=False)
 tissues_df = pd.read_csv(tissues, sep=" ", names=["id", "tissue"])
 tissues_dict = dict(zip(tissues_df["id"].astype(str), tissues_df["tissue"].astype(str)))
 unique_tissues = set(tissues_dict.values())
+if primary_tissue not in unique_tissues:
+    unique_tissues.add(primary_tissue)
 tissue_to_int = {tissue: i for i, tissue in enumerate(unique_tissues)}
 
 ### output metadata tsv
