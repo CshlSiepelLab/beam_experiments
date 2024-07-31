@@ -101,7 +101,6 @@
 
             <!-- Clock rates -->
             <parameter id="editClockRate" spec="parameter.RealParameter" estimate="true" name="stateNode">0.005</parameter>
-            <parameter id="tissueClockRate" spec="parameter.RealParameter" estimate="true" name="stateNode">1.0</parameter>
 
             <!-- indicators are irrelevant here with BSVSS turned off -->
             <parameter id="tissueRateIndicators" spec="parameter.BooleanParameter" dimension="$(numRates)" name="stateNode">true</parameter>
@@ -135,10 +134,6 @@
                 <prior id="editClockRatePrior" name="distribution" x="@editClockRate">
                 <Uniform id="Uniform.0" name="distr" upper="Infinity"/>
             </prior>
-
-            <prior id="tissueClockRatePrior" name="distribution" x="@tissueClockRate">
-                <Uniform id="Uniform.1" name="distr" upper="Infinity"/>
-            </prior>
             </distribution>
 
             <!-- Likelihood -->
@@ -152,7 +147,6 @@
 
                     <distribution id="traitLikelihood_$(n)" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" useJava="false" useAmbiguities="true" data="@tissue_$(n)" tag="location" tree="@tree_$(n)" siteModel="@tissueSiteModel">
                         <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0 0 0 0 0 0 0" estimate="false"/>
-                        <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@tissueClockRate"/>
                     </distribution>
                 </plate>
             </distribution>
@@ -169,11 +163,10 @@
 
         <!-- operators on rate matrix parameters that maintain units in substitutions -->
         <operator id="editRateScaler" spec="DeltaExchangeOperator" parameter="@editRates" weight="3.0"/>
-        <operator id="tissueRateScaler" spec="DeltaExchangeOperator" parameter="@relativeTissueRates" weight="30.0"/>
+        <operator id="tissueRateScaler" spec="ScaleOperator" parameter="@relativeTissueRates" weight="30.0"/>
 
         <!-- operators on clock rates used to scale the rate matrix to match the time units of the branch lengths -->
         <operator id="editClockRateScaler" spec="ScaleOperator" parameter="@editClockRate" weight="3.0"/>
-        <operator id="tissueClockRateScaler" spec="ScaleOperator" parameter="@tissueClockRate" weight="3.0"/>
 
         <!-- Loggers -->
         <logger id="tracelog" spec="Logger" fileName="$(outname).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
@@ -186,7 +179,6 @@
             </plate>
             <log idref="editClockRate"/>
             <log idref="editRates"/>
-            <log idref="tissueClockRate"/>
             <log idref="relativeTissueRates"/>
             <log id="tissueSubstModelLogger" spec="metastabayes.substitutionmodel.MetastabayesGeneralTissueSubstitutionModelLogger" dataType="@codeMap" model="@tissueSubstModel"/>
         </logger>
@@ -208,7 +200,7 @@
             </logger>
         </plate>
 
-        <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+        <operatorschedule id="OperatorSchedule" spec="kernel.BactrianOperatorSchedule"/>
     </run>
 
 </beast>
