@@ -67,14 +67,14 @@
     <!-- Set universal models -->
     <!-- MUTATION RATE MUST BE SET TO THE SAME AS THE MEAN OF THE PRIOR ON EDIT RATES BASED ON THE SIMULATED OVERALL RATE TO SCALE THE RELATIVE EDIT RATES-->
     <siteModel id="treeSiteModel" spec="SiteModel" mutationRate="1.0" proportionInvariant="0.0" gammaCategoryCount="0">
-        <substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRates" silencingRate="0.0" editHeight="250" editDuration="250">
-        <!-- <substModel id="substModel" spec="metastabayes.substitutionmodel.MetastabayesGeneralMutationSubstitutionModel" editRates="@editRates" silencingRate="0.0"> -->
+        <!-- <substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRates" silencingRate="0.0" editHeight="250" editDuration="250"> -->
+        <substModel id="substModel" spec="metastabayes.substitutionmodel.MetastabayesGeneralMutationSubstitutionModel" editRates="@editRates" silencingRate="0.0">
             <!-- frequencies are irrelevant here -->
             <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
         </substModel>
     </siteModel>
 
-    <siteModel id="tissueSiteModel" spec="SiteModel" gammaCategoryCount="0" mutationRate="1.0" proportionInvariant="0.0">
+    <siteModel id="tissueSiteModel" spec="SiteModel" mutationRate="1.0" proportionInvariant="0.0" gammaCategoryCount="0">
         <substModel id="tissueSubstModel" spec="metastabayes.substitutionmodel.MetastabayesGeneralTissueSubstitutionModel" rates="@relativeTissueRates" matrixStructure="@matrixStructure" rateIndicator="@tissueRateIndicators" symmetric="true">
             <!-- frequencies are irrelevant here -->
             <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
@@ -87,7 +87,6 @@
         <state id="state" spec="State" storeEvery="5000">
             <!-- Individual states for each dataset -->
             <plate var="n" range="&range;">
-                <!-- <stateNode id="tree_$(n)" spec="tidetree.tree.StartingTree" rootHeight="$(generations)" taxa="@alignment_$(n)" editHeight="$(generations)" editDuration="$(generations)" sequencesAreClustered="false"> -->
                 <stateNode id="tree_$(n)" spec="tidetree.tree.StartingTree" rootHeight="$(generations)" taxa="@alignment_$(n)" editHeight="$(generations)" editDuration="$(generations)" sequencesAreClustered="false">
                     <trait idref="dateTrait_$(n)"/>
                     <taxonset idref="taxonset_$(n)"/>
@@ -146,8 +145,8 @@
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 <!-- Composite likelihoods for each dataset -->
                 <plate var="n" range="&range;">
-                    <!-- <distribution id="treeLikelihood_$(n)" spec="TreeLikelihood" useAmbiguities="true" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel"/> -->
-                    <distribution id="treeLikelihood_$(n)" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" origin="250.001" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel">
+                    <!-- <distribution id="treeLikelihood_$(n)" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" origin="250.001" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel"> -->
+                    <distribution id="treeLikelihood_$(n)" spec="TreeLikelihood" useAmbiguities="true" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel">
                         <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@editClockRate"/>
                     </distribution>
 
