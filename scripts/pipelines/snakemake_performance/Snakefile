@@ -72,6 +72,9 @@ rule runMetastabayes:
         """
         cp {params.xml} {params.fileDir}/submit.xml
 
+        # compute equal tissue rates based on the number of total tissue rates
+        equalTissueRates=$(echo "scale=10; 1.0 / {params.numRates}" | bc -l)
+
         java -Xmx5g -jar {params.metastabayesJar} \
         -threads {params.threads} \
         -overwrite \
@@ -80,6 +83,7 @@ rule runMetastabayes:
         -D fileDir={params.fileDir} \
         -D matrixStructure='{params.matrixStructure}' \
         -D numRates={params.numRates} \
+        -D equalTissueRates=$equalTissueRates \
         -D generations={params.generations} \
         -D mcmclength={params.mcmclength} \
         -D outname=chain_{wildcards.num} \
