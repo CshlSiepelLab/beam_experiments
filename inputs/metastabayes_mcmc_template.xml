@@ -163,7 +163,7 @@
 
         <!-- operators on rate matrix parameters that maintain units in substitutions -->
         <operator id="editRateScaler" spec="DeltaExchangeOperator" parameter="@editRates" weight="3.0"/>
-        <operator id="tissueRateScaler" spec="ScaleOperator" parameter="@relativeTissueRates" weight="30.0"/>
+        <operator id="tissueRateScaler" spec="ScaleOperator" parameter="@relativeTissueRates" scaleAllIndependently="true" scaleFactor="0.99" weight="30.0"/>
 
         <!-- operators on clock rates used to scale the rate matrix to match the time units of the branch lengths -->
         <operator id="editClockRateScaler" spec="ScaleOperator" parameter="@editClockRate" weight="3.0"/>
