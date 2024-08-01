@@ -1,0 +1,68 @@
+Bootstrap: debootstrap
+OSVersion: jammy
+MirrorURL: http://us.archive.ubuntu.com/ubuntu/
+
+%post
+    # Install system dependencies
+    apt-get update -y
+    apt-get install -y --no-install-recommends software-properties-common dirmngr wget locales gnupg
+    add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -cs) universe"
+    add-apt-repository -y ppa:ubuntugis/ppa
+    add-apt-repository ppa:ubuntu-toolchain-r/test
+    locale-gen en_US.UTF-8
+    update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8
+    apt-get install -y --no-install-recommends git build-essential gcc g++ gfortran gfortran make
+    apt-get update && apt-get install -y \
+        software-properties-common \
+        build-essential \
+        wget \
+        libgtk2.0-0 \
+        libgconf-2-4 \
+        tzdata \
+        gawk \
+        bison \
+        make \
+        tar \
+        git \
+        gcc \
+        g++ \
+        gfortran \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libxml2-dev \
+        libudunits2-dev \
+        libgdal-dev \
+        libfontconfig1-dev \
+        libcairo2-dev \
+        libfreetype6-dev \
+        libpng-dev \
+        libtiff5-dev \
+        libharfbuzz-dev \
+        libfribidi-dev \
+        libsodium-dev
+
+    # Install miniconda
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
+    bash /tmp/miniconda.sh -b -p /opt/miniconda
+    rm /tmp/miniconda.sh
+    /opt/miniconda/bin/conda init bash
+
+    # Install PathFinder dependencies
+    /opt/miniconda/bin/conda install -y python=3 matplotlib pydot graphviz 'networkx<=2.8' biopython
+
+    # Install megacc
+    wget -O /tmp/mega-cc_11.0.13-1_amd64.deb https://www.megasoftware.net/do_force_download/megacc_11.0.13-1_amd64.deb
+    dpkg -i /tmp/mega-cc_11.0.13-1_amd64.deb
+    rm /tmp/mega-cc_11.0.13-1_amd64.deb
+
+
+%environment
+    # Set PATH to include the Conda bin directory
+    export PATH=/opt/miniconda/bin:/usr/bin:$PATH
+
+    # Add glibc to LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=/opt/glibc/lib:$LD_LIBRARY_PATH
+
+%runscript
+    #!/bin/bash
+    "$@"
