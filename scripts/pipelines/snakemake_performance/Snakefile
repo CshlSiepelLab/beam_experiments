@@ -312,7 +312,7 @@ rule runPathfinder:
         "envs/pathfinder.sif"
     shell:
         """
-        python {params.scripts}/pathfinder/pathfinder.py {input.pathfinderFasta} {input.pathfinderTissues} --primary {params.primaryTissue} -o {params.outputdir} --relax_threshold --scripts {params.scripts}/pathfinder
+        python {params.scripts}/pathfinder/pathfinder.py {input.pathfinderFasta} {input.pathfinderTissues} --primary {params.primaryTissue} -o {params.outputdir} --relax_threshold --scripts {params.scripts}/pathfinder --verbosity 4
         """
 
 rule labelTrueTreeWithTissues:
