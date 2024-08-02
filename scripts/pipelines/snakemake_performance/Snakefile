@@ -18,7 +18,7 @@ rule all:
         expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
-        expand("{outdir}/pathfinder/{sim}/clone_aln.fas", sim=sims, outdir=outdir)
+        expand("{outdir}/pathfinder/{sim}/clone_aln_Mig.txt", sim=sims, outdir=outdir)
 
 rule copyDataToOutDir:
     input:
@@ -296,6 +296,22 @@ rule prepPathfinder:
     shell:
         """
         python {params.scripts}/pathfinder/format_pathfinder.py {input.leafTissues} {input.sim_matrix} {params.outputdir}
+        """
+
+rule runPathfinder:
+    input:
+        pathfinderTissues = "{outdir}/pathfinder/{sim}/clone_presence.txt",
+        pathfinderFasta = "{outdir}/pathfinder/{sim}/clone_aln.fas"
+    output:
+        pathfinderResult = "{outdir}/pathfinder/{sim}/clone_aln_Mig.txt"
+    params:
+        outputdir = "{outdir}/pathfinder/{sim}",
+        primaryTissue = config['primaryTissue']
+    singularity:
+        "envs/pathfinder.sif"
+    shell:
+        """
+        python pathfinder.py {input.pathfinderFasta} {input.pathfinderTissues} --primary {params.primaryTissue} -o {params.outputdir} --relax_threshold
         """
 
 rule labelTrueTreeWithTissues:
