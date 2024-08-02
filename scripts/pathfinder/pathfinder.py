@@ -21,11 +21,6 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from io import StringIO
 
-# add local copy of tree_permute.py to path to load in
-script_dir = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, script_dir)
-from tree_permute import permute_unique_trees
-
 # read aln
 # generate initial MP tree from aln and root on normal
 # run ML ancestral reconstruction
@@ -37,27 +32,10 @@ from tree_permute import permute_unique_trees
 # calculate accuracy
 # generate outputs
 
-#megacc_app = "megacc_200422.exe"
-#megacc_app = "megacc.exe"
-# megacc_app = "megacc_11210415.exe"
-megacc_app = "/usr/bin/megacc"
-mp_tree_infer_mao = f"{script_dir}/infer_NJ_amino_acid.mao"
-ancestral_seqs_mao = f"{script_dir}/ancestral_seqs_ML_protein.mao"
-outgroup_file = f"{script_dir}/outgroup.txt"
-# resolve_polytomy_to_most_diverse_node = True
-
-print_megacc_cmd = False
-tryto_fix_anc_seq_inference = True
-fix_0length_issues = True
-# relax_node_threshold = True  # If node has no AA with probability >threshold, fall back to selecting single AA with the highest probability if it exists
-
-aa_label_list = ['C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
-tumor_label_dict = {'A': 'Normal'}
-rev_tumor_label_dict = {'Normal': 'A'}
-
 parser = argparse.ArgumentParser(description="PathFinder tumor migration path solver.")
 parser.add_argument("aln", help="Clone sequence alignment file.", type=str)
 parser.add_argument("clone_locations", help="Per tumor clone frequency/presence matrix file.", type=str)
+parser.add_argument("--scripts", help="Path to PathFinder scripts", type=str)
 parser.add_argument("--primary", help="Specify name of primary tumor.", type=str, default="Primary")
 parser.add_argument("--anc_tumor_threshold", help="Lower limit on ancestral node tumor threshold.", type=float, default=0.15)
 parser.add_argument("--mig_event_threshold", help="Migration edge detection threshold.", type=float, default=0.5)
@@ -80,6 +58,30 @@ parser.add_argument("--use_select_weighted_outputs", help="Make final ancestral 
 parser.add_argument("--keep_ambiguous_results", help="Treat nodes with fully ambiguous inferences as belonging equally to all sites, instead of discarding the ancestral inference result.", action='store_true', default=False)
 
 args = parser.parse_args()
+
+
+# add local copy of tree_permute.py to path to load in
+script_dir = args.scripts
+sys.path.insert(0, script_dir)
+from tree_permute import permute_unique_trees
+
+megacc_app = "/usr/bin/megacc"
+mp_tree_infer_mao = f"{script_dir}/infer_NJ_amino_acid.mao"
+ancestral_seqs_mao = f"{script_dir}/ancestral_seqs_ML_protein.mao"
+outgroup_file = f"{script_dir}/outgroup.txt"
+# resolve_polytomy_to_most_diverse_node = True
+
+print_megacc_cmd = False
+tryto_fix_anc_seq_inference = True
+fix_0length_issues = True
+# relax_node_threshold = True  # If node has no AA with probability >threshold, fall back to selecting single AA with the highest probability if it exists
+
+aa_label_list = ['C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+tumor_label_dict = {'A': 'Normal'}
+rev_tumor_label_dict = {'Normal': 'A'}
+
+
+
 
 v_level = args.verbosity
 

@@ -306,12 +306,13 @@ rule runPathfinder:
         pathfinderResult = "{outdir}/pathfinder/{sim}/clone_aln_Mig.txt"
     params:
         outputdir = "{outdir}/pathfinder/{sim}",
-        primaryTissue = config['primaryTissue']
+        primaryTissue = config['primaryTissue'],
+        scripts = config['scripts'],
     singularity:
         "envs/pathfinder.sif"
     shell:
         """
-        python pathfinder.py {input.pathfinderFasta} {input.pathfinderTissues} --primary {params.primaryTissue} -o {params.outputdir} --relax_threshold
+        python {params.scripts}/pathfinder/pathfinder.py {input.pathfinderFasta} {input.pathfinderTissues} --primary {params.primaryTissue} -o {params.outputdir} --relax_threshold --scripts {params.scripts}/pathfinder
         """
 
 rule labelTrueTreeWithTissues:
