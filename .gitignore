@@ -6,3 +6,4 @@ data/
 *.sif
 .cache
 __pycache__
+.config
