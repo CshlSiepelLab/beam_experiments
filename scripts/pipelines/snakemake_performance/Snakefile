@@ -18,7 +18,7 @@ rule all:
         expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
-        expand("{outdir}/pathfinder/{sim}/clone_aln_Mig.txt", sim=sims, outdir=outdir)
+        expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir)
 
 rule copyDataToOutDir:
     input:
@@ -303,7 +303,7 @@ rule runPathfinder:
         pathfinderTissues = "{outdir}/pathfinder/{sim}/clone_presence.txt",
         pathfinderFasta = "{outdir}/pathfinder/{sim}/clone_aln.fas"
     output:
-        pathfinderResult = "{outdir}/pathfinder/{sim}/clone_aln_Mig.txt"
+        pathfinderResult = "{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt"
     params:
         outputdir = "{outdir}/pathfinder/{sim}",
         primaryTissue = config['primaryTissue'],
@@ -341,6 +341,7 @@ rule plotPrecisionRecall:
         machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
         metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
+        pathfinderResultDone = expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
         # actual input used
         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
     output:

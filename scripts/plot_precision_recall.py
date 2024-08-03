@@ -2,6 +2,7 @@
 
 import sys
 import os
+import re
 import pandas as pd
 import numpy as np
 from scipy.stats import gaussian_kde
@@ -119,6 +120,43 @@ def calculate_metrics(true_counts, inferred_counts):
         f1 = 2 * ((precision * recall) / (precision + recall))
     return f1, recall, precision
 
+def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, i):
+    # calculate total counts weighted by posterior probability
+        post_prob_precision = 0
+        post_prob_recall = 0
+        post_prob_f1 = 0
+        total_counts = {}
+        for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
+            for pattern, count in inferred_counts.items():
+                for num in range(1, count+1):
+                    edge = f"{pattern}_{num}"
+                    if edge not in total_counts:
+                        total_counts[edge] = prob
+                    else:
+                        total_counts[edge] += prob
+            # get posterior prob weighted precision, recall, and f1
+            f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
+            post_prob_precision += prob * precision
+            post_prob_recall += prob * recall
+            post_prob_f1 += prob * f1
+
+        # compute thresholded precision and recall values
+        thresholds = [i for i in np.arange(0, 1.00, 0.01)]
+        rows = []
+        for thresh in thresholds:
+            thresh_counts = {key: value for key, value in total_counts.items() if value > thresh}
+            edges = ['_'.join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
+            thresh_counts = {}
+            for edge in edges:
+                if edge not in thresh_counts:
+                    thresh_counts[edge] = 1
+                else:
+                    thresh_counts[edge] += 1
+            f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
+            rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i})
+        thresh_prec_rec = pd.DataFrame(rows)
+        return thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision
+
 dirs = (sys.argv[1]).split(",")
 primary_tissue=sys.argv[2]
 outdir = sys.argv[3]
@@ -126,7 +164,7 @@ outdir = sys.argv[3]
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,machina_f1,machina_recall,machina_precision,metient_f1,metient_recall,metient_precision,metastabayes_f1,metastabayes_recall,metastabayes_precision\n"
+    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,machina_f1,machina_recall,machina_precision,metient_f1,metient_recall,metient_precision,pathfinder_f1,pathfinder_recall,pathfinder_precision,metastabayes_f1,metastabayes_recall,metastabayes_precision\n"
     file.write(header)
 
 machina_precisions = np.zeros(len(dirs))
@@ -138,6 +176,7 @@ consensus_recalls = np.zeros(len(dirs))
 random_precisions = np.zeros(len(dirs))
 random_recalls = np.zeros(len(dirs))
 all_thresh_rows = []
+pathfinder_all_thresh_rows = []
 i=0
 
 for true_tree_file in dirs:
@@ -154,6 +193,7 @@ for true_tree_file in dirs:
     machina_file = f"{dir}/machina/{sim}/machina_tree_all_tissue_labels.nwk"
     metient_file = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_migration_graphs.txt"
     beast_posterior_file = f"{dir}/metastabayes/{sim}/combined.trees"
+    pathfinder_posterior_file = f"{dir}/pathfinder/{sim}/clone_aln_all_output_counts.txt"
     consensus_file = f"{dir}/random_consensus_tissue_inference/{sim}/consensus_tissues.nwk"
     random_file = f"{dir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk"
     outfile = f"{outdir}/{sim}/precision_recall.pdf"
@@ -194,7 +234,24 @@ for true_tree_file in dirs:
         metient_precisions[i] = metient_precision
         metient_recalls[i] = metient_recall
 
+    if os.path.exists(pathfinder_posterior_file):
+        pathfinder_raw_output = pd.read_csv(pathfinder_posterior_file, sep='\t')
+        raw_posterior_probs = pathfinder_raw_output['probability'].tolist()
+        pathfinder_posterior_probs = [posterior_prob / sum(raw_posterior_probs) for posterior_prob in raw_posterior_probs]
+        pathfinder_all_inferred_counts = []
+        for raw_graph in pathfinder_raw_output['paths'].tolist():
+            graph = raw_graph.split(';')
+            cleaned_graph = {}
+            for item in graph:
+                item = re.sub(r'\[.*?\]', '', item)
+                item = item.replace('->', '_')
+                if item not in cleaned_graph:
+                    cleaned_graph[item] = 1
+                else:
+                    cleaned_graph[item] += 1
+            pathfinder_all_inferred_counts.append(cleaned_graph)
 
+        pathfinder_thresh_prec_rec, pathfinder_rows, pathfinder_post_prob_f1, pathfinder_post_prob_recall, pathfinder_post_prob_precision = posterior_threshold_metrics(pathfinder_posterior_probs, pathfinder_all_inferred_counts, true_counts, i)
 
     if os.path.exists(random_file):
         random_counts = process_tree(random_file)
@@ -242,49 +299,18 @@ for true_tree_file in dirs:
         posterior_probs = [pdf(posterior)[0] for posterior in posteriors]
         total_posterior_prob = sum(posterior_probs)
         posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in posterior_probs]
-
-        # calculate total counts weighted by posterior probability
-        post_prob_precision = 0
-        post_prob_recall = 0
-        post_prob_f1 = 0
-        total_counts = {}
-        for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
-            for pattern, count in inferred_counts.items():
-                for num in range(1, count+1):
-                    edge = f"{pattern}_{num}"
-                    if edge not in total_counts:
-                        total_counts[edge] = prob
-                    else:
-                        total_counts[edge] += prob
-            # get posterior prob weighted precision, recall, and f1
-            f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
-            post_prob_precision += prob * precision
-            post_prob_recall += prob * recall
-            post_prob_f1 += prob * f1
-
-        # compute thresholded precision and recall values
-        thresholds = [i for i in np.arange(0, 1.00, 0.01)]
-        rows = []
-        for thresh in thresholds:
-            thresh_counts = {key: value for key, value in total_counts.items() if value > thresh}
-            edges = ['_'.join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
-            thresh_counts = {}
-            for edge in edges:
-                if edge not in thresh_counts:
-                    thresh_counts[edge] = 1
-                else:
-                    thresh_counts[edge] += 1
-            f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
-            rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i})
-        thresh_prec_rec = pd.DataFrame(rows)
+        thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision = posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, i) 
 
     # plot precision recall curve
     size = 75
     textsize=18
     plt.figure()
     if os.path.exists(beast_posterior_file):
-        plt.scatter(thresh_prec_rec['recall'], thresh_prec_rec['precision'], c=thresh_prec_rec['Threshold'], cmap='viridis', s=size, marker='x')
-        plt.plot(thresh_prec_rec['recall'], thresh_prec_rec['precision'], color = "grey", label='Posterior')
+        plt.scatter(thresh_prec_rec['recall'], thresh_prec_rec['precision'], c=thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
+        plt.plot(thresh_prec_rec['recall'], thresh_prec_rec['precision'], color = "grey", label='BEAST')
+    if os.path.exists(beast_posterior_file):
+        plt.scatter(pathfinder_thresh_prec_rec['recall'], pathfinder_thresh_prec_rec['precision'], c=pathfinder_thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
+        plt.plot(pathfinder_thresh_prec_rec['recall'], pathfinder_thresh_prec_rec['precision'], color = "brown", label='PathFinder')
     if os.path.exists(machina_file):
         plt.scatter(machina_recall, machina_precision, color='red', label='Machina', s=size, marker = "x")
     if os.path.exists(metient_file):
@@ -309,11 +335,12 @@ for true_tree_file in dirs:
 
 
     all_thresh_rows.extend(rows)
+    pathfinder_all_thresh_rows.extend(pathfinder_rows)
     i+=1
 
     # write metrics used for the plot to a file
     with open(outfile_metrics, "a") as file:
-        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
+        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{pathfinder_post_prob_f1},{pathfinder_post_prob_recall},{pathfinder_post_prob_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
         file.write(data)
 
 # make an overall averaged precision/recall curve
@@ -328,12 +355,16 @@ avg_consensus_precision = sum(consensus_precisions) / len(consensus_precisions)
 avg_consensus_recall = sum(consensus_recalls) / len(consensus_recalls)
 all_thresh_df = pd.DataFrame(all_thresh_rows)
 avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+pathfinder_all_thresh_df = pd.DataFrame(pathfinder_all_thresh_rows)
+pathfinder_avg_df = pathfinder_all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
 
 size = 75
 textsize = 18
 plt.figure()
-plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=size, marker='x')
+plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
 plt.plot(avg_df['recall'], avg_df['precision'], color = 'grey', label='Posterior')
+plt.scatter(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], c=pathfinder_avg_df['Threshold'], cmap='viridis', s=25, marker='x')
+plt.plot(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], color = 'grey', label='Posterior')
 plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='Machina', s=size, marker = "x")
 plt.scatter(avg_metient_recall, avg_metient_precision, color='orange', label='Metient', s=size, marker = "x")
 plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus', s=size, marker = "x")

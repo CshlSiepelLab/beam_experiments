@@ -21,7 +21,7 @@ output_dir = sys.argv[5]
 
 df = pd.read_csv(tsv, sep="\t")
 
-print_config = met.PrintConfig(visualize=False, verbose=True, k_best_trees=1024)
+print_config = met.PrintConfig(visualize=True, verbose=True, k_best_trees=5)
 weights = met.Weights() # Use default weights which have been calibrated to real data
 
 met.evaluate_label_clone_tree(tree, tsv, weights, print_config, output_dir, patient, solve_polytomies=True)
