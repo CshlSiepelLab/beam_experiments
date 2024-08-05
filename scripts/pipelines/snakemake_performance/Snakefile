@@ -283,6 +283,7 @@ rule runMetient:
 
 rule prepPathfinder:
     input:
+        os.path.join(outdir, "raw_data/{sim}", "done"),
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling")),
         sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv"))
     output:
