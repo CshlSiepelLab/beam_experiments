@@ -67,8 +67,8 @@
     <!-- Set universal models -->
     <!-- MUTATION RATE MUST BE SET TO THE SAME AS THE MEAN OF THE PRIOR ON EDIT RATES BASED ON THE SIMULATED OVERALL RATE TO SCALE THE RELATIVE EDIT RATES-->
     <siteModel id="treeSiteModel" spec="SiteModel" mutationRate="1.0" proportionInvariant="0.0" gammaCategoryCount="0">
-        <substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRates" silencingRate="0.0" editHeight="250" editDuration="250">
-        <!-- <substModel id="substModel" spec="metastabayes.substitutionmodel.MetastabayesGeneralMutationSubstitutionModel" editRates="@editRates" silencingRate="0.0"> -->
+        <!-- <substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRates" silencingRate="0.0" editHeight="250" editDuration="250"> -->
+        <substModel id="substModel" spec="metastabayes.substitutionmodel.MetastabayesGeneralMutationSubstitutionModel" editRates="@editRates" silencingRate="0.0">
             <!-- frequencies are irrelevant here -->
             <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
         </substModel>
@@ -157,8 +157,8 @@
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 <!-- Composite likelihoods for each dataset -->
                 <plate var="n" range="&range;">
-                    <distribution id="treeLikelihood_$(n)" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" origin="250.001" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel">
-                    <!-- <distribution id="treeLikelihood_$(n)" spec="TreeLikelihood" useAmbiguities="true" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel"> -->
+                    <!-- <distribution id="treeLikelihood_$(n)" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" origin="250.001" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel"> -->
+                    <distribution id="treeLikelihood_$(n)" spec="TreeLikelihood" useAmbiguities="true" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel">
                         <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@editClockRate"/>
                     </distribution>
 
@@ -222,8 +222,8 @@
             </logger>
         </plate>
 
-        <!-- <operatorschedule id="OperatorSchedule" spec="kernel.BactrianOperatorSchedule"/> -->
-        <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+        <operatorschedule id="OperatorSchedule" spec="kernel.BactrianOperatorSchedule"/>
+        <!-- <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/> -->
     </run>
 
 </beast>

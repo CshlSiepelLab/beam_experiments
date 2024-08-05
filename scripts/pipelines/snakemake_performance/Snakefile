@@ -70,7 +70,7 @@ rule runMetastabayes:
         threads = config['threads']
     shell:
         """
-        cp {params.xml} {params.fileDir}/submit.xml
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # compute equal tissue rates based on the number of total tissue rates
         equalTissueRates=$(echo "scale=10; 1.0 / {params.numRates}" | bc -l)
@@ -87,7 +87,7 @@ rule runMetastabayes:
         -D generations={params.generations} \
         -D mcmclength={params.mcmclength} \
         -D outname=chain_{wildcards.num} \
-        {params.fileDir}/submit.xml > {output.terminalLog}
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
 rule combineMetastabayesChains:
