@@ -45,9 +45,18 @@ rule prepMetastabayesInputs:
         scripts = config['scripts'],
         generations = config['generations'],
         outputdir = "{outdir}/metastabayes/{sim}"
+    conda:
+        "envs/compare_trees.yaml"
     shell:
         """
-        {params.scripts}/format_metastabayes_input_files.sh {input.sim_matrix} {input.leafTissues} {params.generations} {params.outputdir}
+        # write tip traits to new csv
+        sed 's/ /,/g' {input.leafTissues} > {output.tissues}
+
+        # write date trait
+        sed 's/ /,/g' {input.leafTissues} | cut -d',' -f1 | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.leafTissues})) > {output.dates}
+
+        # format fasta, re-label mutations sequentially, and get edit rate proportions for new mutation entries
+        {params.scripts}/format_metastabayes_input_files.py {input.sim_matrix} {params.outputdir}
         """
 
 rule runMetastabayes:
@@ -64,7 +73,7 @@ rule runMetastabayes:
         fileDir = "{outdir}/metastabayes/{sim}",
         metastabayesJar = config['metastabayesJar'],
         matrixStructure = config['matrixStructure'],
-        numRates = config['numRates'],
+        numTissueRates = config['numTissueRates'],
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
         threads = config['threads']
@@ -72,8 +81,14 @@ rule runMetastabayes:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {wildcards.outdir}/metastabayes/{wildcards.sim}_edit_rate_proportions.txt)
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
+
         # compute equal tissue rates based on the number of total tissue rates
-        equalTissueRates=$(echo "scale=10; 1.0 / {params.numRates}" | bc -l)
+        equalTissueRates=$(echo "scale=10; 1.0 / {params.numTissueRates}" | bc -l)
 
         java -Xmx5g -jar {params.metastabayesJar} \
         -threads {params.threads} \
@@ -82,7 +97,10 @@ rule runMetastabayes:
         -D inputNames={wildcards.sim} \
         -D fileDir={params.fileDir} \
         -D matrixStructure='{params.matrixStructure}' \
-        -D numRates={params.numRates} \
+        -D numEditRates=$numEditRates \
+        -D numEditRatesPlusTwo=$numEditRatesPlusTwo \
+        -D initialEditRates=$initialEditRates \
+        -D numTissueRates={params.numTissueRates} \
         -D equalTissueRates=$equalTissueRates \
         -D generations={params.generations} \
         -D mcmclength={params.mcmclength} \
