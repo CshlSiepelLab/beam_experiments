@@ -99,7 +99,7 @@ rule runMetastabayes:
         -D matrixStructure='{params.matrixStructure}' \
         -D numEditRates=$numEditRates \
         -D numEditRatesPlusTwo=$numEditRatesPlusTwo \
-        -D initialEditRates='$initialEditRates' \
+        -D initialEditRates=\"$initialEditRates\" \
         -D numTissueRates={params.numTissueRates} \
         -D equalTissueRates=$equalTissueRates \
         -D generations={params.generations} \
