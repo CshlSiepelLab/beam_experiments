@@ -82,7 +82,7 @@ rule runMetastabayes:
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {wildcards.outdir}/metastabayes/{wildcards.sim}_edit_rate_proportions.txt)
+        initialEditRates=$(cat {wildcards.outdir}/metastabayes/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))
@@ -99,7 +99,7 @@ rule runMetastabayes:
         -D matrixStructure='{params.matrixStructure}' \
         -D numEditRates=$numEditRates \
         -D numEditRatesPlusTwo=$numEditRatesPlusTwo \
-        -D initialEditRates=$initialEditRates \
+        -D initialEditRates='$initialEditRates' \
         -D numTissueRates={params.numTissueRates} \
         -D equalTissueRates=$equalTissueRates \
         -D generations={params.generations} \
