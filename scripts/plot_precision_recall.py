@@ -164,7 +164,7 @@ outdir = sys.argv[3]
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,machina_f1,machina_recall,machina_precision,metient_f1,metient_recall,metient_precision,pathfinder_f1,pathfinder_recall,pathfinder_precision,metastabayes_f1,metastabayes_recall,metastabayes_precision\n"
+    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,machina_f1,machina_recall,machina_precision,metient_f1,metient_recall,metient_precision,pathfinder_f1,pathfinder_recall,pathfinder_precision,beast_f1,beast_recall,beast_precision\n"
     file.write(header)
 
 machina_precisions = np.zeros(len(dirs))
@@ -236,7 +236,9 @@ for true_tree_file in dirs:
 
     if os.path.exists(pathfinder_posterior_file):
         pathfinder_raw_output = pd.read_csv(pathfinder_posterior_file, sep='\t')
+        pathfinder_raw_output = pathfinder_raw_output.drop_duplicates()
         raw_posterior_probs = pathfinder_raw_output['probability'].tolist()
+        # pathfinder probabilities do not sum to 1, so normalize them across all output migration graphs
         pathfinder_posterior_probs = [posterior_prob / sum(raw_posterior_probs) for posterior_prob in raw_posterior_probs]
         pathfinder_all_inferred_counts = []
         for raw_graph in pathfinder_raw_output['paths'].tolist():
@@ -307,7 +309,7 @@ for true_tree_file in dirs:
     plt.figure()
     if os.path.exists(beast_posterior_file):
         # plt.scatter(thresh_prec_rec['recall'], thresh_prec_rec['precision'], c=thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
-        plt.plot(thresh_prec_rec['recall'], thresh_prec_rec['precision'], color = "grey", label='BEAST')
+        plt.plot(thresh_prec_rec['recall'], thresh_prec_rec['precision'], color = "grey", label='Beast')
     if os.path.exists(beast_posterior_file):
         # plt.scatter(pathfinder_thresh_prec_rec['recall'], pathfinder_thresh_prec_rec['precision'], c=pathfinder_thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
         plt.plot(pathfinder_thresh_prec_rec['recall'], pathfinder_thresh_prec_rec['precision'], color = "brown", label='PathFinder')
@@ -362,7 +364,7 @@ size = 75
 textsize = 18
 plt.figure()
 # plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
-plt.plot(avg_df['recall'], avg_df['precision'], color = 'grey', label='Posterior')
+plt.plot(avg_df['recall'], avg_df['precision'], color = 'grey', label='Beast')
 # plt.scatter(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], c=pathfinder_avg_df['Threshold'], cmap='viridis', s=25, marker='x')
 plt.plot(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], color = 'brown', label='Pathfinder')
 plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='Machina', s=size, marker = "x")
@@ -370,12 +372,14 @@ plt.scatter(avg_metient_recall, avg_metient_precision, color='green', label='Met
 plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
 plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker = "x")
 plt.xlim(-0.05,1.05)
+# plt.xlim(0.4, 1.01)
+# plt.xticks(np.arange(0.4, 1.01, 0.2))
 plt.ylim(-0.05,1.05)
 plt.xlabel('Recall', fontsize=textsize)
 plt.ylabel('Precision', fontsize=textsize)
 plt.xticks(fontsize=textsize)
 plt.yticks(fontsize=textsize)
-# plt.legend(bbox_to_anchor=(1.05, 0.4), loc='upper left', fontsize=14, edgecolor='none')
+plt.legend(bbox_to_anchor=(1.05, 0.4), loc='upper left', fontsize=14, edgecolor='none')
 # cbar = plt.colorbar(shrink=0.4, orientation="vertical", drawedges=False, anchor=(1.05, 0.80))
 # cbar.ax.tick_params(labelsize=14)
 # cbar.ax.set_ylabel('Posterior threshold', fontsize=14, rotation=90)

@@ -12,13 +12,13 @@ outdir = config['outdir']
 rule all:
     input:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        # expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
-        expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir)
+        # expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir)
 
 rule copyDataToOutDir:
     input:
@@ -72,10 +72,9 @@ rule runMetastabayes:
         xml = config['xml'],
         fileDir = "{outdir}/metastabayes/{sim}",
         metastabayesJar = config['metastabayesJar'],
-        matrixStructure = config['matrixStructure'],
-        numTissueRates = config['numTissueRates'],
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
+        primaryTissue = config['primaryTissue'],
         threads = config['threads']
     shell:
         """
@@ -87,22 +86,49 @@ rule runMetastabayes:
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))
 
-        # compute equal tissue rates based on the number of total tissue rates
-        equalTissueRates=$(echo "scale=10; 1.0 / {params.numTissueRates}" | bc -l)
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+        numTissueRates=$(( numTissues * (numTissues - 1) ))
+        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
+        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
+        if echo "$unique_tissues" | grep -q -w "{params.primaryTissue}"; then
+            sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+        else
+            sorted_unique_tissues=$unique_tissues
+            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do echo -n "$equalTissueFreqs "; done)
+        fi
+
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
+
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
         java -Xmx5g -jar {params.metastabayesJar} \
         -threads {params.threads} \
         -overwrite \
         -working \
-        -D inputNames={wildcards.sim} \
+        -D inName={wildcards.sim} \
         -D fileDir={params.fileDir} \
-        -D matrixStructure='{params.matrixStructure}' \
-        -D numEditRates=$numEditRates \
-        -D numEditRatesPlusTwo=$numEditRatesPlusTwo \
-        -D initialEditRates=\"$initialEditRates\" \
-        -D numTissueRates={params.numTissueRates} \
-        -D equalTissueRates=$equalTissueRates \
         -D generations={params.generations} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D equalTissueFreqs=\"$equalTissueFreqs\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D mcmclength={params.mcmclength} \
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
@@ -111,8 +137,8 @@ rule runMetastabayes:
 rule combineMetastabayesChains:
     input:
         terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
-        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "chain_*.log")),
-        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "chain_*.trees"))
+        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.log")),
+        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.trees"))
     output:
         combinedLog = "{outdir}/metastabayes/{sim}/combined.log",
         combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees",
@@ -357,10 +383,10 @@ rule plotPrecisionRecall:
         randomResultDone = expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         consensusResultDone = expand("{outdir}/random_consensus_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
         trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
-        machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        # machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
         metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
-        pathfinderResultDone = expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
+        # pathfinderResultDone = expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
         # actual input used
         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
     output:
