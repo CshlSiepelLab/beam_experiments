@@ -158,7 +158,7 @@
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 <!-- Composite likelihoods for each dataset -->
                 <plate var="n" range="&range;">
-                    <distribution id="treeLikelihood_$(n)" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" origin="250.001" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel">
+                    <distribution id="treeLikelihood_$(n)" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" origin="$(generations).001" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel">
                     <!-- <distribution id="treeLikelihood_$(n)" spec="TreeLikelihood" useAmbiguities="true" data="@alignment_$(n)" tree="@tree_$(n)" siteModel="@treeSiteModel"> -->
                         <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@editClockRate"/>
                     </distribution>
