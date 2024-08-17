@@ -33,6 +33,28 @@ def get_migration_counts(tree):
                 migration_counts[migration] += 1
     return migration_counts
 
+def optionally_add_origin_migration(tree, counts, primary):
+    """
+    Adds the origin branch to the migration counts if the root node location is different from the known origin primary tissue.
+
+    Parameters:
+    tree (ete3.Tree): The phylogenetic tree object.
+    counts (dict): A dictionary containing migration counts.
+    primary (str): The known primary tissue for the origin.
+
+    Returns:
+    dict: Updated migration counts including the origin branch if applicable.
+    """
+    counts_copy = counts
+    root_node_location = tree.get_tree_root().name.split("_")[-1]
+    if root_node_location != primary:
+        migration = f"{primary}_{root_node_location}"
+        if migration not in counts_copy:
+            counts_copy[migration] = 1
+        else:
+            counts_copy[migration] += 1
+    return counts_copy
+
 def process_tree(filepath):
     # set primary tissue
     primary_tissue="P"
@@ -64,13 +86,14 @@ def remove_zero_length_nodes(tree):
     for node in tree.internal_nodes():
         if node.edge_length == 0:
             parent = node.parent_node
-            if parent is not None:
+            if parent is not None:  # prevents root from being lost
                 parent.remove_child(node)
                 children = node.child_nodes()
                 for child in children:
                     parent.add_child(child)
 
 def dendropy_beast_to_ete_newick_with_strict_locations(tree):
+    # Note: this method does not convert the branch lengths properly since they are not used
     tree_copy = deepcopy(tree)
     i = 0
     for node in tree_copy.preorder_node_iter():
@@ -288,8 +311,8 @@ for true_tree_file in dirs:
             posteriors.append(posterior)
             remove_zero_length_nodes(tree)
             inferred_tree = dendropy_beast_to_ete_newick_with_strict_locations(tree)
-            inferred_tree.get_tree_root().name = f'0_{primary_tissue}'
-            inferred_counts=get_migration_counts(inferred_tree)
+            inferred_counts = get_migration_counts(inferred_tree)
+            inferred_counts = optionally_add_origin_migration(inferred_tree, inferred_counts, primary_tissue)
             # f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
             # f1_scores.append(f1)
             # precisions.append(precision)
