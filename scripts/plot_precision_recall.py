@@ -243,6 +243,9 @@ for true_tree_file in dirs:
         true_counts = process_tree(true_tree_file)
 
     # process machina result to get precision and recall
+    machina_f1 = float('nan')
+    machina_recall = float('nan')
+    machina_precision = float('nan')
     if os.path.exists(machina_file):
         machina_counts = process_tree(machina_file)
         machina_f1, machina_recall, machina_precision = calculate_metrics(true_counts, machina_counts)
@@ -250,6 +253,9 @@ for true_tree_file in dirs:
         machina_recalls[i] = machina_recall
 
     # process metient result to get precision and recall
+    metient_f1 = float('nan')
+    metient_recall = float('nan')
+    metient_precision = float('nan')
     if os.path.exists(metient_file):
         with open(metient_file, 'r') as file:
             lines = file.readlines()
@@ -264,6 +270,10 @@ for true_tree_file in dirs:
         metient_precisions[i] = metient_precision
         metient_recalls[i] = metient_recall
 
+    # process pathfinder result to get precision and recall
+    pathfinder_post_prob_f1 = float('nan')
+    pathfinder_post_prob_recall = float('nan')
+    pathfinder_post_prob_precision = float('nan')
     if os.path.exists(pathfinder_posterior_file):
         pathfinder_raw_output = pd.read_csv(pathfinder_posterior_file, sep='\t')
         pathfinder_raw_output = pathfinder_raw_output.drop_duplicates()
@@ -286,12 +296,21 @@ for true_tree_file in dirs:
         pathfinder_thresh_prec_rec, pathfinder_rows, pathfinder_post_prob_f1, pathfinder_post_prob_recall, pathfinder_post_prob_precision = posterior_threshold_metrics(pathfinder_posterior_probs, pathfinder_all_inferred_counts, true_counts, i)
         pathfinder_all_thresh_rows.extend(pathfinder_rows)
 
+    # process random result to get precision and recall
+    random_f1 = float('nan')
+    random_recall = float('nan')
+    random_precision = float('nan')
     if os.path.exists(random_file):
         random_counts = process_tree(random_file)
         random_f1, random_recall, random_precision = calculate_metrics(true_counts, random_counts)
         random_precisions[i] = random_precision
         random_recalls[i] = random_recall
 
+
+    # process consensus result to get precision and recall
+    consensus_f1 = float('nan')
+    consensus_recall = float('nan')
+    consensus_precision = float('nan')
     if os.path.exists(consensus_file):
         consensus_counts = process_tree(consensus_file)
         consensus_f1, consensus_recall, consensus_precision = calculate_metrics(true_counts, consensus_counts)
@@ -299,6 +318,9 @@ for true_tree_file in dirs:
         consensus_recalls[i] = consensus_recall
 
     # process beast posterior result to get precision and recall
+    post_prob_f1 = float('nan')
+    post_prob_recall = float('nan')
+    post_prob_precision = float('nan')
     if os.path.exists(beast_posterior_file):
         burnin_percent=0.1
         beast_tree_list = dendropy.TreeList()
