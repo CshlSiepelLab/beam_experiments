@@ -214,6 +214,10 @@ i=0
 
 for true_tree_file in dirs:
 
+    # makes sure true_tree_file is not an empty string
+    if not true_tree_file:
+        continue
+
     # get working dir from outdir based on snakemake input
     dir = os.path.dirname(os.path.dirname(os.path.dirname(true_tree_file)))
     if debug:
@@ -418,21 +422,22 @@ avg_random_recall = float('nan')
 avg_consensus_precision = float('nan')
 avg_consensus_recall = float('nan')
 
-if machina_precisions:
+
+if np.any(machina_precisions):
     avg_machina_precision = sum(machina_precisions) / len(machina_precisions)
-if machina_recalls:
+if np.any(machina_recalls):
     avg_machina_recall = sum(machina_recalls) / len(machina_recalls)
-if metient_precisions:
+if np.any(metient_precisions):
     avg_metient_precision = sum(metient_precisions) / len(metient_precisions)
-if metient_recalls:
+if np.any(metient_recalls):
     avg_metient_recall = sum(metient_recalls) / len(metient_recalls)
-if random_precisions:
+if np.any(random_precisions):
     avg_random_precision = sum(random_precisions) / len(random_precisions)
-if random_recalls:
+if np.any(random_recalls):
     avg_random_recall = sum(random_recalls) / len(random_recalls)
-if consensus_precisions:
+if np.any(consensus_precisions):
     avg_consensus_precision = sum(consensus_precisions) / len(consensus_precisions)
-if consensus_recalls:
+if np.any(consensus_recalls):
     avg_consensus_recall = sum(consensus_recalls) / len(consensus_recalls)
 all_thresh_df = pd.DataFrame(all_thresh_rows)
 if not all_thresh_df.empty:
@@ -445,10 +450,10 @@ if not pathfinder_all_thresh_df.empty:
 size = 75
 textsize = 18
 plt.figure()
-if avg_df:
+if not avg_df.empty:
     # plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(avg_df['recall'], avg_df['precision'], color = 'grey', label='Beast')
-if pathfinder_avg_df:
+if not pathfinder_avg_df.empty:
     # plt.scatter(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], c=pathfinder_avg_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], color='brown', label='Pathfinder')
 if not np.isnan(avg_machina_recall) and not np.isnan(avg_machina_precision):
