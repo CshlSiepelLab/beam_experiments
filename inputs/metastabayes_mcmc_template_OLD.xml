@@ -46,8 +46,8 @@
 <traitSet id="dateTrait" spec="feast.fileio.TraitSetFromXSV" taxa="@taxonset" fileName="$(fileDir)/$(inName)_date_traits.csv" sep="," taxonNameCol="0" traitValueCol="1" skipFirstRow="false" traitname="date-forward"/>
 
 
-<substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="$(generations)" editDuration="$(generations)">
-<!-- <substModel id="substModel" spec="metastabayes.substitutionmodel.MetastabayesGeneralMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="$(generations)" editDuration="$(generations)"> -->
+<!-- <substModel id="substModel" spec="tidetree.substitutionmodel.EditAndSilencingModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="$(generations)" editDuration="$(generations)"> -->
+<substModel id="substModel" spec="metastabayes.substitutionmodel.MetastabayesGeneralMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="$(generations)" editDuration="$(generations)">
     <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
 </substModel>
 
@@ -172,12 +172,13 @@
             
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 
-                <distribution id="treeLikelihood" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" origin="$(generations).001" data="@alignment" tree="@tree" siteModel="@siteModel">
-                <!-- <distribution id="treeLikelihood" spec="TreeLikelihood" useAmbiguities="true" data="@alignment" tree="@tree" siteModel="@siteModel"> -->
+                <!-- <distribution id="treeLikelihood" spec="tidetree.distributions.TreeLikelihoodWithEditWindow" origin="$(generations).001" data="@alignment" tree="@tree" siteModel="@siteModel"> -->
+                <distribution id="treeLikelihood" spec="metastabayes.likelihood.MetastabayesBeagleTreeLikelihood" origin="$(generations).001" data="@alignment" tree="@tree" siteModel="@siteModel">
                     <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c"/>
                 </distribution>
                 
-                <distribution id="traitLikelihood" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@tree">
+                <!-- <distribution id="traitLikelihood" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@tree"> -->
+                <distribution id="traitedtreeLikelihood.tissue" spec="metastabayes.likelihood.MetastabayesAncestralStateBeagleTreeLikelihood" origin="@origin" tag="location" tree="@tree">
                     <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="$(tissueRootFreqs)" estimate="false"/>
                     <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
                         <traitSet id="traitset" spec="feast.fileio.TraitSetFromXSV" fileName="$(fileDir)/$(inName)_tip_tissues.csv" taxa="@taxonset" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
@@ -187,7 +188,6 @@
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
                         <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
-                        <!-- <substModel id="svs.s:tissue" spec="metastabayes.substitutionmodel.OneRateAllTissues" rates="@relativeGeoRates.s:tissue" rateIndicator="true" symmetric="true"> -->
                         <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rates="@relativeGeoRates.s:tissue" rateIndicator="@tissueRateIndicators" symmetric="false">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
                                 <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="$(numTissues)" name="frequencies">$(equalTissueFreqs)</parameter>
