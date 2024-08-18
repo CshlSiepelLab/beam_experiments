@@ -178,6 +178,13 @@ def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_count
             f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
             rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i})
         thresh_prec_rec = pd.DataFrame(rows)
+
+        # use the 50% posterior thresholded values as the final precision, recall, and f1 instead of the full posterior weighted values
+        threshold_fifty_df = thresh_prec_rec[thresh_prec_rec['Threshold'] == 0.5]
+        post_prob_precision = threshold_fifty_df['precision'].values[0]
+        post_prob_recall = threshold_fifty_df['recall'].values[0]
+        post_prob_f1 = 2 * ((post_prob_precision * post_prob_recall) / (post_prob_precision + post_prob_recall))
+
         return thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision
 
 dirs = (sys.argv[1]).split(",")
