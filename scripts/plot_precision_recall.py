@@ -187,9 +187,11 @@ def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_count
 
         return thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision
 
+# user inputs
 dirs = (sys.argv[1]).split(",")
 primary_tissue=sys.argv[2]
 outdir = sys.argv[3]
+plot_independent_plots = False
 
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
@@ -357,37 +359,38 @@ for true_tree_file in dirs:
         thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision = posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, i) 
         all_thresh_rows.extend(rows)
 
-    # plot precision recall curve
-    size = 75
-    textsize=18
-    plt.figure()
-    if os.path.exists(beast_posterior_file):
-        # plt.scatter(thresh_prec_rec['recall'], thresh_prec_rec['precision'], c=thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
-        plt.plot(thresh_prec_rec['recall'], thresh_prec_rec['precision'], color = "grey", label='Beast')
-    if os.path.exists(beast_posterior_file):
-        # plt.scatter(pathfinder_thresh_prec_rec['recall'], pathfinder_thresh_prec_rec['precision'], c=pathfinder_thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
-        plt.plot(pathfinder_thresh_prec_rec['recall'], pathfinder_thresh_prec_rec['precision'], color = "brown", label='PathFinder')
-    if os.path.exists(machina_file):
-        plt.scatter(machina_recall, machina_precision, color='red', label='Machina', s=size, marker = "x")
-    if os.path.exists(metient_file):
-        plt.scatter(metient_recall, metient_precision, color='green', label='Metient', s=size, marker = "x")
-    if os.path.exists(consensus_file):
-        plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
-    if os.path.exists(random_file):
-        plt.scatter(random_recall, random_precision, color='black', label='Random', s=size, marker = "x")
-    plt.xlim(-0.05,1.05)
-    plt.ylim(-0.05,1.05)
-    plt.xlabel('Recall', fontsize=textsize)
-    plt.ylabel('Precision', fontsize=textsize)
-    plt.xticks(fontsize=textsize)
-    plt.yticks(fontsize=textsize)
-    plt.legend(bbox_to_anchor=(1.05, 0.4), loc='upper left', fontsize=14, edgecolor='none')
-    # cbar = plt.colorbar(shrink=0.4, orientation="vertical", drawedges=False, anchor=(1.05, 0.80))
-    # cbar.ax.tick_params(labelsize=14)
-    # cbar.ax.set_ylabel('Posterior threshold', fontsize=14, rotation=90)
-    plt.tight_layout()
-    plt.savefig(outfile)
-    plt.close()
+    if plot_independent_plots:
+        # plot precision recall curve
+        size = 75
+        textsize=18
+        plt.figure()
+        if os.path.exists(beast_posterior_file):
+            # plt.scatter(thresh_prec_rec['recall'], thresh_prec_rec['precision'], c=thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
+            plt.plot(thresh_prec_rec['recall'], thresh_prec_rec['precision'], color = "grey", label='Beast')
+        if os.path.exists(beast_posterior_file):
+            # plt.scatter(pathfinder_thresh_prec_rec['recall'], pathfinder_thresh_prec_rec['precision'], c=pathfinder_thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
+            plt.plot(pathfinder_thresh_prec_rec['recall'], pathfinder_thresh_prec_rec['precision'], color = "brown", label='PathFinder')
+        if os.path.exists(machina_file):
+            plt.scatter(machina_recall, machina_precision, color='red', label='Machina', s=size, marker = "x")
+        if os.path.exists(metient_file):
+            plt.scatter(metient_recall, metient_precision, color='green', label='Metient', s=size, marker = "x")
+        if os.path.exists(consensus_file):
+            plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
+        if os.path.exists(random_file):
+            plt.scatter(random_recall, random_precision, color='black', label='Random', s=size, marker = "x")
+        plt.xlim(-0.05,1.05)
+        plt.ylim(-0.05,1.05)
+        plt.xlabel('Recall', fontsize=textsize)
+        plt.ylabel('Precision', fontsize=textsize)
+        plt.xticks(fontsize=textsize)
+        plt.yticks(fontsize=textsize)
+        plt.legend(bbox_to_anchor=(1.05, 0.4), loc='upper left', fontsize=14, edgecolor='none')
+        # cbar = plt.colorbar(shrink=0.4, orientation="vertical", drawedges=False, anchor=(1.05, 0.80))
+        # cbar.ax.tick_params(labelsize=14)
+        # cbar.ax.set_ylabel('Posterior threshold', fontsize=14, rotation=90)
+        plt.tight_layout()
+        plt.savefig(outfile)
+        plt.close()
 
     i+=1
 
