@@ -45,9 +45,12 @@ for mig in ${migs[@]}; do
             fi
         done
 
-        # submit job
-        python $scripts/plot_precision_recall.py $true_trees $primary_tissue $outdir
-        python $scripts/plot_f1_score.py $outdir/metrics.csv $outdir
+        # check if true_trees is not empty
+        if [[ -n $true_trees ]]; then
+            # submit job
+            python $scripts/plot_precision_recall.py $true_trees $primary_tissue $outdir
+            python $scripts/plot_f1_score.py $outdir/metrics.csv $outdir
+        fi
     done
 done
 
