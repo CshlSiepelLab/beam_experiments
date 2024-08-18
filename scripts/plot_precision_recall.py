@@ -243,10 +243,14 @@ for true_tree_file in dirs:
         print(f"Random file: {random_file}")
 
     # process true input file to get migration count dict
-    if true_tree_file.endswith(".csv"):
-        true_counts = process_csv(true_tree_file)
-    else:
-        true_counts = process_tree(true_tree_file)
+    try:
+        if true_tree_file.endswith(".csv"):
+            true_counts = process_csv(true_tree_file)
+        else:
+            true_counts = process_tree(true_tree_file)
+    except Exception as e:
+        print(f"Error processing {true_tree_file}: {e}")
+        continue
 
     # process machina result to get precision and recall
     machina_f1 = float('nan')
@@ -405,18 +409,38 @@ for true_tree_file in dirs:
 
 # make an overall averaged precision/recall curve
 outfile = f"{outdir}/precision_recall.pdf"
-avg_machina_precision = sum(machina_precisions) / len(machina_precisions)
-avg_machina_recall = sum(machina_recalls) / len(machina_recalls)
-avg_metient_precision = sum(metient_precisions) / len(metient_precisions)
-avg_metient_recall = sum(metient_recalls) / len(metient_recalls)
-avg_random_precision = sum(random_precisions) / len(random_precisions)
-avg_random_recall = sum(random_recalls) / len(random_recalls)
-avg_consensus_precision = sum(consensus_precisions) / len(consensus_precisions)
-avg_consensus_recall = sum(consensus_recalls) / len(consensus_recalls)
+avg_machina_precision = float('nan')
+avg_machina_recall = float('nan')
+avg_metient_precision = float('nan')
+avg_metient_recall = float('nan')
+avg_random_precision = float('nan')
+avg_random_recall = float('nan')
+avg_consensus_precision = float('nan')
+avg_consensus_recall = float('nan')
+
+if machina_precisions:
+    avg_machina_precision = sum(machina_precisions) / len(machina_precisions)
+if machina_recalls:
+    avg_machina_recall = sum(machina_recalls) / len(machina_recalls)
+if metient_precisions:
+    avg_metient_precision = sum(metient_precisions) / len(metient_precisions)
+if metient_recalls:
+    avg_metient_recall = sum(metient_recalls) / len(metient_recalls)
+if random_precisions:
+    avg_random_precision = sum(random_precisions) / len(random_precisions)
+if random_recalls:
+    avg_random_recall = sum(random_recalls) / len(random_recalls)
+if consensus_precisions:
+    avg_consensus_precision = sum(consensus_precisions) / len(consensus_precisions)
+if consensus_recalls:
+    avg_consensus_recall = sum(consensus_recalls) / len(consensus_recalls)
 all_thresh_df = pd.DataFrame(all_thresh_rows)
-avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+if not all_thresh_df.empty:
+    avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+
 pathfinder_all_thresh_df = pd.DataFrame(pathfinder_all_thresh_rows)
-pathfinder_avg_df = pathfinder_all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+if not pathfinder_all_thresh_df.empty:
+    pathfinder_avg_df = pathfinder_all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
 
 size = 75
 textsize = 18
@@ -427,13 +451,13 @@ if avg_df:
 if pathfinder_avg_df:
     # plt.scatter(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], c=pathfinder_avg_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], color='brown', label='Pathfinder')
-if avg_machina_recall and avg_machina_precision:
+if not np.isnan(avg_machina_recall) and not np.isnan(avg_machina_precision):
     plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='Machina', s=size, marker="x")
-if avg_metient_recall and avg_metient_precision:
+if not np.isnan(avg_metient_recall) and not np.isnan(avg_metient_precision):
     plt.scatter(avg_metient_recall, avg_metient_precision, color='green', label='Metient', s=size, marker="x")
-if avg_consensus_recall and avg_consensus_precision:
+if not np.isnan(avg_consensus_recall) and not np.isnan(avg_consensus_precision):
     plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus', s=size, marker="x")
-if avg_random_recall and avg_random_precision:
+if not np.isnan(avg_random_recall) and not np.isnan(avg_random_precision):
     plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker="x")
 plt.xlim(-0.05,1.05)
 # plt.xlim(0.4, 1.01)
