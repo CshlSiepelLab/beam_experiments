@@ -284,6 +284,7 @@ for true_tree_file in dirs:
             pathfinder_all_inferred_counts.append(cleaned_graph)
 
         pathfinder_thresh_prec_rec, pathfinder_rows, pathfinder_post_prob_f1, pathfinder_post_prob_recall, pathfinder_post_prob_precision = posterior_threshold_metrics(pathfinder_posterior_probs, pathfinder_all_inferred_counts, true_counts, i)
+        pathfinder_all_thresh_rows.extend(pathfinder_rows)
 
     if os.path.exists(random_file):
         random_counts = process_tree(random_file)
@@ -332,6 +333,7 @@ for true_tree_file in dirs:
         total_posterior_prob = sum(posterior_probs)
         posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in posterior_probs]
         thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision = posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, i) 
+        all_thresh_rows.extend(rows)
 
     # plot precision recall curve
     size = 75
@@ -365,9 +367,6 @@ for true_tree_file in dirs:
     plt.savefig(outfile)
     plt.close()
 
-
-    all_thresh_rows.extend(rows)
-    pathfinder_all_thresh_rows.extend(pathfinder_rows)
     i+=1
 
     # write metrics used for the plot to a file
