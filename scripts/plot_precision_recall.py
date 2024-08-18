@@ -192,6 +192,7 @@ dirs = (sys.argv[1]).split(",")
 primary_tissue=sys.argv[2]
 outdir = sys.argv[3]
 plot_independent_plots = False
+debug = False
 
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
@@ -215,11 +216,13 @@ for true_tree_file in dirs:
 
     # get working dir from outdir based on snakemake input
     dir = os.path.dirname(os.path.dirname(os.path.dirname(true_tree_file)))
-    print(f"Working dir: {dir}")
+    if debug:
+        print(f"Working dir: {dir}")
 
     # get sim id as dir name
     sim = os.path.basename(os.path.dirname(true_tree_file))
-    print(f"Processing sim: {sim}")
+    if debug:
+        print(f"Processing sim: {sim}")
     
     # get other files to compare
     machina_file = f"{dir}/machina/{sim}/machina_tree_all_tissue_labels.nwk"
@@ -231,12 +234,13 @@ for true_tree_file in dirs:
     outfile = f"{outdir}/{sim}/precision_recall.pdf"
 
     # print all file paths to output
-    print(f"True tree file: {true_tree_file}")
-    print(f"Machina file: {machina_file}")
-    print(f"Metient file: {metient_file}")
-    print(f"Beast posterior file: {beast_posterior_file}")
-    print(f"Consensus file: {consensus_file}")
-    print(f"Random file: {random_file}")
+    if debug:
+        print(f"True tree file: {true_tree_file}")
+        print(f"Machina file: {machina_file}")
+        print(f"Metient file: {metient_file}")
+        print(f"Beast posterior file: {beast_posterior_file}")
+        print(f"Consensus file: {consensus_file}")
+        print(f"Random file: {random_file}")
 
     # process true input file to get migration count dict
     if true_tree_file.endswith(".csv"):
@@ -417,14 +421,20 @@ pathfinder_avg_df = pathfinder_all_thresh_df.groupby('Threshold')[['precision', 
 size = 75
 textsize = 18
 plt.figure()
-# plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
-plt.plot(avg_df['recall'], avg_df['precision'], color = 'grey', label='Beast')
-# plt.scatter(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], c=pathfinder_avg_df['Threshold'], cmap='viridis', s=25, marker='x')
-plt.plot(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], color = 'brown', label='Pathfinder')
-plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='Machina', s=size, marker = "x")
-plt.scatter(avg_metient_recall, avg_metient_precision, color='green', label='Metient', s=size, marker = "x")
-plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
-plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker = "x")
+if avg_df:
+    # plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
+    plt.plot(avg_df['recall'], avg_df['precision'], color = 'grey', label='Beast')
+if pathfinder_avg_df:
+    # plt.scatter(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], c=pathfinder_avg_df['Threshold'], cmap='viridis', s=25, marker='x')
+    plt.plot(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], color='brown', label='Pathfinder')
+if avg_machina_recall and avg_machina_precision:
+    plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='Machina', s=size, marker="x")
+if avg_metient_recall and avg_metient_precision:
+    plt.scatter(avg_metient_recall, avg_metient_precision, color='green', label='Metient', s=size, marker="x")
+if avg_consensus_recall and avg_consensus_precision:
+    plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus', s=size, marker="x")
+if avg_random_recall and avg_random_precision:
+    plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker="x")
 plt.xlim(-0.05,1.05)
 # plt.xlim(0.4, 1.01)
 # plt.xticks(np.arange(0.4, 1.01, 0.2))
