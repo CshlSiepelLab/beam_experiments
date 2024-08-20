@@ -12,5 +12,6 @@ snakemake \
 --keep-going \
 --rerun-incomplete \
 --cores 1 \
+--jobs 500 \
 --cluster-config $REPO_PATH/config/cluster.yaml \
 --cluster 'qsub -cwd -pe threads {cluster.cores} -l m_mem_free={cluster.mem} -l h_rt={cluster.runtime} -o {cluster.logout} -e {cluster.logerror}'
