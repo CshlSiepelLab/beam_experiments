@@ -1,0 +1,37 @@
+
+# set path to data dirs
+inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/processed_metadata"
+
+# set where output should go (data is also copied there initially to retain original data in raw form)
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_real_data_8_22_24"
+
+# set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
+threads: 5
+
+# primary tissue name
+primaryTissue: P
+
+# set path to scripts
+scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
+
+# set necessary paths to beast dependencies
+treeannotator: /grid/siepel/home_norepl/staklins/bin/beast/bin/treeannotator
+logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
+
+# set path to metastabayes custom BEAST2 package runnable jar file
+metastabayesJar: /grid/siepel/home_norepl/staklins/metastabayes/metastabayes.jar
+
+# set path to the metastabayes model xml template file
+xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/metastabayes_mcmc_template_OLD.xml
+
+# set the length of the experiment
+generations: 250
+
+# set the desired mcmc chain length
+mcmcLength: 10000000
+
+# set the desired number of parallel mcmc chains to run
+numChains: 3
+
+# set the minimum ess to include a chain in the combined output across chains (default: 200)
+essCutoff: 200

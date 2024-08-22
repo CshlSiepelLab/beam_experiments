@@ -1,0 +1,171 @@
+
+import os
+import sys
+import glob
+
+# specific to yang et al data to get the input files (character matrices and tissue labeling files)
+character_matrices = glob.glob(os.path.join(config['inputpath'], "*char_matrix_collapsed_successive_across_sites.txt"))
+mouse_ids = ["_".join(os.path.basename(x).split("_")[1:4]) for x in character_matrices]
+tissue_labeling_files = [os.path.join(config['inputpath'], "KPTracer.alleleTable.FINAL.filtered_" + x + "_char_matrix_collapsing_dict.txt") for x in mouse_ids]
+
+inputdir = config['inputpath']
+outdir = config['outdir']
+
+rule all:
+    input:
+        expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", sim=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
+        expand("{outdir}/metastabayes/{mouse}/combined.log", sim=mouse_ids, outdir=outdir),
+
+rule prepMetastabayesInputs:
+    input:
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(inputdir, "KPTracer.alleleTable.FINAL.filtered_", wildcards.mouse, "_char_matrix_collapsed_successive_across_sites.txt")),
+        leafTissues = lambda wildcards : glob.glob(os.path.join(inputdir, "KPTracer.alleleTable.FINAL.filtered_", wildcards.mouse, "_char_matrix_collapsing_dict.txt")),
+    output:
+        fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
+        dates = "{outdir}/metastabayes/{simousem}/{mouse}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{mouse}/{mouse}_tip_tissues.csv",
+        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt",
+    params:
+        scripts = config['scripts'],
+        generations = config['generations'],
+    conda:
+        "envs/compare_trees.yaml"
+    shell:
+        """
+        # write tip traits to new csv
+        tail -n +2 {input.leafTissues} | cut -f1,3 | tr '\t' ',' > {output.tissues}
+
+        # write date trait
+        cut -f1 {input.leafTissues} | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.leafTissues})) > {output.dates}
+
+        # format fasta (NOT MODELING DROPOUTS YET, ALL -1 REPLACED with 0)
+        tail -n +2 {input.sim_matrix} | sed 's/-1/0/g' | awk '{printf ">"$1"\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\n" : $i",")}' > {output.fasta}
+
+        # get edit rate proportions for new mutation entries, relative to the first edit as 1.0
+        all_muts=$(tail -n +2 {input.sim_matrix} | cut -f2- | sed 's/-1/0/g' | tr '\t' ' ' | tr '\n' ' ')
+        total_count=$( echo $all_muts | tr ' ' '\n' | grep -wv "0" | wc -l )
+        uniq_count=$( echo $all_muts | tr ' ' '\n' | sort | uniq | grep -wv "0" | wc -l )
+        count_1=$( echo $all_muts | tr ' ' '\n' | grep -wc "1" )
+
+        for element in $(seq 1 $uniq_count); do
+            count=$(echo "$all_muts" | tr ' ' '\n' | grep -wc "$element")
+            proportion=$(bc <<< "scale=10; $count / $count_1")
+            echo -e "$proportion\t" >> {output.editRateProportions}
+        done
+        """
+
+rule runMetastabayes:
+    input:
+        fasta = "{outdir}/metastabayes/{sim}/{sim}.fasta",
+        dates = "{outdir}/metastabayes/{sim}/{sim}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{sim}/{sim}_tip_tissues.csv",
+    output:
+        terminalLog = "{outdir}/metastabayes/{sim}/terminal_{num}.log",
+        metastabayesLog = "{outdir}/metastabayes/{sim}/chain_{num}.log",
+        metastabayesResult = "{outdir}/metastabayes/{sim}/chain_{num}.trees"
+    params:
+        xml = config['xml'],
+        fileDir = "{outdir}/metastabayes/{sim}",
+        metastabayesJar = config['metastabayesJar'],
+        generations = config['generations'],
+        mcmclength = config['mcmcLength'],
+        primaryTissue = config['primaryTissue'],
+        threads = config['threads']
+    shell:
+        """
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {wildcards.outdir}/metastabayes/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
+
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+        numTissueRates=$(( numTissues * (numTissues - 1) ))
+        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
+        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
+        if echo "$unique_tissues" | grep -q -w "{params.primaryTissue}"; then
+            sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+        else
+            sorted_unique_tissues=$unique_tissues
+            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do echo -n "$equalTissueFreqs "; done)
+        fi
+
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
+
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+
+        java -Xmx10g -jar {params.metastabayesJar} \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.sim} \
+        -D fileDir={params.fileDir} \
+        -D generations={params.generations} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D equalTissueFreqs=\"$equalTissueFreqs\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D mcmclength={params.mcmclength} \
+        -D outname=chain_{wildcards.num} \
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
+
+rule combineMetastabayesChains:
+    input:
+        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
+        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.log")),
+        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.trees"))
+    output:
+        combinedLog = "{outdir}/metastabayes/{sim}/combined.log",
+        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees",
+        combinedMCC = "{outdir}/metastabayes/{sim}/combined.mcc.tree"
+    params:
+        logcombiner = config['logcombiner'],
+        essCutoff = config['essCutoff'],
+        treeannotator = config['treeannotator']
+    shell:
+        """
+        # find chains that have converged based on ess threshold specified
+        log_files=""
+        trees_files=""
+        ess_convergences=()
+        for file in {input.metastabayesLogs}; do
+            terminal_log=$(echo $file | sed 's/chain_/terminal_/')
+            ess_convergence=$(awk '/Operator/ {{ found=1; next }} {{ if (!found) print }}' "$terminal_log" | awk '{{if (NF > 0) print}}' | tail -n 1 | awk '{{print int($3 + 0.5)}}')
+            
+            # only use mcmc chains that have converged since many appear to get lost in the search space
+            if [[ $ess_convergence -gt {params.essCutoff} ]]; then
+                log_files+="-log $file "
+                trees_file=$(echo $file | sed 's/\.log$/.trees/')
+                trees_files+="-log $trees_file "
+            else
+                echo "$file did not converge, so not including it in the final output"
+            fi
+        done
+
+        # combine logs and trees that passed
+        {params.logcombiner} $log_files -o {output.combinedLog}
+        {params.logcombiner} $trees_files -o {output.combinedTrees}
+
+        # get MCC tree from the combined trees file
+        {params.treeannotator} -burnin 10 -topology MCC -height mean {output.combinedTrees} {output.combinedMCC}
+        """

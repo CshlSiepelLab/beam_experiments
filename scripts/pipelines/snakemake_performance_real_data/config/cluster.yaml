@@ -1,0 +1,7 @@
+__default__:
+  cores: 5
+  mem: '2G'
+  logout: '{outdir}/job_logs/{wildcards.sim}/{rule}.out'
+  logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}.err'
+  runtime: 24:00:00  # 24 hours timelimit
+  

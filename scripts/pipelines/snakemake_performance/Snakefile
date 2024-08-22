@@ -115,7 +115,7 @@ rule runMetastabayes:
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
-        java -Xmx5g -jar {params.metastabayesJar} \
+        java -Xmx10g -jar {params.metastabayesJar} \
         -threads {params.threads} \
         -overwrite \
         -working \
