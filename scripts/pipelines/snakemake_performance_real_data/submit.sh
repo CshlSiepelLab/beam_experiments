@@ -3,9 +3,7 @@
 export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_performance_real_data
 
 snakemake \
---dry-run \
---use-singularity \
---singularity-args "--bind $HOME/" \
+--until prepMetastabayesInputs \
 --use-conda \
 --snakefile $REPO_PATH/Snakefile \
 --configfile $REPO_PATH/config/config.yaml \

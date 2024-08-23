@@ -9,7 +9,7 @@ outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/resu
 threads: 5
 
 # primary tissue name
-primaryTissue: P
+primaryTissue: T
 
 # set path to scripts
 scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
@@ -25,13 +25,26 @@ metastabayesJar: /grid/siepel/home_norepl/staklins/metastabayes/metastabayes.jar
 xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/metastabayes_mcmc_template_OLD.xml
 
 # set the length of the experiment
-generations: 250
+# for Yang et al. 2022 data, the experiment lengths vary by mouse and are found in their trcr_master.txt metadata file
+experimentTime: 
+  3451_Lkb1_T1: 117
+  3454_Lkb1_T1: 108
+  3457_Apc_T1: 185
+  3457_Apc_T4: 185
+  3460_Lkb1_T1: 110
+  3515_Lkb1_T1: 108
+  3465_Lkb1_T1: 119
+  3466_Lkb1_T2: 110
+  3519_Lkb1_T1: 110
+  3508_Apc_T2: 185
+  3513_NT_T1: 181
+  3724_NT_T1: 184
 
 # set the desired mcmc chain length
-mcmcLength: 10000000
+mcmcLength: 1000000000
 
 # set the desired number of parallel mcmc chains to run
-numChains: 3
+numChains: 5
 
 # set the minimum ess to include a chain in the combined output across chains (default: 200)
 essCutoff: 200

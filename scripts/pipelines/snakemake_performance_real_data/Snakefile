@@ -8,41 +8,47 @@ character_matrices = glob.glob(os.path.join(config['inputpath'], "*char_matrix_c
 mouse_ids = ["_".join(os.path.basename(x).split("_")[1:4]) for x in character_matrices]
 tissue_labeling_files = [os.path.join(config['inputpath'], "KPTracer.alleleTable.FINAL.filtered_" + x + "_char_matrix_collapsing_dict.txt") for x in mouse_ids]
 
-inputdir = config['inputpath']
 outdir = config['outdir']
 
 rule all:
     input:
-        expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", sim=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
-        expand("{outdir}/metastabayes/{mouse}/combined.log", sim=mouse_ids, outdir=outdir),
+        expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", mouse=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
+        expand("{outdir}/metastabayes/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir),
 
 rule prepMetastabayesInputs:
     input:
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(inputdir, "KPTracer.alleleTable.FINAL.filtered_", wildcards.mouse, "_char_matrix_collapsed_successive_across_sites.txt")),
-        leafTissues = lambda wildcards : glob.glob(os.path.join(inputdir, "KPTracer.alleleTable.FINAL.filtered_", wildcards.mouse, "_char_matrix_collapsing_dict.txt")),
+        matrix = os.path.join(config['inputpath'], "KPTracer.alleleTable.FINAL.filtered_{mouse}_char_matrix_collapsed_successive_across_sites.txt"),
+        leafTissues = os.path.join(config['inputpath'], "KPTracer.alleleTable.FINAL.filtered_{mouse}_char_matrix_collapsing_dict.txt"),
     output:
         fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
-        dates = "{outdir}/metastabayes/{simousem}/{mouse}_date_traits.csv",
+        dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
         tissues = "{outdir}/metastabayes/{mouse}/{mouse}_tip_tissues.csv",
-        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt",
+        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt"
     params:
+        outdir = "{outdir}/metastabayes/{mouse}",
         scripts = config['scripts'],
-        generations = config['generations'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        threads = config['threads']
     conda:
-        "envs/compare_trees.yaml"
+        "envs/pandas.yaml"
     shell:
         """
+        # expand clones found in multiple tissues to separate entries
+        python {params.scripts}/expand_clones_multiple_tissues.py {input.matrix} {input.leafTissues} {params.outdir}
+        matrixFile="{params.outdir}/expanded_clones_matrix.tsv"
+        tissuesFile="{params.outdir}/expanded_clones_tissues.tsv"
+
         # write tip traits to new csv
-        tail -n +2 {input.leafTissues} | cut -f1,3 | tr '\t' ',' > {output.tissues}
+        tail -n +2 $tissuesFile | grep -v '^$' | cut -f1,2 | tr '\t' ',' > {output.tissues}
 
         # write date trait
-        cut -f1 {input.leafTissues} | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.leafTissues})) > {output.dates}
+        tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > {output.dates}
 
         # format fasta (NOT MODELING DROPOUTS YET, ALL -1 REPLACED with 0)
-        tail -n +2 {input.sim_matrix} | sed 's/-1/0/g' | awk '{printf ">"$1"\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\n" : $i",")}' > {output.fasta}
+        tail -n +2 $matrixFile | grep -v '^$' | sed 's/-1/0/g' | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > {output.fasta}
 
         # get edit rate proportions for new mutation entries, relative to the first edit as 1.0
-        all_muts=$(tail -n +2 {input.sim_matrix} | cut -f2- | sed 's/-1/0/g' | tr '\t' ' ' | tr '\n' ' ')
+        all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\t' ' ' | tr '\n' ' ')
         total_count=$( echo $all_muts | tr ' ' '\n' | grep -wv "0" | wc -l )
         uniq_count=$( echo $all_muts | tr ' ' '\n' | sort | uniq | grep -wv "0" | wc -l )
         count_1=$( echo $all_muts | tr ' ' '\n' | grep -wc "1" )
@@ -56,18 +62,19 @@ rule prepMetastabayesInputs:
 
 rule runMetastabayes:
     input:
-        fasta = "{outdir}/metastabayes/{sim}/{sim}.fasta",
-        dates = "{outdir}/metastabayes/{sim}/{sim}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{sim}/{sim}_tip_tissues.csv",
+        fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
+        dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{mouse}/{mouse}_tip_tissues.csv",
+        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt"
     output:
-        terminalLog = "{outdir}/metastabayes/{sim}/terminal_{num}.log",
-        metastabayesLog = "{outdir}/metastabayes/{sim}/chain_{num}.log",
-        metastabayesResult = "{outdir}/metastabayes/{sim}/chain_{num}.trees"
+        terminalLog = "{outdir}/metastabayes/{mouse}/terminal_{num}.log",
+        metastabayesLog = "{outdir}/metastabayes/{mouse}/chain_{num}.log",
+        metastabayesResult = "{outdir}/metastabayes/{mouse}/chain_{num}.trees"
     params:
         xml = config['xml'],
-        fileDir = "{outdir}/metastabayes/{sim}",
+        fileDir = "{outdir}/metastabayes/{mouse}",
         metastabayesJar = config['metastabayesJar'],
-        generations = config['generations'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
         threads = config['threads']
@@ -76,7 +83,7 @@ rule runMetastabayes:
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {wildcards.outdir}/metastabayes/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
+        initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))
@@ -89,6 +96,7 @@ rule runMetastabayes:
         equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
+        # the current setup forces the known origin to be the primary if the primary is sampled in the tips, otherwise it allows for the primary to be any tissue of those sampled
         if echo "$unique_tissues" | grep -q -w "{params.primaryTissue}"; then
             sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
             tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
@@ -114,9 +122,9 @@ rule runMetastabayes:
         -threads {params.threads} \
         -overwrite \
         -working \
-        -D inName={wildcards.sim} \
+        -D inName={wildcards.mouse} \
         -D fileDir={params.fileDir} \
-        -D generations={params.generations} \
+        -D generations={params.experimentTime} \
         -D numEditRates=\"$numEditRates\" \
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
         -D initialEditRates=\"$initialEditRates\" \
@@ -131,17 +139,18 @@ rule runMetastabayes:
 
 rule combineMetastabayesChains:
     input:
-        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
-        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.log")),
-        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.trees"))
+        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "*.log")),
+        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "*.trees"))
     output:
-        combinedLog = "{outdir}/metastabayes/{sim}/combined.log",
-        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees",
-        combinedMCC = "{outdir}/metastabayes/{sim}/combined.mcc.tree"
+        combinedLog = "{outdir}/metastabayes/{mouse}/combined.log",
+        combinedTrees = "{outdir}/metastabayes/{mouse}/combined.trees",
+        combinedMCC = "{outdir}/metastabayes/{mouse}/combined.mcc.tree"
     params:
         logcombiner = config['logcombiner'],
         essCutoff = config['essCutoff'],
-        treeannotator = config['treeannotator']
+        treeannotator = config['treeannotator'],
+        threads = config['threads']
     shell:
         """
         # find chains that have converged based on ess threshold specified
