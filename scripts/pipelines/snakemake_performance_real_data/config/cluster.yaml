@@ -4,4 +4,9 @@ __default__:
   logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
   logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
   runtime: 168:00:00  # timelimit for each job in hours:minutes:seconds
+
+
+runLAML:
+  cores: 25
+
   

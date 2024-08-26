@@ -14,6 +14,7 @@ rule all:
     input:
         expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", mouse=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/metastabayes/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir),
+        expand("{outdir}/laml/{mouse}/{mouse}_laml_trees.nwk", mouse=mouse_ids, outdir=outdir)
 
 rule prepMetastabayesInputs:
     input:
@@ -23,7 +24,8 @@ rule prepMetastabayesInputs:
         fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
         dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
         tissues = "{outdir}/metastabayes/{mouse}/{mouse}_tip_tissues.csv",
-        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt"
+        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt",
+        expandedMatrix = "{outdir}/metastabayes/{mouse}/expanded_clones_matrix.tsv"
     params:
         outdir = "{outdir}/metastabayes/{mouse}",
         scripts = config['scripts'],
@@ -58,6 +60,48 @@ rule prepMetastabayesInputs:
             proportion=$(bc <<< "scale=10; $count / $count_1")
             echo -e "$proportion\t" >> {output.editRateProportions}
         done
+        """
+
+rule runCassiopeia:
+    input:
+        expandedMatrix = "{outdir}/metastabayes/{mouse}/expanded_clones_matrix.tsv"
+    output:
+        "{outdir}/cassiopeia_greedy/{mouse}/cassiopeia_greedy_inferred.nwk"
+    params:
+        cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
+        outputdir = "{outdir}/cassiopeia_greedy/{mouse}"
+    singularity:
+        "envs/simulate.sif"
+    shell:
+        """
+        # run cassiopeia greedy
+        python {params.cassiopeia_script} {input.expandedMatrix} {params.outputdir}
+        """
+
+rule runLAML:
+    input:
+        expandedMatrix = "{outdir}/metastabayes/{mouse}/expanded_clones_matrix.tsv",
+        casTree = "{outdir}/cassiopeia_greedy/{mouse}/cassiopeia_greedy_inferred.nwk"
+    output:
+        lamlTree = "{outdir}/laml/{mouse}/{mouse}_laml_trees.nwk",
+        lamlAnnotations = "{outdir}/laml/{mouse}/{mouse}_laml_annotations.txt",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{mouse}_laml_trees_no_branch_lengths.nwk"
+    params:
+        outputdir = "{outdir}/laml/{mouse}",
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+    conda:
+        "envs/laml.yaml"
+    shell:
+        """
+        # copy matrix and replace -1 with ? for missing data
+        cp {input.expandedMatrix} {outdir}/laml/{wildcards.mouse}/matrix.csv
+        sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.mouse}/matrix.csv
+
+        # run laml
+        run_laml -c {outdir}/laml/{wildcards.mouse}/matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.mouse}_laml --timescale {params.experimentTime} --parallel
+
+        # obtain newick without branch lengths
+        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
         """
 
 rule runMetastabayes:
@@ -118,12 +162,20 @@ rule runMetastabayes:
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
+        # use LAML starting tree
+        # remove node names from newick
+        newick=$(cat $newick_file | sed 's/node[0-9]*:/:/g')
+
+        # remove the origin node
+        newick=$(echo "$newick" | sed 's/^.//' | sed 's/..$//')
+
         java -Xmx10g -jar {params.metastabayesJar} \
         -threads {params.threads} \
         -overwrite \
         -working \
         -D inName={wildcards.mouse} \
         -D fileDir={params.fileDir} \
+        -D newick=\"$newick\" \
         -D generations={params.experimentTime} \
         -D numEditRates=\"$numEditRates\" \
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
