@@ -1,6 +1,6 @@
 #!/bin/bash
 
-indir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_8_16_24_data_from_8_14_24/raw_data"
+indir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/raw_data"
 
 # get all files
 files=$(find $indir -type f -name "*issue_labeled_tree.nwk")
@@ -22,7 +22,7 @@ done
 migs=($(echo "${migs[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
 muts=($(echo "${muts[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
 
-mainOutdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_8_16_24_data_from_8_14_24/precision_recall_curve/variable_rates_specific_plots"
+mainOutdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/precision_recall_curve/variable_rates_specific_plots"
 mkdir -p $mainOutdir
 
 scripts="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts"

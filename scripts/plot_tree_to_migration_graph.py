@@ -7,17 +7,33 @@ import numpy as np
 import networkx as nx
 from ete3 import Tree
 import matplotlib.pyplot as plt
+from networkx.drawing.nx_pydot import to_pydot
 import matplotlib
+from IPython.display import Image, display
+import matplotlib.image as mpimg
+from io import BytesIO
 
-# tree_file=sys.argv[1]
-tree_file="sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/machina_tree_all_tissue_labels.nwk"
+tree_file=sys.argv[1]
+# tree_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/raw_data/mig4_mut001_231/tissue_labeled_tree.nwk"
+
+outfile = tree_file.replace(".nwk", "_migration_graph.pdf")
+
 primary_tissue="P"
 
 tree = Tree(tree_file, format=8)
 
-tree.get_tree_root().name = f'0_{primary_tissue}'
-
 migration_counts = {}
+
+if "_" not in tree.get_tree_root().name:
+    tree.get_tree_root().name = f'0_{primary_tissue}'
+else:
+    # handle the origin branch between the origin and root if the root has a tissue label already
+    root_tissue = tree.get_tree_root().name.split("_")[1]
+    if root_tissue != primary_tissue:
+        migration = f"{root_tissue}_{primary_tissue}"
+        migration_counts[migration] = 1
+
+all_tissues = [primary_tissue]
 
 for node in tree.traverse():
     if node.is_root() or node.is_leaf():
@@ -33,50 +49,42 @@ for node in tree.traverse():
         else:
             migration_counts[migration] += 1
 
+        if node_tissue not in all_tissues:
+            all_tissues.append(node_tissue)
+        if parent_tissue not in all_tissues:
+            all_tissues.append(parent_tissue)
+
+all_tissues = sorted(all_tissues)
+
+num_nodes = len(all_tissues)
+
+# default colors taken from metient method for consistency in visualizations
+DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
+custom_colors = DEFAULT_COLORS
+
+custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:num_nodes]) if node != primary_tissue}
+custom_colors[primary_tissue] = "black"
+
 G = nx.MultiDiGraph()
+
+for node in all_tissues:
+    G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
 
 for edge, count in migration_counts.items():
     source, target = edge.split('_')
     for _ in range(count):
-        G.add_edge(source, target)
+        G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3)
 
 
-# plot graph
-fig, ax = plt.subplots(figsize=(8, 8))
-max_width = ax.get_position().width
-pos = {}
-row_height = 0.05
-num_nodes = len(G.nodes())
+dot = nx.nx_pydot.to_pydot(G)
+sio = BytesIO(dot.create_png())
+img = mpimg.imread(sio, format='png')
 
-for i, node in enumerate(G.nodes()):
-    if node == primary_tissue:
-        pos[node] = (max_width / 2, 0)
-    else:
-        pos[node] = ((max_width / num_nodes) * (i + 0.5), -row_height + random.uniform(0, 0.025)) 
+plt.figure(figsize=(10, 10))
+plt.imshow(img)
+plt.axis('off')
+# plt.show()
 
-
-node_colors = ["black", "red", "green", "blue", "orange", "purple", "brown", "pink", "gray", "gold"]
-node_colors = node_colors[0:num_nodes]
-
-nx.draw(G, 
-        pos=pos, 
-        ax=ax, 
-        with_labels=False, 
-        connectionstyle='arc3, rad = 0.2', 
-        arrowsize = 20,
-        font_size=10, 
-        font_color='black', 
-        font_weight='bold', 
-        node_shape = 's',
-        node_size = 1000,
-        node_color = node_colors)
-
-legend_labels = {loc: node_color for loc, node_color in zip(G.nodes(), node_colors)}
-legend_handles = [plt.Line2D([0], [0], marker='s', color='w', markerfacecolor=color, markersize=10) for color in legend_labels.values()]
-ax.legend(legend_handles, legend_labels.keys(), title='Node Locations', loc='upper left', bbox_to_anchor=(0.9, 1))
-
-# save graph to file
-outfile = tree_file.split(".")[0] + "_migration_graph.pdf"
 plt.savefig(outfile)
 
-#plt.show()
+plt.close()
