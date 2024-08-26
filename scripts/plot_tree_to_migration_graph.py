@@ -77,14 +77,6 @@ for edge, count in migration_counts.items():
 
 
 dot = nx.nx_pydot.to_pydot(G)
-sio = BytesIO(dot.create_png())
-img = mpimg.imread(sio, format='png')
 
-plt.figure(figsize=(10, 10))
-plt.imshow(img)
-plt.axis('off')
-# plt.show()
+dot.write_pdf(outfile)
 
-plt.savefig(outfile)
-
-plt.close()
