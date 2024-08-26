@@ -55,10 +55,12 @@
 
 <run id="mcmc" spec="MCMC" chainLength="$(mcmclength)">
         <state id="state" spec="State" storeEvery="5000">
-            <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="$(generations)" taxa="@alignment" editHeight="$(generations)" editDuration="$(generations)" sequencesAreClustered="false">
+            <stateNode id="tree" spec="metastabayes.tree.MetastabayesStartingTreeFromNewick" taxa="@taxonset" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)"/>
+            <!-- <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="$(generations)" taxa="@alignment" editHeight="$(generations)" editDuration="$(generations)" sequencesAreClustered="false">
                 <trait idref="dateTrait"/>
                 <taxonset idref="taxonset"/>
-            </stateNode>
+            </stateNode> -->
+            
             <!-- find the definition of the scarring, loss rate and clock rate in the TiDeTree manuscript -->
             <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" dimension="$(numEditRates)">$(initialEditRates)</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000"> 0.0</parameter>
@@ -177,8 +179,8 @@
                     <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c"/>
                 </distribution>
                 
-                <!-- <distribution id="traitLikelihood" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@tree"> -->
-                <distribution id="traitLikelihood" spec="metastabayes.likelihood.MetastabayesAncestralStateBeagleTreeLikelihood" origin="@origin" tag="location" tree="@tree">
+                <distribution id="traitLikelihood" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@tree">
+                <!-- <distribution id="traitLikelihood" spec="metastabayes.likelihood.MetastabayesAncestralStateBeagleTreeLikelihood" origin="@origin" tag="location" tree="@tree"> -->
                     <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="$(tissueRootFreqs)" estimate="false"/>
                     <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
                         <traitSet id="traitset" spec="feast.fileio.TraitSetFromXSV" fileName="$(fileDir)/$(inName)_tip_tissues.csv" taxa="@taxonset" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
