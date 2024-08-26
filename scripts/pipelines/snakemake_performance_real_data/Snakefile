@@ -13,8 +13,7 @@ outdir = config['outdir']
 rule all:
     input:
         expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", mouse=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
-        expand("{outdir}/metastabayes/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir),
-        expand("{outdir}/laml/{mouse}/{mouse}_laml_trees.nwk", mouse=mouse_ids, outdir=outdir)
+        expand("{outdir}/metastabayes/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir)
 
 rule prepMetastabayesInputs:
     input:
@@ -109,7 +108,8 @@ rule runMetastabayes:
         fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
         dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
         tissues = "{outdir}/metastabayes/{mouse}/{mouse}_tip_tissues.csv",
-        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt"
+        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt",
+        lamlTree = "{outdir}/laml/{mouse}/{mouse}_laml_trees.nwk"
     output:
         terminalLog = "{outdir}/metastabayes/{mouse}/terminal_{num}.log",
         metastabayesLog = "{outdir}/metastabayes/{mouse}/chain_{num}.log",
@@ -164,7 +164,7 @@ rule runMetastabayes:
 
         # use LAML starting tree
         # remove node names from newick
-        newick=$(cat $newick_file | sed 's/node[0-9]*:/:/g')
+        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g')
 
         # remove the origin node
         newick=$(echo "$newick" | sed 's/^.//' | sed 's/..$//')
