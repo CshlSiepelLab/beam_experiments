@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-### This script reads in a BEAST posterior file for trees labeld with tissues at each node and then subsets all sampled trees for a specified number of trees with the highest posterior probability and then collapses these to migraiton graphs.
-
-import re, sys
+import re
+import sys
+import os
 import numpy as np
 import networkx as nx
 from scipy.stats import gaussian_kde
@@ -10,10 +10,12 @@ import matplotlib.pyplot as plt
 import ete3
 import pandas as pd
 import matplotlib
+import random
+import matplotlib.pyplot as plt
+from networkx.drawing.nx_pydot import to_pydot
 
-def indices_of_top_closest_values(lst, key, n):
-    sorted_indices = sorted(range(len(lst)), key=lambda i: abs(lst[i] - key))[:n]
-    return sorted_indices
+# default colors taken from metient method for consistency in visualizations
+DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
 
 def remove_bracket_content(match):
     global annotations
@@ -43,7 +45,7 @@ def label_nodes(newick):
     node_labeled_newick += parts[-1]
     return node_labeled_newick
 
-def tree_to_migration_graph(tree, primary_tissue, ax, n):
+def tree_to_migration_graph(tree, primary_tissue, outfile):
     global annotations
     tree = ''.join(tree.split(' ')[4:])
     bracket_content_pattern = re.compile(r'\[.*?\]')
@@ -61,79 +63,66 @@ def tree_to_migration_graph(tree, primary_tissue, ax, n):
 
     tree_ete = ete3.Tree(node_labeled_newick, format=3)
 
-    H = nx.MultiDiGraph()
+    migration_counts = {}
+    all_tissues = [primary_tissue]
 
     for node in tree_ete.traverse():
-        if node.is_root():
+        if node.is_leaf():
             continue
-        node_name = node.name
-        parent_name = node.up.name
-        node_loc = str(annotations_df.loc[node_name, 'location'])
-        parent_loc = str(annotations_df.loc[parent_name, 'location'])
-        if parent_loc != node_loc:
-            H.add_edge(parent_loc, node_loc)
-
-    nodes_np = sorted(list(H.nodes()))
-    nodes = [primary_tissue] + [node for node in nodes_np if node != primary_tissue]
-
-    G = nx.MultiDiGraph()
-    G.add_nodes_from(nodes)
-    G.add_edges_from(H.edges(data=True))
-
-    node_colors = range(len(nodes))
-    node_cmap = matplotlib.cm.get_cmap('tab20', len(nodes))
-
-    # Find the node corresponding to the primary tissue
-    primary_tissue_node = [node for node in G.nodes() if node == primary_tissue][0]
-
-    # Create positions for the nodes
-    max_width = ax.get_position().width
-    pos = {}
-    row_height = 0.1
-    num_nodes = len(nodes)
-
-    for i, node in enumerate(G.nodes()):
-        if node == primary_tissue:
-            pos[node] = (max_width / 2, 0)
+        elif node.is_root():
+            node_name = node.name
+            node_loc = str(annotations_df.loc[node_name, 'location'])
+            if node_loc != primary_tissue:
+                migration = f"{node_loc}_{primary_tissue}"
+                migration_counts[migration] = 1
         else:
-            pos[node] = ((max_width / num_nodes) * (i + 0.5), -row_height) 
+            node_tissue = str(annotations_df.loc[node.name, 'location'])
+            parent_tissue = str(annotations_df.loc[node.up.name, 'location'])
+            if node_tissue == parent_tissue:
+                continue
+            migration = f"{parent_tissue}_{node_tissue}"
+            if migration not in migration_counts:
+                migration_counts[migration] = 1
+            else:
+                migration_counts[migration] += 1
 
-    # make my own color map of 10 colors for now
-    node_colors = ["black", "red", "green", "blue", "orange", "purple", "brown", "pink", "gray", "gold"]
-    node_colors = node_colors[0:len(nodes)]
+            if node_tissue not in all_tissues:
+                all_tissues.append(node_tissue)
+            if parent_tissue not in all_tissues:
+                all_tissues.append(parent_tissue)
 
-    nx.draw(G, 
-            pos=pos, 
-            ax=ax, 
-            with_labels=False,
-            font_size = 10, 
-            connectionstyle='arc3, rad = 0.2', 
-            arrowsize = 20,
-            width = 1,
-            font_color='black', 
-            font_weight='bold', 
-            node_shape = 's',
-            node_size = 1000,
-            node_color = node_colors)
-            # cmap=node_cmap)
+        all_tissues = sorted(all_tissues)
+        num_nodes = len(all_tissues)
 
-    # legend_labels = {loc: node_cmap(i) for i, loc in enumerate(list(G.nodes()))}
-    legend_labels = {loc: node_color for loc, node_color in zip(nodes, node_colors)}
-    legend_handles = [plt.Line2D([0], [0], marker='s', color='w', markerfacecolor=color, markersize=10) for color in legend_labels.values()]
-    ax.legend(legend_handles, legend_labels.keys(), title='Node locations', loc='upper left', bbox_to_anchor=(0.7, 1))
-    plt.tight_layout()
+        custom_colors = DEFAULT_COLORS
 
+        custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:num_nodes]) if node != primary_tissue}
+        custom_colors[primary_tissue] = "black"
 
+        G = nx.MultiDiGraph()
+
+        for node in all_tissues:
+            G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
+
+        for edge, count in migration_counts.items():
+            source, target = edge.split('_')
+            for _ in range(count):
+                G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3)
+
+        dot = nx.nx_pydot.to_pydot(G)
+        dot.write_pdf(outfile)
 
 
-posterior_file = sys.argv[1]
-primary_tissue = sys.argv[2]
+# inputs
+# posterior_file = sys.argv[1]
+# primary_tissue = sys.argv[2]
+# n = int(sys.argv[3])
 
-# posterior_file = "results/beast_gundem_2015_2_21_24/A10_sym/tissue_tree_with_trait.trees"
-# primary_tissue = "prostate"
-
-# set the number of trees to obtain as graphs
+# testing
+posterior_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/metastabayes/mig6_mut005_16247/combined.trees"
+primary_tissue = "P"
 n = 3
+
 
 names_dict = {}
 trees = []
@@ -143,25 +132,21 @@ with open(posterior_file, 'r') as file:
         line = line.strip()
         if line.startswith('tree'):
             trees.append(line)
-        # lines that begin with a number are translate lines
-        elif line and line[0].isdigit():
+        # lines that begin with a number and have two fields are translate lines
+        elif line and line[0].isdigit() and len(line.split(' ')) > 1:
             key_value = line.split(' ')
             key = key_value[0]
             # remove trailing comma for translate values
-            value = key_value[1][0:-1]
+            value = key_value[1].replace(',', '')
             names_dict[key] = value
 
 # sort trees by posterior
-pattern = re.compile(r'tree STATE_\d+ = \[&posterior=(-?\d+\.\d+)\]')
+pattern = re.compile(r'tree STATE_\d+ = \[&posterior=(-?\d+\.\d+),')
 sorted_trees = sorted(trees, key=lambda s: float(pattern.search(s).group(1)), reverse = True)
-
-# get the top n trees with highest posterior
-top_n_trees = sorted_trees[0:n]
-
-# get the top n maximum clade credibility trees by finding closest to the peak of probability density function
-posterior_values = re.findall(r'\[&posterior=(-?\d+\.\d+)\]', "".join(trees))
+posterior_values = re.findall(r'\[&posterior=(-?\d+\.\d+),', "".join(sorted_trees))
 posterior_values = [round(float(value), 2) for value in posterior_values]
 
+# get peak value and density
 kde = gaussian_kde(posterior_values)
 x_values = np.linspace(min(posterior_values), max(posterior_values), 1000)
 max_x = max(x_values)
@@ -170,48 +155,21 @@ peak_value = x_values[np.argmax(kde(x_values))]
 peak_density = kde(peak_value)
 
 # # plot posterior values to see peak
-# plt.plot(x_values, kde(x_values)) #label='Posterior Density')
-# plt.hist(posterior_values, bins=100, density=True, alpha=0.5, color='green') #label='Posterior Histogram')
-# plt.scatter(peak_value, peak_density, color='red')
-# plt.axvline(x=peak_value, color='red', linestyle='--', label='Highest density')
-# plt.scatter(max_x, max_x_y, color='black')
-# plt.axvline(x=max_x, color='black', linestyle='--', label='Highest posterior')
-# plt.xlabel("Posterior")
-# plt.ylabel("Density")
-# plt.legend()
+# plt.plot(x_values, kde(x_values))
+# plt.hist(posterior_values, bins=100, density=True, alpha=0.5, color='green')
+# plt.xticks(fontsize=18)
+# plt.yticks(fontsize=18)
+# plt.xlabel("Posterior", fontsize=24)
+# plt.ylabel("Density", fontsize=24)
 # plt.show()
+# plt.close()
 
 # get n number of trees closest to the peak value of the posterior density
-top_n_indices = indices_of_top_closest_values(posterior_values, peak_value, n)
-mcc_top_n_trees = [trees[i] for i in top_n_indices]
+mcc_top_n_trees = [trees[i] for i in sorted(range(len(posterior_values)), key=lambda i: abs(posterior_values[i] - peak_value))[:n]]
 
-
-
-# for tree in top_n_trees:
-fig, axes = plt.subplots(2, n, figsize=(12, 6))
-
-i = 0
-for tree in top_n_trees:
-    tree_to_migration_graph(tree, primary_tissue, axes[0][i], i)
-    i = i + 1
-
-i = 0
+# sample trees, convert to migration graphs, and output as files
+i = 1
 for tree in mcc_top_n_trees:
-    tree_to_migration_graph(tree, primary_tissue, axes[1][i], i)
+    outfile = posterior_file.split(".")[0] + "_migration_graph_" + str(i) + ".pdf"
+    tree_to_migration_graph(tree, primary_tissue, outfile)
     i = i + 1
-
-cols = list(range(1, n+1, 1))
-rows = ["Highest posterior", "Highest density"]
-for i, axis in enumerate(axes):
-    prefix = rows[i]
-    for ax, col in zip(axis, cols):
-        name = prefix + " " + str(col)
-        ax.set_title(name, fontsize=16)
-
-plt.tight_layout()
-# plt.show()
-
-outfile = posterior_file.split(".")[0] + "_migration_graphs.pdf"
-plt.savefig(outfile)
-
-

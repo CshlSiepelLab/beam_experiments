@@ -9,9 +9,6 @@ from ete3 import Tree
 import matplotlib.pyplot as plt
 from networkx.drawing.nx_pydot import to_pydot
 import matplotlib
-from IPython.display import Image, display
-import matplotlib.image as mpimg
-from io import BytesIO
 
 tree_file=sys.argv[1]
 # tree_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/raw_data/mig4_mut001_231/tissue_labeled_tree.nwk"
