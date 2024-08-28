@@ -114,14 +114,14 @@ def tree_to_migration_graph(tree, primary_tissue, outfile):
 
 
 # inputs
-# posterior_file = sys.argv[1]
-# primary_tissue = sys.argv[2]
-# n = int(sys.argv[3])
+posterior_file = sys.argv[1]
+primary_tissue = sys.argv[2]
+n = int(sys.argv[3])
 
-# testing
-posterior_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/metastabayes/mig6_mut005_16247/combined.trees"
-primary_tissue = "P"
-n = 3
+# # testing
+# posterior_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/metastabayes/mig6_mut005_16247/combined.trees"
+# primary_tissue = "P"
+# n = 3
 
 
 names_dict = {}
