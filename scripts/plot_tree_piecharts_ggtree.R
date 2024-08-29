@@ -4,13 +4,21 @@ library(ggplot2)
 library(dplyr)
 library(ape)
 library(ggimage)
-# library(phytools)
 
-treefile <- commandArgs(trailingOnly = TRUE)[1]
-primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
+pdf(NULL)
 
-# treefile <- "results/beast_gundem_2015_2_21_24/A10_sym/tissue_tree_with_trait.tree"
-# primary_tissue <- "prostate"
+# default colors taken from metient method for consistency in visualizations
+DEFAULT_COLORS <- rep(c("#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0", "brown", "black", "darkgreen", "purple", "blue"), 3)
+
+
+
+# treefile <- commandArgs(trailingOnly = TRUE)[1]
+# primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
+
+treefile <- "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_real_data_8_22_24/metastabayes/3457_Apc_T4/combined.mcc.tree"
+primary_tissue <- "T"
+
+output_file <- sub("\\.tree$", "_ggtree.pdf", treefile)
 
 beast_tree <- read.beast(treefile)
 
@@ -23,7 +31,7 @@ locationsetprob <- beast_tree_df$location.set.prob
 
 location_order <- c(primary_tissue, sort(unique(beast_tree_df$location[beast_tree_df$location != primary_tissue])))
 num_locations <- length(location_order)
-colors <- setNames(palette()[1:length(location_order)], location_order)
+colors <- setNames(c("black", DEFAULT_COLORS[1:length(location_order)]), location_order)
 
 location_df <- beast_tree_df[,c("location.set", "location.set.prob")]
 
@@ -63,14 +71,10 @@ max_width <- as.numeric(max(beast_tree_df$height))
 x <- max_width * 1.5
 
 p <- ggtree(beast_tree, aes(color=beast_tree_df$location), layout="rectangular") +
-    geom_tiplab(hjust = -0.2) +
-    geom_tippoint(aes(color = beast_tree_df$location), size=5) + 
+    geom_tippoint(aes(color = beast_tree_df$location), size=2) + 
     scale_color_manual(values = colors, breaks = location_order) +
-    labs(color = "Node location") +
+    labs(color = "Tissue") +
     theme(legend.position = "right") +
-    xlim(0, x)
+    geom_inset(node_pies, width = 0.03)
 
-p <- p + geom_inset(node_pies, width = 0.15)
-
-output_file <- sub("\\.tree$", "_ggtree.pdf", treefile)
 ggsave(output_file, p)
