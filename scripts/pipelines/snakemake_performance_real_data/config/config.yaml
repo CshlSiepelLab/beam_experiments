@@ -8,6 +8,9 @@ outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/resu
 # set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
 threads: 5
 
+# whether to model dropouts or just consider them as unedited sites
+modelDropouts: true
+
 # primary tissue name
 primaryTissue: T
 

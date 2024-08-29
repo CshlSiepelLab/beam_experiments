@@ -4,9 +4,9 @@ import sys
 import glob
 
 # specific to yang et al data to get the input files (character matrices and tissue labeling files)
-character_matrices = glob.glob(os.path.join(config['inputpath'], "*char_matrix_collapsed_successive_across_sites.txt"))
-mouse_ids = ["_".join(os.path.basename(x).split("_")[1:4]) for x in character_matrices]
-tissue_labeling_files = [os.path.join(config['inputpath'], "KPTracer.alleleTable.FINAL.filtered_" + x + "_char_matrix_collapsing_dict.txt") for x in mouse_ids]
+character_matrices = glob.glob(os.path.join(config['inputpath'], "*_successive_char_matrix_collapsed.txt"))
+mouse_ids = ["_".join(os.path.basename(x).split("_")[0:3]) for x in character_matrices]
+tissue_labeling_files = [os.path.join(config['inputpath'], f"{x}_successive_char_matrix_collapsing_dict.txt") for x in mouse_ids]
 
 outdir = config['outdir']
 
@@ -17,8 +17,8 @@ rule all:
 
 rule prepMetastabayesInputs:
     input:
-        matrix = os.path.join(config['inputpath'], "KPTracer.alleleTable.FINAL.filtered_{mouse}_char_matrix_collapsed_successive_across_sites.txt"),
-        leafTissues = os.path.join(config['inputpath'], "KPTracer.alleleTable.FINAL.filtered_{mouse}_char_matrix_collapsing_dict.txt"),
+        matrix = os.path.join(config['inputpath'], "{mouse}_successive_char_matrix_collapsed.txt"),
+        leafTissues = os.path.join(config['inputpath'], "{mouse}_successive_char_matrix_collapsing_dict.txt"),
     output:
         fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
         dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
@@ -29,7 +29,8 @@ rule prepMetastabayesInputs:
         outdir = "{outdir}/metastabayes/{mouse}",
         scripts = config['scripts'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        threads = config['threads']
+        threads = config['threads'],
+        modelDropouts = config['modelDropouts']
     conda:
         "envs/pandas.yaml"
     shell:
@@ -45,10 +46,7 @@ rule prepMetastabayesInputs:
         # write date trait
         tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > {output.dates}
 
-        # format fasta (NOT MODELING DROPOUTS YET, ALL -1 REPLACED with 0)
-        tail -n +2 $matrixFile | grep -v '^$' | sed 's/-1/0/g' | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > {output.fasta}
-
-        # get edit rate proportions for new mutation entries, relative to the first edit as 1.0
+        # get edit rate proportions for new mutation entries, relative to the first edit as 1.0 frequency
         all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\t' ' ' | tr '\n' ' ')
         total_count=$( echo $all_muts | tr ' ' '\n' | grep -wv "0" | wc -l )
         uniq_count=$( echo $all_muts | tr ' ' '\n' | sort | uniq | grep -wv "0" | wc -l )
@@ -59,6 +57,16 @@ rule prepMetastabayesInputs:
             proportion=$(bc <<< "scale=10; $count / $count_1")
             echo -e "$proportion\t" >> {output.editRateProportions}
         done
+
+        # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
+        if [ "{params.modelDropouts}" == "True" ] || [ "{params.modelDropouts}" == "true" ]; then
+            # to model dropouts, use the highest mutation int representation and add 1 since the dropout column is the last in the rate matrix
+            dropoutMutNum=$(( uniq_count + 1 ))
+            tail -n +2 $matrixFile | grep -v '^$' | sed \"s/-1/$dropoutMutNum/g\" | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > {output.fasta}
+        else
+            # to not model dropouts
+            tail -n +2 $matrixFile | grep -v '^$' | sed 's/-1/0/g' | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > {output.fasta}
+        fi
         """
 
 rule runCassiopeia:
@@ -163,11 +171,8 @@ rule runMetastabayes:
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
         # use LAML starting tree
-        # remove node names from newick
-        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g')
-
-        # remove the origin node
-        newick=$(echo "$newick" | sed 's/^.//' | sed 's/..$//')
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
         java -Xmx10g -jar {params.metastabayesJar} \
         -threads {params.threads} \
@@ -192,7 +197,7 @@ rule runMetastabayes:
 rule combineMetastabayesChains:
     input:
         terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "*.log")),
+        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "chain_*.log")),
         metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "*.trees"))
     output:
         combinedLog = "{outdir}/metastabayes/{mouse}/combined.log",
