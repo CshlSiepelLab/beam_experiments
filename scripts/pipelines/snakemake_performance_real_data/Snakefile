@@ -36,7 +36,7 @@ rule prepMetastabayesInputs:
     shell:
         """
         # expand clones found in multiple tissues to separate entries
-        python {params.scripts}/expand_clones_multiple_tissues.py {input.matrix} {input.leafTissues} {params.outdir}
+        python {params.scripts}/formatting/expand_clones_multiple_tissues.py {input.matrix} {input.leafTissues} {params.outdir}
         matrixFile="{params.outdir}/expanded_clones_matrix.tsv"
         tissuesFile="{params.outdir}/expanded_clones_tissues.tsv"
 

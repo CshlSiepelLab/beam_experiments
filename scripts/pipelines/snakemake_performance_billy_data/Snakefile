@@ -17,13 +17,15 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
 
 rule all:
     input:
-        expand("{outdir}/{mouse}_evotracer_output/evotracer.RData", outdir=config['outdir'], mouse=mice),
+        expand("{outdir}/{mouse}_evotracer_output/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
+        expand("{outdir}/metastabayes/{mouse}/{mouse}.fasta", outdir=config['outdir'], mouse=mice)
 
 rule runEvotracer:
     input:
         fastqFiles = lambda wildcards: mouse_fastqs[wildcards.mouse]
     output:
-        rDataObject = "{outdir}/{mouse}_evotracer_output/evotracer.RData",
+        char_matrix = "{outdir}/{mouse}_evotracer_output/asv_analysis/character_matrix.csv",
+        asv_stat = "{outdir}/{mouse}_evotracer_output/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv"
     params:
         evoOutDir = "{outdir}/{mouse}_evotracer_output",
         scripts = config['scripts']
@@ -46,59 +48,73 @@ rule runEvotracer:
         """
 
 
-# rule prepMetastabayesInputs:
-#     input:
-#         matrix = os.path.join(config['inputpath'], "{mouse}_successive_char_matrix_collapsed.txt"),
-#         leafTissues = os.path.join(config['inputpath'], "{mouse}_successive_char_matrix_collapsing_dict.txt"),
-#     output:
-#         fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
-#         dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
-#         tissues = "{outdir}/metastabayes/{mouse}/{mouse}_tip_tissues.csv",
-#         editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt",
-#         expandedMatrix = "{outdir}/metastabayes/{mouse}/expanded_clones_matrix.tsv"
-#     params:
-#         outdir = "{outdir}/metastabayes/{mouse}",
-#         scripts = config['scripts'],
-#         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-#         threads = config['threads'],
-#         modelDropouts = config['modelDropouts']
-#     conda:
-#         "envs/pandas.yaml"
-#     shell:
-#         """
-#         # expand clones found in multiple tissues to separate entries
-#         python {params.scripts}/expand_clones_multiple_tissues.py {input.matrix} {input.leafTissues} {params.outdir}
-#         matrixFile="{params.outdir}/expanded_clones_matrix.tsv"
-#         tissuesFile="{params.outdir}/expanded_clones_tissues.tsv"
+rule prepMetastabayesInputs:
+    input:
+        char_matrix = "{outdir}/{mouse}_evotracer_output/asv_analysis/character_matrix.csv",
+        asv_stat = "{outdir}/{mouse}_evotracer_output/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv"
+    output:
+        fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
+        dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{mouse}/{mouse}_tip_tissues.csv",
+        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt",
+        expandedMatrix = "{outdir}/metastabayes/{mouse}/expanded_clones_matrix.tsv"
+    params:
+        outdir = "{outdir}/metastabayes/{mouse}",
+        scripts = config['scripts'],
+        # experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        experimentTime = 100,
+        threads = config['threads'],
+        modelDropouts = config['modelDropouts']
+    conda:
+        "envs/pandas.yaml"
+    shell:
+        """
+        # convert evotracer output csv matrix to tsv
+        tempMatrix={params.outdir}/temp_matrix.csv
+        sed 's/,/\t/g' {input.char_matrix} | sed 's/\"//g'> $tempMatrix
 
-#         # write tip traits to new csv
-#         tail -n +2 $tissuesFile | grep -v '^$' | cut -f1,2 | tr '\t' ',' > {output.tissues}
+        # get tissues from asv stat file from evotracer output
+        tempTissues={params.outdir}/temp_tissues.csv
+        echo -e "group_name\ttissues" > $tempTissues
+        tail -n +2 {input.asv_stat} | awk -F',' '{{if (!seen[$1","$2]++) a[$1]=a[$1]","$2}} END {{for (i in a) {{split(a[i], b, ","); delete seen; c=""; for (j in b) if (b[j] != "" && !seen[b[j]]++) c=(c == "" ? b[j] : c","b[j]); print i"\t"c}}}}' >> $tempTissues
+        
+        # expand clones found in multiple tissues to separate entries
+        python {params.scripts}/expand_clones_multiple_tissues.py $tempMatrix $tempTissues {params.outdir}
+        matrixFile="{params.outdir}/expanded_clones_matrix.tsv"
+        tissuesFile="{params.outdir}/expanded_clones_tissues.tsv"
 
-#         # write date trait
-#         tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > {output.dates}
+        # remove temp files
+        rm $tempMatrix
+        rm $tempTissues
 
-#         # get edit rate proportions for new mutation entries, relative to the first edit as 1.0 frequency
-#         all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\t' ' ' | tr '\n' ' ')
-#         total_count=$( echo $all_muts | tr ' ' '\n' | grep -wv "0" | wc -l )
-#         uniq_count=$( echo $all_muts | tr ' ' '\n' | sort | uniq | grep -wv "0" | wc -l )
-#         count_1=$( echo $all_muts | tr ' ' '\n' | grep -wc "1" )
+        # write tip traits to new csv
+        tail -n +2 $tissuesFile | grep -v '^$' | cut -f1,2 | tr '\t' ',' > {output.tissues}
 
-#         for element in $(seq 1 $uniq_count); do
-#             count=$(echo "$all_muts" | tr ' ' '\n' | grep -wc "$element")
-#             proportion=$(bc <<< "scale=10; $count / $count_1")
-#             echo -e "$proportion\t" >> {output.editRateProportions}
-#         done
+        # write date trait
+        tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > {output.dates}
 
-#         # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
-#         if [ "{params.modelDropouts}" == "True" ] || [ "{params.modelDropouts}" == "true" ]; then
-#             # to model dropouts, use the highest mutation int representation and add 1 since the dropout column is the last in the rate matrix
-#             dropoutMutNum=$(( uniq_count + 1 ))
-#             tail -n +2 $matrixFile | grep -v '^$' | sed \"s/-1/$dropoutMutNum/g\" | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > {output.fasta}
-#         else
-#             # to not model dropouts
-#             tail -n +2 $matrixFile | grep -v '^$' | sed 's/-1/0/g' | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > {output.fasta}
-#         fi
-#         """
+        # get edit rate proportions for new mutation entries, relative to the first edit as 1.0 frequency
+        all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\t' ' ' | tr '\n' ' ')
+        total_count=$( echo $all_muts | tr ' ' '\n' | grep -wv "0" | wc -l )
+        uniq_count=$( echo $all_muts | tr ' ' '\n' | sort | uniq | grep -wv "0" | wc -l )
+        count_1=$( echo $all_muts | tr ' ' '\n' | grep -wc "1" )
+
+        for element in $(seq 1 $uniq_count); do
+            count=$(echo "$all_muts" | tr ' ' '\n' | grep -wc "$element")
+            proportion=$(bc <<< "scale=10; $count / $count_1")
+            echo -e "$proportion\t" >> {output.editRateProportions}
+        done
+
+        # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
+        if [ "{params.modelDropouts}" == "True" ] || [ "{params.modelDropouts}" == "true" ]; then
+            # to model dropouts, use the highest mutation int representation and add 1 since the dropout column is the last in the rate matrix
+            dropoutMutNum=$(( uniq_count + 1 ))
+            tail -n +2 $matrixFile | grep -v '^$' | sed \"s/-1/$dropoutMutNum/g\" | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > {output.fasta}
+        else
+            # to not model dropouts
+            tail -n +2 $matrixFile | grep -v '^$' | sed 's/-1/0/g' | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > {output.fasta}
+        fi
+        """
 
 # rule runCassiopeia:
 #     input:
