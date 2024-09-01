@@ -1,0 +1,53 @@
+
+# set path to data dirs
+fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/billy_bladder_cancer_data_7_1_24/fastq_raw"
+
+# set where output should go (data is also copied there initially to retain original data in raw form)
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_9_1_24"
+
+# set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
+threads: 5
+
+# whether to model dropouts or just consider them as unedited sites
+modelDropouts: true
+
+# primary tissue name
+primaryTissue: T
+
+# set path to scripts
+scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
+
+# set necessary paths to beast dependencies
+treeannotator: /grid/siepel/home_norepl/staklins/bin/beast/bin/treeannotator
+logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
+
+# set path to metastabayes custom BEAST2 package runnable jar file
+metastabayesJar: /grid/siepel/home_norepl/staklins/metastabayes/metastabayes.jar
+
+# set path to the metastabayes model xml template file
+xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/metastabayes_mcmc_template_OLD.xml
+
+# set the length of the experiment
+# for Yang et al. 2022 data, the experiment lengths vary by mouse and are found in their trcr_master.txt metadata file
+experimentTime: 
+  3451_Lkb1_T1: 117
+  3454_Lkb1_T1: 108
+  3457_Apc_T1: 185
+  3457_Apc_T4: 185
+  3460_Lkb1_T1: 110
+  3515_Lkb1_T1: 108
+  3465_Lkb1_T1: 119
+  3466_Lkb1_T2: 110
+  3519_Lkb1_T1: 110
+  3508_Apc_T2: 185
+  3513_NT_T1: 181
+  3724_NT_T1: 184
+
+# set the desired mcmc chain length
+mcmcLength: 1000000000
+
+# set the desired number of parallel mcmc chains to run
+numChains: 5
+
+# set the minimum ess to include a chain in the combined output across chains (default: 200)
+essCutoff: 200

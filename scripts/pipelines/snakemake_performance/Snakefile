@@ -56,7 +56,7 @@ rule prepMetastabayesInputs:
         sed 's/ /,/g' {input.leafTissues} | cut -d',' -f1 | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.leafTissues})) > {output.dates}
 
         # format fasta, re-label mutations sequentially, and get edit rate proportions for new mutation entries
-        {params.scripts}/format_metastabayes_input_files.py {input.sim_matrix} {params.outputdir}
+        {params.scripts}/formatting/format_metastabayes_input_files.py {input.sim_matrix} {params.outputdir}
         """
 
 rule runMetastabayes:
@@ -241,7 +241,7 @@ rule runRandomAndConsensusTissueInference:
         "envs/compare_trees.yaml"
     shell:
         """
-        python {params.scripts}/consensus_random_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
+        python {params.scripts}/consensus_random/consensus_random_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
         """
 
 rule runMachina:
@@ -402,6 +402,6 @@ rule plotPrecisionRecall:
     shell:
         """
         true_trees=$(echo {input.trueTrees} | tr ' ' ',')
-        python {params.scripts}/plot_precision_recall.py $true_trees {params.primaryTissue} {params.outputdir}
-        python {params.scripts}/plot_f1_score.py {params.outputdir}/metrics.csv {params.outputdir}
+        python {params.scripts}/plotting/plot_precision_recall.py $true_trees {params.primaryTissue} {params.outputdir}
+        python {params.scripts}/plotting/plot_f1_score.py {params.outputdir}/metrics.csv {params.outputdir}
         """
