@@ -10,7 +10,7 @@ snakemake \
 --configfile $REPO_PATH/config/config.yaml \
 --printshellcmds \
 --keep-going \
---keep-incomplete \
+--rerun-incomplete \
 --cores 1 \
 --jobs 500 \
 --cluster-config $REPO_PATH/config/cluster.yaml \

@@ -71,7 +71,13 @@ rule prepMetastabayesInputs:
         # convert evotracer output csv matrix to tsv
         tempMatrix={params.outdir}/temp_matrix.tsv
         sed 's/,/\t/g' {input.char_matrix} | sed 's/\"//g' > $tempMatrix
+
+        # GET CPs FROM ASV STAT FILE
+
+        # SPLIT MUTATION MATRIX AND TISSUES INTO NEW DIRS PER CP
         
+        # MAKE MUTATIONS SUCCESSIVE ACROSS ROWS AND FIX MUTATION DICT ACCORDINGLY FOR EACH CP
+
         # get tissues from asv stat file from evotracer output
         tempTissues={params.outdir}/temp_tissues.tsv
         echo -e "group_name\ttissues" > $tempTissues
