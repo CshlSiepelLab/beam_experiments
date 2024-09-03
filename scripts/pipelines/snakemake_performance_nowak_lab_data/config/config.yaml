@@ -28,20 +28,15 @@ metastabayesJar: /grid/siepel/home_norepl/staklins/metastabayes/metastabayes.jar
 xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/metastabayes_mcmc_template_OLD.xml
 
 # set the length of the experiment
-# for Yang et al. 2022 data, the experiment lengths vary by mouse and are found in their trcr_master.txt metadata file
+# for Billy's bladder cancer data
 experimentTime: 
-  3451_Lkb1_T1: 117
-  3454_Lkb1_T1: 108
-  3457_Apc_T1: 185
-  3457_Apc_T4: 185
-  3460_Lkb1_T1: 110
-  3515_Lkb1_T1: 108
-  3465_Lkb1_T1: 119
-  3466_Lkb1_T2: 110
-  3519_Lkb1_T1: 110
-  3508_Apc_T2: 185
-  3513_NT_T1: 181
-  3724_NT_T1: 184
+  MMUS1834: 420
+  MMUS3012: 315
+  MMUS3011: 425
+  MMUS3010: 423
+  MMUS1910: 422
+  MMUS1957: 420
+  MMUS1782: 218
 
 # set the desired mcmc chain length
 mcmcLength: 1000000000
