@@ -25,12 +25,12 @@ rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
         expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
-        [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
-               cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        # [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
+        #        cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
 
 
 rule runEvotracer:
@@ -150,8 +150,6 @@ rule prepMetastabayesInputs:
                 echo "proportion: $proportion"
                 echo "$proportion" >> $editRateProportions
 
-                # track all CPs as they finish pre-processing
-                echo "$cp" >> {output.cpList}
             done
 
             # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
@@ -163,6 +161,9 @@ rule prepMetastabayesInputs:
                 # to not model dropouts
                 tail -n +2 $matrixFile | grep -v '^$' | sed 's/-1/0/g' | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > $fasta
             fi
+
+            # track all CPs as they finish pre-processing
+            echo "$cp" >> {output.cpList}
         done       
         """
 
@@ -212,7 +213,7 @@ rule runMetastabayes:
     input:
         fasta = "{outdir}/metastabayes/{mouse}/{cp}/{cp}.fasta",
         dates = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv",
+        tissues = "{outdir}/metastabayes/q{mouse}/{cp}/{cp}_tip_tissues.csv",
         editRateProportions = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
     output:
