@@ -13,11 +13,7 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
     if mouse not in mouse_fastqs:
         mouse_fastqs[mouse] = []
     mouse_fastqs[mouse].append(file)
-
-
-# for testing
-mice=mice[0]
-
+    
 
 rule all:
     input:
