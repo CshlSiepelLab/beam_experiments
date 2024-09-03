@@ -12,7 +12,16 @@ threads: 5
 modelDropouts: true
 
 # primary tissue name
-primaryTissue: T
+# primaryTissue: T
+
+primaryTissue: 
+  MMUS1834: BDR
+  MMUS3012: BDR
+  MMUS3011: BDR
+  MMUS3010: BDR
+  MMUS1910: BDR2  # specific to Billy's data, where MMUS1910 has two primary tumor labels
+  MMUS1957: BDR
+  MMUS1782: BDR
 
 # set path to scripts
 scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
@@ -39,7 +48,7 @@ experimentTime:
   MMUS1782: 218
 
 # set the desired mcmc chain length
-mcmcLength: 1000000000
+mcmcLength: 100000000
 
 # set the desired number of parallel mcmc chains to run
 numChains: 5

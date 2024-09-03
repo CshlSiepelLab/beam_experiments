@@ -13,12 +13,25 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
     if mouse not in mouse_fastqs:
         mouse_fastqs[mouse] = []
     mouse_fastqs[mouse].append(file)
-    
+
+
+def get_elements_from_file(path):
+    filename = f"{path}/cp_list.txt"
+    with open(filename) as f:
+        return [line.strip() for line in f]
+
 
 rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
-        expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice)
+        expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
+        [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
+               cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+
 
 rule runEvotracer:
     input:
@@ -46,7 +59,6 @@ rule runEvotracer:
         # remove temp dir
         rm -r $tempDir
         """
-
 
 rule prepMetastabayesInputs:
     input:
@@ -154,130 +166,131 @@ rule prepMetastabayesInputs:
         done       
         """
 
-# rule runCassiopeia:
-#     input:
-#         expandedMatrix = "{outdir}/metastabayes/{mouse}/expanded_clones_matrix.tsv"
-#     output:
-#         "{outdir}/cassiopeia_greedy/{mouse}/cassiopeia_greedy_inferred.nwk"
-#     params:
-#         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
-#         outputdir = "{outdir}/cassiopeia_greedy/{mouse}"
-#     singularity:
-#         "envs/simulate.sif"
-#     shell:
-#         """
-#         # run cassiopeia greedy
-#         python {params.cassiopeia_script} {input.expandedMatrix} {params.outputdir}
-#         """
+rule runCassiopeia:
+    input:
+        "{outdir}/metastabayes/{mouse}/{cp}/expanded_clones_matrix.tsv"
+    output:
+        "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
+    params:
+        cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
+        outputdir = "{outdir}/cassiopeia_greedy/{mouse}/{cp}"
+    singularity:
+        "envs/simulate.sif"
+    shell:
+        """
+        # run cassiopeia greedy
+        python {params.cassiopeia_script} {input} {params.outputdir}
+        """
 
-# rule runLAML:
-#     input:
-#         expandedMatrix = "{outdir}/metastabayes/{mouse}/expanded_clones_matrix.tsv",
-#         casTree = "{outdir}/cassiopeia_greedy/{mouse}/cassiopeia_greedy_inferred.nwk"
-#     output:
-#         lamlTree = "{outdir}/laml/{mouse}/{mouse}_laml_trees.nwk",
-#         lamlAnnotations = "{outdir}/laml/{mouse}/{mouse}_laml_annotations.txt",
-#         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{mouse}_laml_trees_no_branch_lengths.nwk"
-#     params:
-#         outputdir = "{outdir}/laml/{mouse}",
-#         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-#     conda:
-#         "envs/laml.yaml"
-#     shell:
-#         """
-#         # copy matrix and replace -1 with ? for missing data
-#         cp {input.expandedMatrix} {outdir}/laml/{wildcards.mouse}/matrix.csv
-#         sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.mouse}/matrix.csv
+rule runLAML:
+    input:
+        expandedMatrix = "{outdir}/metastabayes/{mouse}/{cp}/expanded_clones_matrix.tsv",
+        casTree = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
+    output:
+        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
+        lamlAnnotations = "{outdir}/laml/{mouse}/{cp}/laml_annotations.txt",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk"
+    params:
+        outputdir = "{outdir}/laml/{mouse}/{cp}",
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+    conda:
+        "envs/laml.yaml"
+    shell:
+        """
+        # copy matrix and replace -1 with ? for missing data
+        cp {input.expandedMatrix} {params.outputdir}/matrix.csv
+        sed -i 's/-1/?/g; s/\t/,/g' {params.outputdir}/matrix.csv
 
-#         # run laml
-#         run_laml -c {outdir}/laml/{wildcards.mouse}/matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.mouse}_laml --timescale {params.experimentTime} --parallel
+        # run laml
+        run_laml -c {params.outputdir}/matrix.csv -t {input.casTree} -o {params.outputdir}/laml --timescale {params.experimentTime} --parallel
 
-#         # obtain newick without branch lengths
-#         sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
-#         """
+        # obtain newick without branch lengths
+        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
+        """
 
-# rule runMetastabayes:
-#     input:
-#         fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
-#         dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
-#         tissues = "{outdir}/metastabayes/{mouse}/{mouse}_tip_tissues.csv",
-#         editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt",
-#         lamlTree = "{outdir}/laml/{mouse}/{mouse}_laml_trees.nwk"
-#     output:
-#         terminalLog = "{outdir}/metastabayes/{mouse}/terminal_{num}.log",
-#         metastabayesLog = "{outdir}/metastabayes/{mouse}/chain_{num}.log",
-#         metastabayesResult = "{outdir}/metastabayes/{mouse}/chain_{num}.trees"
-#     params:
-#         xml = config['xml'],
-#         fileDir = "{outdir}/metastabayes/{mouse}",
-#         metastabayesJar = config['metastabayesJar'],
-#         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-#         mcmclength = config['mcmcLength'],
-#         primaryTissue = config['primaryTissue'],
-#         threads = config['threads']
-#     shell:
-#         """
-#         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+rule runMetastabayes:
+    input:
+        fasta = "{outdir}/metastabayes/{mouse}/{cp}/{cp}.fasta",
+        dates = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv",
+        editRateProportions = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
+        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
+    output:
+        terminalLog = "{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log",
+        metastabayesLog = "{outdir}/metastabayes/{mouse}/{cp}/chain_{num}.log",
+        metastabayesResult = "{outdir}/metastabayes/{mouse}/{cp}/chain_{num}.trees"
+    params:
+        xml = config['xml'],
+        fileDir = "{outdir}/metastabayes/{mouse}/{cp}",
+        metastabayesJar = config['metastabayesJar'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        mcmclength = config['mcmcLength'],
+        # primaryTissue = config['primaryTissue'],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = config['threads']
+    shell:
+        """
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
-#         # calculate necessary inputs for the editing model
-#         initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
-#         array=($initialEditRates)
-#         numEditRates=${{#array[@]}}
-#         numEditRatesPlusTwo=$(( numEditRates + 2 ))
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
 
-#         # format tissue information
-#         unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
-#         numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
-#         numTissueRates=$(( numTissues * (numTissues - 1) ))
-#         equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
-#         equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
-#         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+        numTissueRates=$(( numTissues * (numTissues - 1) ))
+        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
+        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
-#         # the current setup forces the known origin to be the primary if the primary is sampled in the tips, otherwise it allows for the primary to be any tissue of those sampled
-#         if echo "$unique_tissues" | grep -q -w "{params.primaryTissue}"; then
-#             sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
-#             tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
-#         else
-#             sorted_unique_tissues=$unique_tissues
-#             tissueRootFreqs=$(for i in $(seq 1 $numTissues); do echo -n "$equalTissueFreqs "; done)
-#         fi
+        # the current setup forces the known origin to be the primary if the primary is sampled in the tips, otherwise it allows for the primary to be any tissue of those sampled
+        if echo "$unique_tissues" | grep -q -w "{params.primaryTissue}"; then
+            sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+        else
+            sorted_unique_tissues=$unique_tissues
+            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do echo -n "$equalTissueFreqs "; done)
+        fi
 
-#         tissueCodeMap=""
-#         trailingCodeMap="? = "
-#         i=0
-#         for tissue in $sorted_unique_tissues; do
-#             tissueCodeMap+="$tissue=$i,"
-#             trailingCodeMap+="$i "
-#             i=$((i+1))
-#         done
-#         tissueCodeMap+="${{trailingCodeMap}}"
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
 
-#         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
-#         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
-#         # use LAML starting tree
-#         # remove node names from newick and the origin node
-#         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+        # use LAML starting tree
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
-#         java -Xmx10g -jar {params.metastabayesJar} \
-#         -threads {params.threads} \
-#         -overwrite \
-#         -working \
-#         -D inName={wildcards.mouse} \
-#         -D fileDir={params.fileDir} \
-#         -D newick=\"$newick\" \
-#         -D generations={params.experimentTime} \
-#         -D numEditRates=\"$numEditRates\" \
-#         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-#         -D initialEditRates=\"$initialEditRates\" \
-#         -D numTissueRates=\"$numTissueRates\" \
-#         -D numTissues=\"$numTissues\" \
-#         -D equalTissueFreqs=\"$equalTissueFreqs\" \
-#         -D tissueRootFreqs=\"$tissueRootFreqs\" \
-#         -D mcmclength={params.mcmclength} \
-#         -D outname=chain_{wildcards.num} \
-#         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
-#         """
+        java -Xmx10g -jar {params.metastabayesJar} \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.cp} \
+        -D fileDir={params.fileDir} \
+        -D newick=\"$newick\" \
+        -D generations={params.experimentTime} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D equalTissueFreqs=\"$equalTissueFreqs\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D mcmclength={params.mcmclength} \
+        -D outname=chain_{wildcards.num} \
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
 
 # rule combineMetastabayesChains:
 #     input:
