@@ -25,12 +25,12 @@ rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
         expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
-        # [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
-        #        cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
+               cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
 
 
 rule runEvotracer:
@@ -213,7 +213,7 @@ rule runMetastabayes:
     input:
         fasta = "{outdir}/metastabayes/{mouse}/{cp}/{cp}.fasta",
         dates = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/q{mouse}/{cp}/{cp}_tip_tissues.csv",
+        tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv",
         editRateProportions = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
     output:
@@ -245,10 +245,9 @@ rule runMetastabayes:
         numTissueRates=$(( numTissues * (numTissues - 1) ))
         equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
         equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
-        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
         # the current setup forces the known origin to be the primary if the primary is sampled in the tips, otherwise it allows for the primary to be any tissue of those sampled
-        if echo "$unique_tissues" | grep -q -w "{params.primaryTissue}"; then
+        if echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
             sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
             tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
         else
