@@ -242,6 +242,19 @@ rule runMetastabayes:
         # format tissue information
         unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
         numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+
+        # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
+        if [[ $numTissues -eq 1 ]]; then
+            # if the primary already exists then add a dummy
+            if echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
+                unique_tissues="$unique_tissues dummy"
+            # if not, then add the primary as the dummy
+            else
+                unique_tissues="{params.primaryTissue} $unique_tissues"
+            fi
+            numTissues=$(( numTissues + 1 ))
+        fi
+
         numTissueRates=$(( numTissues * (numTissues - 1) ))
         equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
         equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
@@ -331,5 +344,5 @@ rule runMetastabayes:
 #         {params.logcombiner} $trees_files -o {output.combinedTrees}
 
 #         # get MCC tree from the combined trees file
-#         {params.treeannotator} -burnin 10 -topology MCC -height mean {output.combinedTrees} {output.combinedMCC}
+#         {params.treeannotator} -lowMem true -burnin 10 -topology CCD0 -height mean {output.combinedTrees} {output.combinedMCC}
 #         """

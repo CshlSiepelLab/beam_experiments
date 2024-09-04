@@ -13,7 +13,7 @@ outdir = config['outdir']
 rule all:
     input:
         expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", mouse=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
-        expand("{outdir}/metastabayes/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir)
+        # expand("{outdir}/metastabayes/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir)
 
 rule prepMetastabayesInputs:
     input:
@@ -194,44 +194,48 @@ rule runMetastabayes:
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
-rule combineMetastabayesChains:
-    input:
-        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "chain_*.log")),
-        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "*.trees"))
-    output:
-        combinedLog = "{outdir}/metastabayes/{mouse}/combined.log",
-        combinedTrees = "{outdir}/metastabayes/{mouse}/combined.trees",
-        combinedMCC = "{outdir}/metastabayes/{mouse}/combined.mcc.tree"
-    params:
-        logcombiner = config['logcombiner'],
-        essCutoff = config['essCutoff'],
-        treeannotator = config['treeannotator'],
-        threads = config['threads']
-    shell:
-        """
-        # find chains that have converged based on ess threshold specified
-        log_files=""
-        trees_files=""
-        ess_convergences=()
-        for file in {input.metastabayesLogs}; do
-            terminal_log=$(echo $file | sed 's/chain_/terminal_/')
-            ess_convergence=$(awk '/Operator/ {{ found=1; next }} {{ if (!found) print }}' "$terminal_log" | awk '{{if (NF > 0) print}}' | tail -n 1 | awk '{{print int($3 + 0.5)}}')
+# rule combineMetastabayesChains:
+#     input:
+#         terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+#         metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "chain_*.log")),
+#         metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "*.trees"))
+#     output:
+#         combinedLog = "{outdir}/metastabayes/{mouse}/combined.log",
+#         combinedTrees = "{outdir}/metastabayes/{mouse}/combined.trees",
+#         combinedMCC = "{outdir}/metastabayes/{mouse}/combined.ccd0.tree"
+#     params:
+#         logcombiner = config['logcombiner'],
+#         essCutoff = config['essCutoff'],
+#         treeannotator = config['treeannotator'],
+#         threads = config['threads']
+#     shell:
+#         """
+#         # find chains that have converged based on ess threshold specified
+#         log_files=""
+#         trees_files=""
+#         ess_convergences=()
+#         for file in {input.metastabayesLogs}; do
+#             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
+#             # ess_convergence=$(awk '/Operator/ {{ found=1; next }} {{ if (!found) print }}' "$terminal_log" | awk '{{if (NF > 0) print}}' | tail -n 1 | awk '{{print int($3 + 0.5)}}')
             
-            # only use mcmc chains that have converged since many appear to get lost in the search space
-            if [[ $ess_convergence -gt {params.essCutoff} ]]; then
-                log_files+="-log $file "
-                trees_file=$(echo $file | sed 's/\.log$/.trees/')
-                trees_files+="-log $trees_file "
-            else
-                echo "$file did not converge, so not including it in the final output"
-            fi
-        done
+#             # # only use mcmc chains that have converged since many appear to get lost in the search space
+#             # if [[ $ess_convergence -gt {params.essCutoff} ]]; then
+#             #     log_files+="-log $file "
+#             #     trees_file=$(echo $file | sed 's/\.log$/.trees/')
+#             #     trees_files+="-log $trees_file "
+#             # else
+#             #     echo "$file did not converge, so not including it in the final output"
+#             # fi
 
-        # combine logs and trees that passed
-        {params.logcombiner} $log_files -o {output.combinedLog}
-        {params.logcombiner} $trees_files -o {output.combinedTrees}
+#             log_files+="-log $file "
+#             trees_file=$(echo $file | sed 's/\.log$/.trees/')
+#             trees_files+="-log $trees_file "
+#         done
 
-        # get MCC tree from the combined trees file
-        {params.treeannotator} -burnin 10 -topology MCC -height mean {output.combinedTrees} {output.combinedMCC}
-        """
+#         # combine logs and trees that passed
+#         {params.logcombiner} $log_files -o {output.combinedLog}
+#         {params.logcombiner} $trees_files -o {output.combinedTrees}
+
+#         # # get MCC tree from the combined trees file
+#         {params.treeannotator} -lowMem true -burnin 10 -topology CCD0 -height mean {output.combinedTrees} {output.combinedMCC}
+#         """

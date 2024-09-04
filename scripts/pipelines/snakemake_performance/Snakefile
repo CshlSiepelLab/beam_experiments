@@ -172,7 +172,7 @@ rule combineMetastabayesChains:
         {params.logcombiner} $trees_files -o {output.combinedTrees}
 
         # get MCC tree from the combined trees file
-        {params.treeannotator} -burnin 10 -topology MCC -height mean {output.combinedTrees} {output.combinedMCC}
+        {params.treeannotator} -lowMem true -burnin 10 -topology CCD0 -height mean {output.combinedTrees} {output.combinedMCC}
         """
 
 rule runCassiopeia:
