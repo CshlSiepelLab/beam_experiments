@@ -179,7 +179,7 @@ for node in all_tissues:
     G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
 
 for edge, probability in graph_dict.items():
-    if probability > 0.5:
+    if probability > 0.5:   # NEED TO FIX TO REPRESENT THE PROBABILITIES AND NOT A STRICT THRESHOLD
         source, target, num = edge.split('_')
         # # to make the edges transparent based on the probability (this does not work well)
         # source_color = list(mcolors.to_rgba(custom_colors[source]))

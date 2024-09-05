@@ -6,7 +6,7 @@ import glob
 # get mouse ids and fastq files from input fastq dir
 mice = []
 mouse_fastqs = {}
-for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
+for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq")):
     mouse = os.path.basename(file).split("_")[0]
     if mouse not in mice:
         mice.append(mouse)
@@ -25,12 +25,12 @@ rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
         expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
-        [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
-               cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        # [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
+        #        cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
 
 
 rule runEvotracer:
@@ -38,7 +38,8 @@ rule runEvotracer:
         fastqFiles = lambda wildcards: mouse_fastqs[wildcards.mouse]
     output:
         char_matrix = "{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv",
-        asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv"
+        asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv",
+        mut_dict = "{outdir}/evotracer/{mouse}/asv_analysis/mutation_profile_map.csv",
     params:
         evoOutDir = "{outdir}/evotracer/{mouse}",
         scripts = config['scripts']
@@ -226,8 +227,8 @@ rule runMetastabayes:
         metastabayesJar = config['metastabayesJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         mcmclength = config['mcmcLength'],
-        # primaryTissue = config['primaryTissue'],
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        primaryTissue = config['primaryTissue'],
+        # primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = config['threads']
     shell:
         """
