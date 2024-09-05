@@ -236,7 +236,7 @@
     <operator id="geoMuScaler.c:tissue" spec="ScaleOperator" parameter="@traitClockRate.c:tissue" scaleFactor="0.9" weight="3.0"/>
     
     <!-- loggers -->
-        <logger id="tracelog" spec="Logger" fileName="$(outname).log" logEvery="10000" model="@posterior" sanitiseHeaders="true" sort="smart">
+        <logger id="tracelog" spec="Logger" fileName="$(outname).log" logEvery="100000" model="@posterior" sanitiseHeaders="true" sort="smart">
             <log idref="posterior"/>
             <log idref="likelihood"/>
             <log idref="prior"/>
@@ -254,14 +254,14 @@
             <log idref="traitLikelihood"/>
         </logger>
 
-        <logger id="screenlog" spec="Logger" logEvery="10000">
+        <logger id="screenlog" spec="Logger" logEvery="100000">
             <log idref="posterior"/>
             <log id="ESS" spec="util.ESS" arg="@posterior"/>
             <log idref="likelihood"/>
             <log idref="prior"/>
         </logger>
 
-        <logger id="treeWithTraitLogger" spec="Logger" fileName="$(outname).trees" logEvery="10000" mode="tree">
+        <logger id="treeWithTraitLogger" spec="Logger" fileName="$(outname).trees" logEvery="100000" mode="tree">
                 <log id="treeWithTraitLoggerItem" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@tree">
                     <metadata idref="posterior"/>
                     <metadata idref="treeLikelihood"/>
