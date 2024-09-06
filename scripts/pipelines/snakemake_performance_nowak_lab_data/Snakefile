@@ -6,7 +6,7 @@ import glob
 # get mouse ids and fastq files from input fastq dir
 mice = []
 mouse_fastqs = {}
-for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq")):
+for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
     mouse = os.path.basename(file).split("_")[0]
     if mouse not in mice:
         mice.append(mouse)
@@ -25,12 +25,12 @@ rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
         expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
-        # [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
-        #        cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
+               cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
 
 
 rule runEvotracer:
@@ -170,7 +170,8 @@ rule prepMetastabayesInputs:
 
 rule runCassiopeia:
     input:
-        "{outdir}/metastabayes/{mouse}/{cp}/expanded_clones_matrix.tsv"
+        cpList = "{outdir}/metastabayes/{mouse}/cp_list.txt",
+        matrix = "{outdir}/metastabayes/{mouse}/{cp}/expanded_clones_matrix.tsv"
     output:
         "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
     params:
@@ -181,11 +182,12 @@ rule runCassiopeia:
     shell:
         """
         # run cassiopeia greedy
-        python {params.cassiopeia_script} {input} {params.outputdir}
+        python {params.cassiopeia_script} {input.matrix} {params.outputdir}
         """
 
 rule runLAML:
     input:
+        cpList = "{outdir}/metastabayes/{mouse}/cp_list.txt",
         expandedMatrix = "{outdir}/metastabayes/{mouse}/{cp}/expanded_clones_matrix.tsv",
         casTree = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
     output:
@@ -212,6 +214,7 @@ rule runLAML:
 
 rule runMetastabayes:
     input:
+        cpList = "{outdir}/metastabayes/{mouse}/cp_list.txt",
         fasta = "{outdir}/metastabayes/{mouse}/{cp}/{cp}.fasta",
         dates = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_date_traits.csv",
         tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv",

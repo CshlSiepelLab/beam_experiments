@@ -1,6 +1,6 @@
 #!/bin/bash
 
-indir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/raw_data"
+indir="/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/raw_data"
 
 # get all files
 files=$(find $indir -type f -name "*issue_labeled_tree.nwk")
@@ -22,7 +22,7 @@ done
 migs=($(echo "${migs[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
 muts=($(echo "${muts[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
 
-mainOutdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/precision_recall_curve/variable_rates_specific_plots"
+mainOutdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_rates_re_plot_to_solve_decreasing_precision_9_6_24"
 mkdir -p $mainOutdir
 
 scripts="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts"
@@ -48,9 +48,13 @@ for mig in ${migs[@]}; do
         # check if true_trees is not empty
         if [[ -n $true_trees ]]; then
             # submit job
-            python $scripts/plot_precision_recall.py $true_trees $primary_tissue $outdir
-            python $scripts/plot_f1_score.py $outdir/metrics.csv $outdir
+            echo "python $scripts/plotting/plot_precision_recall.py $true_trees $primary_tissue $outdir" >> $mainOutdir/parallel.sh
+
+            # python $scripts/plotting/plot_f1_score.py $outdir/metrics.csv $outdir
         fi
     done
 done
 
+# submit jobs
+parallel --progress -j 20 < $mainOutdir/parallel.sh
+rm $mainOutdir/parallel.sh

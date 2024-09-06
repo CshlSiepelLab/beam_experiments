@@ -176,7 +176,7 @@ def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_count
                 else:
                     thresh_counts[edge] += 1
             f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
-            rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i, 'thresh_counts': thresh_counts, 'true_counts': true_counts})
+            rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i, 'thresh_counts': thresh_counts})
         thresh_prec_rec = pd.DataFrame(rows)
 
         # use the 50% posterior thresholded values as the final precision, recall, and f1 instead of the full posterior weighted values
@@ -185,7 +185,7 @@ def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_count
         post_prob_recall = threshold_fifty_df['recall'].values[0]
         post_prob_f1 = 2 * ((post_prob_precision * post_prob_recall) / (post_prob_precision + post_prob_recall))
 
-        return thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision
+        return thresh_prec_rec, rows, total_counts, post_prob_f1, post_prob_recall, post_prob_precision
 
 # user inputs
 dirs = (sys.argv[1]).split(",")
@@ -256,6 +256,12 @@ for true_tree_file in dirs:
         print(f"Error processing {true_tree_file}: {e}")
         continue
 
+    # output true graph to a file
+    with open(f"{outdir}/{sim}_true_graph.csv", "w") as file:
+        file.write(f"source_target,num_edges\n")
+        for key, value in true_counts.items():
+            file.write(f"{key},{value}\n")
+
     # process machina result to get precision and recall
     machina_f1 = float('nan')
     machina_recall = float('nan')
@@ -307,7 +313,7 @@ for true_tree_file in dirs:
                     cleaned_graph[item] += 1
             pathfinder_all_inferred_counts.append(cleaned_graph)
 
-        pathfinder_thresh_prec_rec, pathfinder_rows, pathfinder_post_prob_f1, pathfinder_post_prob_recall, pathfinder_post_prob_precision = posterior_threshold_metrics(pathfinder_posterior_probs, pathfinder_all_inferred_counts, true_counts, i)
+        pathfinder_thresh_prec_rec, pathfinder_rows, pathfinder_posterior_prob_graph, pathfinder_post_prob_f1, pathfinder_post_prob_recall, pathfinder_post_prob_precision = posterior_threshold_metrics(pathfinder_posterior_probs, pathfinder_all_inferred_counts, true_counts, i)
         pathfinder_all_thresh_rows.extend(pathfinder_rows)
 
     # process random result to get precision and recall
@@ -368,7 +374,11 @@ for true_tree_file in dirs:
         posterior_probs = [pdf(posterior)[0] for posterior in posteriors]
         total_posterior_prob = sum(posterior_probs)
         posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in posterior_probs]
-        thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision = posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, i) 
+        thresh_prec_rec, rows, posterior_prob_graph, post_prob_f1, post_prob_recall, post_prob_precision = posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, i)
+        # output posterior_prob_graph to a file
+        with open(f"{outdir}/{sim}_posterior_prob_graph.csv", "w") as file:
+            for key, value in posterior_prob_graph.items():
+                file.write(f"{key},{value}\n")
         all_thresh_rows.extend(rows)
 
     if plot_independent_plots:
