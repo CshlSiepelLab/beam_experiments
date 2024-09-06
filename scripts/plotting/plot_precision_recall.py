@@ -176,7 +176,7 @@ def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_count
                 else:
                     thresh_counts[edge] += 1
             f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
-            rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i})
+            rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i, 'thresh_counts': thresh_counts, 'true_counts': true_counts})
         thresh_prec_rec = pd.DataFrame(rows)
 
         # use the 50% posterior thresholded values as the final precision, recall, and f1 instead of the full posterior weighted values
@@ -442,6 +442,7 @@ if np.any(consensus_recalls):
 all_thresh_df = pd.DataFrame(all_thresh_rows)
 if not all_thresh_df.empty:
     avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+    all_thresh_df.to_csv(f"{outdir}/all_threshold_stats.csv", index=False)
 
 pathfinder_all_thresh_df = pd.DataFrame(pathfinder_all_thresh_rows)
 if not pathfinder_all_thresh_df.empty:

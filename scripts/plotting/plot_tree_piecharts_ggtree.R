@@ -15,7 +15,7 @@ DEFAULT_COLORS <- rep(c("#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e",
 # treefile <- commandArgs(trailingOnly = TRUE)[1]
 # primary_tissue <- commandArgs(trailingOnly = TRUE)[2]
 
-treefile <- "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_real_data_8_22_24/metastabayes/3457_Apc_T4/combined.mcc.tree"
+treefile <- "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_real_data_8_22_24/metastabayes/3457_Apc_T4/combined.ccd0.tree"
 primary_tissue <- "T"
 
 output_file <- sub("\\.tree$", "_ggtree.pdf", treefile)
