@@ -377,6 +377,7 @@ for true_tree_file in dirs:
         thresh_prec_rec, rows, posterior_prob_graph, post_prob_f1, post_prob_recall, post_prob_precision = posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, i)
         # output posterior_prob_graph to a file
         with open(f"{outdir}/{sim}_posterior_prob_graph.csv", "w") as file:
+            posterior_prob_graph = dict(sorted(posterior_prob_graph.items(), key=lambda x: x[1], reverse=True))
             for key, value in posterior_prob_graph.items():
                 file.write(f"{key},{value}\n")
         all_thresh_rows.extend(rows)
