@@ -48,9 +48,9 @@ for mig in ${migs[@]}; do
         # check if true_trees is not empty
         if [[ -n $true_trees ]]; then
             # submit job
-            echo "python $scripts/plotting/plot_precision_recall.py $true_trees $primary_tissue $outdir" >> $mainOutdir/parallel.sh
+            # echo "python $scripts/plotting/plot_precision_recall.py $true_trees $primary_tissue $outdir" >> $mainOutdir/parallel.sh
 
-            # python $scripts/plotting/plot_f1_score.py $outdir/metrics.csv $outdir
+            echo "python $scripts/plotting/plot_f1_score.py $outdir/metrics.csv $outdir" >> $mainOutdir/parallel.sh
         fi
     done
 done
