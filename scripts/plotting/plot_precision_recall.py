@@ -164,7 +164,8 @@ def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_count
             post_prob_f1 += prob * f1
 
         # compute thresholded precision and recall values
-        thresholds = [i for i in np.arange(0, 1.00, 0.01)]
+        max_threshold = max(list(total_counts.values()))
+        thresholds = [i for i in np.arange(0, max_threshold, 0.01)]
         rows = []
         for thresh in thresholds:
             thresh_counts = {key: value for key, value in total_counts.items() if value > thresh}
