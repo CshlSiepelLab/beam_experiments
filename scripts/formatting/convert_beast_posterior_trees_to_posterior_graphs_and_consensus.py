@@ -7,7 +7,7 @@ from scipy.stats import gaussian_kde
 from ete3 import Tree
 from copy import deepcopy
 import dendropy
-import multiprocessing
+from multiprocessing import Pool
 
 def get_migration_counts(tree):
     migration_counts = {}
@@ -47,17 +47,6 @@ def optionally_add_origin_migration(tree, counts, primary):
         else:
             counts_copy[migration] += 1
     return counts_copy
-
-def process_tree(filepath):
-    # set primary tissue
-    primary_tissue="P"
-    # read in tree files to ete3 tree
-    tree = Tree(filepath, format=8)
-    # set tree root to primary
-    tree.get_tree_root().name = f'0_{primary_tissue}'
-    # get counts of migration events in a dict with source_recipient tissue key and count integer value
-    counts=get_migration_counts(tree)
-    return counts
 
 def remove_zero_length_nodes(tree):
     for node in tree.internal_nodes():
@@ -99,7 +88,8 @@ def get_consensus_graph(posterior_probs, all_inferred_counts):
 
     return total_counts
 
-def process_tree_parallel(tree, primary_tissue):
+def process_tree_parallel(args):
+    tree, primary_tissue = args
     posterior = float(tree.annotations.get_value('posterior'))
     remove_zero_length_nodes(tree)
     inferred_tree = dendropy_beast_to_ete_newick_with_strict_locations(tree)
@@ -115,19 +105,20 @@ cores = int(sys.argv[4])
 
 # process beast posterior
 burnin_percent = 0.1
-beast_tree_list = dendropy.TreeList()
-beast_tree_list.read(path=beast_posterior_file, schema="nexus")
+beast_tree_list= dendropy.TreeList.get(path=beast_posterior_file, schema="nexus")
 num_beast_trees = len(beast_tree_list)
 num_discard = round(num_beast_trees * burnin_percent)
 beast_tree_list = beast_tree_list[num_discard:]
+num_beast_trees = len(beast_tree_list)
 
 # create a pool of worker processes to process the trees
-pool = multiprocessing.Pool(processes=cores)
-results = [pool.apply_async(process_tree_parallel, args=(tree, primary_tissue)) for tree in beast_tree_list]
-output = [result.get() for result in results]
-posteriors, all_inferred_counts = zip(*output)
+pool = Pool(processes=cores)
+output = pool.map(process_tree_parallel, [(tree, primary_tissue) for tree in beast_tree_list])
 pool.close()
 pool.join()
+
+posteriors, all_inferred_counts = zip(*output)
+
 
 # fit a gaussian kernel density estimate to the posterior values to get a probability density function
 pdf = gaussian_kde(posteriors)
