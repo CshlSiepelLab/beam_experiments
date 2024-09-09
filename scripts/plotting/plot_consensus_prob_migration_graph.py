@@ -140,7 +140,7 @@ with open(graph_posterior_csv, "r") as file:
         graph_dict[key] = float(value)
 
 # find all tissues to set the node colors
-all_tissues = list(set([value for node in graph_dict.keys() for value in node.split("_")[0:2]]))
+all_tissues = sorted(list(set([value for node in graph_dict.keys() for value in node.split("_")[0:2]])))
 custom_colors = DEFAULT_COLORS
 custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:len(all_tissues)]) if node != primary_tissue}
 custom_colors[primary_tissue] = "black"

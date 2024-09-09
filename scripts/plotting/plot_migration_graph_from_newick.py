@@ -37,7 +37,7 @@ def get_migration_counts(tree):
                 migration_counts[migration] = 1
             else:
                 migration_counts[migration] += 1
-    return migration_counts, tissues
+    return migration_counts, sorted(tissues)
 
 def process_tree(filepath):
     # set primary tissue
