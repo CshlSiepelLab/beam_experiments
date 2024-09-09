@@ -3,7 +3,6 @@
 export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_performance_nowak_lab_data
 
 snakemake \
---dry-run \
 --use-conda \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
@@ -11,7 +10,7 @@ snakemake \
 --configfile $REPO_PATH/config/config.yaml \
 --printshellcmds \
 --keep-going \
---rerun-incomplete \
+--ignore-incomplete \
 --cores 1 \
 --jobs 500 \
 --cluster-config $REPO_PATH/config/cluster.yaml \

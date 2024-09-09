@@ -100,7 +100,7 @@ def process_tree_parallel(args):
 # user inputs
 beast_posterior_file = sys.argv[1]
 primary_tissue=sys.argv[2]
-outdir = sys.argv[3]
+outfile = sys.argv[3]
 cores = int(sys.argv[4])
 
 # process beast posterior
@@ -128,7 +128,7 @@ posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in pos
 posterior_prob_graph = get_consensus_graph(posterior_probs, all_inferred_counts)
 
 # output posterior_prob_graph to a file
-with open(f"{outdir}/posterior_prob_graph.csv", "w") as file:
+with open(outfile, "w") as file:
     posterior_prob_graph = dict(sorted(posterior_prob_graph.items(), key=lambda x: x[1], reverse=True))
     for key, value in posterior_prob_graph.items():
         file.write(f"{key},{value}\n")

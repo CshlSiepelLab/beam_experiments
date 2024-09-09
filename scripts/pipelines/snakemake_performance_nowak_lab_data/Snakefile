@@ -33,7 +33,9 @@ rule all:
                 cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
         [expand("{outdir}/metastabayes/{mouse}/{cp}/combined.log", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-
+        [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+                
 
 rule runEvotracer:
     input:
@@ -350,4 +352,40 @@ rule combineMetastabayesChains:
         # combine logs and trees that passed
         {params.logcombiner} $log_files -o {output.combinedLog}
         {params.logcombiner} $trees_files -o {output.combinedTrees}
+        """
+
+rule convertTreePosteriorToGraphPosterior:
+    input:
+        combinedTrees = "{outdir}/metastabayes/{mouse}/{cp}/combined.trees"
+    output:
+        graphPosterior = "{outdir}/metastabayes/{mouse}/{cp}/posterior_prob_graph.csv"
+    params:
+        scripts = config['scripts'],
+        # primaryTissue = config['primaryTissue'],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        outdir = "{outdir}/metastabayes/{mouse}/{cp}",
+        threads = config['threads']
+    conda:
+        "envs/matplotlib.yaml"
+    shell:
+        """
+        python {params.scripts}/formatting/convert_tree_posterior_to_graph_posterior.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
+        """
+
+rule plotGraphPosterior:
+    input:
+        graphPosterior = "{outdir}/metastabayes/{mouse}/{cp}/posterior_prob_graph.csv"
+    output:
+        probabilityPlot = "{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf",
+        thresholdPlot = "{outdir}/metastabayes/{mouse}/{cp}/threshold_70_migration_graph.pdf"
+    params:
+        scripts = config['scripts'],
+        # primaryTissue = config['primaryTissue'],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        outdir = "{outdir}/metastabayes/{mouse}/{cp}"
+    conda:
+        "envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_consensus_prob_migration_graoh.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
         """
