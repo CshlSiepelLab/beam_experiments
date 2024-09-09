@@ -426,7 +426,7 @@ rule plotTrueMigrationGraph:
         "envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/plotting/plot_migration_graph_from_newick {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
+        python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
         """
 
 rule plotPrecisionRecall:

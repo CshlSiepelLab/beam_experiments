@@ -73,6 +73,6 @@ for edge, num in migration_graph.items():
     for i in range(num):
         G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3)
 dot = nx.nx_pydot.to_pydot(G)
-dot.write_pdf(f"{outfile}")
+dot.write_pdf(outfile)
 
 
