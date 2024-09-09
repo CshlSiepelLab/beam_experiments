@@ -143,8 +143,7 @@ rule combineMetastabayesChains:
         metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{sim}/chain_{num}.trees", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
     output:
         combinedLog = "{outdir}/metastabayes/{sim}/combined.log",
-        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees",
-        combinedMCC = "{outdir}/metastabayes/{sim}/combined.mcc.tree"
+        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees"
     params:
         logcombiner = config['logcombiner'],
         essCutoff = config['essCutoff'],
@@ -157,9 +156,8 @@ rule combineMetastabayesChains:
         ess_convergences=()
         for file in {input.metastabayesLogs}; do
             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
-            ess_convergence=$(awk '/Operator/ {{ found=1; next }} {{ if (!found) print }}' "$terminal_log" | awk '{{if (NF > 0) print}}' | tail -n 1 | awk '{{print int($3 + 0.5)}}')
             
-            # only use mcmc chains that have converged since many appear to get lost in the search space
+            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | cut -d' ' -f21 | cut -d'.' -f1)
             if [[ $ess_convergence -gt {params.essCutoff} ]]; then
                 log_files+="-log $file "
                 trees_file=$(echo $file | sed 's/\.log$/.trees/')
@@ -172,11 +170,7 @@ rule combineMetastabayesChains:
         # combine logs and trees that passed
         {params.logcombiner} $log_files -o {output.combinedLog}
         {params.logcombiner} $trees_files -o {output.combinedTrees}
-
-        # get MCC tree from the combined trees file
-        {params.treeannotator} -lowMem true -burnin 10 -topology CCD0 -height mean {output.combinedTrees} {output.combinedMCC}
         """
-
 
 rule convertTreePosteriorToGraphPosterior:
     input:

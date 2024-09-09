@@ -216,20 +216,16 @@ rule runMetastabayes:
 #         ess_convergences=()
 #         for file in {input.metastabayesLogs}; do
 #             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
-#             # ess_convergence=$(awk '/Operator/ {{ found=1; next }} {{ if (!found) print }}' "$terminal_log" | awk '{{if (NF > 0) print}}' | tail -n 1 | awk '{{print int($3 + 0.5)}}')
-            
-#             # # only use mcmc chains that have converged since many appear to get lost in the search space
-#             # if [[ $ess_convergence -gt {params.essCutoff} ]]; then
-#             #     log_files+="-log $file "
-#             #     trees_file=$(echo $file | sed 's/\.log$/.trees/')
-#             #     trees_files+="-log $trees_file "
-#             # else
-#             #     echo "$file did not converge, so not including it in the final output"
-#             # fi
 
-#             log_files+="-log $file "
-#             trees_file=$(echo $file | sed 's/\.log$/.trees/')
-#             trees_files+="-log $trees_file "
+#             # only use mcmc chains that have converged since many appear to get lost in the search space
+            # ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | cut -d' ' -f21 | cut -d'.' -f1)
+            # if [[ $ess_convergence -gt {params.essCutoff} ]]; then
+            #     log_files+="-log $file "
+            #     trees_file=$(echo $file | sed 's/\.log$/.trees/')
+            #     trees_files+="-log $trees_file "
+            # else
+            #     echo "$file did not converge, so not including it in the final output"
+            # fi
 #         done
 
 #         # combine logs and trees that passed
