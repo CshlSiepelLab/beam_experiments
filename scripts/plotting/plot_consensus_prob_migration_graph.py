@@ -139,26 +139,31 @@ with open(graph_posterior_csv, "r") as file:
         key, value = line.strip().split(",")
         graph_dict[key] = float(value)
 
-
+# find all tissues to set the node colors
 all_tissues = list(set([value for node in graph_dict.keys() for value in node.split("_")[0:2]]))
-
-# plot the graph
 custom_colors = DEFAULT_COLORS
 custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:len(all_tissues)]) if node != primary_tissue}
 custom_colors[primary_tissue] = "black"
 
+# plot the probability graph with edge thicknesses proportional to the probability
 G = nx.MultiDiGraph()
-
 for node in all_tissues:
     G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
+for edge, probability in graph_dict.items():
+    source, target, num = edge.split('_')
+    G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=probability*3)
+dot = nx.nx_pydot.to_pydot(G)
+dot.write_pdf(f"{outdir}/probability_migration_graph.pdf")
 
+# plot the thresholded graph
+G = nx.MultiDiGraph()
+for node in all_tissues:
+    G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
 for edge, probability in graph_dict.items():
     if probability > 0.7:
         source, target, num = edge.split('_')
         G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3)
-
 dot = nx.nx_pydot.to_pydot(G)
-
 dot.write_pdf(f"{outdir}/threshold_70_migration_graph.pdf")
 
 
