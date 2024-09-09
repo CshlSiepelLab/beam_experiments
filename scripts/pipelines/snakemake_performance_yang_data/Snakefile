@@ -196,9 +196,9 @@ rule runMetastabayes:
 
 # rule combineMetastabayesChains:
 #     input:
-#         terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-#         metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "chain_*.log")),
-#         metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, "*.trees"))
+        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.trees", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
 #     output:
 #         combinedLog = "{outdir}/metastabayes/{mouse}/combined.log",
 #         combinedTrees = "{outdir}/metastabayes/{mouse}/combined.trees",

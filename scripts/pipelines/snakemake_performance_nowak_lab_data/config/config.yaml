@@ -1,11 +1,11 @@
 
 # set path to data dirs
-# fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/ryan_prostate_cancer_data_cancer_discovery_7_3_24/fastq_files"
-fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/billy_bladder_cancer_data_7_1_24/fastq_raw"
+fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/ryan_prostate_cancer_data_cancer_discovery_7_3_24/fastq_files"
+# fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/billy_bladder_cancer_data_7_1_24/fastq_raw"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
 outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/ryan_prostate_cancer_data_9_5_24"
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_9_1_24"
+# outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_9_1_24"
 
 # set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
 threads: 5
@@ -14,16 +14,16 @@ threads: 5
 modelDropouts: true
 
 # primary tissue name
-# primaryTissue: PRL
+primaryTissue: PRL
 
-primaryTissue: 
-  MMUS1834: BDR
-  MMUS3012: BDR
-  MMUS3011: BDR
-  MMUS3010: BDR
-  MMUS1910: BDR2  # specific to Billy's data, where MMUS1910 has two primary tumor labels
-  MMUS1957: BDR
-  MMUS1782: BDR
+# primaryTissue: 
+#   MMUS1834: BDR
+#   MMUS3012: BDR
+#   MMUS3011: BDR
+#   MMUS3010: BDR
+#   MMUS1910: BDR2  # specific to Billy's data, where MMUS1910 has two primary tumor labels
+#   MMUS1957: BDR
+#   MMUS1782: BDR
 
 # set path to scripts
 scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
@@ -40,28 +40,28 @@ xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/m
 
 # set the length of the experiment
 
-# # for Ryan's published cancer discovery prostate cancer data
-# experimentTime: 
-#   MMUS1457: 344
-#   MMUS1466: 400
-#   MMUS1467: 420
-#   MMUS1469: 421
-#   MMUS1492: 393
-#   MMUS1495: 364
-#   MMUS1544: 224
-#   MMUS1588: 421
-#   MMUS1874: 421
-#   MMUS1875: 398
-
-# for Billy's bladder cancer data
+# for Ryan's published cancer discovery prostate cancer data
 experimentTime: 
-  MMUS1834: 420
-  MMUS3012: 315
-  MMUS3011: 425
-  MMUS3010: 423
-  MMUS1910: 422
-  MMUS1957: 420
-  MMUS1782: 218
+  MMUS1457: 344
+  MMUS1466: 400
+  MMUS1467: 420
+  MMUS1469: 421
+  MMUS1492: 393
+  MMUS1495: 364
+  MMUS1544: 224
+  MMUS1588: 421
+  MMUS1874: 421
+  MMUS1875: 398
+
+# # for Billy's bladder cancer data
+# experimentTime: 
+#   MMUS1834: 420
+#   MMUS3012: 315
+#   MMUS3011: 425
+#   MMUS3010: 423
+#   MMUS1910: 422
+#   MMUS1957: 420
+#   MMUS1782: 218
 
 # set the desired mcmc chain length
 mcmcLength: 50000000

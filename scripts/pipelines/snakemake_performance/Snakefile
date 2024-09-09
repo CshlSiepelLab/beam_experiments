@@ -15,6 +15,7 @@ rule all:
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
+        expand("{outdir}/metastabayes/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
@@ -137,8 +138,8 @@ rule runMetastabayes:
 rule combineMetastabayesChains:
     input:
         terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
-        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "chain_*.log")),
-        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.sim, "*.trees"))
+        metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{sim}/chain_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
+        metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{sim}/chain_{num}.trees", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
     output:
         combinedLog = "{outdir}/metastabayes/{sim}/combined.log",
         combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees",
@@ -173,6 +174,41 @@ rule combineMetastabayesChains:
 
         # get MCC tree from the combined trees file
         {params.treeannotator} -lowMem true -burnin 10 -topology CCD0 -height mean {output.combinedTrees} {output.combinedMCC}
+        """
+
+
+rule convertTreePosteriorToGraphPosterior:
+    input:
+        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees"
+    output:
+        graphPosterior = "{outdir}/metastabayes/{sim}/posterior_prob_graph.csv"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outdir = "{outdir}/metastabayes/{sim}",
+        threads = config['threads']
+    conda:
+        "envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
+        """
+
+rule plotGraphPosterior:
+    input:
+        graphPosterior = "{outdir}/metastabayes/{sim}/posterior_prob_graph.csv"
+    output:
+        probabilityPlot = "{outdir}/metastabayes/{sim}/probability_migration_graph.pdf",
+        thresholdPlot = "{outdir}/metastabayes/{sim}/threshold_70_migration_graph.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outdir = "{outdir}/metastabayes/{sim}"
+    conda:
+        "envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
         """
 
 rule runCassiopeia:

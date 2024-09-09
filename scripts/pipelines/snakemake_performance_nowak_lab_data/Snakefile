@@ -316,8 +316,8 @@ rule runMetastabayes:
 rule combineMetastabayesChains:
     input:
         terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
-        metastabayesLogs = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, wildcards.cp, "chain_*.log")),
-        metastabayesResults = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "metastabayes", wildcards.mouse, wildcards.cp, "*.trees"))
+        metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/{cp}/chain_{num}.log", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
+        metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/{cp}/chain_{num}.trees", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir)
     output:
         combinedLog = "{outdir}/metastabayes/{mouse}/{cp}/combined.log",
         combinedTrees = "{outdir}/metastabayes/{mouse}/{cp}/combined.trees",
@@ -361,15 +361,15 @@ rule convertTreePosteriorToGraphPosterior:
         graphPosterior = "{outdir}/metastabayes/{mouse}/{cp}/posterior_prob_graph.csv"
     params:
         scripts = config['scripts'],
-        # primaryTissue = config['primaryTissue'],
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        primaryTissue = config['primaryTissue'],
+        # primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         outdir = "{outdir}/metastabayes/{mouse}/{cp}",
         threads = config['threads']
     conda:
-        "envs/matplotlib.yaml"
+        "envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/formatting/convert_tree_posterior_to_graph_posterior.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
+        python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
         """
 
 rule plotGraphPosterior:
@@ -380,12 +380,12 @@ rule plotGraphPosterior:
         thresholdPlot = "{outdir}/metastabayes/{mouse}/{cp}/threshold_70_migration_graph.pdf"
     params:
         scripts = config['scripts'],
-        # primaryTissue = config['primaryTissue'],
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        primaryTissue = config['primaryTissue'],
+        # primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         outdir = "{outdir}/metastabayes/{mouse}/{cp}"
     conda:
         "envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/plotting/plot_consensus_prob_migration_graoh.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
+        python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
         """
