@@ -128,44 +128,18 @@ def get_posterior_prob_migration_graph(posterior_probs, all_inferred_counts):
 
 
 # inputs
-beast_posterior_file = sys.argv[1]
+graph_posterior_csv = sys.argv[1]
 primary_tissue=sys.argv[2]
 outdir = sys.argv[3]
 
-# # testing
-# beast_posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_real_data_8_22_24/metastabayes/3457_Apc_T4/combined.trees"
-# primary_tissue="T"
-# outdir = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_real_data_8_22_24/metastabayes/3457_Apc_T4"
-
-# set outfile
-outfile = os.path.join(outdir, "beast_posterior_probability_migration_graph.pdf")
-
-# process beast posterior result to get probabilistic consensus migration graph
-burnin_percent=0.1
-beast_tree_list = dendropy.TreeList()
-beast_tree_list.read(path=beast_posterior_file, schema="nexus")
-num_beast_trees = len(beast_tree_list)
-num_discard = round(num_beast_trees * burnin_percent)
-beast_tree_list = beast_tree_list[num_discard:]
-
-posteriors = np.array([float(tree.annotations.get_value('posterior')) for tree in beast_tree_list])
-all_inferred_counts = np.empty(len(beast_tree_list), dtype=object)
-
-for i, tree in enumerate(beast_tree_list):
-    remove_zero_length_nodes(tree)
-    inferred_tree = dendropy_beast_to_ete_newick_with_strict_locations(tree)
-    inferred_counts = get_migration_counts(inferred_tree)
-    inferred_counts = optionally_add_origin_migration(inferred_tree, inferred_counts, primary_tissue)
-    all_inferred_counts[i] = inferred_counts
-
-# fit a gaussian kernel density estimate to the posterior values to get a probability density function
-pdf = gaussian_kde(posteriors)
-posterior_probs = [pdf(posterior)[0] for posterior in posteriors]
-total_posterior_prob = sum(posterior_probs)
-posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in posterior_probs]
-
 # obtain the probabilistic consensus migration graph
-graph_dict = get_posterior_prob_migration_graph(posterior_probs, all_inferred_counts)
+graph_dict = {}
+with open(graph_posterior_csv, "r") as file:
+    for line in file:
+        key, value = line.strip().split(",")
+        graph_dict[key] = float(value)
+
+
 all_tissues = list(set([value for node in graph_dict.keys() for value in node.split("_")[0:2]]))
 
 # plot the graph
@@ -179,21 +153,12 @@ for node in all_tissues:
     G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
 
 for edge, probability in graph_dict.items():
-    if probability > 0.5:   # NEED TO FIX TO REPRESENT THE PROBABILITIES AND NOT A STRICT THRESHOLD
+    if probability > 0.7:
         source, target, num = edge.split('_')
-        # # to make the edges transparent based on the probability (this does not work well)
-        # source_color = list(mcolors.to_rgba(custom_colors[source]))
-        # target_color = list(mcolors.to_rgba(custom_colors[target]))
-        # transparency = round(float(probability), 4)
-        # source_color[3] = transparency
-        # target_color[3] = transparency
-        # source_color = "#%02x%02x%02x%02x" % tuple(int(c * 255) for c in source_color)
-        # target_color = "#%02x%02x%02x%02x" % tuple(int(c * 255) for c in target_color)
         G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3)
-
 
 dot = nx.nx_pydot.to_pydot(G)
 
-dot.write_pdf(outfile)
+dot.write_pdf(f"{outdir}/threshold_70_migration_graph.pdf")
 
 
