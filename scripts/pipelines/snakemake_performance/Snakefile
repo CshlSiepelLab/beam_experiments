@@ -12,6 +12,7 @@ outdir = config['outdir']
 rule all:
     input:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
@@ -411,6 +412,21 @@ rule labelTrueTreeWithTissues:
         """
         # run add tissue to newick
         python {params.scripts}/format_add_tissues_to_newick.py {input.true_tree} {input.true_tissues}
+        """
+
+rule plotTrueMigrationGraph:
+    input:
+        trueTissueTree = "{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk"
+    output:
+        trueTissueGraph = "{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue']
+    conda:
+        "envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_migration_graph_from_newick {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
         """
 
 rule plotPrecisionRecall:
