@@ -233,9 +233,7 @@ rule runMetastabayes:
         fileDir = "{outdir}/metastabayes/{mouse}/{cp}",
         metastabayesJar = config['metastabayesJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        mcmclength = config['mcmcLength'],
-        primaryTissue = config['primaryTissue'],
-        # primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = config['threads']
     shell:
         """
@@ -356,8 +354,7 @@ rule convertTreePosteriorToGraphPosterior:
         graphPosterior = "{outdir}/metastabayes/{mouse}/{cp}/posterior_prob_graph.csv"
     params:
         scripts = config['scripts'],
-        primaryTissue = config['primaryTissue'],
-        # primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         outdir = "{outdir}/metastabayes/{mouse}/{cp}",
         threads = config['threads']
     conda:
@@ -375,8 +372,7 @@ rule plotGraphPosterior:
         thresholdPlot = "{outdir}/metastabayes/{mouse}/{cp}/threshold_70_migration_graph.pdf"
     params:
         scripts = config['scripts'],
-        primaryTissue = config['primaryTissue'],
-        # primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         outdir = "{outdir}/metastabayes/{mouse}/{cp}"
     conda:
         "envs/networkx.yaml"
