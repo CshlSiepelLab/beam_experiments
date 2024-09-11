@@ -90,5 +90,5 @@ print("Filtered number of clones: ", len(char_matrix_filtered.index))
 
 # write to files
 char_matrix_filtered.to_csv(outprefix + "_char_matrix.tsv", sep='\t')
-tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep='\t')
+tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep=',', header=False)
 

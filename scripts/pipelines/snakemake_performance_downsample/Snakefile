@@ -93,9 +93,10 @@ rule prepMetastabayesInputs:
         downsampledSimMatrix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_char_matrix.tsv",
         downsampledLeafTissues = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_tissue_labels.tsv",
     output:
-        fasta = "{outdir}/metastabayes/{sim}_{threshold}/{sim}.fasta",
-        dates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_tip_tissues.csv",
+        fasta = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}.fasta",
+        dates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_tip_tissues.csv",
+        editRates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_edit_rate_proportions.txt"
     params:
         scripts = config['scripts'],
         generations = config['generations'],
@@ -116,9 +117,10 @@ rule prepMetastabayesInputs:
 
 rule runMetastabayes:
     input:
-        fasta = "{outdir}/metastabayes/{sim}_{threshold}/{sim}.fasta",
-        dates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_tip_tissues.csv",
+        fasta = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}.fasta",
+        dates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_tip_tissues.csv",
+        editRates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_edit_rate_proportions.txt"
     output:
         terminalLog = "{outdir}/metastabayes/{sim}_{threshold}/terminal_{num}.log",
         metastabayesLog = "{outdir}/metastabayes/{sim}_{threshold}/chain_{num}.log",
@@ -136,7 +138,7 @@ rule runMetastabayes:
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {wildcards.outdir}/metastabayes/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
+        initialEditRates=$(cat {input.editRates})
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))
@@ -174,7 +176,7 @@ rule runMetastabayes:
         -threads {params.threads} \
         -overwrite \
         -working \
-        -D inName={wildcards.sim} \
+        -D inName={wildcards.sim}_{wildcards.threshold} \
         -D fileDir={params.fileDir} \
         -D generations={params.generations} \
         -D numEditRates=\"$numEditRates\" \
