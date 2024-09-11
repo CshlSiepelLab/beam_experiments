@@ -25,19 +25,21 @@ char_matrix_file = sys.argv[1]
 tissue_labels_file = sys.argv[2]
 threshold = float(sys.argv[3])
 cores = int(sys.argv[4])
+outprefix = sys.argv[5]
 
 # # testing
 # char_matrix_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/processed_metadata/3451_Lkb1_T1_successive_char_matrix_collapsed.txt"
 # tissue_labels_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/processed_metadata/3451_Lkb1_T1_successive_char_matrix_collapsing_dict.txt"
 # threshold = 0.1
 # cores = 10
+# outprefix = "test"
 
 # read in data
 char_matrix_original = pd.read_csv(char_matrix_file, sep='\t', index_col=0)
-tissue_labels_original = pd.read_csv(tissue_labels_file, sep='\t', index_col=0)
+tissue_labels_original = pd.read_csv(tissue_labels_file, sep='\s+', index_col=0)
 
 # remove any clones with more than one tissue label, which by default are informative and should be kept
-tissue_labels = tissue_labels_original[tissue_labels_original['tissues'].apply(lambda x: len(x.split(",")) == 1)]
+tissue_labels = tissue_labels_original[tissue_labels_original['tissues'].str.contains(',', na=False) == False]
 char_matrix = char_matrix_original.loc[tissue_labels.index]
 
 # Do not include missing data
@@ -85,4 +87,8 @@ for tissue in tissues:
 char_matrix_filtered = char_matrix.loc[~char_matrix.index.isin(filtered_clones)]
 tissue_labels_filtered = tissue_labels.loc[~tissue_labels.index.isin(filtered_clones)]
 print("Filtered number of clones: ", len(char_matrix_filtered.index))
+
+# write to files
+char_matrix_filtered.to_csv(outprefix + "_char_matrix.tsv", sep='\t')
+tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep='\t')
 

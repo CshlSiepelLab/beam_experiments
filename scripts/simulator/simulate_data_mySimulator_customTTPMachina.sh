@@ -9,7 +9,7 @@ barcode_simulator_dir="../barcode_simulator/scripts/simulator"
 # echo $model
 
 # set dir to hold all sims
-sim_dir="data/high_P_to_M1_and_no_escape_sim_hypothesis_testing_8_30_24/"
+sim_dir="data/downsampling_test_250_tips_9_10_24"
 mkdir -p ${sim_dir}
 
 # # make pattern directories
@@ -24,7 +24,7 @@ migration_patterns=(3)
 
 # migration_rates=(1e-4)
 # migration_rates=(1e-5)
-# migration_rates=(1e-6)
+migration_rates=(1e-6)
 # migration_rates=(1e-7)
 # migration_rates=(1e-4 1e-5 1e-6 1e-7)
 
@@ -32,9 +32,9 @@ migration_patterns=(3)
 mutation_rates=(0.005)
 
 
-# for migration_rate in ${migration_rates[@]}; do
+for migration_rate in ${migration_rates[@]}; do
 
-migration_rate="1e-6,0,1e-6,1e-6,1e-6"
+# migration_rate="1e-6,0,1e-6,1e-6,1e-6"
 
 # m=$(echo $migration_rate | sed 's/1e-//g')
 
@@ -43,7 +43,7 @@ for mutrate in ${mutation_rates[@]}; do
 # j=$(echo $mutrate | sed 's/^0\.//')
 
 for pattern in ${migration_patterns[@]}; do
-for ((i = 0; i < 10; i++)); do
+for ((i = 0; i < 5; i++)); do
 
 # make dir specific to the seed number for each sim and the migration pattern
 if (( $pattern == 0 )); then
@@ -79,13 +79,13 @@ max_anatomical_sites=-1
 mutFreqThreshold=0.05
 carryingCapacity="5e4"
 driverProb="1e-7"
-num_cells_downsample=50
+num_cells_downsample=250
 
 num_sites=50
 design="RANDOM"
 
-# optional migration transition probabilities matrix csv file
-transition_probs="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/model_selection_transition_matrices/high_P_to_M1_5_tissues.csv"
+# # optional migration transition probabilities matrix csv file
+# transition_probs="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/model_selection_transition_matrices/high_P_to_M1_5_tissues.csv"
 
 
 # save running parameters to file
@@ -105,8 +105,8 @@ transition_probs_file\t${transition_probs}" > ${run_conditions_file}
 # run simulator
 echo "Running barcode simulator with seed ${seed} and migration pattern ${pattern}"
 echo "$barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample}" >> ${run_conditions_file}
-# timeout 10m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
-timeout 10m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} -M ${transition_probs} >> ${run_conditions_file}
+timeout 10m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} >> ${run_conditions_file} || (rm -rf ${outprefix} && continue)
+# timeout 10m $barcode_simulator_dir/build/simulate -C ${num_generations} -p ${pattern} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -f ${mutFreqThreshold} -K ${carryingCapacity} -D ${driverProb} -d ${num_cells_downsample} -M ${transition_probs} >> ${run_conditions_file}
 
 # if no migrations, then repeat simulation
 migrations=$(grep -v '^$' ${outprefix}/migration_graph* | wc -l)

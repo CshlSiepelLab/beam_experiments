@@ -405,7 +405,7 @@ rule labelTrueTreeWithTissues:
     shell:
         """
         # run add tissue to newick
-        python {params.scripts}/format_add_tissues_to_newick.py {input.true_tree} {input.true_tissues}
+        python {params.scripts}/formatting/format_add_tissues_to_newick.py {input.true_tree} {input.true_tissues}
         """
 
 rule plotTrueMigrationGraph:

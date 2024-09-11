@@ -1,0 +1,281 @@
+
+import os
+import sys
+import glob
+
+def get_sims():
+    return [d for d in os.listdir(config['inputpath']) if os.path.isdir(os.path.join(config['inputpath'], d))]
+
+sims = get_sims()
+outdir = config['outdir']
+
+rule all:
+    input:
+        expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
+        expand("{outdir}/downsampled_data/{sim}/threshold_{threshold}_char_matrix.tsv", threshold=config['thresholds'], sim=sims, outdir=outdir),
+        expand("{outdir}/metastabayes/{sim}_{threshold}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir, threshold=config['thresholds']),
+        expand("{outdir}/metastabayes/{sim}_{threshold}/combined.log", sim=sims, outdir=outdir, threshold=config['thresholds']),
+        expand("{outdir}/metastabayes/{sim}_{threshold}/probability_migration_graph.pdf", sim=sims, outdir=outdir, threshold=config['thresholds']),
+        # f"{outdir}/precision_recall_curve/precision_recall.pdf",
+
+rule copyDataToOutDir:
+    input:
+        lambda wildcards: os.path.join(config['inputpath'], wildcards.sim)
+    output:
+        os.path.join(outdir, "raw_data/{sim}", "done")
+    shell:
+        """
+        outdir=$(dirname $(dirname {output}))
+        cp -r {input} $outdir
+        touch {output}
+        """
+
+rule labelTrueTreeWithTissues:
+    input:
+        copiedData = os.path.join(outdir, "raw_data/{sim}", "done"),
+        true_tree = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*[0-9].nwk")),
+        true_tissues = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*.vertex.labeling"))
+    output:
+        "{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk"
+    params:
+        scripts = config['scripts']
+    conda:
+        "envs/compare_trees.yaml"
+    shell:
+        """
+        # run add tissue to newick
+        python {params.scripts}/formatting/format_add_tissues_to_newick.py {input.true_tree} {input.true_tissues}
+        """
+
+rule plotTrueMigrationGraph:
+    input:
+        trueTissueTree = "{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk"
+    output:
+        trueTissueGraph = "{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue']
+    conda:
+        "envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
+        """
+
+rule downsampleInputs:
+    input:
+        os.path.join(outdir, "raw_data/{sim}", "done"),
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling")),
+    output:
+        downsampledSimMatrix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_char_matrix.tsv",
+        downsampledLeafTissues = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_tissue_labels.tsv",
+    params:
+        outprefix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}",
+        scripts = config['scripts'],
+        threads = config['threads'],
+    conda:
+        "envs/networkx.yaml"
+    shell:
+        """
+        # add header to leaf tissues
+        if ! grep -q "tissues" {input.leafTissues}; then
+            sed -i '1i group_name\ttissues' {input.leafTissues}
+        fi
+
+        python {params.scripts}/formatting/downsample.py {input.sim_matrix} {input.leafTissues} {wildcards.threshold} {params.threads} {params.outprefix}
+        """
+
+
+rule prepMetastabayesInputs:
+    input:
+        downsampledSimMatrix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_char_matrix.tsv",
+        downsampledLeafTissues = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_tissue_labels.tsv",
+    output:
+        fasta = "{outdir}/metastabayes/{sim}_{threshold}/{sim}.fasta",
+        dates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_tip_tissues.csv",
+    params:
+        scripts = config['scripts'],
+        generations = config['generations'],
+        outputdir = "{outdir}/metastabayes/{sim}_{threshold}"
+    conda:
+        "envs/compare_trees.yaml"
+    shell:
+        """
+        # write tip traits to new csv
+        sed 's/ /,/g' {input.downsampledLeafTissues} > {output.tissues}
+
+        # write date trait
+        sed 's/ /,/g' {input.downsampledLeafTissues} | cut -d',' -f1 | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.downsampledLeafTissues})) > {output.dates}
+
+        # format fasta, re-label mutations sequentially, and get edit rate proportions for new mutation entries
+        {params.scripts}/formatting/format_metastabayes_input_files.py {input.downsampledSimMatrix} {params.outputdir}
+        """
+
+rule runMetastabayes:
+    input:
+        fasta = "{outdir}/metastabayes/{sim}_{threshold}/{sim}.fasta",
+        dates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_date_traits.csv",
+        tissues = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_tip_tissues.csv",
+    output:
+        terminalLog = "{outdir}/metastabayes/{sim}_{threshold}/terminal_{num}.log",
+        metastabayesLog = "{outdir}/metastabayes/{sim}_{threshold}/chain_{num}.log",
+        metastabayesResult = "{outdir}/metastabayes/{sim}_{threshold}/chain_{num}.trees"
+    params:
+        xml = config['xml'],
+        fileDir = "{outdir}/metastabayes/{sim}_{threshold}",
+        metastabayesJar = config['metastabayesJar'],
+        generations = config['generations'],
+        mcmclength = config['mcmcLength'],
+        primaryTissue = config['primaryTissue'],
+        threads = 5
+    shell:
+        """
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {wildcards.outdir}/metastabayes/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
+
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+        numTissueRates=$(( numTissues * (numTissues - 1) ))
+        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
+        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
+        if echo "$unique_tissues" | grep -q -w "{params.primaryTissue}"; then
+            sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+        else
+            sorted_unique_tissues=$unique_tissues
+            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do echo -n "$equalTissueFreqs "; done)
+        fi
+
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
+
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+
+        java -Xmx10g -jar {params.metastabayesJar} \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.sim} \
+        -D fileDir={params.fileDir} \
+        -D generations={params.generations} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D equalTissueFreqs=\"$equalTissueFreqs\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D mcmclength={params.mcmclength} \
+        -D outname=chain_{wildcards.num} \
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
+
+rule combineMetastabayesChains:
+    input:
+        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{sim}_{threshold}/terminal_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir, threshold=wildcards.threshold),
+        metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{sim}_{threshold}/chain_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir, threshold=wildcards.threshold),
+        metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{sim}_{threshold}/chain_{num}.trees", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir, threshold=wildcards.threshold),
+    output:
+        combinedLog = "{outdir}/metastabayes/{sim}_{threshold}/combined.log",
+        combinedTrees = "{outdir}/metastabayes/{sim}_{threshold}/combined.trees"
+    params:
+        logcombiner = config['logcombiner'],
+        essCutoff = config['essCutoff'],
+        treeannotator = config['treeannotator']
+    shell:
+        """
+        # find chains that have converged based on ess threshold specified
+        log_files=""
+        trees_files=""
+        ess_convergences=()
+        for file in {input.metastabayesLogs}; do
+            terminal_log=$(echo $file | sed 's/chain_/terminal_/')
+            
+            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | cut -d' ' -f21 | cut -d'.' -f1)
+            if [[ $ess_convergence -gt {params.essCutoff} ]]; then
+                log_files+="-log $file "
+                trees_file=$(echo $file | sed 's/\.log$/.trees/')
+                trees_files+="-log $trees_file "
+            else
+                echo "$file did not converge, so not including it in the final output"
+            fi
+        done
+
+        # combine logs and trees that passed
+        {params.logcombiner} $log_files -o {output.combinedLog}
+        {params.logcombiner} $trees_files -o {output.combinedTrees}
+        """
+
+rule convertTreePosteriorToGraphPosterior:
+    input:
+        combinedTrees = "{outdir}/metastabayes/{sim}_{threshold}/combined.trees"
+    output:
+        graphPosterior = "{outdir}/metastabayes/{sim}_{threshold}/posterior_prob_graph.csv"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outdir = "{outdir}/metastabayes/{sim}_{threshold}",
+        threads = config['threads']
+    conda:
+        "envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
+        """
+
+rule plotGraphPosterior:
+    input:
+        graphPosterior = "{outdir}/metastabayes/{sim}_{threshold}/posterior_prob_graph.csv"
+    output:
+        probabilityPlot = "{outdir}/metastabayes/{sim}_{threshold}/probability_migration_graph.pdf",
+        thresholdPlot = "{outdir}/metastabayes/{sim}_{threshold}/threshold_70_migration_graph.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outdir = "{outdir}/metastabayes/{sim}_{threshold}"
+    conda:
+        "envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
+        """
+
+# rule plotPrecisionRecall:
+#     input:
+#         # necessary input files so that the rule is triggered after all other rules have finished
+#         trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+#         combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
+#         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
+#     output:
+#         overallPrecisionRecall = f"{outdir}/precision_recall_curve/precision_recall.pdf",
+#         overallF1 = f"{outdir}/precision_recall_curve/f1_score.pdf",
+#     params:
+#         scripts = config['scripts'],
+#         primaryTissue = config['primaryTissue'],
+#         outputdir = outdir + "/precision_recall_curve"
+#     conda:
+#         "envs/matplotlib.yaml"
+#     shell:
+#         """
+#         true_trees=$(echo {input.trueTrees} | tr ' ' ',')
+#         python {params.scripts}/plotting/plot_precision_recall.py $true_trees {params.primaryTissue} {params.outputdir}
+#         """
