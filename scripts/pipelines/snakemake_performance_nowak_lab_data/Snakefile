@@ -35,6 +35,8 @@ rule all:
                 cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
                 
 
 rule runEvotracer:
@@ -380,3 +382,51 @@ rule plotGraphPosterior:
         """
         python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
         """
+
+rule runMachina:
+    input:
+        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
+        tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv",
+    output:
+        machinaResults = "{outdir}/machina/{mouse}/{cp}/machina_results.txt",
+        dotFile = "{outdir}/machina/{mouse}/{cp}/" + f"G-{config['primaryTissue'][mouse]}-R-binarized.dot"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/machina/{cp}",
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = config['threads']
+    conda:
+        "envs/machina.yaml"
+    shell:
+        """
+        # convert csv to tsv for leaf labels
+        tissues="{params.outputdir}/leaf_tissues.tsv"
+        sed 's/,/\t/g' {input.tissues} > $tissues
+
+        # prep machina inputs
+        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} $tissues
+
+        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
+        module load EBModules
+        module load Gurobi
+
+        # run machina
+        {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
+        """
+
+rule plotMachinaMigrationGraphs:
+    input:
+        dotFile = lambda wildcards: f"{wildcards.outdir}/machina/{wildcards.mouse}/{wildcards.cp}/G-{config['primaryTissue'][wildcards.mouse]}-R-binarized.dot"
+    output:
+        migrationGraph = "{outdir}/machina/{mouse}/{cp}/migration_graph.pdf"
+    params:
+        outputdir = "{outdir}/machina/{mouse}/{cp}",
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        scripts = config['scripts']
+    conda:
+        "envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_migration_graph_from_dot.py {input.dotFile} {params.outputdir}/migration_graph.pdf
+        """
+

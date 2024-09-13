@@ -4,6 +4,7 @@ export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metasta
 
 snakemake \
 --dry-run \
+--until plotMachinaMigrationGraphs \
 --latency-wait 60 \
 --use-conda \
 --use-singularity \

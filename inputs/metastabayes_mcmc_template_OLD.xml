@@ -55,15 +55,16 @@
 
 <run id="mcmc" spec="MCMC" chainLength="$(mcmclength)">
         <state id="state" spec="State" storeEvery="5000">
-            <stateNode id="tree" spec="metastabayes.tree.MetastabayesStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)"/>
-            <!-- <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="$(generations)" taxa="@alignment" editHeight="$(generations)" editDuration="$(generations)" sequencesAreClustered="false">
+            <!-- <stateNode id="tree" spec="metastabayes.tree.MetastabayesStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)"/> -->
+            <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="$(generations)" taxa="@alignment" editHeight="$(generations)" editDuration="$(generations)" sequencesAreClustered="false">
                 <trait idref="dateTrait"/>
                 <taxonset idref="taxonset"/>
-            </stateNode> -->
+            </stateNode>
             
             <!-- find the definition of the scarring, loss rate and clock rate in the TiDeTree manuscript -->
             <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" dimension="$(numEditRates)">$(initialEditRates)</parameter>
-            <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0001</parameter>
+            <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0</parameter>
+            <!-- <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0001</parameter> -->
             <!-- the clock rate is the rate of acquiring edited state 2  -->
             <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">.0000160000</parameter>
             <!-- the mutation rate could be another rate multiplier, but we leave it fixed to 1 -->
@@ -128,11 +129,11 @@
                 </prior>
 
                 <!-- optional silencing rate prior if silencing is being modeled -->
-                <prior id="silencingRatePrior" name="distribution" x="@silencingRate">
+                <!-- <prior id="silencingRatePrior" name="distribution" x="@silencingRate">
                     <Exponential name="distr">
                         <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.0001</parameter>
                     </Exponential>
-                </prior>
+                </prior> -->
 
                 <prior id="ClockPrior.c" name="distribution" x="@clockRate.c">
                     <Exponential name="distr">
@@ -220,7 +221,7 @@
     <!-- operator on edit probabilities while keeping their sum fixed to 1 -->
     <operator id="editRateScaler" spec="DeltaExchangeOperator" parameter="@editRate" weight="3.0"/>
     <operator id="clockRateScaler" spec="ScaleOperator" parameter="@clockRate.c" scaleFactor="0.8" weight="3.0"/>
-    <operator id="silencingRateScaler" spec="ScaleOperator" parameter="@silencingRate" scaleFactor="0.8" weight="3.0"/>
+    <!-- <operator id="silencingRateScaler" spec="ScaleOperator" parameter="@silencingRate" scaleFactor="0.8" weight="3.0"/> -->
 
     <!-- operators on phylodynamic parameters -->
     <!-- <operator id="birthRateScaler" spec="ScaleOperator" parameter="@birthRate" scaleFactor="0.8" weight="3.0"/>

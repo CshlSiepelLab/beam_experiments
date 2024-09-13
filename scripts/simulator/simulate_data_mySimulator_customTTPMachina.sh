@@ -9,7 +9,7 @@ barcode_simulator_dir="../barcode_simulator/scripts/simulator"
 # echo $model
 
 # set dir to hold all sims
-sim_dir="data/downsampling_test_250_tips_9_10_24"
+sim_dir="data/downsampling_test_150_tips_9_12_24"
 mkdir -p ${sim_dir}
 
 # # make pattern directories
@@ -79,7 +79,7 @@ max_anatomical_sites=-1
 mutFreqThreshold=0.05
 carryingCapacity="5e4"
 driverProb="1e-7"
-num_cells_downsample=250
+num_cells_downsample=100
 
 num_sites=50
 design="RANDOM"
