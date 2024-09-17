@@ -219,7 +219,7 @@ rule runMetastabayes:
 
 #             # only use mcmc chains that have converged since many appear to get lost in the search space
             # ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
-            # if [[ $ess_convergence -gt {params.essCutoff} ]]; then
+            # if (( $(echo "$ess_convergence > {params.essCutoff}" | bc -l) )); then
             #     log_files+="-log $file "
             #     trees_file=$(echo $file | sed 's/\.log$/.trees/')
             #     trees_files+="-log $trees_file "

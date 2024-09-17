@@ -158,7 +158,7 @@ rule combineMetastabayesChains:
             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
             
             ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
-            if [[ $ess_convergence -gt {params.essCutoff} ]]; then
+            if (( $(echo "$ess_convergence > {params.essCutoff}" | bc -l) )); then
                 log_files+="-log $file "
                 trees_file=$(echo $file | sed 's/\.log$/.trees/')
                 trees_files+="-log $trees_file "
