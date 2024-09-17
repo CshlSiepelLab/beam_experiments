@@ -8,7 +8,7 @@ outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/resu
 # outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_9_1_24"
 
 # set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
-threads: 5
+threads: 25
 
 # whether to model dropouts or just consider them as unedited sites
 modelDropouts: true

@@ -50,7 +50,7 @@ rule runEvotracer:
         evoOutDir = "{outdir}/evotracer/{mouse}",
         scripts = config['scripts']
     singularity:
-        'envs/evotracer.sif'
+        '{configenvs}/evotracer.sif'
     shell:
         """
         # make mouse specific temp dir with fastqs
@@ -81,7 +81,7 @@ rule prepMetastabayesInputs:
         threads = config['threads'],
         modelDropouts = config['modelDropouts']
     conda:
-        "envs/pandas.yaml"
+        "../../envs/pandas.yaml"
     shell:
         """
         # prep mutation dictionary
@@ -184,7 +184,7 @@ rule runCassiopeia:
         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
         outputdir = "{outdir}/cassiopeia_greedy/{mouse}/{cp}"
     singularity:
-        "envs/simulate.sif"
+        "../../envs/simulate.sif"
     shell:
         """
         # run cassiopeia greedy
@@ -204,7 +204,7 @@ rule runLAML:
         outputdir = "{outdir}/laml/{mouse}/{cp}",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
     conda:
-        "envs/laml.yaml"
+        "../../envs/laml.yaml"
     shell:
         """
         # copy matrix and replace -1 with ? for missing data
@@ -335,7 +335,7 @@ rule combineMetastabayesChains:
             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
             
             # only use mcmc chains that have converged since many appear to get lost in the search space
-            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | cut -d' ' -f21 | cut -d'.' -f1)
+            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
             if [[ $ess_convergence -gt {params.essCutoff} ]]; then
                 log_files+="-log $file "
                 trees_file=$(echo $file | sed 's/\.log$/.trees/')
@@ -360,7 +360,7 @@ rule convertTreePosteriorToGraphPosterior:
         outdir = "{outdir}/metastabayes/{mouse}/{cp}",
         threads = config['threads']
     conda:
-        "envs/networkx.yaml"
+        "../../envs/networkx.yaml"
     shell:
         """
         python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
@@ -377,41 +377,60 @@ rule plotGraphPosterior:
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         outdir = "{outdir}/metastabayes/{mouse}/{cp}"
     conda:
-        "envs/networkx.yaml"
+        "../../envs/networkx.yaml"
     shell:
         """
         python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
         """
 
-rule runMachina:
+rule prepMachina:
     input:
         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
-        tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv",
+        tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv"
+    output:
+        tissuesTsv = "{outdir}/machina/{mouse}/{cp}/leaf_tissues.tsv",
+        labeling = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
+        colors = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt",
+        tree = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/machina/{mouse}/{cp}",
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+    conda:
+        '../../envs/compare_trees.yaml'
+    shell:
+        """
+        # convert csv to tsv for leaf labels
+        sed 's/,/\\t/g' {input.tissues} > {output.tissuesTsv}
+
+        # prep machina inputs
+        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {output.tissuesTsv}
+        """
+
+rule runMachina:
+    input:
+        tissuesTsv = "{outdir}/machina/{mouse}/{cp}/leaf_tissues.tsv",
+        labeling = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
+        colors = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt",
+        tree = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
     output:
         machinaResults = "{outdir}/machina/{mouse}/{cp}/machina_results.txt",
         dotFile = "{outdir}/machina/{mouse}/{cp}/" + f"G-{config['primaryTissue'][mouse]}-R-binarized.dot"
     params:
         scripts = config['scripts'],
-        outputdir = "{outdir}/machina/{cp}",
+        outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = config['threads']
     conda:
-        "envs/machina.yaml"
+        "../../envs/machina.yaml"
     shell:
         """
-        # convert csv to tsv for leaf labels
-        tissues="{params.outputdir}/leaf_tissues.tsv"
-        sed 's/,/\t/g' {input.tissues} > $tissues
-
-        # prep machina inputs
-        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} $tissues
-
         # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
         module load EBModules
         module load Gurobi
 
         # run machina
-        {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
+        {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
         """
 
 rule plotMachinaMigrationGraphs:
@@ -424,7 +443,7 @@ rule plotMachinaMigrationGraphs:
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         scripts = config['scripts']
     conda:
-        "envs/networkx.yaml"
+        "../../envs/networkx.yaml"
     shell:
         """
         python {params.scripts}/plotting/plot_migration_graph_from_dot.py {input.dotFile} {params.outputdir}/migration_graph.pdf

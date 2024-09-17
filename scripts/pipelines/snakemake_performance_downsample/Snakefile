@@ -41,7 +41,7 @@ rule labelTrueTreeWithTissues:
     params:
         scripts = config['scripts']
     conda:
-        "envs/compare_trees.yaml"
+        "../../envs/compare_trees.yaml"
     shell:
         """
         # run add tissue to newick
@@ -57,7 +57,7 @@ rule plotTrueMigrationGraph:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue']
     conda:
-        "envs/networkx.yaml"
+        "../../envs/networkx.yaml"
     shell:
         """
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
@@ -76,7 +76,7 @@ rule downsampleInputs:
         scripts = config['scripts'],
         threads = config['threads'],
     conda:
-        "envs/networkx.yaml"
+        "../../envs/networkx.yaml"
     shell:
         """
         # add header to leaf tissues
@@ -102,7 +102,7 @@ rule prepMetastabayesInputs:
         generations = config['generations'],
         outputdir = "{outdir}/metastabayes/{sim}_{threshold}"
     conda:
-        "envs/compare_trees.yaml"
+        "../../envs/compare_trees.yaml"
     shell:
         """
         # write tip traits to new csv
@@ -212,7 +212,7 @@ rule combineMetastabayesChains:
         for file in {input.metastabayesLogs}; do
             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
             
-            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | cut -d' ' -f21 | cut -d'.' -f1)
+            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
             if [[ $ess_convergence -gt {params.essCutoff} ]]; then
                 log_files+="-log $file "
                 trees_file=$(echo $file | sed 's/\.log$/.trees/')
@@ -238,7 +238,7 @@ rule convertTreePosteriorToGraphPosterior:
         outdir = "{outdir}/metastabayes/{sim}_{threshold}",
         threads = config['threads']
     conda:
-        "envs/networkx.yaml"
+        "../../envs/networkx.yaml"
     shell:
         """
         python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
@@ -255,7 +255,7 @@ rule plotGraphPosterior:
         primaryTissue = config['primaryTissue'],
         outdir = "{outdir}/metastabayes/{sim}_{threshold}"
     conda:
-        "envs/networkx.yaml"
+        "../../envs/networkx.yaml"
     shell:
         """
         python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
@@ -275,7 +275,7 @@ rule plotGraphPosterior:
 #         primaryTissue = config['primaryTissue'],
 #         outputdir = outdir + "/precision_recall_curve"
 #     conda:
-#         "envs/matplotlib.yaml"
+#         "../../envs/matplotlib.yaml"
 #     shell:
 #         """
 #         true_trees=$(echo {input.trueTrees} | tr ' ' ',')

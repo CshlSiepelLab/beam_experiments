@@ -1,5 +1,5 @@
 __default__:
-  cores: 5
+  cores: 25
   mem: '2G'
   logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
   logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'

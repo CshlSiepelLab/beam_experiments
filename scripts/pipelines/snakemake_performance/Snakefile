@@ -48,7 +48,7 @@ rule prepMetastabayesInputs:
         generations = config['generations'],
         outputdir = "{outdir}/metastabayes/{sim}"
     conda:
-        "envs/compare_trees.yaml"
+        "../../envs/compare_trees.yaml"
     shell:
         """
         # write tip traits to new csv
@@ -157,7 +157,7 @@ rule combineMetastabayesChains:
         for file in {input.metastabayesLogs}; do
             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
             
-            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | cut -d' ' -f21 | cut -d'.' -f1)
+            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
             if [[ $ess_convergence -gt {params.essCutoff} ]]; then
                 log_files+="-log $file "
                 trees_file=$(echo $file | sed 's/\.log$/.trees/')
@@ -183,7 +183,7 @@ rule convertTreePosteriorToGraphPosterior:
         outdir = "{outdir}/metastabayes/{sim}",
         threads = config['threads']
     conda:
-        "envs/networkx.yaml"
+        "../../envs/networkx.yaml"
     shell:
         """
         python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
@@ -200,7 +200,7 @@ rule plotGraphPosterior:
         primaryTissue = config['primaryTissue'],
         outdir = "{outdir}/metastabayes/{sim}"
     conda:
-        "envs/networkx.yaml"
+        "../../envs/networkx.yaml"
     shell:
         """
         python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
@@ -216,7 +216,7 @@ rule runCassiopeia:
         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
         outputdir = "{outdir}/cassiopeia_greedy/{sim}"
     singularity:
-        "envs/simulate.sif"
+        "../../envs/simulate.sif"
     shell:
         """
         # run cassiopeia greedy
@@ -234,7 +234,7 @@ rule runLAML:
     params:
         outputdir = "{outdir}/laml/{sim}"
     conda:
-        "envs/laml.yaml"
+        "../../envs/laml.yaml"
     shell:
         """
         # copy sim matrix and replace -1 with ? for missing data
@@ -269,7 +269,7 @@ rule runRandomAndConsensusTissueInference:
         scripts = config['scripts'],
         outputdir = "{outdir}/random_consensus_tissue_inference/{sim}"
     conda:
-        "envs/compare_trees.yaml"
+        "../../envs/compare_trees.yaml"
     shell:
         """
         python {params.scripts}/consensus_random/consensus_random_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
@@ -289,7 +289,7 @@ rule runMachina:
         primaryTissue = config['primaryTissue'],
         threads = config['threads']
     conda:
-        "envs/machina.yaml"
+        "../../envs/machina.yaml"
     shell:
         """
         echo {input.leafTissues}
@@ -314,7 +314,7 @@ rule processMachinaResults:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{sim}"
     singularity:
-        "envs/simulate.sif"
+        "../../envs/simulate.sif"
     shell:
         """
         python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
@@ -332,7 +332,7 @@ rule prepMetient:
         scripts = config['scripts'],
         outputdir = "{outdir}/metient/{sim}"
     conda:
-        "envs/compare_trees.yaml"
+        "../../envs/compare_trees.yaml"
     shell:
         """
         # format tsv file and edge list
@@ -350,7 +350,7 @@ rule runMetient:
         primaryTissue = config['primaryTissue'],
         outputdir = "{outdir}/metient/{sim}"
     singularity:
-        "envs/metient.sif"
+        "../../envs/metient.sif"
     shell:
         """
         python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.sim} {params.primaryTissue} {params.outputdir}
@@ -368,7 +368,7 @@ rule prepPathfinder:
         scripts = config['scripts'],
         outputdir = "{outdir}/pathfinder/{sim}"
     conda:
-        "envs/compare_trees.yaml"
+        "../../envs/compare_trees.yaml"
     shell:
         """
         python {params.scripts}/pathfinder/format_pathfinder.py {input.leafTissues} {input.sim_matrix} {params.outputdir}
@@ -385,7 +385,7 @@ rule runPathfinder:
         primaryTissue = config['primaryTissue'],
         scripts = config['scripts'],
     singularity:
-        "envs/pathfinder.sif"
+        "../../envs/pathfinder.sif"
     shell:
         """
         python {params.scripts}/pathfinder/pathfinder.py {input.pathfinderFasta} {input.pathfinderTissues} --primary {params.primaryTissue} -o {params.outputdir} --relax_threshold --scripts {params.scripts}/pathfinder --verbosity 4
@@ -401,7 +401,7 @@ rule labelTrueTreeWithTissues:
     params:
         scripts = config['scripts']
     conda:
-        "envs/compare_trees.yaml"
+        "../../envs/compare_trees.yaml"
     shell:
         """
         # run add tissue to newick
@@ -417,7 +417,7 @@ rule plotTrueMigrationGraph:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue']
     conda:
-        "envs/networkx.yaml"
+        "../../envs/networkx.yaml"
     shell:
         """
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
@@ -444,7 +444,7 @@ rule plotPrecisionRecall:
         primaryTissue = config['primaryTissue'],
         outputdir = outdir + "/precision_recall_curve"
     conda:
-        "envs/matplotlib.yaml"
+        "../../envs/matplotlib.yaml"
     shell:
         """
         true_trees=$(echo {input.trueTrees} | tr ' ' ',')

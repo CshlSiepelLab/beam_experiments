@@ -32,7 +32,7 @@ rule prepMetastabayesInputs:
         threads = config['threads'],
         modelDropouts = config['modelDropouts']
     conda:
-        "envs/pandas.yaml"
+        "../../envs/pandas.yaml"
     shell:
         """
         # expand clones found in multiple tissues to separate entries
@@ -78,7 +78,7 @@ rule runCassiopeia:
         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
         outputdir = "{outdir}/cassiopeia_greedy/{mouse}"
     singularity:
-        "envs/simulate.sif"
+        "../../envs/simulate.sif"
     shell:
         """
         # run cassiopeia greedy
@@ -97,7 +97,7 @@ rule runLAML:
         outputdir = "{outdir}/laml/{mouse}",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
     conda:
-        "envs/laml.yaml"
+        "../../envs/laml.yaml"
     shell:
         """
         # copy matrix and replace -1 with ? for missing data
@@ -218,7 +218,7 @@ rule runMetastabayes:
 #             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
 
 #             # only use mcmc chains that have converged since many appear to get lost in the search space
-            # ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | cut -d' ' -f21 | cut -d'.' -f1)
+            # ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
             # if [[ $ess_convergence -gt {params.essCutoff} ]]; then
             #     log_files+="-log $file "
             #     trees_file=$(echo $file | sed 's/\.log$/.trees/')
