@@ -63,6 +63,15 @@ else
     mkdir ${OUTDIR}
 fi
 
-# for machina with resolving polytomies mode
-MACHINA="pmh_tr"
-${MACHINA} -m 3 -t ${THREADS} -p ${PTISSUE} -c ${COLORS} -o ${OUTDIR} ${EDGES} ${LABELS} &> ${OUTDIR}/machina_results.txt
+# only run machina if PTISSUE is in the labels file
+if grep -q ${PTISSUE} ${LABELS}; then
+    # for machina with resolving polytomies mode
+    MACHINA="pmh_tr"
+    ${MACHINA} -m 3 -t ${THREADS} -p ${PTISSUE} -c ${COLORS} -o ${OUTDIR} ${EDGES} ${LABELS} &> ${OUTDIR}/machina_results.txt
+else
+    echo "Primary tissue ${PTISSUE} not found in the labels file. Exiting!" > ${OUTDIR}/machina_results.txt
+    # output empty migration graph file
+    touch ${OUTDIR}/${PTISSUE}-G-${PTISSUE}-R.dot
+    
+fi
+

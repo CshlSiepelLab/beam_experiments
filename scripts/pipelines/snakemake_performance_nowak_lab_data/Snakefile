@@ -396,8 +396,8 @@ rule prepMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-    conda:
-        '../../envs/compare_trees.yaml'
+    singularity:
+        '../../envs/simulate.sif'
     shell:
         """
         # convert csv to tsv for leaf labels
@@ -415,7 +415,7 @@ rule runMachina:
         tree = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
     output:
         machinaResults = "{outdir}/machina/{mouse}/{cp}/machina_results.txt",
-        dotFile = "{outdir}/machina/{mouse}/{cp}/" + f"G-{config['primaryTissue'][mouse]}-R-binarized.dot"
+        dotFile = "{outdir}/machina/{mouse}/{cp}/" + f"{config['primaryTissue'][mouse]}-G-{config['primaryTissue'][mouse]}-R.dot"
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
@@ -435,7 +435,7 @@ rule runMachina:
 
 rule plotMachinaMigrationGraphs:
     input:
-        dotFile = lambda wildcards: f"{wildcards.outdir}/machina/{wildcards.mouse}/{wildcards.cp}/G-{config['primaryTissue'][wildcards.mouse]}-R-binarized.dot"
+        dotFile = "{outdir}/machina/{mouse}/{cp}/" + f"{config['primaryTissue'][mouse]}-G-{config['primaryTissue'][mouse]}-R.dot"
     output:
         migrationGraph = "{outdir}/machina/{mouse}/{cp}/migration_graph.pdf"
     params:
