@@ -3,9 +3,8 @@
 export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_performance_nowak_lab_data
 
 snakemake \
---dry-run \
---until plotMachinaMigrationGraphs \
---latency-wait 60 \
+--until runEvotracer \
+--latency-wait 180 \
 --use-conda \
 --use-singularity \
 --singularity-args "--bind $HOME/" \

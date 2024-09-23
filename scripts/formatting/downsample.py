@@ -36,7 +36,7 @@ outprefix = sys.argv[5]
 
 # read in data
 char_matrix_original = pd.read_csv(char_matrix_file, sep='\t', index_col=0)
-tissue_labels_original = pd.read_csv(tissue_labels_file, sep='\s+', index_col=0)
+tissue_labels_original = pd.read_csv(tissue_labels_file, sep=r'\s+', index_col=0)
 
 # remove any clones with more than one tissue label, which by default are informative and should be kept
 tissue_labels = tissue_labels_original[tissue_labels_original['tissues'].str.contains(',', na=False) == False]

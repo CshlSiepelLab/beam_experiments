@@ -24,19 +24,19 @@ def get_elements_from_file(path):
 rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
-        expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
-        [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
-               cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/combined.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
+        # [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
+        #        cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        # [expand("{outdir}/metastabayes/{mouse}/{cp}/combined.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
                 
 
 rule runEvotracer:
@@ -48,9 +48,10 @@ rule runEvotracer:
         mut_dict = "{outdir}/evotracer/{mouse}/asv_analysis/mutation_profile_map.csv",
     params:
         evoOutDir = "{outdir}/evotracer/{mouse}",
-        scripts = config['scripts']
+        scripts = config['scripts'],
+        threads = 5
     singularity:
-        '{configenvs}/evotracer.sif'
+        '../../envs/evotracer.sif'
     shell:
         """
         # make mouse specific temp dir with fastqs
@@ -78,8 +79,8 @@ rule prepMetastabayesInputs:
         outdir = "{outdir}/metastabayes/{mouse}",
         scripts = config['scripts'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        threads = config['threads'],
-        modelDropouts = config['modelDropouts']
+        modelDropouts = config['modelDropouts'],
+        threads = 1
     conda:
         "../../envs/pandas.yaml"
     shell:
@@ -182,7 +183,8 @@ rule runCassiopeia:
         "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
     params:
         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
-        outputdir = "{outdir}/cassiopeia_greedy/{mouse}/{cp}"
+        outputdir = "{outdir}/cassiopeia_greedy/{mouse}/{cp}",
+        threads = 5
     singularity:
         "../../envs/simulate.sif"
     shell:
@@ -203,6 +205,7 @@ rule runLAML:
     params:
         outputdir = "{outdir}/laml/{mouse}/{cp}",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        threads = 25
     conda:
         "../../envs/laml.yaml"
     shell:
@@ -236,7 +239,7 @@ rule runMetastabayes:
         metastabayesJar = config['metastabayesJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = config['threads']
+        threads = 5
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -324,7 +327,7 @@ rule combineMetastabayesChains:
     params:
         logcombiner = config['logcombiner'],
         essCutoff = config['essCutoff'],
-        threads = config['threads']
+        threads = 1
     shell:
         """
         # find chains that have converged based on ess threshold specified
@@ -358,7 +361,7 @@ rule convertTreePosteriorToGraphPosterior:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         outdir = "{outdir}/metastabayes/{mouse}/{cp}",
-        threads = config['threads']
+        threads = 1
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -375,7 +378,8 @@ rule plotGraphPosterior:
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        outdir = "{outdir}/metastabayes/{mouse}/{cp}"
+        outdir = "{outdir}/metastabayes/{mouse}/{cp}",
+        threads = 1
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -396,6 +400,7 @@ rule prepMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = 1
     singularity:
         '../../envs/simulate.sif'
     shell:
@@ -420,7 +425,7 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = config['threads']
+        threads = 150
     conda:
         "../../envs/machina.yaml"
     shell:
@@ -441,11 +446,52 @@ rule plotMachinaMigrationGraphs:
     params:
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        scripts = config['scripts']
+        scripts = config['scripts'],
+        threads = 1
     conda:
         "../../envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/plotting/plot_migration_graph_from_dot.py {input.dotFile} {params.outputdir}/migration_graph.pdf
+        # if machina did not run due to no primary tissue, then create an empty file to satisfy snakemake
+        if [ ! -s {input.dotFile} ]; then
+            touch {output.migrationGraph}
+        else
+            python {params.scripts}/plotting/plot_migration_graph_from_dot.py {input.dotFile} {params.outputdir}/migration_graph.pdf
+        fi
         """
 
+rule prepMetient:
+    input:
+        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
+        tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv"
+    output:
+        metientTree = "{outdir}/metient/{mouse}/{cp}/tree.txt",
+        metientTsv = "{outdir}/metient/{mouse}/{cp}/metadata.tsv"
+    params:
+        primaryTissue = config['primaryTissue'],
+        scripts = config['scripts'],
+        outputdir = "{outdir}/metient/{mouse}/{cp}"
+    conda:
+        "../../envs/compare_trees.yaml"
+    shell:
+        """
+        # format tsv file and edge list
+        python {params.scripts}/metient/format_metient.py {input.lamlTree} {input.tissues} {params.primaryTissue} {params.outputdir}
+        """
+
+rule runMetient:
+    input:
+        metientTree = "{outdir}/metient/{mouse}/{cp}/tree.txt",
+        metientTsv = "{outdir}/metient/{mouse}/{cp}/metadata.tsv"
+    output:
+        metientResults = "{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt",
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outputdir = "{outdir}/metient/{mouse}/{cp}"
+    singularity:
+        "../../envs/metient.sif"
+    shell:
+        """
+        python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.mouse}_{wildcards.cp} {params.primaryTissue} {params.outputdir}
+        """

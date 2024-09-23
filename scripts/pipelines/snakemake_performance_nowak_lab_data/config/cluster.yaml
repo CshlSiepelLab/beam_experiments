@@ -1,11 +1,8 @@
 __default__:
-  cores: 25
-  mem: '2G'
+  cores: '{params.threads}'
+  mem: '5G'
   logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
   logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
-  runtime: 168:00:00  # timelimit for each job in hours:minutes:seconds
-
-runLAML:
-  cores: 25
+  runtime: '336:00:00'  # timelimit for each job in hours:minutes:seconds
 
   

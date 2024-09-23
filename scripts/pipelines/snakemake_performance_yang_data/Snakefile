@@ -15,10 +15,34 @@ rule all:
         expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", mouse=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
         # expand("{outdir}/metastabayes/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir)
 
-rule prepMetastabayesInputs:
+rule downsampleInputs:
     input:
         matrix = os.path.join(config['inputpath'], "{mouse}_successive_char_matrix_collapsed.txt"),
         leafTissues = os.path.join(config['inputpath'], "{mouse}_successive_char_matrix_collapsing_dict.txt"),
+    output:
+        downsampledSimMatrix = "{outdir}/downsampled_data/{mouse}/downsampled_char_matrix.tsv",
+        downsampledLeafTissues = "{outdir}/downsampled_data/{mouse}/downsampled_tissue_labels.tsv",
+    params:
+        outprefix = "{outdir}/downsampled_data/{mouse}/downsampled",
+        scripts = config['scripts'],
+        threads = config['threads'],
+        threshold = config['downsample_threshold']
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        # add header to leaf tissues
+        if ! grep -q "tissues" {input.leafTissues}; then
+            sed -i '1i group_name\ttissues' {input.leafTissues}
+        fi
+
+        python {params.scripts}/formatting/downsample.py {input.matrix} {input.leafTissues} {params.threshold} {params.threads} {params.outprefix}
+        """
+
+rule prepMetastabayesInputs:
+    input:
+        downsampledSimMatrix = "{outdir}/downsampled_data/{mouse}/downsampled_char_matrix.tsv",
+        downsampledLeafTissues = "{outdir}/downsampled_data/{mouse}/downsampled_tissue_labels.tsv",
     output:
         fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
         dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
@@ -30,13 +54,13 @@ rule prepMetastabayesInputs:
         scripts = config['scripts'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         threads = config['threads'],
-        modelDropouts = config['modelDropouts']
+        modelDropouts = config['modelDropouts'],
     conda:
         "../../envs/pandas.yaml"
     shell:
         """
         # expand clones found in multiple tissues to separate entries
-        python {params.scripts}/formatting/expand_clones_multiple_tissues.py {input.matrix} {input.leafTissues} {params.outdir}
+        python {params.scripts}/formatting/expand_clones_multiple_tissues.py {input.downsampledSimMatrix} {input.downsampledLeafTissues} {params.outdir}
         matrixFile="{params.outdir}/expanded_clones_matrix.tsv"
         tissuesFile="{params.outdir}/expanded_clones_tissues.tsv"
 
@@ -196,9 +220,9 @@ rule runMetastabayes:
 
 # rule combineMetastabayesChains:
 #     input:
-        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-        metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-        metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.trees", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        # terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        # metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        # metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.trees", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
 #     output:
 #         combinedLog = "{outdir}/metastabayes/{mouse}/combined.log",
 #         combinedTrees = "{outdir}/metastabayes/{mouse}/combined.trees",

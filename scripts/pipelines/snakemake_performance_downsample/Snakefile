@@ -260,24 +260,3 @@ rule plotGraphPosterior:
         """
         python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
         """
-
-# rule plotPrecisionRecall:
-#     input:
-#         # necessary input files so that the rule is triggered after all other rules have finished
-#         trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
-#         combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
-#         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
-#     output:
-#         overallPrecisionRecall = f"{outdir}/precision_recall_curve/precision_recall.pdf",
-#         overallF1 = f"{outdir}/precision_recall_curve/f1_score.pdf",
-#     params:
-#         scripts = config['scripts'],
-#         primaryTissue = config['primaryTissue'],
-#         outputdir = outdir + "/precision_recall_curve"
-#     conda:
-#         "../../envs/matplotlib.yaml"
-#     shell:
-#         """
-#         true_trees=$(echo {input.trueTrees} | tr ' ' ',')
-#         python {params.scripts}/plotting/plot_precision_recall.py $true_trees {params.primaryTissue} {params.outputdir}
-#         """
