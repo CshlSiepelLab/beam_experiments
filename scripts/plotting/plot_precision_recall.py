@@ -15,6 +15,7 @@ from copy import deepcopy
 from arviz import hdi
 import glob
 import ast
+import pdb
 
 def get_migration_counts(tree):
     migration_counts = {}
@@ -145,23 +146,23 @@ def calculate_metrics(true_counts, inferred_counts):
 
 def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, i):
     # calculate total counts weighted by posterior probability
-        post_prob_precision = 0
-        post_prob_recall = 0
-        post_prob_f1 = 0
-        total_counts = {}
-        for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
-            for pattern, count in inferred_counts.items():
-                for num in range(1, count+1):
-                    edge = f"{pattern}_{num}"
-                    if edge not in total_counts:
-                        total_counts[edge] = prob
-                    else:
-                        total_counts[edge] += prob
-            # get posterior prob weighted precision, recall, and f1
-            f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
-            post_prob_precision += prob * precision
-            post_prob_recall += prob * recall
-            post_prob_f1 += prob * f1
+    post_prob_precision = 0
+    post_prob_recall = 0
+    post_prob_f1 = 0
+    total_counts = {}
+    for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
+        for pattern, count in inferred_counts.items():
+            for num in range(1, count+1):
+                edge = f"{pattern}_{num}"
+                if edge not in total_counts:
+                    total_counts[edge] = prob
+                else:
+                    total_counts[edge] += prob
+        # get posterior prob weighted precision, recall, and f1
+        f1, recall, precision = calculate_metrics(true_counts, inferred_counts)
+        post_prob_precision += prob * precision
+        post_prob_recall += prob * recall
+        post_prob_f1 += prob * f1
 
         # compute thresholded precision and recall values
         max_threshold = max(list(total_counts.values()))
@@ -180,10 +181,15 @@ def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_count
             rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i, 'thresh_counts': thresh_counts})
         thresh_prec_rec = pd.DataFrame(rows)
 
-        # use the 50% posterior thresholded values as the final precision, recall, and f1 instead of the full posterior weighted values
-        threshold_fifty_df = thresh_prec_rec[thresh_prec_rec['Threshold'] == 0.5]
-        post_prob_precision = threshold_fifty_df['precision'].values[0]
-        post_prob_recall = threshold_fifty_df['recall'].values[0]
+        # use the 70% posterior thresholded values as the final precision, recall, and f1 instead of the full posterior weighted values
+        t = 0.7
+        # check that the max for the data is not below the threshold for the consensus graph
+        if max_threshold < t:
+            t = np.floor(max_threshold * 100) / 100
+        tolerance = 1e-9
+        threshold_df = thresh_prec_rec[np.isclose(thresh_prec_rec['Threshold'], t, atol=tolerance)]
+        post_prob_precision = threshold_df['precision'].values[0]
+        post_prob_recall = threshold_df['recall'].values[0]
         post_prob_f1 = 2 * ((post_prob_precision * post_prob_recall) / (post_prob_precision + post_prob_recall))
 
         return thresh_prec_rec, rows, total_counts, post_prob_f1, post_prob_recall, post_prob_precision

@@ -5,6 +5,17 @@ import pandas as pd
 import numpy as np
 from ete3 import Tree
 
+def get_sep(file):
+    with open(file, "r") as f:
+        line = f.readline()
+        if "\t" in line:
+            sep = "\t"
+        elif "," in line:
+            sep = ","
+        else:
+            sep = " "
+    return sep
+
 def get_site_category(label):
     site_category = ""
     if label == primary_tissue:
@@ -60,7 +71,7 @@ edges.to_csv(f"{outdir}/tree.txt", sep=" ", index=False, header=False)
 
 
 # read in tissues and format metadata tsv
-tissues_df = pd.read_csv(tissues, sep=" ", names=["id", "tissue"])
+tissues_df = pd.read_csv(tissues, sep=get_sep(tissues), names=["id", "tissue"])
 tissues_dict = dict(zip(tissues_df["id"].astype(str), tissues_df["tissue"].astype(str)))
 unique_tissues = set(tissues_dict.values())
 if primary_tissue not in unique_tissues:

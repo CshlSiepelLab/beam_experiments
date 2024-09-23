@@ -24,19 +24,21 @@ def get_elements_from_file(path):
 rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
-        # expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
-        # [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
-        #        cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
-        # [expand("{outdir}/metastabayes/{mouse}/{cp}/combined.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
+        [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
+               cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        [expand("{outdir}/metastabayes/{mouse}/{cp}/combined.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice]
                 
 
 rule runEvotracer:
@@ -425,7 +427,7 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 150
+        threads = 25
     conda:
         "../../envs/machina.yaml"
     shell:
@@ -465,18 +467,29 @@ rule prepMetient:
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
         tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv"
     output:
+        lamlTreeNoOrigin = "{outdir}/metient/{mouse}/{cp}/laml_tree_no_origin.txt",
         metientTree = "{outdir}/metient/{mouse}/{cp}/tree.txt",
         metientTsv = "{outdir}/metient/{mouse}/{cp}/metadata.tsv"
     params:
-        primaryTissue = config['primaryTissue'],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         scripts = config['scripts'],
-        outputdir = "{outdir}/metient/{mouse}/{cp}"
+        outputdir = "{outdir}/metient/{mouse}/{cp}",
+        threads = 1
     conda:
         "../../envs/compare_trees.yaml"
     shell:
         """
+        # remove fake root from tree
+        fixed_newick=$(sed "s/);//g" {input.lamlTree})
+        fixed_newick="${{fixed_newick:1}});"
+        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
+        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
+        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
+        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
+        echo "$modified_newick" > {output.lamlTreeNoOrigin}
+
         # format tsv file and edge list
-        python {params.scripts}/metient/format_metient.py {input.lamlTree} {input.tissues} {params.primaryTissue} {params.outputdir}
+        python {params.scripts}/metient/format_metient.py {output.lamlTreeNoOrigin} {input.tissues} {params.primaryTissue} {params.outputdir}
         """
 
 rule runMetient:
@@ -487,11 +500,18 @@ rule runMetient:
         metientResults = "{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt",
     params:
         scripts = config['scripts'],
-        primaryTissue = config['primaryTissue'],
-        outputdir = "{outdir}/metient/{mouse}/{cp}"
+        outputdir = "{outdir}/metient/{mouse}/{cp}",
+        threads = 25
     singularity:
         "../../envs/metient.sif"
     shell:
         """
-        python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.mouse}_{wildcards.cp} {params.primaryTissue} {params.outputdir}
+        # check to make sure there is atleast one metastasis site in the CP
+        sites=$(tail -n +2 {input.metientTsv} | cut -f6 | sort | uniq | tr '\\n' ' ')
+        if echo "$sites" | grep -qw "metastasis"; then
+            python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.mouse}_{wildcards.cp} {wildcards.primaryTissue} {params.outputdir}
+        else
+            echo "No metastasis site, so not running metient"
+            touch {output.metientResults}
+        fi
         """
