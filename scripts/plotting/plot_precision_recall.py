@@ -164,35 +164,34 @@ def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_count
         post_prob_recall += prob * recall
         post_prob_f1 += prob * f1
 
-        # compute thresholded precision and recall values
-        max_threshold = max(list(total_counts.values()))
-        thresholds = [i for i in np.arange(0, max_threshold, 0.01)]
-        rows = []
-        for thresh in thresholds:
-            thresh_counts = {key: value for key, value in total_counts.items() if value > thresh}
-            edges = ['_'.join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
-            thresh_counts = {}
-            for edge in edges:
-                if edge not in thresh_counts:
-                    thresh_counts[edge] = 1
-                else:
-                    thresh_counts[edge] += 1
-            f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
-            rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i, 'thresh_counts': thresh_counts})
-        thresh_prec_rec = pd.DataFrame(rows)
+    # compute thresholded precision and recall values
+    max_threshold = max(map(float, total_counts.values()))
+    thresholds = [i for i in np.arange(0, max_threshold, 0.01)]
+    rows = []
+    for thresh in thresholds:
+        thresh_counts = {key: value for key, value in total_counts.items() if value > thresh}
+        edges = ['_'.join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
+        thresh_counts = {}
+        for edge in edges:
+            if edge not in thresh_counts:
+                thresh_counts[edge] = 1
+            else:
+                thresh_counts[edge] += 1
+        f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
+        rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i, 'thresh_counts': thresh_counts})
+    thresh_prec_rec = pd.DataFrame(rows)
 
-        # use the 70% posterior thresholded values as the final precision, recall, and f1 instead of the full posterior weighted values
-        t = 0.7
-        # check that the max for the data is not below the threshold for the consensus graph
-        if max_threshold < t:
-            t = np.floor(max_threshold * 100) / 100
-        tolerance = 1e-9
-        threshold_df = thresh_prec_rec[np.isclose(thresh_prec_rec['Threshold'], t, atol=tolerance)]
-        post_prob_precision = threshold_df['precision'].values[0]
-        post_prob_recall = threshold_df['recall'].values[0]
-        post_prob_f1 = 2 * ((post_prob_precision * post_prob_recall) / (post_prob_precision + post_prob_recall))
+    # use the 70% posterior thresholded values as the final precision, recall, and f1 instead of the full posterior weighted values
+    t = 0.70
+    # check that the max for the data is not below the threshold for the consensus graph
+    if max_threshold < t:
+        t = np.floor(max_threshold * 100) / 100
+    threshold_df = thresh_prec_rec[np.isclose(thresh_prec_rec['Threshold'], t)]
+    post_prob_precision = threshold_df['precision'].values[0]
+    post_prob_recall = threshold_df['recall'].values[0]
+    post_prob_f1 = 2 * ((post_prob_precision * post_prob_recall) / (post_prob_precision + post_prob_recall))
 
-        return thresh_prec_rec, rows, total_counts, post_prob_f1, post_prob_recall, post_prob_precision
+    return thresh_prec_rec, rows, total_counts, post_prob_f1, post_prob_recall, post_prob_precision
 
 # user inputs
 dirs = (sys.argv[1]).split(",")
