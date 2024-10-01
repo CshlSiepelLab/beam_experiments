@@ -43,13 +43,13 @@ tissue_labels = tissue_labels_original[tissue_labels_original['tissues'].str.con
 char_matrix = char_matrix_original.loc[tissue_labels.index]
 
 # Do not include missing data
-char_matrix = char_matrix.replace(-1, 0)
+char_matrix_no_missing = char_matrix.replace(-1, 0)
 
 # Compute pairwise distances between rows
-distance_matrix = pd.DataFrame(index=char_matrix.index, columns=char_matrix.index)
+distance_matrix = pd.DataFrame(index=char_matrix_no_missing.index, columns=char_matrix_no_missing.index)
 
 pool = Pool(processes=cores)
-output = pool.map(compute_distance, [(i, j) for i in char_matrix.index for j in char_matrix.index])
+output = pool.map(compute_distance, [(i, j) for i in char_matrix_no_missing.index for j in char_matrix_no_missing.index])
 pool.close()
 pool.join()
 
@@ -64,7 +64,7 @@ clone_tissues = {}
 for clone in tissue_labels.index:
     clone_tissues[clone] = tissue_labels.loc[clone, 'tissues'].split(",")
 
-print("Initial number of clones: ", len(char_matrix.index))
+print("Initial number of clones: ", len(char_matrix_no_missing.index))
 
 filtered_clones = []
 for tissue in tissues:
@@ -90,5 +90,6 @@ print("Filtered number of clones: ", len(char_matrix_filtered.index))
 
 # write to files
 char_matrix_filtered.to_csv(outprefix + "_char_matrix.tsv", sep='\t')
-tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep=',', header=False)
+# tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep=',', header=False)  # for sim data
+tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep='\t', header=True) # for yang data
 
