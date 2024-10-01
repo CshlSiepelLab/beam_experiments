@@ -12,6 +12,9 @@ def jaccard_distance(set1, set2):
 
     # Unions of two sets
     union = set1.union(set2)
+
+    if len(union) == 0:
+        return 1
      
     return len(Symmetric_difference)/len(union)
 
