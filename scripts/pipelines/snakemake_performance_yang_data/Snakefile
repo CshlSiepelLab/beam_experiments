@@ -13,7 +13,8 @@ outdir = config['outdir']
 rule all:
     input:
         expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", mouse=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
-        # expand("{outdir}/metastabayes/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir)
+        expand("{outdir}/metastabayes/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir),
+        expand("{outdir}/metastabayes/{mouse}/threshold_70_migration_graph.pdf", mouse=mouse_ids, outdir=outdir)
 
 rule downsampleInputs:
     input:
@@ -26,7 +27,7 @@ rule downsampleInputs:
         outprefix = "{outdir}/downsampled_data/{mouse}/downsampled",
         scripts = config['scripts'],
         threads = config['threads'],
-        threshold = config['downsample_threshold']
+        threshold = lambda wildcards: config['downsample_threshold'][wildcards.mouse]
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -65,21 +66,21 @@ rule prepMetastabayesInputs:
         tissuesFile="{params.outdir}/expanded_clones_tissues.tsv"
 
         # write tip traits to new csv
-        tail -n +2 $tissuesFile | grep -v '^$' | cut -f1,2 | tr '\t' ',' > {output.tissues}
+        tail -n +2 $tissuesFile | grep -v '^$' | cut -f1,2 | tr '\\t' ',' > {output.tissues}
 
         # write date trait
         tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > {output.dates}
 
         # get edit rate proportions for new mutation entries, relative to the first edit as 1.0 frequency
-        all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\t' ' ' | tr '\n' ' ')
-        total_count=$( echo $all_muts | tr ' ' '\n' | grep -wv "0" | wc -l )
-        uniq_count=$( echo $all_muts | tr ' ' '\n' | sort | uniq | grep -wv "0" | wc -l )
-        count_1=$( echo $all_muts | tr ' ' '\n' | grep -wc "1" )
+        all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\\t' ' ' | tr '\\n' ' ')
+        total_count=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
+        uniq_count=$( echo $all_muts | tr ' ' '\\n' | sort | uniq | grep -wv "0" | wc -l )
+        count_1=$( echo $all_muts | tr ' ' '\\n' | grep -wc "1" )
 
         for element in $(seq 1 $uniq_count); do
-            count=$(echo "$all_muts" | tr ' ' '\n' | grep -wc "$element")
+            count=$(echo "$all_muts" | tr ' ' '\\n' | grep -wc "$element")
             proportion=$(bc <<< "scale=10; $count / $count_1")
-            echo -e "$proportion\t" >> {output.editRateProportions}
+            echo -e "$proportion\\t" >> {output.editRateProportions}
         done
 
         # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
@@ -218,44 +219,92 @@ rule runMetastabayes:
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
-# rule combineMetastabayesChains:
-#     input:
-        # terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-        # metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-        # metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.trees", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-#     output:
-#         combinedLog = "{outdir}/metastabayes/{mouse}/combined.log",
-#         combinedTrees = "{outdir}/metastabayes/{mouse}/combined.trees",
-#         combinedMCC = "{outdir}/metastabayes/{mouse}/combined.ccd0.tree"
-#     params:
-#         logcombiner = config['logcombiner'],
-#         essCutoff = config['essCutoff'],
-#         treeannotator = config['treeannotator'],
-#         threads = config['threads']
-#     shell:
-#         """
-#         # find chains that have converged based on ess threshold specified
-#         log_files=""
-#         trees_files=""
-#         ess_convergences=()
-#         for file in {input.metastabayesLogs}; do
-#             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
+rule combineMetastabayesChains:
+    input:
+        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.trees", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+    output:
+        combinedLog = "{outdir}/metastabayes/{mouse}/combined.log",
+        combinedTrees = "{outdir}/metastabayes/{mouse}/combined.trees",
+    params:
+        logcombiner = config['logcombiner'],
+        essCutoff = config['essCutoff'],
+        treeannotator = config['treeannotator'],
+        threads = config['threads']
+    shell:
+        """
+        # find chains that have converged based on ess threshold specified
+        log_files=""
+        trees_files=""
+        ess_convergences=()
+        for file in {input.metastabayesLogs}; do
+            terminal_log=$(echo $file | sed 's/chain_/terminal_/')
 
-#             # only use mcmc chains that have converged since many appear to get lost in the search space
-            # ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
-            # if (( $(echo "$ess_convergence > {params.essCutoff}" | bc -l) )); then
-            #     log_files+="-log $file "
-            #     trees_file=$(echo $file | sed 's/\.log$/.trees/')
-            #     trees_files+="-log $trees_file "
-            # else
-            #     echo "$file did not converge, so not including it in the final output"
-            # fi
-#         done
+            # only use mcmc chains that have converged since many appear to get lost in the search space
+            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
+            if (( $(echo "$ess_convergence > {params.essCutoff}" | bc -l) )); then
+                log_files+="-log $file "
+                trees_file=$(echo $file | sed 's/\.log$/.trees/')
+                trees_files+="-log $trees_file "
+            else
+                echo "$file did not converge, so not including it in the final output"
+            fi
+        done
 
-#         # combine logs and trees that passed
-#         {params.logcombiner} $log_files -o {output.combinedLog}
-#         {params.logcombiner} $trees_files -o {output.combinedTrees}
+        # combine logs and trees that passed
+        if [ -z "$log_files" ]; then
+            echo "No chains have converged based on the ESS threshold."
+            touch {output.combinedLog}
+            touch {output.combinedTrees}
+        else
+            {params.logcombiner} $log_files -o {output.combinedLog}
+            {params.logcombiner} $trees_files -o {output.combinedTrees}
+        fi
+        """
+    
+rule convertTreePosteriorToGraphPosterior:
+    input:
+        combinedTrees = "{outdir}/metastabayes/{mouse}/combined.trees"
+    output:
+        graphPosterior = "{outdir}/metastabayes/{mouse}/posterior_prob_graph.csv"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outdir = "{outdir}/metastabayes/{mouse}",
+        threads = 1
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """        
+        if [ ! -s {input.combinedTrees} ]; then
+            echo "Combined trees file is empty. Exiting."
+            touch {output.graphPosterior}
+        else
+            python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
+        fi
+        """
 
-#         # # get MCC tree from the combined trees file
-#         {params.treeannotator} -lowMem true -burnin 10 -topology CCD0 -height mean {output.combinedTrees} {output.combinedMCC}
-#         """
+rule plotGraphPosterior:
+    input:
+        graphPosterior = "{outdir}/metastabayes/{mouse}/posterior_prob_graph.csv"
+    output:
+        probabilityPlot = "{outdir}/metastabayes/{mouse}/probability_migration_graph.pdf",
+        thresholdPlot = "{outdir}/metastabayes/{mouse}/threshold_70_migration_graph.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outdir = "{outdir}/metastabayes/{mouse}",
+        threads = 1
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        if [ ! -s {input.graphPosterior} ]; then
+            echo "Graph posterior file is empty. Exiting."
+            touch {output.probabilityPlot}
+            touch {output.thresholdPlot}
+        else
+            python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
+        fi
+        """

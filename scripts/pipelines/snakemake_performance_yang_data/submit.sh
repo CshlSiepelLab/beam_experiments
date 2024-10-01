@@ -4,7 +4,6 @@ export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metasta
 
 snakemake \
 --dry-run \
---until downsampleInputs \
 --use-conda \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
@@ -12,7 +11,7 @@ snakemake \
 --configfile $REPO_PATH/config/config.yaml \
 --printshellcmds \
 --keep-going \
---rerun-incomplete \
+--ignore-incomplete \
 --cores 1 \
 --jobs 500 \
 --latency-wait 300 \
