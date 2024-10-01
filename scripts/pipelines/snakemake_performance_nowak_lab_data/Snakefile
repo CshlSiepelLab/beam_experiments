@@ -25,20 +25,20 @@ rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
         expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
-        # [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
-        #        cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
-        # [expand("{outdir}/metastabayes/{mouse}/{cp}/combined.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice]
+        [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
+               cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        [expand("{outdir}/metastabayes/{mouse}/{cp}/combined.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice]
                 
 
 rule runEvotracer:

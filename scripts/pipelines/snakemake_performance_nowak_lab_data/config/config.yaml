@@ -4,14 +4,15 @@ fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/d
 # fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/billy_bladder_cancer_data_7_1_24/fastq_raw"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampled_asv50_ryan_prostate_cancer_data_10_1_24"
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24"
 # outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_9_1_24"
 
 # whether to model dropouts or just consider them as unedited sites
 modelDropouts: true
 
-# threshold for downsampling (0.0 means no downsampling)
-downsampleThreshold: 0.1
+# threshold for downsampling
+# Note: downsampling is generally useless with the Serio et al. data due to limited mutation content per barcode, so the functionality is here but disabled by default
+downsampleThreshold: 0.0  # Use 0.0 for no downsampling
 
 # primary tissue name
 primaryTissue: 
