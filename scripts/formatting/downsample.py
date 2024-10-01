@@ -17,7 +17,10 @@ def jaccard_distance(set1, set2):
 
 def compute_distance(args):
     i, j = args
-    return i, j, jaccard_distance(set(char_matrix.loc[i]), set(char_matrix.loc[j]))
+    # do not include unedited sites in the comparison, so only compute the distances between the mutation profiles
+    set1 = set([x for x in char_matrix.loc[i] if not x.endswith('_0')])
+    set2 = set([x for x in char_matrix.loc[j] if not x.endswith('_0')])
+    return i, j, jaccard_distance(set1, set2)
 
 
 # inputs
@@ -38,18 +41,24 @@ outprefix = sys.argv[5]
 char_matrix_original = pd.read_csv(char_matrix_file, sep='\t', index_col=0)
 tissue_labels_original = pd.read_csv(tissue_labels_file, sep=r'\s+', index_col=0)
 
+print("Initial number of clones: ", len(char_matrix_original.index))
+
 # remove any clones with more than one tissue label, which by default are informative and should be kept
 tissue_labels = tissue_labels_original[tissue_labels_original['tissues'].str.contains(',', na=False) == False]
 char_matrix = char_matrix_original.loc[tissue_labels.index]
 
 # Do not include missing data
-char_matrix_no_missing = char_matrix.replace(-1, 0)
+char_matrix = char_matrix.replace(-1, 0)
+
+# Make the set comparisons site position aware by appending the site name to each mutation number
+char_matrix = char_matrix.astype(str)
+char_matrix = char_matrix.apply(lambda x: x.name + "_" + x)
 
 # Compute pairwise distances between rows
-distance_matrix = pd.DataFrame(index=char_matrix_no_missing.index, columns=char_matrix_no_missing.index)
+distance_matrix = pd.DataFrame(index=char_matrix.index, columns=char_matrix.index)
 
 pool = Pool(processes=cores)
-output = pool.map(compute_distance, [(i, j) for i in char_matrix_no_missing.index for j in char_matrix_no_missing.index])
+output = pool.map(compute_distance, [(i, j) for i in char_matrix.index for j in char_matrix.index])
 pool.close()
 pool.join()
 
@@ -63,8 +72,6 @@ tissues = list(set([t for tis in tissue_labels['tissues'] for t in tis.split(","
 clone_tissues = {}
 for clone in tissue_labels.index:
     clone_tissues[clone] = tissue_labels.loc[clone, 'tissues'].split(",")
-
-print("Initial number of clones: ", len(char_matrix_no_missing.index))
 
 filtered_clones = []
 for tissue in tissues:
@@ -84,8 +91,8 @@ for tissue in tissues:
                 print(f"Filtering out {remove} from {tissue} because of distance {distance_matrix.loc[i, j]} between {i} and {j}")
 
 # Keep only clones not in filtered clones for both the char-matrix and tissue labels
-char_matrix_filtered = char_matrix.loc[~char_matrix.index.isin(filtered_clones)]
-tissue_labels_filtered = tissue_labels.loc[~tissue_labels.index.isin(filtered_clones)]
+char_matrix_filtered = char_matrix_original.loc[~char_matrix_original.index.isin(filtered_clones)]
+tissue_labels_filtered = tissue_labels_original.loc[~tissue_labels_original.index.isin(filtered_clones)]
 print("Filtered number of clones: ", len(char_matrix_filtered.index))
 
 # write to files
