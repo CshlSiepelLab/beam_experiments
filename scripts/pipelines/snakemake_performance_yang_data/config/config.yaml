@@ -3,22 +3,22 @@
 inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/processed_metadata"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_real_data_9_25_24"
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_real_data_10_1_24"
 
 # set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
 threads: 5
 
 # maximum jaccard distance between two cells from the same tissue to be considered the same cell in the downsampling procedure
 downsample_threshold:
-  3451_Lkb1_T1: 0.15
-  3454_Lkb1_T1: 0.2
+  3451_Lkb1_T1: 0.2
+  3454_Lkb1_T1: 0.25
+  3460_Lkb1_T1: 0.2
+  3515_Lkb1_T1: 0.25
+  3465_Lkb1_T1: 0.1
+  3466_Lkb1_T2: 0.2
+  3519_Lkb1_T1: 0.2
   3457_Apc_T1: 0.1
   3457_Apc_T4: 0.1
-  3460_Lkb1_T1: 0.1
-  3515_Lkb1_T1: 0.2
-  3465_Lkb1_T1: 0.1
-  3466_Lkb1_T2: 0.1
-  3519_Lkb1_T1: 0.1
   3508_Apc_T2: 0.1
   3513_NT_T1: 0.1
   3724_NT_T1: 0.2

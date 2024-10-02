@@ -70,7 +70,6 @@ rule prepMetastabayesInputs:
 
         # write date trait
         tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > {output.dates}
-
         # get edit rate proportions for new mutation entries, relative to the first edit as 1.0 frequency
         all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\\t' ' ' | tr '\\n' ' ')
         total_count=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
@@ -78,9 +77,13 @@ rule prepMetastabayesInputs:
         count_1=$( echo $all_muts | tr ' ' '\\n' | grep -wc "1" )
 
         for element in $(seq 1 $uniq_count); do
-            count=$(echo "$all_muts" | tr ' ' '\\n' | grep -wc "$element")
+            if echo "$all_muts" | tr ' ' '\\n' | grep -qw "$element"; then
+                count=$(echo "$all_muts" | tr ' ' '\\n' | grep -wc "$element")
+            else
+                count=0
+            fi
             proportion=$(bc <<< "scale=10; $count / $count_1")
-            echo -e "$proportion\\t" >> {output.editRateProportions}
+            echo -e "$proportion\t" >> {output.editRateProportions}
         done
 
         # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
@@ -181,7 +184,7 @@ rule runMetastabayes:
             sorted_unique_tissues=$unique_tissues
             tissueRootFreqs=$(for i in $(seq 1 $numTissues); do echo -n "$equalTissueFreqs "; done)
         fi
-
+        
         tissueCodeMap=""
         trailingCodeMap="? = "
         i=0
