@@ -33,7 +33,7 @@ with open(machina, "r") as f:
         else:
             machina_migrations[migration] = 1
         source, recipient = migration.split("_")
-        if not machina_met_to_met and source != primaryTissue:
+        if not machina_met_to_met and source != primaryTissue and recipient != primaryTissue:
             machina_met_to_met = True
         if not machina_reseeding and recipient == primaryTissue:
             machina_reseeding = True
@@ -62,7 +62,7 @@ for key, value in lowest_loss_graph_dict.items():
         else:
             metient_migration_count += int(v)
             metient_comigration_count += 1
-            if not metient_met_to_met and key != primaryTissue:
+            if not metient_met_to_met and key != primaryTissue and k != primaryTissue:
                 metient_met_to_met = True
             if not metient_reseeding and k == primaryTissue:
                 metient_reseeding = True
@@ -87,7 +87,7 @@ for migration in metastabayes_migrations:
         done.append(migration)
 
         s, r = migration.split("_")
-        if not metastabayes_met_to_met and s != primaryTissue:
+        if not metastabayes_met_to_met and s != primaryTissue and r != primaryTissue:
                 metastabayes_met_to_met = True
         if not metastabayes_reseeding and r == primaryTissue:
                 metastabayes_reseeding = True

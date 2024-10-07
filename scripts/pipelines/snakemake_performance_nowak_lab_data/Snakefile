@@ -563,7 +563,7 @@ rule callMigrationComigrationCounts:
 
 rule aggregateMigrationCounts:
     input:
-        migrationCountCsvs = expand("{outdir}/compare_migration_counts/{mouse}_{cp}_migration_counts.csv", mouse=mice, cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), outdir=config['outdir'])
+        migrationCountCsvs = [expand("{outdir}/compare_migration_counts/{mouse}_{cp}_migration_counts.csv", mouse=m, cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), outdir=config['outdir']) for m in mice]
     output:
         aggregatedMigrationCounts = "{outdir}/compare_migration_counts/migration_counts_all.csv",
     shell:
