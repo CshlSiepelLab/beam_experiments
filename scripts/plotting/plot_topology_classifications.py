@@ -4,11 +4,12 @@ import sys
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib_venn import venn2
 
-infile = sys.argv[1]
+# infile = sys.argv[1]
 
 # testing
-# infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/compare_migration_counts/topology_classifications_all.csv"
+infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/compare_migration_counts/topology_classifications_all.csv"
 
 # Load the data into a DataFrame
 data = pd.read_csv(infile)
@@ -61,4 +62,35 @@ plt.tight_layout()
 
 plt.savefig(infile.replace('.csv', '.pdf'))
 
+plt.close()
+
+
+# Create Venn diagrams for each method to see if clonal populations have either met to met or reseeding OR they tend to have both or none
+methods = ['machina', 'metient', 'metastabayes']
+method_names = ['Machina', 'Metient', 'Beast']
+
+fig, axes = plt.subplots(3, 1, figsize=(10, 10))
+
+for i, (method, method_name) in enumerate(zip(methods, method_names)):
+    met_to_met = data[f'{method}_met_to_met']
+    reseeding = data[f'{method}_reseeding']
+    
+    # Calculate the sets for Venn diagram
+    set_met_to_met = set(data.index[met_to_met])
+    set_reseeding = set(data.index[reseeding])
+    
+    plt.sca(axes[i])
+    venn2([set_met_to_met, set_reseeding], ('Met to Met', 'Reseeding'), set_colors=(DEFAULT_COLORS[2], DEFAULT_COLORS[3]))
+    for patch in axes[i].patches:
+        if patch is not None:
+            patch.set_alpha(0.5)
+            patch.set_edgecolor('black')
+            patch.set_linewidth(1.5)
+    for text in axes[i].texts:
+        text.set_fontsize(18)
+    axes[i].set_aspect(0.5)
+    axes[i].set_title(f'{method_name}', fontsize=24)
+
+plt.tight_layout()
+plt.savefig(infile.replace('.csv', '_venn_diagrams.pdf'))
 plt.close()
