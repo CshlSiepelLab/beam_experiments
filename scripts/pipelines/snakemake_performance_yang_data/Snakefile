@@ -74,7 +74,7 @@ rule prepMetastabayesInputs:
         all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\\t' ' ' | tr '\\n' ' ')
         total_count=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
         uniq_count=$( echo $all_muts | tr ' ' '\\n' | sort | uniq | grep -wv "0" | wc -l )
-        count_1=$( echo $all_muts | tr ' ' '\\n' | grep -wc "1" )
+        count_sum=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
 
         for element in $(seq 1 $uniq_count); do
             if echo "$all_muts" | tr ' ' '\\n' | grep -qw "$element"; then
@@ -82,7 +82,7 @@ rule prepMetastabayesInputs:
             else
                 count=0
             fi
-            proportion=$(bc <<< "scale=10; $count / $count_1")
+            proportion=$(bc <<< "scale=10; $count / $count_sum")
             echo -e "$proportion\t" >> {output.editRateProportions}
         done
 

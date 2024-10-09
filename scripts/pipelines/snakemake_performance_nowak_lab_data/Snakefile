@@ -151,11 +151,11 @@ rule prepMetastabayesInputs:
             # write date trait
             tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > $dates
 
-            # get edit rate proportions for new mutation entries, relative to the first edit as 1.0 frequency
+            # get edit rate proportions for new mutation entries, relative so they all sum to 1.0
             all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\\t' ' ' | tr '\\n' ' ')
             total_count=$(echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l)
             uniq_count=$(echo $all_muts | tr ' ' '\\n' | sort | uniq | grep -wv "0" | wc -l)
-            count_1=$( echo $all_muts | tr ' ' '\\n' | grep -wc "1" )
+            count_sum=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
             
             for element in $(seq 1 $uniq_count); do
                 echo "START"
@@ -163,7 +163,7 @@ rule prepMetastabayesInputs:
                 if echo "$all_muts" | tr ' ' '\\n' | grep -w "$element"; then
                     echo "FOUND"
                     count=$(echo "$all_muts" | tr ' ' '\\n' | grep -wc "$element")
-                    proportion=$(echo "scale=10; $count / $count_1" | bc)
+                    proportion=$(echo "scale=10; $count / $count_sum" | bc)
                 else
                     echo "NOT FOUND"
                     count=0
