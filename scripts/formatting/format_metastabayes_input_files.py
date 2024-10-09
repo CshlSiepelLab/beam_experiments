@@ -35,7 +35,8 @@ indel_matrix = indel_matrix.replace(mut_dict)
 # get all indel proportions
 muts = np.array([v for vals in indel_matrix.values.tolist() for v in vals if v != 0])
 ordered_value_counts = np.unique(muts, return_counts=True)[1]
-proportions = [str(count / ordered_value_counts[0]) for count in ordered_value_counts]
+sum_proportions = sum(ordered_value_counts)
+proportions = [str(count / sum_proportions) for count in ordered_value_counts]
 
 # write mutation proportions for initial states in the edit model
 outfile_proportions = f"{outdir}/{outname}_edit_rate_proportions.txt"
