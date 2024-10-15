@@ -282,18 +282,16 @@ rule runMetastabayes:
             numTissues=$(( numTissues + 1 ))
         fi
 
+        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
+        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
+            numTissues=$(( numTissues + 1 ))
+        fi
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
         numTissueRates=$(( numTissues * (numTissues - 1) ))
         equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
         equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
-
-        # the current setup forces the known origin to be the primary if the primary is sampled in the tips, otherwise it allows for the primary to be any tissue of those sampled
-        if echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
-            sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
-            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
-        else
-            sorted_unique_tissues=$unique_tissues
-            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do echo -n "$equalTissueFreqs "; done)
-        fi
 
         tissueCodeMap=""
         trailingCodeMap="? = "
