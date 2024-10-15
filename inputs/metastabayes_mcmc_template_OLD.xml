@@ -187,8 +187,8 @@
                     <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c"/>
                 </distribution>
                 
-                <distribution id="traitLikelihood" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@tree">
-                <!-- <distribution id="traitLikelihood" spec="metastabayes.likelihood.MetastabayesAncestralStateBeagleTreeLikelihood" origin="@origin" tag="location" tree="@tree"> -->
+                <!-- <distribution id="traitLikelihood" spec="beastclassic.evolution.likelihood.AncestralStateTreeLikelihood" tag="location" tree="@tree"> -->
+                <distribution id="traitLikelihood" spec="metastabayes.likelihood.MetastabayesAncestralStateBeagleTreeLikelihood" origin="@origin" tag="location" tree="@tree">
                     <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="$(tissueRootFreqs)" estimate="false"/>
                     <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
                         <traitSet id="traitset" spec="feast.fileio.TraitSetFromXSV" fileName="$(fileDir)/$(inName)_tip_tissues.csv" taxa="@taxonset" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
