@@ -264,6 +264,7 @@ rule runRandomAndConsensusTissueInference:
     output:
         randomResult = "{outdir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk",
         consensusResult = "{outdir}/random_consensus_tissue_inference/{sim}/consensus_tissues.nwk"
+        parsimonyResult = "{outdir}/random_consensus_tissue_inference/{sim}/parsimony_tissues.nwk"
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/random_consensus_tissue_inference/{sim}"
@@ -271,7 +272,7 @@ rule runRandomAndConsensusTissueInference:
         "../../envs/compare_trees.yaml"
     shell:
         """
-        python {params.scripts}/consensus_random/consensus_random_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
+        python {params.scripts}/consensus_random/consensus_random_parsimony_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
         """
 
 rule runMachina:
