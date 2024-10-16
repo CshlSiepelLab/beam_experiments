@@ -203,7 +203,7 @@ debug = False
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,machina_f1,machina_recall,machina_precision,metient_f1,metient_recall,metient_precision,pathfinder_f1,pathfinder_recall,pathfinder_precision,beast_f1,beast_recall,beast_precision\n"
+    header="sim,random_f1,random_recall,random_precision,consensus_f1,consensus_recall,consensus_precision,parsimony_f1,parsimony_recall,parsimony_precision,machina_f1,machina_recall,machina_precision,metient_f1,metient_recall,metient_precision,pathfinder_f1,pathfinder_recall,pathfinder_precision,beast_f1,beast_recall,beast_precision\n"
     file.write(header)
 
 machina_precisions = np.zeros(len(dirs))
@@ -214,6 +214,8 @@ consensus_precisions = np.zeros(len(dirs))
 consensus_recalls = np.zeros(len(dirs))
 random_precisions = np.zeros(len(dirs))
 random_recalls = np.zeros(len(dirs))
+parsimony_precisions = np.zeros(len(dirs))
+parsimony_recalls = np.zeros(len(dirs))
 all_thresh_rows = []
 pathfinder_all_thresh_rows = []
 i=0
@@ -239,8 +241,9 @@ for true_tree_file in dirs:
     metient_file = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_migration_graphs.txt"
     beast_posterior_file = f"{dir}/metastabayes/{sim}/combined.trees"
     pathfinder_posterior_file = f"{dir}/pathfinder/{sim}/clone_aln_all_output_counts.txt"
-    consensus_file = f"{dir}/random_consensus_tissue_inference/{sim}/consensus_tissues.nwk"
-    random_file = f"{dir}/random_consensus_tissue_inference/{sim}/random_tissues.nwk"
+    consensus_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk"
+    random_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk"
+    parsimony_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk"
     outfile = f"{outdir}/{sim}/precision_recall.pdf"
 
     # print all file paths to output
@@ -342,6 +345,16 @@ for true_tree_file in dirs:
         consensus_f1, consensus_recall, consensus_precision = calculate_metrics(true_counts, consensus_counts)
         consensus_precisions[i] = consensus_precision
         consensus_recalls[i] = consensus_recall
+    
+    # process greedy fitch parsimony result to get precision and recall
+    parsimony_f1 = float('nan')
+    parsimony_recall = float('nan')
+    parsimony_precision = float('nan')
+    if os.path.exists(parsimony_file):
+        parsimony_counts = process_tree(parsimony_file)
+        parsimony_f1, parsimony_recall, parsimony_precision = calculate_metrics(true_counts, parsimony_counts)
+        parsimony_precisions[i] = parsimony_precision
+        parsimony_recalls[i] = parsimony_recall
 
     # process beast posterior result to get precision and recall
     post_prob_f1 = float('nan')
@@ -407,6 +420,8 @@ for true_tree_file in dirs:
             plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
         if os.path.exists(random_file):
             plt.scatter(random_recall, random_precision, color='black', label='Random', s=size, marker = "x")
+        if os.path.exists(parsimony_file):
+            plt.scatter(parsimony_recall, parsimony_precision, color='black', label='Random', s=size, marker = "x")
         plt.xlim(-0.05,1.05)
         plt.ylim(-0.05,1.05)
         plt.xlabel('Recall', fontsize=textsize)
@@ -425,7 +440,7 @@ for true_tree_file in dirs:
 
     # write metrics used for the plot to a file
     with open(outfile_metrics, "a") as file:
-        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{pathfinder_post_prob_f1},{pathfinder_post_prob_recall},{pathfinder_post_prob_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
+        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{parsimony_f1},{parsimony_recall},{parsimony_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{pathfinder_post_prob_f1},{pathfinder_post_prob_recall},{pathfinder_post_prob_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
         file.write(data)
 
 # make an overall averaged precision/recall curve
@@ -456,6 +471,10 @@ if np.any(consensus_precisions):
     avg_consensus_precision = sum(consensus_precisions) / len(consensus_precisions)
 if np.any(consensus_recalls):
     avg_consensus_recall = sum(consensus_recalls) / len(consensus_recalls)
+if np.any(parsimony_precisions):
+    avg_parsimony_precision = sum(parsimony_precisions) / len(parsimony_precisions)
+if np.any(parsimony_recalls):
+    avg_parsimony_recall = sum(parsimony_recalls) / len(parsimony_recalls)
 all_thresh_df = pd.DataFrame(all_thresh_rows)
 if not all_thresh_df.empty:
     avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
@@ -482,6 +501,8 @@ if not np.isnan(avg_consensus_recall) and not np.isnan(avg_consensus_precision):
     plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus', s=size, marker="x")
 if not np.isnan(avg_random_recall) and not np.isnan(avg_random_precision):
     plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker="x")
+if not np.isnan(avg_parsimony_recall) and not np.isnan(avg_parsimony_precision):
+    plt.scatter(avg_parsimony_recall, avg_parsimony_precision, color='purple', label='Random', s=size, marker="x")
 plt.xlim(-0.05,1.05)
 # plt.xlim(0.4, 1.01)
 # plt.xticks(np.arange(0.4, 1.01, 0.2))
