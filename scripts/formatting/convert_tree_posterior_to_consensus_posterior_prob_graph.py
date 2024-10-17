@@ -74,10 +74,11 @@ def dendropy_beast_to_ete_newick_with_strict_locations(tree):
     return ete_tree
 
 
-def get_consensus_graph(posterior_probs, all_inferred_counts):
-    # calculate total counts weighted by posterior probability
+def get_consensus_graph(all_inferred_counts):
+    # calculate total counts weighted by posterior probability which is uniform across all samples due to the mcmc sampling
+    prob = 1 / len(all_inferred_counts)
     total_counts = {}
-    for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
+    for inferred_counts in all_inferred_counts:
         for pattern, count in inferred_counts.items():
             for num in range(1, count+1):
                 edge = f"{pattern}_{num}"
@@ -121,11 +122,7 @@ posteriors, all_inferred_counts = zip(*output)
 
 
 # fit a gaussian kernel density estimate to the posterior values to get a probability density function
-pdf = gaussian_kde(posteriors)
-posterior_probs = [pdf(posterior)[0] for posterior in posteriors]
-total_posterior_prob = sum(posterior_probs)
-posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in posterior_probs]
-posterior_prob_graph = get_consensus_graph(posterior_probs, all_inferred_counts)
+posterior_prob_graph = get_consensus_graph(all_inferred_counts)
 
 # output posterior_prob_graph to a file
 with open(outfile, "w") as file:
