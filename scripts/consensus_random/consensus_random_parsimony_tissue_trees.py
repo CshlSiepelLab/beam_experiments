@@ -52,19 +52,14 @@ def label_tissues_random(tree, tissues_df):
 
 def label_tissues_parsimony(tree, tissues_df):
     '''
-    Greedy Fitch parsimony algorithm to infer ancestral states of internal nodes for a tree
+    Fitch parsimony algorithm to infer ancestral states of internal nodes for a tree
     '''
-    copy_tree = tree.copy()
-    
-    # Post-order traversal to compute intersections for internal nodes
     def postorder(node):
         if node.is_leaf():
             # Assign known tissue type from the tissues_df to the leaf node
-            tissue = tissues_df.loc[tissues_df['cell'] == str(node.name), 'tissue'].values[0]
-            node.tissue_set = {tissue}
-            node.tissue_count = Counter({tissue: 1})
-            node.greedy_tissue = tissue
-            node.name = f"{node.name}_{tissue}"
+            node.final_tissue = tissues_df.loc[tissues_df['cell'] == str(node.name), 'tissue'].values[0]
+            node.tissue_set = {node.final_tissue}
+            node.name = f"{node.name}_{node.final_tissue}"
         else:
             # Process all children
             children_tissue_sets = [postorder(child) for child in node.children]
@@ -75,51 +70,45 @@ def label_tissues_parsimony(tree, tissues_df):
                 node.tissue_set = intersection
             else:
                 node.tissue_set = set.union(*children_tissue_sets)
-            
-            # Combine tissue counts from children
-            node.tissue_count = sum((child.tissue_count for child in node.children), Counter())
-            
-            # Greedy choice tossign the most frequent tissue in the subtree or the prmary tissue if it is the root
-            if node.is_root():
-                node.greedy_tissue = 'P'
-            else:
-                node.greedy_tissue = max(node.tissue_count, key=node.tissue_count.get)
-            node.name = f"{node.name}_{node.greedy_tissue}"
-        
         return node.tissue_set
     
-    # Initialize parsimony score for the whole tree
+    def preorder(node, parent_tissue=None):
+        # Leaf tissues are already known so skip them for tissue assignment
+        if not node.is_leaf():
+            if node.is_root():
+                # The root tissue is known
+                node.final_tissue = "P"
+            elif parent_tissue and parent_tissue in node.tissue_set:
+                # If parent tissue is in the node's set, choose it
+                node.final_tissue = parent_tissue
+            else:
+                # If not then make an arbitrary choice from those available and increment the parsimony score
+                node.final_tissue = random.choice(list(node.tissue_set))
+                node.parsimony_score += 1
+            node.name = f"{node.name}_{node.final_tissue}"
+            # Recursively process children
+            for child in node.children:
+                preorder(child, node.final_tissue)
+        else:
+            # Check if leaf nodes are different tissues than their parents
+            if parent_tissue != node.final_tissue:
+                node.parsimony_score += 1
+
+    # copy the input tree to avoid changing it in place
+    copy_tree = tree.copy()
+
+    # Run the postorder to get candidate tissues at each node
+    postorder(copy_tree)
+
+    # Initialize the parsimony scores
     for node in copy_tree.traverse():
         node.parsimony_score = 0
 
-    # Start post-order traversal from the root
-    postorder(copy_tree)
-
-    # Step 2: Pre-order traversal (Top-down) to finalize ancestral states and calculate parsimony score
-    def preorder(node, parent_tissue=None):
-        if parent_tissue and parent_tissue in node.tissue_set:
-            # If parent tissue is in the node's set, choose it
-            node.final_tissue = parent_tissue
-        else:
-            # Stick with the greedy choice made during post-order traversal
-            node.final_tissue = node.greedy_tissue
-        
-        node.name = f"{node.name.split('_')[0]}_{node.final_tissue}"
-
-        # Calculate parsimony score
-        if not node.is_root() and node.final_tissue != parent_tissue:
-            node.parsimony_score += 1
-
-        # Recursively process children
-        for child in node.children:
-            preorder(child, node.final_tissue)
-
-    # Start pre-order traversal from the root
+    # Assign the ancestral tissues for each node and update the parsimony score
     preorder(copy_tree)
 
-    # Calculate total parsimony score
+    # Obtain the total parsimony score for the tree
     total_parsimony_score = sum(node.parsimony_score for node in copy_tree.traverse())
-    copy_tree.parsimony_score = total_parsimony_score
 
     return copy_tree
 
@@ -128,9 +117,9 @@ tree_file = sys.argv[1]
 leaf_tissues_tsv = sys.argv[2]
 outdir = sys.argv[3]
 
-# tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees_no_branch_lengths.nwk"
-# leaf_tissues_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
-# outdir = "."
+tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees_no_branch_lengths.nwk"
+leaf_tissues_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
+outdir = "."
 
 
 tree = ete3.Tree(tree_file, format=8)
