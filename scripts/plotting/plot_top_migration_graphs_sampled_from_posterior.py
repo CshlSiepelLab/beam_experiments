@@ -7,7 +7,7 @@ import numpy as np
 import networkx as nx
 from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
-import ete3
+from ete3 import Tree
 import pandas as pd
 import matplotlib
 import random
@@ -46,82 +46,77 @@ def label_nodes(newick):
     return node_labeled_newick
 
 def tree_to_migration_graph(tree, primary_tissue, outfile):
-    global annotations
-    tree = ''.join(tree.split(' ')[4:])
-    bracket_content_pattern = re.compile(r'\[.*?\]')
-    annotations = []
-    newick = re.sub(bracket_content_pattern, remove_bracket_content, tree)
-    node_labeled_newick = label_nodes(newick)
-    node_labels = get_labels(node_labeled_newick)
-    annotations = [re.split(r',(?![^{]*})', x.replace("&", "")) for x in annotations]
-    annotations = [{key: value.replace("{", "").replace("}", "") for trait in annotation for key, value in [trait.split("=")]} for annotation in annotations]
-    annotations_dict = {}
-    for node in node_labels:
-        annotations_dict[node] = annotations[node_labels.index(node)]
-    annotations_df = pd.DataFrame.from_dict(annotations_dict, orient='index')
-    annotations_df.replace('"', '', regex=True, inplace=True)
+    newick_str = ''.join(tree.split(' ')[4:])
+    tree = Tree(newick_str, format=1)
+    all_tissues = set()
+    all_tissues.add(primary_tissue)
+    i = 1
+    for node in tree.traverse():
+        # split the actual name from the annotation read in from beast where the node.name has the form of 7[&location="TBL"] for a tip or [&location="TBL"] for a internal node without a name
+        node.name, annotation = node.name.split("[")
+        node.tissue = re.search(r'&location="([^"]+)"', annotation).group(1)
 
-    tree_ete = ete3.Tree(node_labeled_newick, format=3)
+        # Label internal nodes without a name
+        if node.name == "":
+            if node.is_root():
+                node.name = "root"
+            else:
+                node.name = f"node{i}"
+                i += 1
+
+        if node.tissue not in all_tissues:
+            all_tissues.add(node.tissue)
 
     migration_counts = {}
-    all_tissues = [primary_tissue]
 
-    for node in tree_ete.traverse():
-        if node.is_leaf():
-            continue
-        elif node.is_root():
-            node_name = node.name
-            node_loc = str(annotations_df.loc[node_name, 'location'])
-            if node_loc != primary_tissue:
-                migration = f"{node_loc}_{primary_tissue}"
-                migration_counts[migration] = 1
+    for node in tree.traverse():
+        if node.is_root() and node.tissue != primary_tissue:
+                migration = f"{primary_tissue}_{node.tissue}"
+                if migration in migration_counts:
+                    migration_counts[migration] += 1
+                else:
+                    migration_counts[migration] = 1
+        elif not node.is_root() and node.up.tissue != node.tissue:
+                migration = f"{node.up.tissue}_{node.tissue}"
+                if migration in migration_counts:
+                    migration_counts[migration] += 1
+                else:
+                    migration_counts[migration] = 1
+        
+    all_tissues = [primary_tissue] + sorted(list(all_tissues - {primary_tissue}))
+    num_nodes = len(all_tissues)
+
+    custom_colors = DEFAULT_COLORS
+
+    custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:num_nodes]) if node != primary_tissue}
+    custom_colors[primary_tissue] = "black"
+
+    G = nx.MultiDiGraph()
+
+    for node in all_tissues:
+        G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
+
+    for edge, count in migration_counts.items():
+        if count == 1:
+            label = ""
         else:
-            node_tissue = str(annotations_df.loc[node.name, 'location'])
-            parent_tissue = str(annotations_df.loc[node.up.name, 'location'])
-            if node_tissue == parent_tissue:
-                continue
-            migration = f"{parent_tissue}_{node_tissue}"
-            if migration not in migration_counts:
-                migration_counts[migration] = 1
-            else:
-                migration_counts[migration] += 1
+            label = str(count)
+        source, target = edge.split('_')
+        G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label=label)
 
-            if node_tissue not in all_tissues:
-                all_tissues.append(node_tissue)
-            if parent_tissue not in all_tissues:
-                all_tissues.append(parent_tissue)
-
-        all_tissues = sorted(all_tissues)
-        num_nodes = len(all_tissues)
-
-        custom_colors = DEFAULT_COLORS
-
-        custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:num_nodes]) if node != primary_tissue}
-        custom_colors[primary_tissue] = "black"
-
-        G = nx.MultiDiGraph()
-
-        for node in all_tissues:
-            G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
-
-        for edge, count in migration_counts.items():
-            source, target = edge.split('_')
-            for _ in range(count):
-                G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3)
-
-        dot = nx.nx_pydot.to_pydot(G)
-        dot.write_pdf(outfile)
+    dot = nx.nx_pydot.to_pydot(G)
+    dot.write_pdf(outfile)
 
 
-# inputs
+inputs
 posterior_file = sys.argv[1]
 primary_tissue = sys.argv[2]
 n = int(sys.argv[3])
 
 # # testing
-# posterior_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/metastabayes/mig6_mut005_16247/combined.trees"
-# primary_tissue = "P"
-# n = 3
+# posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/metastabayes/MMUS1457/CP01/combined.trees"
+# primary_tissue = "PRL"
+# n = 10
 
 
 names_dict = {}
@@ -149,8 +144,6 @@ posterior_values = [round(float(value), 2) for value in posterior_values]
 # get peak value and density
 kde = gaussian_kde(posterior_values)
 x_values = np.linspace(min(posterior_values), max(posterior_values), 1000)
-max_x = max(x_values)
-max_x_y = kde(max_x)
 peak_value = x_values[np.argmax(kde(x_values))]
 peak_density = kde(peak_value)
 
@@ -161,7 +154,8 @@ peak_density = kde(peak_value)
 # plt.yticks(fontsize=18)
 # plt.xlabel("Posterior", fontsize=24)
 # plt.ylabel("Density", fontsize=24)
-# plt.show()
+# # plt.show()
+# plt.savefig("./test.pdf")
 # plt.close()
 
 # get n number of trees closest to the peak value of the posterior density
