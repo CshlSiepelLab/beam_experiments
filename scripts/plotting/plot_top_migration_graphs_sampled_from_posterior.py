@@ -108,15 +108,15 @@ def tree_to_migration_graph(tree, primary_tissue, outfile):
     dot.write_pdf(outfile)
 
 
-inputs
-posterior_file = sys.argv[1]
-primary_tissue = sys.argv[2]
-n = int(sys.argv[3])
+# inputs
+# posterior_file = sys.argv[1]
+# primary_tissue = sys.argv[2]
+# n = int(sys.argv[3])
 
-# # testing
-# posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/metastabayes/MMUS1457/CP01/combined.trees"
-# primary_tissue = "PRL"
-# n = 10
+# testing
+posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/metastabayes/MMUS1457/CP01/combined.trees"
+primary_tissue = "PRL"
+n = 10
 
 
 names_dict = {}
@@ -135,31 +135,8 @@ with open(posterior_file, 'r') as file:
             value = key_value[1].replace(',', '')
             names_dict[key] = value
 
-# sort trees by posterior
-pattern = re.compile(r'tree STATE_\d+ = \[&posterior=(-?\d+\.\d+),')
-sorted_trees = sorted(trees, key=lambda s: float(pattern.search(s).group(1)), reverse = True)
-posterior_values = re.findall(r'\[&posterior=(-?\d+\.\d+),', "".join(sorted_trees))
-posterior_values = [round(float(value), 2) for value in posterior_values]
-
-# get peak value and density
-kde = gaussian_kde(posterior_values)
-x_values = np.linspace(min(posterior_values), max(posterior_values), 1000)
-peak_value = x_values[np.argmax(kde(x_values))]
-peak_density = kde(peak_value)
-
-# # plot posterior values to see peak
-# plt.plot(x_values, kde(x_values))
-# plt.hist(posterior_values, bins=100, density=True, alpha=0.5, color='green')
-# plt.xticks(fontsize=18)
-# plt.yticks(fontsize=18)
-# plt.xlabel("Posterior", fontsize=24)
-# plt.ylabel("Density", fontsize=24)
-# # plt.show()
-# plt.savefig("./test.pdf")
-# plt.close()
-
-# get n number of trees closest to the peak value of the posterior density
-mcc_top_n_trees = [trees[i] for i in sorted(range(len(posterior_values)), key=lambda i: abs(posterior_values[i] - peak_value))[:n]]
+# get n number of trees randomly from the posterior
+mcc_top_n_trees = random.sample(trees, k=n) # a better approach would be to group the posterior by common features and then sample from those groups, but this is not yet implemented
 
 # sample trees, convert to migration graphs, and output as files
 i = 1
