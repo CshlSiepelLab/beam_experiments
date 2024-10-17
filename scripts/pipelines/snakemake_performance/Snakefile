@@ -263,7 +263,7 @@ rule runRandomAndConsensusTissueInference:
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
         randomResult = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk",
-        consensusResult = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk"
+        consensusResult = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk",
         parsimonyResult = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk"
     params:
         scripts = config['scripts'],

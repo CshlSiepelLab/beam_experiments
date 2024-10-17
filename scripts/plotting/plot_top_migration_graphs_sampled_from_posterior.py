@@ -5,7 +5,6 @@ import sys
 import os
 import numpy as np
 import networkx as nx
-from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 from ete3 import Tree
 import pandas as pd
