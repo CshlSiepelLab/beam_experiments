@@ -5,7 +5,6 @@ import os
 import re
 import pandas as pd
 import numpy as np
-from scipy.stats import gaussian_kde
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import seaborn as sns
@@ -147,13 +146,14 @@ def calculate_metrics(true_counts, inferred_counts):
         f1 = 2 * ((precision * recall) / (precision + recall))
     return f1, recall, precision
 
-def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, i):
+def posterior_threshold_metrics(all_inferred_counts, true_counts, i):
     # calculate total counts weighted by posterior probability
         post_prob_precision = 0
         post_prob_recall = 0
         post_prob_f1 = 0
         total_counts = {}
-        for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
+        prob = 1 / len(all_inferred_counts)
+        for inferred_counts in all_inferred_counts:
             for pattern, count in inferred_counts.items():
                 for num in range(1, count+1):
                     edge = f"{pattern}_{num}"
@@ -256,12 +256,7 @@ def process(args):
                 inferred_counts = optionally_add_origin_migration(inferred_tree, inferred_counts, primary_tissue)
                 all_inferred_counts.append(inferred_counts)
 
-            # fit a gaussian kernel density estimate to the posterior values to get a probability density function
-            pdf = gaussian_kde(posteriors)
-            posterior_probs = [pdf(posterior)[0] for posterior in posteriors]
-            total_posterior_prob = sum(posterior_probs)
-            posterior_probs = [posterior_prob/total_posterior_prob for posterior_prob in posterior_probs]
-            thresh_prec_rec, rows, posterior_prob_graph = posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, sim)
+            thresh_prec_rec, rows, posterior_prob_graph = posterior_threshold_metrics(all_inferred_counts, true_counts, sim)
             all_thresh_rows.extend(rows)
 
         i+=1
