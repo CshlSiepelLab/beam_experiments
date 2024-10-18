@@ -8,15 +8,15 @@ import networkx as nx
 DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
 
 
-# # inputs
-# graph_posterior_csv = sys.argv[1]
-# primary_tissue=sys.argv[2]
-# outdir = sys.argv[3]
+# inputs
+graph_posterior_csv = sys.argv[1]
+primary_tissue=sys.argv[2]
+outdir = sys.argv[3]
 
-# testing
-graph_posterior_csv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/metastabayes/MMUS1457/CP01/posterior_prob_graph.csv"
-primary_tissue="PRL"
-outdir = "."
+# # testing
+# graph_posterior_csv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/metastabayes/MMUS1457/CP01/posterior_prob_graph.csv"
+# primary_tissue="PRL"
+# outdir = "."
 
 consensus_probability_threshold = 0.7
 
