@@ -181,7 +181,7 @@ def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_count
     thresh_prec_rec = pd.DataFrame(rows)
 
     # use the 70% posterior thresholded values as the final precision, recall, and f1 instead of the full posterior weighted values
-    t = 0.70
+    t = 0.40
     # check that the max for the data is not below the threshold for the consensus graph
     if max_threshold < t:
         t = np.floor(max_threshold * 100) / 100
@@ -369,14 +369,11 @@ for true_tree_file in dirs:
         num_discard = round(num_beast_trees * burnin_percent)
         beast_tree_list = beast_tree_list[num_discard:]
 
-        posteriors = []
         # f1_scores=[]
         # precisions=[]
         # recalls=[]
         all_inferred_counts = []
         for tree in beast_tree_list:
-            posterior = float(tree.annotations.get_value('posterior'))
-            posteriors.append(posterior)
             remove_zero_length_nodes(tree)
             inferred_tree = dendropy_beast_to_ete_newick_with_strict_locations(tree)
             inferred_counts = get_migration_counts(inferred_tree)
@@ -388,7 +385,7 @@ for true_tree_file in dirs:
             all_inferred_counts.append(inferred_counts)
 
         beast_posterior_probs = [1 / len(all_inferred_counts) for i in range(len(all_inferred_counts))]
-        thresh_prec_rec, rows, posterior_prob_graph, post_prob_f1, post_prob_recall, post_prob_precision = posterior_threshold_metrics(all_inferred_counts, true_counts, sim)
+        thresh_prec_rec, rows, posterior_prob_graph, post_prob_f1, post_prob_recall, post_prob_precision = posterior_threshold_metrics(beast_posterior_probs, all_inferred_counts, true_counts, sim)
         # output posterior_prob_graph to a file
         with open(f"{outdir}/{sim}_posterior_prob_graph.csv", "w") as file:
             posterior_prob_graph = dict(sorted(posterior_prob_graph.items(), key=lambda x: x[1], reverse=True))
@@ -416,7 +413,7 @@ for true_tree_file in dirs:
         if os.path.exists(random_file):
             plt.scatter(random_recall, random_precision, color='black', label='Random', s=size, marker = "x")
         if os.path.exists(parsimony_file):
-            plt.scatter(parsimony_recall, parsimony_precision, color='black', label='Random', s=size, marker = "x")
+            plt.scatter(parsimony_recall, parsimony_precision, color='Purple', label='Parsimony', s=size, marker = "x")
         plt.xlim(-0.05,1.05)
         plt.ylim(-0.05,1.05)
         plt.xlabel('Recall', fontsize=textsize)
@@ -497,7 +494,7 @@ if not np.isnan(avg_consensus_recall) and not np.isnan(avg_consensus_precision):
 if not np.isnan(avg_random_recall) and not np.isnan(avg_random_precision):
     plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker="x")
 if not np.isnan(avg_parsimony_recall) and not np.isnan(avg_parsimony_precision):
-    plt.scatter(avg_parsimony_recall, avg_parsimony_precision, color='purple', label='Random', s=size, marker="x")
+    plt.scatter(avg_parsimony_recall, avg_parsimony_precision, color='purple', label='Parsimony', s=size, marker="x")
 plt.xlim(-0.05,1.05)
 # plt.xlim(0.4, 1.01)
 # plt.xticks(np.arange(0.4, 1.01, 0.2))

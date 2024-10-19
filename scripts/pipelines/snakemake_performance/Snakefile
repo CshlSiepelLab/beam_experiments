@@ -426,14 +426,14 @@ rule plotTrueMigrationGraph:
 rule plotPrecisionRecall:
     input:
         # necessary input files so that the rule is triggered after all other rules have finished
-        randomResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
-        consensusResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
-        parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
-        trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
-        machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
-        metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
-        pathfinderResultDone = expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
+        # randomResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
+        # consensusResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
+        # parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
+        # trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+        # machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        # combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
+        # metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
+        # pathfinderResultDone = expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
         # actual input used
         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
     output:
