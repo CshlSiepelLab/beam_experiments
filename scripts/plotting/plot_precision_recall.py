@@ -143,14 +143,13 @@ def calculate_metrics(true_counts, inferred_counts):
         f1 = 2 * ((precision * recall) / (precision + recall))
     return f1, recall, precision
 
-def posterior_threshold_metrics(all_inferred_counts, true_counts, i):
+def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_counts, i):
     # calculate total counts weighted by posterior probability
     post_prob_precision = 0
     post_prob_recall = 0
     post_prob_f1 = 0
     total_counts = {}
-    prob = 1 / len(all_inferred_counts)
-    for inferred_counts in all_inferred_counts:
+    for prob, inferred_counts in zip(posterior_probs, all_inferred_counts):
         for pattern, count in inferred_counts.items():
             for num in range(1, count+1):
                 edge = f"{pattern}_{num}"
@@ -388,6 +387,7 @@ for true_tree_file in dirs:
             # recalls.append(recall)
             all_inferred_counts.append(inferred_counts)
 
+        beast_posterior_probs = [1 / len(all_inferred_counts) for i in range(len(all_inferred_counts))]
         thresh_prec_rec, rows, posterior_prob_graph, post_prob_f1, post_prob_recall, post_prob_precision = posterior_threshold_metrics(all_inferred_counts, true_counts, sim)
         # output posterior_prob_graph to a file
         with open(f"{outdir}/{sim}_posterior_prob_graph.csv", "w") as file:

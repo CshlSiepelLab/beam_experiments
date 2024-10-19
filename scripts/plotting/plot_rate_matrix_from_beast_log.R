@@ -54,7 +54,7 @@ add_rows <- setdiff(order, order_source)
 add_cols <- setdiff(order, order_recipient)
 
 heatmap_df <- pivot_wider(grouped_df, names_from = Recipient, values_from = mean_rate)
-heatmap_df <- column_to_rownames(heatmap_df, var = "Source")
+
 
 if (length(add_rows) != 0) {
 # Add rows for source tissues missing
@@ -66,6 +66,25 @@ if (length(add_cols) != 0) {
 # Add cols for recipient tissues missing
 heatmap_df[,add_cols] <- NA
 }
+
+### NEED TO FIX THIS AND DECIDE HOW TO PLOT THE RATES
+subst <- 0
+num_states <- nrow(heatmap_df)
+state_freq <- rep(1 / num_states, num_states)
+for (i in 1:nrow(heatmap_df)) {
+  row_sum <- sum(heatmap_df[i, ], na.rm = TRUE) - heatmap_df[i, i]
+  heatmap_df[i, i] <- -row_sum
+  subst <- subst + (row_sum * state_freq[i])
+}
+
+# Normalize all rate matrix entries by dividing them by the negative sum of the off-diagonal elements in the row
+for (i in 1:nrow(heatmap_df)) {
+  row_sum <- sum(heatmap_df[i, ], na.rm = TRUE) - heatmap_df[i, i]
+  heatmap_df[i, ] <- heatmap_df[i, ] / subst
+}
+
+heatmap_df <- rownames_to_column(heatmap_df, var = "Recipient")
+heatmap_df <- column_to_rownames(heatmap_df, var = "Source")
 
 heatmap_df <- heatmap_df %>%
   rownames_to_column() %>%
@@ -79,12 +98,12 @@ if ( max_value > 1) {
 }
 
 # optional to set a permanent scale bar limit
-max_limit <- 7
+max_limit <- 1
 
 # Create a ggplot2 heatmap
 heatmap <- ggplot(heatmap_df, aes(x = factor(colname, levels = order), y = factor(rowname, levels = order), fill=value)) +
   geom_tile() +
-  # geom_text(aes(label = round(value, 3)), vjust = 1) +
+  geom_text(aes(label = round(value, 2)), vjust = 1) +
   scale_fill_gradient(low = "white", high = "red", limits = c(0, max_limit)) +
   theme_minimal() +
   labs(x="Recipient tissue", y="Source tissue", fill="Rate") +

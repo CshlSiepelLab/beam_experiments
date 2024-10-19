@@ -65,5 +65,11 @@ for edge, probability in graph_dict.items():
             G[source][target][0]['label'] = str(int(G[source][target][0]['label']) + 1)
         else:
             G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label="1")
+
+# Set the label to "" for any labels with just 1
+for source, target, data in G.edges(data=True):
+    if data.get('label') == '1':
+        data['label'] = ''
+        
 dot = nx.nx_pydot.to_pydot(G)
 dot.write_pdf(f"{outdir}/threshold_70_migration_graph_collapsed_numbered.pdf")
