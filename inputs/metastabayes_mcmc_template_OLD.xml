@@ -124,7 +124,7 @@
 
                 <prior id="editRatePrior" name="distribution" x="@editRate">
                     <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">1.0</parameter>
+                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.01</parameter>
                     </Exponential>
                 </prior>
 
