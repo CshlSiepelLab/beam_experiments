@@ -37,7 +37,7 @@ rule downsampleInputs:
             sed -i '1i group_name\ttissues' {input.leafTissues}
         fi
 
-        python {params.scripts}/formatting/downsample.py {input.matrix} {input.leafTissues} {params.threshold} {params.threads} {params.outprefix}
+        python {params.scripts}/formatting/downsample_pairwise_jaccard.py {input.matrix} {input.leafTissues} {params.threshold} {params.threads} {params.outprefix}
         """
 
 rule prepMetastabayesInputs:

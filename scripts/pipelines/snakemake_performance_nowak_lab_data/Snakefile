@@ -116,7 +116,7 @@ rule prepMetastabayesInputs:
 
             # downsample data if specified
             if [ "{params.downsampleThreshold}" != "0.0" ]; then
-                python {params.scripts}/formatting/downsample.py $tempMatrix $tempTissues {params.downsampleThreshold} {params.threads} $cpOutdir/downsampled
+                python {params.scripts}/formatting/downsample_pairwise_jaccard.py $tempMatrix $tempTissues {params.downsampleThreshold} {params.threads} $cpOutdir/downsampled
                 downsampledMatrix=$cpOutdir/downsampled_char_matrix.tsv
                 downsampledTissues=$cpOutdir/downsampled_tissue_labels.tsv
             else
