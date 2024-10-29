@@ -17,6 +17,7 @@ rule all:
         expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/metastabayes/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
+        expand("{outdir}/metastabayes/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
@@ -193,17 +194,35 @@ rule plotGraphPosterior:
         graphPosterior = "{outdir}/metastabayes/{sim}/posterior_prob_graph.csv"
     output:
         probabilityPlot = "{outdir}/metastabayes/{sim}/probability_migration_graph.pdf",
-        thresholdPlot = "{outdir}/metastabayes/{sim}/threshold_70_migration_graph.pdf"
+        thresholdPlot = "{outdir}/metastabayes/{sim}/threshold_migration_graph.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/metastabayes/{sim}"
+        outdir = "{outdir}/metastabayes/{sim}",
+        consensusThreshold = config['consensusThreshold']
     conda:
         "../../envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
+        python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.consensusThreshold}
         """
+
+rule plotSampledPosteriorGraphs:
+    input:
+        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees"
+    output:
+        sampledGraph = "{outdir}/metastabayes/{sim}/combined_migration_graph_1.pdf"
+    params:
+        numGraphs = 10,
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue']
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.numGraphs}
+        """
+
 
 rule runCassiopeia:
     input:
@@ -426,14 +445,14 @@ rule plotTrueMigrationGraph:
 rule plotPrecisionRecall:
     input:
         # necessary input files so that the rule is triggered after all other rules have finished
-        # randomResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
-        # consensusResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
-        # parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
-        # trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
-        # machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        # combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
-        # metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
-        # pathfinderResultDone = expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
+        randomResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
+        consensusResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
+        parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
+        trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+        machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
+        metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
+        pathfinderResultDone = expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
         # actual input used
         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
     output:
@@ -452,3 +471,4 @@ rule plotPrecisionRecall:
         python {params.scripts}/plotting/plot_precision_recall.py $true_trees {params.primaryTissue} {params.outputdir}
         python {params.scripts}/plotting/plot_f1_score.py {params.outputdir}/metrics.csv {params.outputdir}
         """
+

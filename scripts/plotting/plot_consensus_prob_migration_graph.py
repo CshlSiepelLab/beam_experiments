@@ -12,13 +12,14 @@ DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27
 graph_posterior_csv = sys.argv[1]
 primary_tissue=sys.argv[2]
 outdir = sys.argv[3]
+consensus_probability_threshold = float(sys.argv[4])
 
 # # testing
 # graph_posterior_csv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/metastabayes/MMUS1457/CP01/posterior_prob_graph.csv"
 # primary_tissue="PRL"
 # outdir = "."
+# consensus_probability_threshold = 0.7
 
-consensus_probability_threshold = 0.7
 
 # obtain the probabilistic consensus migration graph
 graph_dict = {}
@@ -52,7 +53,7 @@ for edge, probability in graph_dict.items():
         source, target, num = edge.split('_')
         G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3)
 dot = nx.nx_pydot.to_pydot(G)
-dot.write_pdf(f"{outdir}/threshold_70_migration_graph.pdf")
+dot.write_pdf(f"{outdir}/threshold_{consensus_probability_threshold}_migration_graph.pdf")
 
 # plot the thresholded graph with all edges above consensus_probability_threshold probability but collapse directed multiedges into one with a number label of the original number of those edges
 G = nx.MultiDiGraph()
@@ -72,4 +73,4 @@ for source, target, data in G.edges(data=True):
         data['label'] = ''
         
 dot = nx.nx_pydot.to_pydot(G)
-dot.write_pdf(f"{outdir}/threshold_70_migration_graph_collapsed_numbered.pdf")
+dot.write_pdf(f"{outdir}/threshold_{consensus_probability_threshold}_migration_graph_collapsed_numbered.pdf")

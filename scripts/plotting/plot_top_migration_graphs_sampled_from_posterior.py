@@ -108,14 +108,14 @@ def tree_to_migration_graph(tree, primary_tissue, outfile):
 
 
 # inputs
-# posterior_file = sys.argv[1]
-# primary_tissue = sys.argv[2]
-# n = int(sys.argv[3])
+posterior_file = sys.argv[1]
+primary_tissue = sys.argv[2]
+n = int(sys.argv[3])
 
-# testing
-posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/metastabayes/MMUS1457/CP01/combined.trees"
-primary_tissue = "PRL"
-n = 10
+# # testing
+# posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/metastabayes/MMUS1457/CP01/combined.trees"
+# primary_tissue = "PRL"
+# n = 10
 
 
 names_dict = {}
