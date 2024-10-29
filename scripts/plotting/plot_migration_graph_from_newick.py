@@ -72,7 +72,7 @@ for node in all_tissues:
 for edge, num in migration_graph.items():
     source, target = edge.split('_')
     label = ""
-    if num > 0:
+    if num > 1:
         label = f"{num}"
     G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label=label)
 dot = nx.nx_pydot.to_pydot(G)
