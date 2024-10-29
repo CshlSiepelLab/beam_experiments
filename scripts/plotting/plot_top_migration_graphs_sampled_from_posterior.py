@@ -93,7 +93,7 @@ def tree_to_migration_graph(tree, primary_tissue, outfile):
     G = nx.MultiDiGraph()
 
     for node in all_tissues:
-        G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
+        G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0, fontsize=32)
 
     for edge, count in migration_counts.items():
         if count == 1:
@@ -101,7 +101,7 @@ def tree_to_migration_graph(tree, primary_tissue, outfile):
         else:
             label = str(count)
         source, target = edge.split('_')
-        G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label=label)
+        G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label=label, fontsize=24)
 
     dot = nx.nx_pydot.to_pydot(G)
     dot.write_pdf(outfile)

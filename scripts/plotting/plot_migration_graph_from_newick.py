@@ -68,13 +68,13 @@ custom_colors[primary_tissue] = "black"
 # plot the probability graph with edge thicknesses proportional to the probability
 G = nx.MultiDiGraph()
 for node in all_tissues:
-    G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
+    G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0, fontsize=32)
 for edge, num in migration_graph.items():
     source, target = edge.split('_')
     label = ""
     if num > 1:
         label = f"{num}"
-    G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label=label)
+    G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label=label, fontsize=24)
 dot = nx.nx_pydot.to_pydot(G)
 dot.write_pdf(outfile)
 

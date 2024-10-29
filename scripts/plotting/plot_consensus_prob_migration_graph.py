@@ -37,35 +37,35 @@ custom_colors[primary_tissue] = "black"
 # plot the probability graph with edge thicknesses proportional to the probability
 G = nx.MultiDiGraph()
 for node in all_tissues:
-    G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
+    G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0, fontsize=32)
 for edge, probability in graph_dict.items():
     source, target, num = edge.split('_')
-    G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=probability*3)
+    G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=probability*3, fontsize=24)
 dot = nx.nx_pydot.to_pydot(G)
 dot.write_pdf(f"{outdir}/probability_migration_graph.pdf")
 
 # plot the thresholded graph with all edges above consensus_probability_threshold probability
 G = nx.MultiDiGraph()
 for node in all_tissues:
-    G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
+    G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0, fontsize=32)
 for edge, probability in graph_dict.items():
     if probability > consensus_probability_threshold:
         source, target, num = edge.split('_')
-        G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3)
+        G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, fontsize=24)
 dot = nx.nx_pydot.to_pydot(G)
 dot.write_pdf(f"{outdir}/threshold_{consensus_probability_threshold}_migration_graph.pdf")
 
 # plot the thresholded graph with all edges above consensus_probability_threshold probability but collapse directed multiedges into one with a number label of the original number of those edges
 G = nx.MultiDiGraph()
 for node in all_tissues:
-    G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
+    G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0, fontsize=32)
 for edge, probability in graph_dict.items():
     if probability > consensus_probability_threshold:
         source, target, num = edge.split('_')
         if G.has_edge(source, target):
             G[source][target][0]['label'] = str(int(G[source][target][0]['label']) + 1)
         else:
-            G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label="1")
+            G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label="1", fontsize=24)
 
 # Set the label to "" for any labels with just 1
 for source, target, data in G.edges(data=True):
