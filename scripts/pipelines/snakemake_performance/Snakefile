@@ -194,7 +194,6 @@ rule plotGraphPosterior:
         graphPosterior = "{outdir}/metastabayes/{sim}/posterior_prob_graph.csv"
     output:
         probabilityPlot = "{outdir}/metastabayes/{sim}/probability_migration_graph.pdf",
-        thresholdPlot = "{outdir}/metastabayes/{sim}/threshold_migration_graph.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],

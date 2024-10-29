@@ -85,8 +85,8 @@ def tree_to_migration_graph(tree, primary_tissue, outfile):
     all_tissues = [primary_tissue] + sorted(list(all_tissues - {primary_tissue}))
     num_nodes = len(all_tissues)
 
+    all_tissues = sorted(all_tissues)
     custom_colors = DEFAULT_COLORS
-
     custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:num_nodes]) if node != primary_tissue}
     custom_colors[primary_tissue] = "black"
 
