@@ -60,6 +60,7 @@ outfile = sys.argv[3]
 migration_graph, all_tissues = process_tree(newick)
 
 # find all tissues to set the node colors
+all_tissues = sorted(all_tissues)
 custom_colors = DEFAULT_COLORS
 custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:len(all_tissues)]) if node != primary_tissue}
 custom_colors[primary_tissue] = "black"
@@ -70,8 +71,7 @@ for node in all_tissues:
     G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0)
 for edge, num in migration_graph.items():
     source, target = edge.split('_')
-    for i in range(num):
-        G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3)
+    G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label=f"{num}")
 dot = nx.nx_pydot.to_pydot(G)
 dot.write_pdf(outfile)
 
