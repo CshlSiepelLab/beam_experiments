@@ -63,7 +63,7 @@ rule plotTrueMigrationGraph:
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
         """
 
-rule downsampleInputs:
+rule downsampleInputsJaccard:
     input:
         os.path.join(outdir, "raw_data/{sim}", "done"),
         sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
