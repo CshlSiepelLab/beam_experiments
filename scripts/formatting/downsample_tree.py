@@ -11,18 +11,20 @@ import plot_phylo
 
 
 # inputs
-# char_matrix_file = sys.argv[1]
-# tree_file = sys.argv[2]
-# tissue_labels_file = sys.argv[3]
-# thresh = float(sys.argv[4])
-# outprefix = sys.argv[5]
-plot = True
+char_matrix_file = sys.argv[1]
+tree_file = sys.argv[2]
+tissue_labels_file = sys.argv[3]
+thresh = float(sys.argv[4])
+outprefix = sys.argv[5]
 
-char_matrix_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/mS_854_indel_character_matrix.tsv"
-tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees.nwk"
-tissue_labels_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
-thresh = 1.5 # to be adjusted as a scalar of the tree height
-outprefix = "test"
+# char_matrix_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/mS_854_indel_character_matrix.tsv"
+# tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees.nwk"
+# tissue_labels_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
+# thresh = 1.5 # to be adjusted as a scalar of the tree height
+# outprefix = "test"
+
+# whether to make plots to show the downsampling result compared to the original tree
+plot = True
 
 # read in tissue data
 tissue_labels_original = pd.read_csv(tissue_labels_file, sep=r'\s+', index_col=None, names=['group_name', 'tissues'], dtype=str)
@@ -37,11 +39,14 @@ char_matrix = pd.read_csv(char_matrix_file, sep='\t', index_col=0)
 char_matrix.index = char_matrix.index.astype(str)
 
 # read in tree
-tree = Tree(tree_file, format=3)
+try:
+    tree = Tree(tree_file, format=3)
+except:
+    tree = Tree(tree_file, format=5)
 
-# get the actual threshold real value
+# get the actual threshold real value as a distance based on the tree height, assuming the tree is ultrametric
 farthest_leaf, total_length = tree.get_farthest_leaf()
-threshold = thresh * total_length
+threshold = thresh * total_length * 2
 print("Real branch length threshold value: ", threshold)
 
 # get leaf nodes and their names
@@ -55,7 +60,8 @@ tree_leaves = [node.name for node in tree_leaf_nodes]
 # run basic checks
 assert set(tree_leaves) == set(tissue_group_names_original), "The tree leaves from the newick file input do not match the tissue group names input."
 
-print("Initial number of clones: ", len(tree_leaves))
+num_clones = len(tree_leaves)
+print("Initial number of clones: ", num_clones)
 print("Number of clones with more than one tissue label: ", len(tissue_group_names_original) - len(tissue_group_names))
 print("Number of clones with one tissue label: ", len(tissue_group_names))
 
@@ -135,9 +141,11 @@ if plot:
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
     plot_phylo.plot_phylo(tree.write(), ax=ax1, col_dict=color_dict, show_support=False)
-    ax1.set_title('Original Tree')
+    ax1.set_title(f"Original Tree: {num_clones} tips")
     plot_phylo.plot_phylo(tree_copy.write(), ax=ax2, col_dict=color_dict, show_support=False, reverse=True) 
-    ax2.set_title('Downsampled Tree')
+    ax2.set_title(f"Downsampled Tree: {len(keep_names)} tips")
+    ax2.axvline(x=(ax2.get_xlim()[1] * thresh), color='r', linestyle='dashed', linewidth=1)
+    plt.title(f"Threshold at {thresh*100}% of tree height")
     plt.tight_layout()
     plt.savefig(outprefix + "_downsampled_tree_comparison.png")
     plt.close()
@@ -149,4 +157,4 @@ tree_copy.write(outfile=f"{outprefix}_downsampled_tree.nwk", format=5)
 tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep='\t', header=True, index=False) # for yang data
 
 # output downsampled character matrix
-char_matrix_filtered.to_csv(outprefix + "_downsampled_character_matrix.tsv", sep='\t')
+char_matrix_filtered.to_csv(outprefix + "_char_matrix.tsv", sep='\t')
