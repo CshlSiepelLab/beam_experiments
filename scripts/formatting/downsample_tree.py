@@ -11,12 +11,14 @@ import plot_phylo
 
 
 # inputs
-# tree_file = sys.argv[1]
-# tissue_labels_file = sys.argv[2]
-# thresh = float(sys.argv[3])
+# char_matrix_file = sys.argv[1]
+# tree_file = sys.argv[2]
+# tissue_labels_file = sys.argv[3]
+# thresh = float(sys.argv[4])
 # outprefix = sys.argv[5]
 plot = True
 
+char_matrix_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/mS_854_indel_character_matrix.tsv"
 tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees.nwk"
 tissue_labels_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
 thresh = 1.5 # to be adjusted as a percentage of the tree height
@@ -30,6 +32,9 @@ tissue_group_names_original = [str(l) for l in tissue_labels_original['group_nam
 tissue_labels = tissue_labels_original[tissue_labels_original['tissues'].str.contains(',', na=False) == False]
 tissue_group_names = [str(l) for l in tissue_labels['group_name'].to_list()]
 
+# read in character matrix
+char_matrix = pd.read_csv(char_matrix_file, sep='\t', index_col=0)
+char_matrix.index = char_matrix.index.astype(str)
 
 # read in tree
 tree = Tree(tree_file, format=3)
@@ -67,7 +72,35 @@ for tissue in tissue_labels['tissues'].unique():
     for node1, node2, distance in distances:
         if distance < threshold:
             if node1 not in nodes_to_remove and node2 not in nodes_to_remove:
-                remove = random.choice([node1, node2])
+                char_matrix_node1 = char_matrix.loc[node1.name]
+                char_matrix_node2 = char_matrix.loc[node2.name]
+                set1 = set(char_matrix_node1[char_matrix_node1 != 0][char_matrix_node1 != -1])
+                set2 = set(char_matrix_node2[char_matrix_node2 != 0][char_matrix_node2 != -1])
+                
+                print(f"Comparing nodes {node1.name} and {node2.name}")
+                print(f"Unique mutations in {node1.name}: {set1}")
+                print(f"Unique mutations in {node2.name}: {set2}")
+                
+                # if they have the same number of unique mutations, choose the one with the least missing data
+                if len(set1) == len(set2):
+                    print(f"Nodes {node1.name} and {node2.name} have the same number of unique mutations")
+                    if (char_matrix_node1 == -1).sum() > (char_matrix_node2 == -1).sum():
+                        remove = node1
+                        print(f"Node {node1.name} has more missing data, removing {node1.name}")
+                    elif (char_matrix_node2 == -1).sum() > (char_matrix_node1 == -1).sum():
+                        remove = node2
+                        print(f"Node {node2.name} has more missing data, removing {node2.name}")
+                    # if they have the same number of unique mutations and missing data, choose randomly
+                    else:
+                        remove = random.choice([node1, node2])
+                        print(f"Nodes {node1.name} and {node2.name} have the same number of unique mutations and missing data, randomly removing {remove.name}")
+                # main priority is to keep the clone with the most unique mutations
+                elif len(set1) > len(set2):
+                    remove = node2
+                    print(f"Node {node2.name} has fewer unique mutations, removing {node2.name}")
+                elif len(set2) > len(set1):
+                    remove = node1
+                    print(f"Node {node1.name} has fewer unique mutations, removing {node1.name}")
                 nodes_to_remove.add(remove)
                 print("Removed: ", remove.name)
 
