@@ -66,7 +66,6 @@ nodes_to_remove = set()
 distance_values = []
 for tissue in tissue_labels['tissues'].unique():
     nodes_in_tissue = [node for node in candidates if tissue_labels.loc[tissue_labels['group_name'] == str(node.name), 'tissues'].values[0] == str(tissue)]
-    print(f"Candidates in tissue {tissue}: {[node.name for node in nodes_in_tissue]}")
     distances=[[node1, node2, node1.get_distance(str(node2.name))] for node1, node2 in combinations(nodes_in_tissue, 2)]
     distance_values.extend(distances)
     for node1, node2, distance in distances:
@@ -77,32 +76,21 @@ for tissue in tissue_labels['tissues'].unique():
                 set1 = set(char_matrix_node1[char_matrix_node1 != 0][char_matrix_node1 != -1])
                 set2 = set(char_matrix_node2[char_matrix_node2 != 0][char_matrix_node2 != -1])
                 
-                print(f"Comparing nodes {node1.name} and {node2.name}")
-                print(f"Unique mutations in {node1.name}: {set1}")
-                print(f"Unique mutations in {node2.name}: {set2}")
-                
                 # if they have the same number of unique mutations, choose the one with the least missing data
                 if len(set1) == len(set2):
-                    print(f"Nodes {node1.name} and {node2.name} have the same number of unique mutations")
                     if (char_matrix_node1 == -1).sum() > (char_matrix_node2 == -1).sum():
                         remove = node1
-                        print(f"Node {node1.name} has more missing data, removing {node1.name}")
                     elif (char_matrix_node2 == -1).sum() > (char_matrix_node1 == -1).sum():
                         remove = node2
-                        print(f"Node {node2.name} has more missing data, removing {node2.name}")
                     # if they have the same number of unique mutations and missing data, choose randomly
                     else:
                         remove = random.choice([node1, node2])
-                        print(f"Nodes {node1.name} and {node2.name} have the same number of unique mutations and missing data, randomly removing {remove.name}")
                 # main priority is to keep the clone with the most unique mutations
                 elif len(set1) > len(set2):
                     remove = node2
-                    print(f"Node {node2.name} has fewer unique mutations, removing {node2.name}")
                 elif len(set2) > len(set1):
                     remove = node1
-                    print(f"Node {node1.name} has fewer unique mutations, removing {node1.name}")
                 nodes_to_remove.add(remove)
-                print("Removed: ", remove.name)
 
 # Plot histogram of values and threshold
 if plot:
@@ -124,6 +112,9 @@ for node in tree.traverse():
 
 # filter tissue labels
 tissue_labels_filtered = tissue_labels_original[~tissue_labels_original['group_name'].isin(remove_names)]
+
+# filter char matrix
+char_matrix_filtered = char_matrix.drop(remove_names)
 
 # assign colors to the tip names based on the tissue labels
 DEFAULT_COLORS = ["black", "red", "green", "purple", "blue", "orange", "brown", "pink", "grey", "yellow", "cyan"]
@@ -156,3 +147,6 @@ tree_copy.write(outfile=f"{outprefix}_downsampled_tree.nwk", format=5)
 
 # tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep=',', header=False)  # for sim data
 tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep='\t', header=True, index=False) # for yang data
+
+# output downsampled character matrix
+char_matrix_filtered.to_csv(outprefix + "_downsampled_character_matrix.tsv", sep='\t')
