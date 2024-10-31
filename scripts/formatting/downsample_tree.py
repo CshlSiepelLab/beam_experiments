@@ -21,7 +21,7 @@ plot = True
 char_matrix_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/mS_854_indel_character_matrix.tsv"
 tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees.nwk"
 tissue_labels_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
-thresh = 1.5 # to be adjusted as a percentage of the tree height
+thresh = 1.5 # to be adjusted as a scalar of the tree height
 outprefix = "test"
 
 # read in tissue data
@@ -78,20 +78,21 @@ for tissue in tissue_labels['tissues'].unique():
                 
                 # if they have the same number of unique mutations, choose the one with the least missing data
                 if len(set1) == len(set2):
-                    if (char_matrix_node1 == -1).sum() > (char_matrix_node2 == -1).sum():
-                        remove = node1
-                    elif (char_matrix_node2 == -1).sum() > (char_matrix_node1 == -1).sum():
-                        remove = node2
+                    node1_missing = (char_matrix_node1 == -1).sum()
+                    node2_missing = (char_matrix_node2 == -1).sum()
+                    if node1_missing > node2_missing:
+                        nodes_to_remove.add(node1)
+                    elif node2_missing > node1_missing:
+                        nodes_to_remove.add(node2)
                     # if they have the same number of unique mutations and missing data, choose randomly
                     else:
-                        remove = random.choice([node1, node2])
+                        nodes_to_remove.add(random.choice([node1, node2]))
                 # main priority is to keep the clone with the most unique mutations
                 elif len(set1) > len(set2):
-                    remove = node2
-                elif len(set2) > len(set1):
-                    remove = node1
-                nodes_to_remove.add(remove)
-
+                    nodes_to_remove.add(node2)
+                else:
+                    nodes_to_remove.add(node1)
+                
 # Plot histogram of values and threshold
 if plot:
     plt.hist([distance for _, _, distance in distance_values], bins=100, edgecolor='black', color='grey')
@@ -106,9 +107,8 @@ if plot:
 # remove nodes from the tree in a copy of the tree
 tree_copy = tree.copy()
 remove_names = [node.name for node in nodes_to_remove]
-for node in tree.traverse():
-    if node.is_leaf() and node.name in remove_names:
-        tree_copy.search_nodes(name=node.name)[0].delete()
+keep_names = [name for name in tree_leaves if name not in remove_names]
+tree_copy.prune(keep_names, preserve_branch_length=True)
 
 # filter tissue labels
 tissue_labels_filtered = tissue_labels_original[~tissue_labels_original['group_name'].isin(remove_names)]
