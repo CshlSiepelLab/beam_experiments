@@ -63,11 +63,84 @@ rule plotTrueMigrationGraph:
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
         """
 
-rule downsampleInputsJaccard:
+# can directy downsample the matrix and feed into metastabayes
+# if so then remove tree steps below for cassiopeia, laml, and downsampleInputsTree
+# rule downsampleInputsJaccard:
+#     input:
+#         os.path.join(outdir, "raw_data/{sim}", "done"),
+#         sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+#         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling")),
+#     output:
+#         downsampledSimMatrix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_char_matrix.tsv",
+#         downsampledLeafTissues = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_tissue_labels.tsv",
+#     params:
+#         outprefix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}",
+#         scripts = config['scripts'],
+#         threads = config['threads'],
+#     conda:
+#         "../../envs/networkx.yaml"
+#     shell:
+#         """
+#         # add header to leaf tissues
+#         if ! grep -q "tissues" {input.leafTissues}; then
+#             sed -i '1i group_name\ttissues' {input.leafTissues}
+#         fi
+
+#         python {params.scripts}/formatting/downsample_pairwise_jaccard.py {input.sim_matrix} {input.leafTissues} {wildcards.threshold} {params.threads} {params.outprefix}
+#         """
+
+# alternatively, can infer a tree and the downsample based on the tree
+rule runCassiopeia:
     input:
-        os.path.join(outdir, "raw_data/{sim}", "done"),
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+        copiedData = os.path.join(outdir, "raw_data/{sim}", "done"),
+        matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv"))
+    output:
+        "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    params:
+        cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
+        outputdir = "{outdir}/cassiopeia_greedy/{sim}",
+        threads = 5
+    singularity:
+        "../../envs/simulate.sif"
+    shell:
+        """
+        # run cassiopeia greedy
+        python {params.cassiopeia_script} {input.matrix} {params.outputdir}
+        """
+
+rule runLAML:
+    input:
+        matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    output:
+        lamlTree = "{outdir}/laml/{sim}/laml_trees.nwk",
+        lamlTreeNoOrigin = "{outdir}/laml/{sim}/laml_trees_no_origin.nwk",
+    params:
+        outputdir = "{outdir}/laml/{sim}",
+        experimentTime = config['generations'],
+        threads = 25
+    conda:
+        "../../envs/laml.yaml"
+    shell:
+        """
+        # copy matrix and replace -1 with ? for missing data
+        cp {input.matrix} {params.outputdir}/matrix.csv
+        sed -i 's/-1/?/g; s/\t/,/g' {params.outputdir}/matrix.csv
+
+        # run laml
+        run_laml -c {params.outputdir}/matrix.csv -t {input.casTree} -o {params.outputdir}/laml --timescale {params.experimentTime} --parallel
+
+        # remove origin from tree
+        newick=$(sed 's/):.*$//g' {params.outputdir}/laml_trees.nwk) 
+        echo "${{newick:1}}" > {output.lamlTreeNoOrigin}
+        echo ");" >> {output.lamlTreeNoOrigin}
+        """
+
+rule downsampleInputsTree:
+    input:
+        matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling")),
+        lamlTreeNoOrigin = "{outdir}/laml/{sim}/laml_trees_no_origin.nwk",
     output:
         downsampledSimMatrix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_char_matrix.tsv",
         downsampledLeafTissues = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_tissue_labels.tsv",
@@ -76,15 +149,10 @@ rule downsampleInputsJaccard:
         scripts = config['scripts'],
         threads = config['threads'],
     conda:
-        "../../envs/networkx.yaml"
+        "../../envs/compare_trees.yaml"
     shell:
         """
-        # add header to leaf tissues
-        if ! grep -q "tissues" {input.leafTissues}; then
-            sed -i '1i group_name\ttissues' {input.leafTissues}
-        fi
-
-        python {params.scripts}/formatting/downsample_pairwise_jaccard.py {input.sim_matrix} {input.leafTissues} {wildcards.threshold} {params.threads} {params.outprefix}
+        python {params.scripts}/formatting/downsample_tree.py {input.matrix} {input.lamlTreeNoOrigin} {input.leafTissues} {wildcards.threshold} {params.outprefix}
         """
 
 

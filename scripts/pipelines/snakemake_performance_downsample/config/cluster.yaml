@@ -5,7 +5,13 @@ __default__:
   logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}.err'
   runtime: 24:00:00  # timelimit for all methods in hr:min:sec
 
-downsampleInputs:
+downsampleInputsJaccard:
+  cores: '{params.threads}'
+  logout: '{outdir}/job_logs/{wildcards.sim}/{rule}_{wildcards.threshold}.out'
+  logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}_{wildcards.threshold}.err'
+  mem: '1G'
+
+downsampleInputsTree:
   cores: '{params.threads}'
   logout: '{outdir}/job_logs/{wildcards.sim}/{rule}_{wildcards.threshold}.out'
   logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}_{wildcards.threshold}.err'

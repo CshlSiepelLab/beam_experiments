@@ -145,7 +145,7 @@ if plot:
     plot_phylo.plot_phylo(tree_copy.write(), ax=ax2, col_dict=color_dict, show_support=False, reverse=True) 
     ax2.set_title(f"Downsampled Tree: {len(keep_names)} tips")
     ax2.axvline(x=(ax2.get_xlim()[1] * thresh), color='r', linestyle='dashed', linewidth=1)
-    plt.title(f"Threshold at {thresh*100}% of tree height")
+    fig.suptitle(f"Threshold at {thresh*100}% of tree height")
     plt.tight_layout()
     plt.savefig(outprefix + "_downsampled_tree_comparison.png")
     plt.close()

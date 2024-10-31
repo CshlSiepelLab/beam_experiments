@@ -3,17 +3,15 @@
 inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/downsampling_test_150_tips_9_12_24"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_test_150_tips_9_12_24"
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_test_150_tips_10_31_24"
 
 # downsampling thresholds
 thresholds:
-  - 0.9
-  - 0.7
+  - 1.0
+  - 0.75
   - 0.5
-  - 0.3
-  - 0.2
+  - 0.25
   - 0.1
-  - 0.05
   - 0.0
 
 # set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
