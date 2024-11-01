@@ -147,12 +147,12 @@ if plot:
 
     results_left = plot_phylo.plot_phylo(tree.write(), ax=ax, xpos=5, ypos=ypos_val, width=35,
                                       show_axis=False, show_support=False,
-                                      font_size=16, col_dict=color_dict,
+                                      font_size=10, col_dict=color_dict,
                                       rev_align_tips=False)
     results_right = plot_phylo.plot_phylo(tree_copy.write(), ax=ax, xpos=82, ypos=10, width=35,
                                        show_axis=False, show_support=False,
                                        reverse=True,
-                                       font_size=16, col_dict=color_dict,
+                                       font_size=10, col_dict=color_dict,
                                        rev_align_tips=False) 
     
     # Connect labels between the trees
@@ -175,13 +175,13 @@ if plot:
         right_y = right_box['ymid']
 
         # Plot the points on the left tree
-        ax.scatter(left_x, left_y, color=color_dict[link])
+        ax.scatter(left_x, left_y, color=color_dict[link], s=5)
         
         # Plot the points on the right tree
-        ax.scatter(right_x, right_y, color=color_dict[link])
+        ax.scatter(right_x, right_y, color=color_dict[link], s=5)
         
         # Connect the two points
-        ax.plot([left_x, right_x], [left_y, right_y], color=color_dict[link])
+        ax.plot([left_x, right_x], [left_y, right_y], color=color_dict[link], linewidth=0.5)
 
     ax.text(22.5, 21.5, f"Original Tree: {num_clones} tips", ha='center', va='center', fontsize=16, color='black')
     ax.text(99.5, 21.5, f"Downsampled Tree: {len(keep_names)} tips", ha='center', va='center', fontsize=16, color='black')
