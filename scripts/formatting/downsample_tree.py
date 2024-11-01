@@ -17,10 +17,10 @@ tissue_labels_file = sys.argv[3]
 thresh = float(sys.argv[4])
 outprefix = sys.argv[5]
 
-# char_matrix_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/mS_854_indel_character_matrix.tsv"
-# tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees.nwk"
-# tissue_labels_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
-# thresh = 1.5 # to be adjusted as a scalar of the tree height
+# char_matrix_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/mS_854_indel_character_matrix.tsv"
+# tree_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees.nwk"
+# tissue_labels_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
+# thresh = 0.5 # to be adjusted as a scalar of the tree height
 # outprefix = "test"
 
 # whether to make plots to show the downsampling result compared to the original tree
@@ -138,14 +138,56 @@ for node in tree.traverse():
 
 # plot the trees side by side
 if plot:
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+    f = plt.figure(figsize=(15, 10))
+    ax = plt.subplot(1, 1, 1)
 
-    plot_phylo.plot_phylo(tree.write(), ax=ax1, col_dict=color_dict, show_support=False)
-    ax1.set_title(f"Original Tree: {num_clones} tips")
-    plot_phylo.plot_phylo(tree_copy.write(), ax=ax2, col_dict=color_dict, show_support=False, reverse=True) 
-    ax2.set_title(f"Downsampled Tree: {len(keep_names)} tips")
-    ax2.axvline(x=(ax2.get_xlim()[1] * thresh), color='r', linestyle='dashed', linewidth=1)
-    fig.suptitle(f"Threshold at {thresh*100}% of tree height")
+    ax.set_xlim(2, 122)
+    ax.set_ylim(9, 21)
+    ypos_val = 10
+
+    results_left = plot_phylo.plot_phylo(tree.write(), ax=ax, xpos=5, ypos=ypos_val, width=35,
+                                      show_axis=False, show_support=False,
+                                      font_size=16, col_dict=color_dict,
+                                      rev_align_tips=False)
+    results_right = plot_phylo.plot_phylo(tree_copy.write(), ax=ax, xpos=82, ypos=10, width=35,
+                                       show_axis=False, show_support=False,
+                                       reverse=True,
+                                       font_size=16, col_dict=color_dict,
+                                       rev_align_tips=False) 
+    
+    # Connect labels between the trees
+    links = []
+    for r1 in results_right:
+        ind1 = results_left[r1]['index']
+        ind2 = results_right[r1]['index']
+        links.append(r1)
+
+    for link in links:
+        # Retrieve the positions of the non-matched labels
+        left_box = results_left[link]
+        right_box = results_right[link]
+        
+        # Get the position of the labels in each tree
+        left_x = left_box['xmax']
+        left_y = left_box['ymid']
+        
+        right_x = right_box['xmin']
+        right_y = right_box['ymid']
+
+        # Plot the points on the left tree
+        ax.scatter(left_x, left_y, color=color_dict[link])
+        
+        # Plot the points on the right tree
+        ax.scatter(right_x, right_y, color=color_dict[link])
+        
+        # Connect the two points
+        ax.plot([left_x, right_x], [left_y, right_y], color=color_dict[link])
+
+    ax.text(22.5, 21.5, f"Original Tree: {num_clones} tips", ha='center', va='center', fontsize=16, color='black')
+    ax.text(99.5, 21.5, f"Downsampled Tree: {len(keep_names)} tips", ha='center', va='center', fontsize=16, color='black')
+    ax.axvline(x=(5 + (35 * (1-thresh))), color='r', linestyle='dashed', linewidth=1)
+    ax.axvline(x=(82 + (35 * thresh)), color='r', linestyle='dashed', linewidth=1)
+    f.suptitle(f"Threshold at {thresh*100}% of tree height", fontsize=16)
     plt.tight_layout()
     plt.savefig(outprefix + "_downsampled_tree_comparison.png")
     plt.close()
