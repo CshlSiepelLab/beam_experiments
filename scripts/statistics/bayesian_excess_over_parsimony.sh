@@ -11,21 +11,18 @@ for posterior_file in $posterior_files; do
     echo "Starting $posterior_file"
     dir=$(dirname $posterior_file)
     working_dir=${dir}/posterior_expected_over_parsimony
+    mkdir -p $working_dir
+    echo -e "id,beast_migration_count,parsimony_migration_count,posterior_excess" > $working_dir/posterior_expected_migration_counts_over_parsimony.csv
 
-    trees=()
     while IFS= read -r line; do
-        trees+=("$line")
-    done < <(grep 'tree STATE' "$posterior_file")
-
-    for tree in $trees; do
-        id=$(echo $tree | cut -d' ' -f2 | cut -d'_' -f2)
+        id=$(echo $line | cut -d' ' -f2 | cut -d'_' -f2)
         working_dir_id=${working_dir}/${id}
         mkdir -p $working_dir_id
-        newick=$(echo $tree | cut -d' ' -f5-)
+        newick=$(echo $line | cut -d' ' -f5-)
         echo $newick
 
         # process beast tree and get migration count
-        python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/formatting/beast_posterior_tree_to_newicks.py $newick $id $working_dir
+        python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/formatting/beast_posterior_tree_to_newicks.py $newick $id $working_dir_id
         beast_result=$working_dir_id/${id}_beast.newick
         plain_newick=$working_dir_id/${id}.newick
         tip_tissues=$working_dir_id/${id}_tip_tissues.tsv
@@ -37,9 +34,12 @@ for posterior_file in $posterior_files; do
         # get migration counts
         beast_migration_count=$(python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/statistics/migration_count_from_tree.py $beast_result $primary_tissue | cut -d' ' -f3)
         parsimony_migration_count=$(python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/statistics/migration_count_from_tree.py $parsimony_result $primary_tissue | cut -d' ' -f3)
+        excess=$((beast_migration_count - parsimony_migration_count))
 
         # save results
-        echo -e "id,beast_migration_count,parsimony_migration_count" > $working_dir_id/posterior_expected_migration_counts_over_parsimony.csv
-        echo -e "$id,$beast_migration_count,$parsimony_migration_count" >> $working_dir_id/posterior_migration_counts.csv
-    done
+        echo -e "$id,$beast_migration_count,$parsimony_migration_count,$excess" >> $working_dir/posterior_expected_migration_counts_over_parsimony.csv
+
+        # clean up
+        rm -r $working_dir_id
+    done < <(grep 'tree STATE' "$posterior_file")
 done
