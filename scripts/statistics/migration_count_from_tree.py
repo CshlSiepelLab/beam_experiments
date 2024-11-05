@@ -41,5 +41,5 @@ true_counts=get_migration_counts(true_tree)
 total_true = sum(true_counts.values())
 
 # output total migration count
-print(f"Migration count: {total_true}")
+print(f"{total_true}")
 
