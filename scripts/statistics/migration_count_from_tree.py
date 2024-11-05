@@ -26,7 +26,7 @@ true_tree_file=sys.argv[1]
 # true_tree_file="results/moreSims_joint_inference_vs_cassiopeia_machina_vs_random_cellTree_simdataset_5_3_24/mS/1983/cell_tree_seed1983_tissue_labeled_tree.nwk"
 
 # set primary tissue
-primary_tissue="P"
+primary_tissue=sys.argv[2]
 
 # read in tree files to ete3 tree
 true_tree = Tree(true_tree_file, format=8)

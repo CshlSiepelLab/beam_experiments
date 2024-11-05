@@ -195,8 +195,8 @@ if plot:
 # output downsampled tree and tissue labels
 tree_copy.write(outfile=f"{outprefix}_downsampled_tree.nwk", format=5)
 
-# tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep=',', header=False)  # for sim data
-tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep='\t', header=True, index=False) # for yang data
+tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep=',', header=False, index=False)  # for sim data
+# tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep='\t', header=True, index=False) # for yang data
 
 # output downsampled character matrix
 char_matrix_filtered.to_csv(outprefix + "_char_matrix.tsv", sep='\t')
