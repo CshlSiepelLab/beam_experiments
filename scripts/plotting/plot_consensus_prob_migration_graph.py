@@ -53,7 +53,7 @@ for edge, probability in graph_dict.items():
         source, target, num = edge.split('_')
         G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, fontsize=24)
 dot = nx.nx_pydot.to_pydot(G)
-dot.write_pdf(f"{outdir}/threshold_{consensus_probability_threshold}_migration_graph.pdf")
+dot.write_pdf(f"{outdir}/threshold_migration_graph.pdf")
 
 # plot the thresholded graph with all edges above consensus_probability_threshold probability but collapse directed multiedges into one with a number label of the original number of those edges
 G = nx.MultiDiGraph()

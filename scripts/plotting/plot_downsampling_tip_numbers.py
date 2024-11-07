@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 
 DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
 
-infile='/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_test_150_tips_9_12_24/precision_recall/tip_counts.csv'
-outfile='/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_test_150_tips_9_12_24/precision_recall/tip_counts.pdf'
+infile='/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_test_150_tips_10_31_24/downsampled_data/tip_counts.csv'
+outfile='/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_test_150_tips_10_31_24/downsampled_data/tip_counts.pdf'
 
 # Read the CSV file into a DataFrame
 df = pd.read_csv(infile)
@@ -22,7 +22,7 @@ sns.stripplot(x='downsampling_threshold', y='tip_count', data=df, hue='downsampl
 
 # Set plot labels and title
 plt.xlabel('Downsampling distance threshold', fontsize=26)
-plt.ylabel('Percent of original tips retained', fontsize=26)
+plt.ylabel('% original tips retained', fontsize=26)
 plt.xticks(fontsize=26)
 plt.yticks(fontsize=26)
 plt.tight_layout()

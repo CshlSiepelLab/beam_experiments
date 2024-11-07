@@ -49,6 +49,4 @@ process_posterior_file() {
 
 export -f process_posterior_file
 
-# echo "$posterior_files" | parallel -j $num_cpus process_posterior_file
-
 parallel -j $num_cpus process_posterior_file ::: $posterior_files
