@@ -15,30 +15,32 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
     mouse_fastqs[mouse].append(file)
 
 
-def get_elements_from_file(path):
-    filename = f"{path}/cp_list.txt"
-    with open(filename) as f:
-        return [line.strip() for line in f]
+# def get_elements_from_file(path):
+#     filename = f"{path}/cp_list.txt"
+#     with open(filename) as f:
+#         return [line.strip() for line in f]
 
 
 rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
-        expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
-        [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
-               cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/combined.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice]
+        # expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
+        # [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
+        #        cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        # [expand("{outdir}/metastabayes/{mouse}/{cp}/combined.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice],
+        # [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues.nwk", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice]
                 
 
 rule runEvotracer:
@@ -451,7 +453,7 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 100
+        threads = 25
     conda:
         "../../envs/machina.yaml"
     shell:
@@ -525,7 +527,7 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/metient/{mouse}/{cp}",
-        threads = 100
+        threads = 25
     singularity:
         "../../envs/metient.sif"
     shell:
@@ -540,80 +542,98 @@ rule runMetient:
         fi
         """
 
-rule callMigrationComigrationCounts:
+rule runParsimony:
     input:
-        graphPosterior = "{outdir}/metastabayes/{mouse}/{cp}/posterior_prob_graph.csv",
-        machinaEdgeFile = "{outdir}/machina/{mouse}/{cp}/" + f"{config['primaryTissue'][mouse]}-G-{config['primaryTissue'][mouse]}-R.tree",
-        metientResults = "{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt"
+        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
+        leafTissues = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling"
     output:
-        migrationCountCsv = "{outdir}/compare_migration_counts/{mouse}_{cp}_migration_counts.csv",
-        migrationTopologyCsv = "{outdir}/compare_migration_counts/{mouse}_{cp}_topology_classifications.csv"
+        parsimonyResult = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues.nwk"
     params:
-        outdir = "{outdir}/compare_migration_counts",
-        name = "{mouse}_{cp}",
+        scripts = config['scripts'],
+        outputdir = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = 1
     conda:
         "../../envs/compare_trees.yaml"
     shell:
         """
-        python {config['scripts']}/formatting/call_migration_counts_machian_metient_metastabayes.py {input.machinaEdgeFile} {input.metientResults} {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.name}
+        python {params.scripts}/consensus_random/parsimony_only.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir} {params.primaryTissue}
         """
 
-rule aggregateMigrationCounts:
-    input:
-        migrationCountCsvs = [expand("{outdir}/compare_migration_counts/{mouse}_{cp}_migration_counts.csv", mouse=m, cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), outdir=config['outdir']) for m in mice]
-    output:
-        aggregatedMigrationCounts = "{outdir}/compare_migration_counts/migration_counts_all.csv",
-    shell:
-        """
-        # write header to output file
-        echo "name,machina_migrations,machina_comigrations,metient_migrations,metient_comigrations,metastabayes_migrations,metastabayes_comigrations" > {output.aggregatedMigrationCounts}
+# rule callMigrationComigrationCounts:
+#     input:
+#         graphPosterior = "{outdir}/metastabayes/{mouse}/{cp}/posterior_prob_graph.csv",
+#         machinaEdgeFile = "{outdir}/machina/{mouse}/{cp}/" + f"{config['primaryTissue'][mouse]}-G-{config['primaryTissue'][mouse]}-R.tree",
+#         metientResults = "{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt"
+#     output:
+#         migrationCountCsv = "{outdir}/compare_migration_counts/{mouse}_{cp}_migration_counts.csv",
+#         migrationTopologyCsv = "{outdir}/compare_migration_counts/{mouse}_{cp}_topology_classifications.csv"
+#     params:
+#         outdir = "{outdir}/compare_migration_counts",
+#         name = "{mouse}_{cp}",
+#         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+#     conda:
+#         "../../envs/compare_trees.yaml"
+#     shell:
+#         """
+#         python {config['scripts']}/formatting/call_migration_counts_machian_metient_metastabayes.py {input.machinaEdgeFile} {input.metientResults} {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.name}
+#         """
 
-        # Loop through each input file and append the second line to the output file
-        for file in {input.migrationCountCsvs}; do
-            sed -n '2p' $file >> {output.aggregatedMigrationCounts}
-            echo "" >> {output.aggregatedMigrationCounts}
-        done
-        """
+# rule aggregateMigrationCounts:
+#     input:
+#         migrationCountCsvs = [expand("{outdir}/compare_migration_counts/{mouse}_{cp}_migration_counts.csv", mouse=m, cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), outdir=config['outdir']) for m in mice]
+#     output:
+#         aggregatedMigrationCounts = "{outdir}/compare_migration_counts/migration_counts_all.csv",
+#     shell:
+#         """
+#         # write header to output file
+#         echo "name,machina_migrations,machina_comigrations,metient_migrations,metient_comigrations,metastabayes_migrations,metastabayes_comigrations" > {output.aggregatedMigrationCounts}
 
-rule plotMigrationCounts:
-    input:
-        aggregatedMigrationCounts = "{outdir}/compare_migration_counts/migration_counts_all.csv"
-    output:
-        migrationCountPlot = "{outdir}/compare_migration_counts/migration_counts_all.pdf"
-    conda:
-        "../../envs/matplotlib.yaml"
-    shell:
-        """
-        python {config['scripts']}/plotting/plot_migrations_comigrations_boxplot.py {input.aggregatedMigrationCounts}
-        """
+#         # Loop through each input file and append the second line to the output file
+#         for file in {input.migrationCountCsvs}; do
+#             sed -n '2p' $file >> {output.aggregatedMigrationCounts}
+#             echo "" >> {output.aggregatedMigrationCounts}
+#         done
+#         """
 
-rule aggregateTopologyClassifications:
-    input:
-        migrationTopologyCsvs = expand("{outdir}/compare_migration_counts/{mouse}_{cp}_topology_classifications.csv", mouse=mice, cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), outdir=config['outdir'])
-    output:
-        aggregatedTopologyClassifications = "{outdir}/compare_migration_counts/topology_classifications_all.csv",
-    shell:
-        """
-        # write header to output file
-        echo "name,machina_met_to_met,machina_reseeding,metient_met_to_met,metient_reseeding,metastabayes_met_to_met,metastabayes_reseeding" > {output.aggregatedMigrationCounts}
+# rule plotMigrationCounts:
+#     input:
+#         aggregatedMigrationCounts = "{outdir}/compare_migration_counts/migration_counts_all.csv"
+#     output:
+#         migrationCountPlot = "{outdir}/compare_migration_counts/migration_counts_all.pdf"
+#     conda:
+#         "../../envs/matplotlib.yaml"
+#     shell:
+#         """
+#         python {config['scripts']}/plotting/plot_migrations_comigrations_boxplot.py {input.aggregatedMigrationCounts}
+#         """
 
-        # Loop through each input file and append the second line to the output file
-        for file in {input.migrationTopologyCsvs}; do
-            sed -n '2p' $file >> {output.aggregatedTopologyClassifications}
-            echo "" >> {output.aggregatedTopologyClassifications}
-        done
-        """
+# rule aggregateTopologyClassifications:
+#     input:
+#         migrationTopologyCsvs = expand("{outdir}/compare_migration_counts/{mouse}_{cp}_topology_classifications.csv", mouse=mice, cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), outdir=config['outdir'])
+#     output:
+#         aggregatedTopologyClassifications = "{outdir}/compare_migration_counts/topology_classifications_all.csv",
+#     shell:
+#         """
+#         # write header to output file
+#         echo "name,machina_met_to_met,machina_reseeding,metient_met_to_met,metient_reseeding,metastabayes_met_to_met,metastabayes_reseeding" > {output.aggregatedMigrationCounts}
 
-rule plotTopologyClassifications:
-    input:
-        aggregatedTopologyClassifications = "{outdir}/compare_migration_counts/topology_classifications_all.csv"
-    output:
-        topologyClassificationsPlot = "{outdir}/compare_migration_counts/topology_classifications_all.pdf"
-    conda:
-        "../../envs/matplotlib.yaml"
-    shell:
-        """
-        python {config['scripts']}/plotting/plot_topology_classifications.py {input.aggregatedTopologyClassifications}
-        """
+#         # Loop through each input file and append the second line to the output file
+#         for file in {input.migrationTopologyCsvs}; do
+#             sed -n '2p' $file >> {output.aggregatedTopologyClassifications}
+#             echo "" >> {output.aggregatedTopologyClassifications}
+#         done
+#         """
+
+# rule plotTopologyClassifications:
+#     input:
+#         aggregatedTopologyClassifications = "{outdir}/compare_migration_counts/topology_classifications_all.csv"
+#     output:
+#         topologyClassificationsPlot = "{outdir}/compare_migration_counts/topology_classifications_all.pdf"
+#     conda:
+#         "../../envs/matplotlib.yaml"
+#     shell:
+#         """
+#         python {config['scripts']}/plotting/plot_topology_classifications.py {input.aggregatedTopologyClassifications}
+#         """
 

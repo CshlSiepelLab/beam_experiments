@@ -4,8 +4,8 @@ fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/d
 # fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/billy_bladder_cancer_data_7_1_24/fastq_raw"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24"
-# outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_9_1_24"
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_11_11_24"
+# outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_11_24"
 
 # whether to model dropouts or just consider them as unedited sites
 modelDropouts: true
