@@ -192,7 +192,7 @@ primary_tissue=sys.argv[2]
 outdir = sys.argv[3]
 
 # set based on simulated dataset conditions
-downsampling_thresholds = [0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9]
+downsampling_thresholds = [0.0, 0.1, 0.15, 0.2, 0.3, 0.5, 0.75, 1.0]
 threads = 8
 
 avg_dfs = []

@@ -198,7 +198,7 @@ rule runMetastabayes:
         fileDir = "{outdir}/metastabayes/{sim}_{threshold}",
         metastabayesJar = config['metastabayesJar'],
         generations = config['generations'],
-        mcmclength = config['mcmcLength'],
+        mcmclength = lambda wildcards: config['mcmcLength'][wildcards.threshold],
         primaryTissue = config['primaryTissue'],
         threads = 5
     shell:
@@ -316,14 +316,15 @@ rule plotGraphPosterior:
         graphPosterior = "{outdir}/metastabayes/{sim}_{threshold}/posterior_prob_graph.csv"
     output:
         probabilityPlot = "{outdir}/metastabayes/{sim}_{threshold}/probability_migration_graph.pdf",
-        thresholdPlot = "{outdir}/metastabayes/{sim}_{threshold}/threshold_70_migration_graph.pdf"
+        thresholdPlot = "{outdir}/metastabayes/{sim}_{threshold}/threshold_migration_graph.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/metastabayes/{sim}_{threshold}"
+        outdir = "{outdir}/metastabayes/{sim}_{threshold}",
+        consensusThreshold = 0.4
     conda:
         "../../envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
+        python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.consensusThreshold}
         """
