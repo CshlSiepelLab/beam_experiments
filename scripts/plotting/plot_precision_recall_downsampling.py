@@ -15,6 +15,8 @@ from arviz import hdi
 import glob
 import ast
 import multiprocessing as mp
+from sklearn.metrics import auc
+
 
 # default colors taken from metient method for consistency in visualizations
 DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
@@ -263,21 +265,37 @@ def process(args):
 
     all_thresh_df = pd.DataFrame(all_thresh_rows)
     if not all_thresh_df.empty:
-        avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
         all_thresh_df.to_csv(f"{outdir}/{ds}/all_threshold_stats.csv", index=False)
+        avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
     return ds, avg_df
 
-with mp.Pool(threads) as pool:
-    avg_dfs = pool.map(process, [(ds, outdir, dirs, primary_tissue) for ds in downsampling_thresholds])
+# if we want to compute the precision recall values from scratch
+# with mp.Pool(threads) as pool:
+#     avg_dfs = pool.map(process, [(ds, outdir, dirs, primary_tissue) for ds in downsampling_thresholds])
+
+# if compute is done previously, so we only want to plot precision recall from reading in the threshold csv files
+filepaths = [
+    f"{outdir}/{ds}/all_threshold_stats.csv" for ds in downsampling_thresholds
+]
+avg_dfs = []
+for filepath in filepaths:
+    if os.path.exists(filepath):
+        df = pd.read_csv(filepath)
+        avg_df = df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+        ds = float(os.path.basename(os.path.dirname(filepath)))
+        avg_dfs.append((ds, avg_df))
 
 size = 75
 textsize = 18
 plt.figure()
 colors = DEFAULT_COLORS
+# Calculate AUC for each curve and plot those values on the plot
 for i, (ds, avg_df) in enumerate(avg_dfs):
     if not avg_df.empty:
+        recall = avg_df['recall']
+        precision = avg_df['precision']
+        plt.plot(recall, precision, color=colors[i], label=f'{ds}')
         # plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
-        plt.plot(avg_df['recall'], avg_df['precision'], color = colors[i], label=f'{ds}')
 plt.xlim(-0.05,1.05)
 # plt.xlim(0.4, 1.01)
 # plt.xticks(np.arange(0.4, 1.01, 0.2))
