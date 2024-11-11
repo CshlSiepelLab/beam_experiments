@@ -52,7 +52,7 @@ EvoTraceR_object <-
                ref_border_sites = c(1, 26, 52, 78, 104, 130, 156, 182, 208, 234),
                flanking_filtering = "right",
                output_figures = TRUE,
-               asv_count_cutoff = 50, # minimum number of ASVs to be counted; decided as 3 on: 03/25/22
+               asv_count_cutoff = 3, # minimum number of ASVs to be counted; decided as 3 on: 03/25/22
                # pair-wise alignment parameters between un-edited barcode and edited barcode (ASV)
                pwa_type = "global", # based on AmpliCan (global = Needleman-Wunsch)
                pwa_gapOpening = -25, # based on AmpliCan: -25
