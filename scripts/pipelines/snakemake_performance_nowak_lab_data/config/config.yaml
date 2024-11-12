@@ -47,7 +47,7 @@ logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
 metastabayesJar: /grid/siepel/home_norepl/staklins/metastabayes/metastabayes.jar
 
 # set path to the metastabayes model xml template file
-xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/metastabayes_mcmc_template_OLD.xml
+xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/metastabayes_mcmc_template.xml
 
 # set the length of the experiment
 
