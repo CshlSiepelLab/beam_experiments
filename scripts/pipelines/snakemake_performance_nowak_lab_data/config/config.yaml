@@ -78,7 +78,7 @@ experimentTime:
 mcmcLength: 50000000
 
 # set the desired number of parallel mcmc chains to run
-numChains: 5
+numChains: 3
 
 # set the minimum ess to include a chain in the combined output across chains (default: 200)
 essCutoff: 200

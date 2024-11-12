@@ -1,9 +1,0 @@
-<sequence id='cell_1' spec='Sequence' taxon='1' value='1,2,0,1,1,0,1,2,1,0,'/>
-<sequence id='cell_2' spec='Sequence' taxon='2' value='1,0,0,1,1,0,1,2,1,0,'/>
-<sequence id='cell_3' spec='Sequence' taxon='3' value='1,0,0,1,1,0,1,2,1,0,'/>
-<sequence id='cell_4' spec='Sequence' taxon='4' value='1,0,0,1,1,0,1,2,1,0,'/>
-<sequence id='cell_5' spec='Sequence' taxon='5' value='2,2,0,1,1,0,1,1,1,0,'/>
-<sequence id='cell_6' spec='Sequence' taxon='6' value='2,2,0,1,2,0,1,1,1,0,'/>
-<sequence id='cell_8' spec='Sequence' taxon='7' value='1,0,1,2,2,0,2,2,1,0,'/>
-<sequence id='cell_9' spec='Sequence' taxon='8' value='1,0,1,2,2,0,2,2,1,0,'/>
-<sequence id='cell_10' spec='Sequence' taxon='9' value='2,0,0,1,1,0,1,1,1,0,'/>
