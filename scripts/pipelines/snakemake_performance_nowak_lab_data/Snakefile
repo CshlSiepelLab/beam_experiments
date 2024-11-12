@@ -272,11 +272,14 @@ rule runMetastabayes:
         unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
         numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
 
-        # set the mcmc chain length based on the number of tips in the tree and tissues
+        # set the mcmc chain length based on the number of tips in the tree
+        # use a minimum of 5 million and a maximum of a user specified length
         numTips=$(grep -c '^>' {input.fasta})
-        mcmclength=$(( numTips * numTissues * 100000 ))
+        mcmclength=$(( numTips * 100000 ))
         if (( mcmclength > {params.mcmclength} )); then
             mcmclength={params.mcmclength}
+        elif (( mcmclength < 5000000 )); then
+            mcmclength=5000000
         fi
 
         # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
