@@ -410,7 +410,8 @@ rule plotGraphPosterior:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         outdir = "{outdir}/metastabayes/{mouse}/{cp}",
-        threads = 1
+        threads = 1,
+        threshold = 0.4
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -420,7 +421,7 @@ rule plotGraphPosterior:
             touch {output.probabilityPlot}
             touch {output.thresholdPlot}
         else
-            python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
+            python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.threshold}
         fi
         """
 
