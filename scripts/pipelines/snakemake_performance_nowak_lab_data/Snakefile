@@ -272,6 +272,13 @@ rule runMetastabayes:
         unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
         numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
 
+        # set the mcmc chain length based on the number of tips in the tree and tissues
+        numTips=$(grep -c '^>' {input.fasta})
+        mcmclength=$(( numTips * numTissues * 100000 ))
+        if (( mcmclength > {params.mcmclength} )); then
+            mcmclength={params.mcmclength}
+        fi
+
         # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
         if [[ $numTissues -eq 1 ]]; then
             # if the primary already exists then add a dummy
@@ -327,7 +334,7 @@ rule runMetastabayes:
         -D numTissues=\"$numTissues\" \
         -D equalTissueFreqs=\"$equalTissueFreqs\" \
         -D tissueRootFreqs=\"$tissueRootFreqs\" \
-        -D mcmclength={params.mcmclength} \
+        -D mcmclength=\"$mcmclength\" \
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """

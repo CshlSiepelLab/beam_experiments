@@ -53,8 +53,8 @@
 
 <run id="mcmc" spec="MCMC" chainLength="$(mcmclength)">
         <state id="state" spec="State" storeEvery="5000">
-            <stateNode id="tree" spec="metastabayes.tree.MetastabayesStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)"/>
             <!-- <stateNode id="tree" spec="tidetree.tree.StartingTree" rootHeight="$(generations)" taxa="@alignment" editHeight="$(generations)" editDuration="$(generations)" sequencesAreClustered="false"> -->
+            <stateNode id="tree" spec="metastabayes.tree.MetastabayesStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)">
                 <trait idref="dateTrait"/>
                 <taxonset idref="taxonset"/>
             </stateNode>
