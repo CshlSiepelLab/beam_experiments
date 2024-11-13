@@ -402,10 +402,11 @@ rule convertTreePosteriorToGraphPosterior:
 
 rule plotGraphPosterior:
     input:
+        combinedTrees = "{outdir}/metastabayes/{mouse}/{cp}/combined.trees",
         graphPosterior = "{outdir}/metastabayes/{mouse}/{cp}/posterior_prob_graph.csv"
     output:
         probabilityPlot = "{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf",
-        thresholdPlot = "{outdir}/metastabayes/{mouse}/{cp}/threshold_70_migration_graph.pdf"
+        thresholdPlot = "{outdir}/metastabayes/{mouse}/{cp}/threshold_migration_graph.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
@@ -416,8 +417,12 @@ rule plotGraphPosterior:
         "../../envs/networkx.yaml"
     shell:
         """
-        if [ ! -s {input.graphPosterior} ]; then
-            echo "Graph posterior file is empty. Exiting."
+        if [ ! -s {input.combinedTrees} ] && [ ! -s {input.graphPosterior} ]; then
+            echo "Combined trees and graph posterior files are empty. Convergence likely not reached. Exiting."
+            # touch {output.probabilityPlot}
+            # touch {output.thresholdPlot}
+        elif [ ! -s {input.graphPosterior} ]; then
+            echo "Graph posterior file is empty. Is there expected to be more than one tissue in the graph? Exiting."
             touch {output.probabilityPlot}
             touch {output.thresholdPlot}
         else
