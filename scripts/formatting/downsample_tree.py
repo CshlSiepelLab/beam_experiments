@@ -17,17 +17,31 @@ tissue_labels_file = sys.argv[3]
 thresh = float(sys.argv[4])
 outprefix = sys.argv[5]
 
-# char_matrix_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/mS_854_indel_character_matrix.tsv"
-# tree_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees.nwk"
-# tissue_labels_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
+# char_matrix_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/processed_metadata/3451_Lkb1_T1_successive_char_matrix_collapsed.txt"
+# tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_lung_cancer_data_11_13_24/ds_laml/3451_Lkb1_T1/3451_Lkb1_T1_laml_trees_no_origin.nwk"
+# tissue_labels_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/processed_metadata/3451_Lkb1_T1_successive_char_matrix_collapsing_dict.txt"
 # thresh = 0.5 # to be adjusted as a scalar of the tree height
 # outprefix = "test"
+
+# print("Character matrix file: ", char_matrix_file)
+# print("Tree file: ", tree_file)
+# print("Tissue labels file: ", tissue_labels_file)
+# print("Threshold: ", thresh)
+# print("Output prefix: ", outprefix)
 
 # whether to make plots to show the downsampling result compared to the original tree
 plot = True
 
 # read in tissue data
-tissue_labels_original = pd.read_csv(tissue_labels_file, sep=r'\s+', index_col=None, names=['group_name', 'tissues'], dtype=str)
+# Read the first line of the file to check for headers
+with open(tissue_labels_file, 'r') as file:
+    first_line = file.readline().strip()
+
+# Check if the first line contains the headers
+if 'group_name' in first_line and 'tissues' in first_line:
+    tissue_labels_original = pd.read_csv(tissue_labels_file, sep=r'\s+', index_col=None, dtype=str)
+else:
+    tissue_labels_original = pd.read_csv(tissue_labels_file, sep=r'\s+', index_col=None, names=['group_name', 'tissues'], dtype=str)
 tissue_group_names_original = [str(l) for l in tissue_labels_original['group_name'].to_list()]
 
 # only keep clones with one tissue label
