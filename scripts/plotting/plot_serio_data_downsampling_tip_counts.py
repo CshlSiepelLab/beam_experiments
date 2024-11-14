@@ -7,17 +7,20 @@ import matplotlib.pyplot as plt
 
 DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
 
-infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/asv_counts_per_cp.csv"
-outfile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/asv_counts_per_cp.pdf"
+infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_11_24/asv_counts_per_cp.csv"
+outfile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_11_24/asv_counts_per_cp.pdf"
 
 max_tips=200
 
 # Load the data from the CSV file
 data = pd.read_csv(infile)
 
+# sort by mouse and then by cp in increasing order
+data = data.sort_values(by=['mouse', 'cp'])
+
 # Create the bar plot
 plt.figure(figsize=(14, 8))
-bar_plot = sns.barplot(x='mouse', y='num_asvs', hue='cp', width = 0.95, data=data, ci=None, palette=DEFAULT_COLORS)
+bar_plot = sns.barplot(x='mouse', y='num_asvs', hue='cp', width=0.95, data=data, ci=None, palette=DEFAULT_COLORS)
 
 # turn off legend
 bar_plot.legend_.remove()

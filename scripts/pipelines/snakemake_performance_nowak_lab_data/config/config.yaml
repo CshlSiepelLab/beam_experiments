@@ -11,8 +11,8 @@ outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/resu
 modelDropouts: true
 
 # threshold for downsampling
-# Note: downsampling is generally useless with the Serio et al. data due to limited mutation content per barcode, so the functionality is here but disabled by default
-downsampleThreshold: 0.0  # Use 0.0 for no downsampling
+downsampleTipNumThreshold: 150 # any CP with more ASVs than this will be downsampled
+downsampleDistanceThreshold: 0.3 # for CPs being downsampled, this threshold will be used. 0.0 will always bypass downsampling
 
 # primary tissue name
 primaryTissue: 
@@ -75,7 +75,7 @@ experimentTime:
 #   MMUS1782: 218
 
 # set the desired maximum mcmc chain length
-mcmcLength: 100000000
+mcmcLength: 50000000
 
 # set the desired number of parallel mcmc chains to run
 numChains: 3

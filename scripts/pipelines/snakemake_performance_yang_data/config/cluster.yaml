@@ -9,4 +9,7 @@ __default__:
 runLAML:
   cores: 25
 
+runLAMLds:
+  cores: 25
+
   

@@ -85,7 +85,8 @@ rule prepMetastabayesInputs:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         modelDropouts = config['modelDropouts'],
         threads = 1,
-        downsampleThreshold = config['downsampleThreshold']
+        downsampleDistanceThreshold = config['downsampleDistanceThreshold'],
+        downsampleTipNumThreshold = config['downsampleTipNumThreshold']
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -116,15 +117,26 @@ rule prepMetastabayesInputs:
                 tail -n +2 {input.asv_stat} | cut -d',' -f1-2 | grep -w "$asv" | awk -F',' '{{if (!seen[$1","$2]++) a[$1]=a[$1]","$2}} END {{for (i in a) {{split(a[i], b, ","); delete seen; c=""; for (j in b) if (b[j] != "" && !seen[b[j]]++) c=(c == "" ? b[j] : c","b[j]); print i"\t"c}}}}' >> ${{tempTissues}}
             done
 
-            # downsample data if specified
-            if [ "{params.downsampleThreshold}" != "0.0" ]; then
-                python {params.scripts}/formatting/downsample_pairwise_jaccard.py $tempMatrix $tempTissues {params.downsampleThreshold} {params.threads} $cpOutdir/downsampled
-                downsampledMatrix=$cpOutdir/downsampled_char_matrix.tsv
-                downsampledTissues=$cpOutdir/downsampled_tissue_labels.tsv
-            else
-                downsampledMatrix=$tempMatrix
-                downsampledTissues=$tempTissues
-            fi
+            # # downsample data if specified
+            # # need to fix this to use the tree algorithm and a laml tree as input instead of jaccard pairwise distances, which can be run only if the number of tips exceeds a given number, then we apply the threshold
+            # if [ "{params.downsampleDistanceThreshold}" != "0.0" ] && [ $(echo $asvs | wc -w) -gt {params.downsampleTipNumThreshold} ]; then
+            #     # re-run cassiopeia on the CP only (Not sure how to handle environment dependencies)
+
+            #     # run laml to get the branch length resolved tree
+
+            #     lamlTree=""
+
+            #     # downsample based on the tree algorithm
+            #     python {params.scripts}/formatting/downsample_tree.py $tempMatrix $lamlTree $tempTissues {params.downsampleThreshold} $cpOutdir/downsampled
+            #     downsampledMatrix=$cpOutdir/downsampled_char_matrix.tsv
+            #     downsampledTissues=$cpOutdir/downsampled_tissue_labels.tsv
+            # else
+            #     downsampledMatrix=$tempMatrix
+            #     downsampledTissues=$tempTissues
+            # fi
+
+            downsampledMatrix=$tempMatrix
+            downsampledTissues=$tempTissues
 
             # make mutations successive for each matrix and provide an updated dictionary of int to mutations
             python {params.scripts}/formatting/matrix_to_successive_matrix.py $downsampledMatrix {params.outdir}/mutation_dict.tsv $cpOutdir
@@ -275,7 +287,7 @@ rule runMetastabayes:
         # set the mcmc chain length based on the number of tips in the tree
         # use a minimum of 5 million and a maximum of a user specified length
         numTips=$(grep -c '^>' {input.fasta})
-        mcmclength=$(( numTips * 100000 ))
+        mcmclength=$(( numTips * 300000 ))
         if (( mcmclength > {params.mcmclength} )); then
             mcmclength={params.mcmclength}
         elif (( mcmclength < 5000000 )); then
