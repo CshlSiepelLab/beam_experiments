@@ -255,8 +255,6 @@ rule runMetastabayes:
         trailingCodeMap="? = "
         i=0
         for tissue in $sorted_unique_tissues; do
-            echo $tissue
-            echo $i
             tissueCodeMap+="${{tissue}}=${{i}},"
             trailingCodeMap+="${{i}} "
             i=$((i+1))
@@ -265,8 +263,6 @@ rule runMetastabayes:
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
-
-        echo $tissueCodeMap
 
         # use LAML starting tree
         # remove node names from newick and the origin node
