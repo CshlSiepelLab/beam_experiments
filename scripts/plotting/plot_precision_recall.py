@@ -11,7 +11,6 @@ import seaborn as sns
 from ete3 import Tree
 import dendropy
 from copy import deepcopy
-from arviz import hdi
 import glob
 import ast
 import pickle
