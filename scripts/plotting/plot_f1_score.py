@@ -19,13 +19,13 @@ def plot_f1_score(csv_path, output_dir):
 
     # Create a boxplot for all f1 columns
     plt.figure()
-    fs=16
+    fs=18
     sns.boxplot(data=data_f1, orient='v')
     sns.stripplot(data=data_f1, orient='v', color='black', alpha=0.5)
-    plt.xlabel('Method', fontsize=fs)
-    plt.ylabel('F1 score \nof migration graph', fontsize=fs)
+    plt.ylabel('F1 score', fontsize=fs)
     plt.xticks(fontsize=fs)
     plt.xticks(rotation=45, fontsize=fs)
+    plt.yticks(fontsize=fs)
     plt.ylim(-0.05,1.05)
     plt.tight_layout()
     plt.savefig(f'{output_dir}/f1_score.pdf')
