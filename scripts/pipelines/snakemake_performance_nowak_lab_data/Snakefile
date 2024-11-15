@@ -24,23 +24,23 @@ def get_elements_from_file(path):
 rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
-        expand("{outdir}/metastabayes/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
+        expand("{outdir}/beam/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
         [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
-               cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+               cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/combined.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/beam/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        [expand("{outdir}/beam/{mouse}/{cp}/combined.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/beam/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice],
         [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues.nwk", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), mouse=m) for m in mice]
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice]
                 
 
 rule runEvotracer:
@@ -72,15 +72,15 @@ rule runEvotracer:
         rm -r $tempDir
         """
 
-rule prepMetastabayesInputs:
+rule prepBeamInputs:
     input:
         char_matrix = "{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv",
         mut_dict = "{outdir}/evotracer/{mouse}/asv_analysis/mutation_profile_map.csv",
         asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv"
     output:
-        cpList = "{outdir}/metastabayes/{mouse}/cp_list.txt"
+        cpList = "{outdir}/beam/{mouse}/cp_list.txt"
     params:
-        outdir = "{outdir}/metastabayes/{mouse}",
+        outdir = "{outdir}/beam/{mouse}",
         scripts = config['scripts'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         modelDropouts = config['modelDropouts'],
@@ -206,8 +206,8 @@ rule prepMetastabayesInputs:
 
 rule runCassiopeia:
     input:
-        cpList = "{outdir}/metastabayes/{mouse}/cp_list.txt",
-        matrix = "{outdir}/metastabayes/{mouse}/{cp}/expanded_clones_matrix.tsv"
+        cpList = "{outdir}/beam/{mouse}/cp_list.txt",
+        matrix = "{outdir}/beam/{mouse}/{cp}/expanded_clones_matrix.tsv"
     output:
         "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
     params:
@@ -224,8 +224,8 @@ rule runCassiopeia:
 
 rule runLAML:
     input:
-        cpList = "{outdir}/metastabayes/{mouse}/cp_list.txt",
-        expandedMatrix = "{outdir}/metastabayes/{mouse}/{cp}/expanded_clones_matrix.tsv",
+        cpList = "{outdir}/beam/{mouse}/cp_list.txt",
+        expandedMatrix = "{outdir}/beam/{mouse}/{cp}/expanded_clones_matrix.tsv",
         casTree = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
     output:
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
@@ -250,22 +250,22 @@ rule runLAML:
         sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
         """
 
-rule runMetastabayes:
+rule runBeam:
     input:
-        cpList = "{outdir}/metastabayes/{mouse}/cp_list.txt",
-        fasta = "{outdir}/metastabayes/{mouse}/{cp}/{cp}.fasta",
-        dates = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv",
-        editRateProportions = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
+        cpList = "{outdir}/beam/{mouse}/cp_list.txt",
+        fasta = "{outdir}/beam/{mouse}/{cp}/{cp}.fasta",
+        dates = "{outdir}/beam/{mouse}/{cp}/{cp}_date_traits.csv",
+        tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
     output:
-        terminalLog = "{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log",
-        metastabayesLog = "{outdir}/metastabayes/{mouse}/{cp}/chain_{num}.log",
-        metastabayesResult = "{outdir}/metastabayes/{mouse}/{cp}/chain_{num}.trees"
+        terminalLog = "{outdir}/beam/{mouse}/{cp}/terminal_{num}.log",
+        beamLog = "{outdir}/beam/{mouse}/{cp}/chain_{num}.log",
+        beamResult = "{outdir}/beam/{mouse}/{cp}/chain_{num}.trees"
     params:
         xml = config['xml'],
-        fileDir = "{outdir}/metastabayes/{mouse}/{cp}",
-        metastabayesJar = config['metastabayesJar'],
+        fileDir = "{outdir}/beam/{mouse}/{cp}",
+        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
@@ -287,12 +287,15 @@ rule runMetastabayes:
         # set the mcmc chain length based on the number of tips in the tree
         # use a minimum of 5 million and a maximum of a user specified length
         numTips=$(grep -c '^>' {input.fasta})
-        mcmclength=$(( numTips * 300000 ))
+        mcmclength=$(( numTips * 100000 ))
         if (( mcmclength > {params.mcmclength} )); then
             mcmclength={params.mcmclength}
         elif (( mcmclength < 5000000 )); then
             mcmclength=5000000
         fi
+
+        # for temporary indefinite run
+        mcmclength=200000000
 
         # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
         if [[ $numTissues -eq 1 ]]; then
@@ -334,7 +337,7 @@ rule runMetastabayes:
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
-        java -Xmx10g -jar {params.metastabayesJar} \
+        java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -354,14 +357,14 @@ rule runMetastabayes:
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
-rule combineMetastabayesChains:
+rule combineBeamChains:
     input:
-        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
-        metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/{cp}/chain_{num}.log", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
-        metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/{cp}/chain_{num}.trees", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
+        terminalLog = lambda wildcards: expand("{outdir}/beam/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
+        beamLogs = lambda wildcards: expand("{outdir}/beam/{mouse}/{cp}/chain_{num}.log", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
+        beamResults = lambda wildcards: expand("{outdir}/beam/{mouse}/{cp}/chain_{num}.trees", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
     output:
-        combinedLog = "{outdir}/metastabayes/{mouse}/{cp}/combined.log",
-        combinedTrees = "{outdir}/metastabayes/{mouse}/{cp}/combined.trees",
+        combinedLog = "{outdir}/beam/{mouse}/{cp}/combined.log",
+        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees",
     params:
         logcombiner = config['logcombiner'],
         essCutoff = config['essCutoff'],
@@ -372,7 +375,7 @@ rule combineMetastabayesChains:
         log_files=""
         trees_files=""
         ess_convergences=()
-        for file in {input.metastabayesLogs}; do
+        for file in {input.beamLogs}; do
             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
             
             # only use mcmc chains that have converged since many appear to get lost in the search space
@@ -392,13 +395,13 @@ rule combineMetastabayesChains:
 
 rule convertTreePosteriorToGraphPosterior:
     input:
-        combinedTrees = "{outdir}/metastabayes/{mouse}/{cp}/combined.trees"
+        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees"
     output:
-        graphPosterior = "{outdir}/metastabayes/{mouse}/{cp}/posterior_prob_graph.csv"
+        graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv"
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        outdir = "{outdir}/metastabayes/{mouse}/{cp}",
+        outdir = "{outdir}/beam/{mouse}/{cp}",
         threads = 1
     conda:
         "../../envs/networkx.yaml"
@@ -414,15 +417,15 @@ rule convertTreePosteriorToGraphPosterior:
 
 rule plotGraphPosterior:
     input:
-        combinedTrees = "{outdir}/metastabayes/{mouse}/{cp}/combined.trees",
-        graphPosterior = "{outdir}/metastabayes/{mouse}/{cp}/posterior_prob_graph.csv"
+        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees",
+        graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv"
     output:
-        probabilityPlot = "{outdir}/metastabayes/{mouse}/{cp}/probability_migration_graph.pdf",
-        thresholdPlot = "{outdir}/metastabayes/{mouse}/{cp}/threshold_migration_graph.pdf"
+        probabilityPlot = "{outdir}/beam/{mouse}/{cp}/probability_migration_graph.pdf",
+        thresholdPlot = "{outdir}/beam/{mouse}/{cp}/threshold_migration_graph.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        outdir = "{outdir}/metastabayes/{mouse}/{cp}",
+        outdir = "{outdir}/beam/{mouse}/{cp}",
         threads = 1,
         threshold = 0.4
     conda:
@@ -445,7 +448,7 @@ rule plotGraphPosterior:
 rule prepMachina:
     input:
         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
-        tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv"
+        tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv"
     output:
         tissuesTsv = "{outdir}/machina/{mouse}/{cp}/leaf_tissues.tsv",
         labeling = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
@@ -519,7 +522,7 @@ rule plotMachinaMigrationGraphs:
 rule prepMetient:
     input:
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
-        tissues = "{outdir}/metastabayes/{mouse}/{cp}/{cp}_tip_tissues.csv"
+        tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv"
     output:
         lamlTreeNoOrigin = "{outdir}/metient/{mouse}/{cp}/laml_tree_no_origin.txt",
         metientTree = "{outdir}/metient/{mouse}/{cp}/tree.txt",
@@ -590,7 +593,7 @@ rule runParsimony:
 
 # rule callMigrationComigrationCounts:
 #     input:
-#         graphPosterior = "{outdir}/metastabayes/{mouse}/{cp}/posterior_prob_graph.csv",
+#         graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv",
 #         machinaEdgeFile = "{outdir}/machina/{mouse}/{cp}/" + f"{config['primaryTissue'][mouse]}-G-{config['primaryTissue'][mouse]}-R.tree",
 #         metientResults = "{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt"
 #     output:
@@ -604,18 +607,18 @@ rule runParsimony:
 #         "../../envs/compare_trees.yaml"
 #     shell:
 #         """
-#         python {config['scripts']}/formatting/call_migration_counts_machian_metient_metastabayes.py {input.machinaEdgeFile} {input.metientResults} {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.name}
+#         python {config['scripts']}/formatting/call_migration_counts_machian_metient_beam.py {input.machinaEdgeFile} {input.metientResults} {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.name}
 #         """
 
 # rule aggregateMigrationCounts:
 #     input:
-#         migrationCountCsvs = [expand("{outdir}/compare_migration_counts/{mouse}_{cp}_migration_counts.csv", mouse=m, cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), outdir=config['outdir']) for m in mice]
+#         migrationCountCsvs = [expand("{outdir}/compare_migration_counts/{mouse}_{cp}_migration_counts.csv", mouse=m, cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), outdir=config['outdir']) for m in mice]
 #     output:
 #         aggregatedMigrationCounts = "{outdir}/compare_migration_counts/migration_counts_all.csv",
 #     shell:
 #         """
 #         # write header to output file
-#         echo "name,machina_migrations,machina_comigrations,metient_migrations,metient_comigrations,metastabayes_migrations,metastabayes_comigrations" > {output.aggregatedMigrationCounts}
+#         echo "name,machina_migrations,machina_comigrations,metient_migrations,metient_comigrations,beam_migrations,beam_comigrations" > {output.aggregatedMigrationCounts}
 
 #         # Loop through each input file and append the second line to the output file
 #         for file in {input.migrationCountCsvs}; do
@@ -638,13 +641,13 @@ rule runParsimony:
 
 # rule aggregateTopologyClassifications:
 #     input:
-#         migrationTopologyCsvs = expand("{outdir}/compare_migration_counts/{mouse}_{cp}_topology_classifications.csv", mouse=mice, cp=get_elements_from_file(f"{config['outdir']}/metastabayes/{m}"), outdir=config['outdir'])
+#         migrationTopologyCsvs = expand("{outdir}/compare_migration_counts/{mouse}_{cp}_topology_classifications.csv", mouse=mice, cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), outdir=config['outdir'])
 #     output:
 #         aggregatedTopologyClassifications = "{outdir}/compare_migration_counts/topology_classifications_all.csv",
 #     shell:
 #         """
 #         # write header to output file
-#         echo "name,machina_met_to_met,machina_reseeding,metient_met_to_met,metient_reseeding,metastabayes_met_to_met,metastabayes_reseeding" > {output.aggregatedMigrationCounts}
+#         echo "name,machina_met_to_met,machina_reseeding,metient_met_to_met,metient_reseeding,beam_met_to_met,beam_reseeding" > {output.aggregatedMigrationCounts}
 
 #         # Loop through each input file and append the second line to the output file
 #         for file in {input.migrationTopologyCsvs}; do

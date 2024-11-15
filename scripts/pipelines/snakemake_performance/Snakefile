@@ -14,10 +14,10 @@ rule all:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
-        expand("{outdir}/metastabayes/{sim}/combined.log", sim=sims, outdir=outdir),
-        expand("{outdir}/metastabayes/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
-        expand("{outdir}/metastabayes/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
+        expand("{outdir}/beam/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
+        expand("{outdir}/beam/{sim}/combined.log", sim=sims, outdir=outdir),
+        expand("{outdir}/beam/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
+        expand("{outdir}/beam/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
@@ -35,19 +35,19 @@ rule copyDataToOutDir:
         touch {output}
         """
 
-rule prepMetastabayesInputs:
+rule prepBeamInputs:
     input:
         os.path.join(outdir, "raw_data/{sim}", "done"),
         sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling")),
     output:
-        fasta = "{outdir}/metastabayes/{sim}/{sim}.fasta",
-        dates = "{outdir}/metastabayes/{sim}/{sim}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{sim}/{sim}_tip_tissues.csv",
+        fasta = "{outdir}/beam/{sim}/{sim}.fasta",
+        dates = "{outdir}/beam/{sim}/{sim}_date_traits.csv",
+        tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
     params:
         scripts = config['scripts'],
         generations = config['generations'],
-        outputdir = "{outdir}/metastabayes/{sim}"
+        outputdir = "{outdir}/beam/{sim}"
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -59,22 +59,22 @@ rule prepMetastabayesInputs:
         sed 's/ /,/g' {input.leafTissues} | cut -d',' -f1 | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.leafTissues})) > {output.dates}
 
         # format fasta, re-label mutations sequentially, and get edit rate proportions for new mutation entries
-        {params.scripts}/formatting/format_metastabayes_input_files.py {input.sim_matrix} {params.outputdir}
+        {params.scripts}/formatting/format_beam_input_files.py {input.sim_matrix} {params.outputdir}
         """
 
-rule runMetastabayes:
+rule runBeam:
     input:
-        fasta = "{outdir}/metastabayes/{sim}/{sim}.fasta",
-        dates = "{outdir}/metastabayes/{sim}/{sim}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{sim}/{sim}_tip_tissues.csv",
+        fasta = "{outdir}/beam/{sim}/{sim}.fasta",
+        dates = "{outdir}/beam/{sim}/{sim}_date_traits.csv",
+        tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
     output:
-        terminalLog = "{outdir}/metastabayes/{sim}/terminal_{num}.log",
-        metastabayesLog = "{outdir}/metastabayes/{sim}/chain_{num}.log",
-        metastabayesResult = "{outdir}/metastabayes/{sim}/chain_{num}.trees"
+        terminalLog = "{outdir}/beam/{sim}/terminal_{num}.log",
+        beamLog = "{outdir}/beam/{sim}/chain_{num}.log",
+        beamResult = "{outdir}/beam/{sim}/chain_{num}.trees"
     params:
         xml = config['xml'],
-        fileDir = "{outdir}/metastabayes/{sim}",
-        metastabayesJar = config['metastabayesJar'],
+        fileDir = "{outdir}/beam/{sim}",
+        beamJar = config['beamJar'],
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
@@ -84,7 +84,7 @@ rule runMetastabayes:
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {wildcards.outdir}/metastabayes/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
+        initialEditRates=$(cat {wildcards.outdir}/beam/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))
@@ -117,7 +117,7 @@ rule runMetastabayes:
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.metastabayesJar} \
+        java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -136,14 +136,14 @@ rule runMetastabayes:
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
-rule combineMetastabayesChains:
+rule combineBeamChains:
     input:
-        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{sim}/terminal_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
-        metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{sim}/chain_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
-        metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{sim}/chain_{num}.trees", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
+        terminalLog = lambda wildcards: expand("{outdir}/beam/{sim}/terminal_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
+        beamLogs = lambda wildcards: expand("{outdir}/beam/{sim}/chain_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
+        beamResults = lambda wildcards: expand("{outdir}/beam/{sim}/chain_{num}.trees", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir),
     output:
-        combinedLog = "{outdir}/metastabayes/{sim}/combined.log",
-        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees"
+        combinedLog = "{outdir}/beam/{sim}/combined.log",
+        combinedTrees = "{outdir}/beam/{sim}/combined.trees"
     params:
         logcombiner = config['logcombiner'],
         essCutoff = config['essCutoff'],
@@ -154,7 +154,7 @@ rule combineMetastabayesChains:
         log_files=""
         trees_files=""
         ess_convergences=()
-        for file in {input.metastabayesLogs}; do
+        for file in {input.beamLogs}; do
             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
             
             ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
@@ -174,13 +174,13 @@ rule combineMetastabayesChains:
 
 rule convertTreePosteriorToGraphPosterior:
     input:
-        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees"
+        combinedTrees = "{outdir}/beam/{sim}/combined.trees"
     output:
-        graphPosterior = "{outdir}/metastabayes/{sim}/posterior_prob_graph.csv"
+        graphPosterior = "{outdir}/beam/{sim}/posterior_prob_graph.csv"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/metastabayes/{sim}",
+        outdir = "{outdir}/beam/{sim}",
         threads = config['threads']
     conda:
         "../../envs/networkx.yaml"
@@ -191,13 +191,13 @@ rule convertTreePosteriorToGraphPosterior:
 
 rule plotGraphPosterior:
     input:
-        graphPosterior = "{outdir}/metastabayes/{sim}/posterior_prob_graph.csv"
+        graphPosterior = "{outdir}/beam/{sim}/posterior_prob_graph.csv"
     output:
-        probabilityPlot = "{outdir}/metastabayes/{sim}/probability_migration_graph.pdf",
+        probabilityPlot = "{outdir}/beam/{sim}/probability_migration_graph.pdf",
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/metastabayes/{sim}",
+        outdir = "{outdir}/beam/{sim}",
         consensusThreshold = config['consensusThreshold']
     conda:
         "../../envs/networkx.yaml"
@@ -208,9 +208,9 @@ rule plotGraphPosterior:
 
 rule plotSampledPosteriorGraphs:
     input:
-        combinedTrees = "{outdir}/metastabayes/{sim}/combined.trees"
+        combinedTrees = "{outdir}/beam/{sim}/combined.trees"
     output:
-        sampledGraph = "{outdir}/metastabayes/{sim}/combined_migration_graph_1.pdf"
+        sampledGraph = "{outdir}/beam/{sim}/combined_migration_graph_1.pdf"
     params:
         numGraphs = 10,
         scripts = config['scripts'],
@@ -449,7 +449,7 @@ rule plotPrecisionRecall:
         parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
         trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        combinedTreesDone = expand("{outdir}/metastabayes/{sim}/combined.trees", sim=sims, outdir=outdir),
+        combinedTreesDone = expand("{outdir}/beam/{sim}/combined.trees", sim=sims, outdir=outdir),
         metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
         pathfinderResultDone = expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
         # actual input used

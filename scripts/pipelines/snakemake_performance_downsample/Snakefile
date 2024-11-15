@@ -14,9 +14,9 @@ rule all:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/downsampled_data/{sim}/threshold_{threshold}_char_matrix.tsv", threshold=config['thresholds'], sim=sims, outdir=outdir),
-        expand("{outdir}/metastabayes/{sim}_{threshold}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir, threshold=config['thresholds']),
-        expand("{outdir}/metastabayes/{sim}_{threshold}/combined.log", sim=sims, outdir=outdir, threshold=config['thresholds']),
-        expand("{outdir}/metastabayes/{sim}_{threshold}/probability_migration_graph.pdf", sim=sims, outdir=outdir, threshold=config['thresholds']),
+        expand("{outdir}/beam/{sim}_{threshold}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir, threshold=config['thresholds']),
+        expand("{outdir}/beam/{sim}_{threshold}/combined.log", sim=sims, outdir=outdir, threshold=config['thresholds']),
+        expand("{outdir}/beam/{sim}_{threshold}/probability_migration_graph.pdf", sim=sims, outdir=outdir, threshold=config['thresholds']),
         # f"{outdir}/precision_recall_curve/precision_recall.pdf",
 
 rule copyDataToOutDir:
@@ -63,7 +63,7 @@ rule plotTrueMigrationGraph:
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
         """
 
-# can directy downsample the matrix and feed into metastabayes
+# can directy downsample the matrix and feed into beam
 # if so then remove tree steps below for cassiopeia, laml, and downsampleInputsTree
 # rule downsampleInputsJaccard:
 #     input:
@@ -156,19 +156,19 @@ rule downsampleInputsTree:
         """
 
 
-rule prepMetastabayesInputs:
+rule prepBeamInputs:
     input:
         downsampledSimMatrix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_char_matrix.tsv",
         downsampledLeafTissues = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_tissue_labels.tsv",
     output:
-        fasta = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}.fasta",
-        dates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_tip_tissues.csv",
-        editRates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_edit_rate_proportions.txt"
+        fasta = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}.fasta",
+        dates = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}_date_traits.csv",
+        tissues = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}_tip_tissues.csv",
+        editRates = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}_edit_rate_proportions.txt"
     params:
         scripts = config['scripts'],
         generations = config['generations'],
-        outputdir = "{outdir}/metastabayes/{sim}_{threshold}"
+        outputdir = "{outdir}/beam/{sim}_{threshold}"
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -180,23 +180,23 @@ rule prepMetastabayesInputs:
         sed 's/ /,/g' {input.downsampledLeafTissues} | cut -d',' -f1 | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.downsampledLeafTissues})) > {output.dates}
 
         # format fasta, re-label mutations sequentially, and get edit rate proportions for new mutation entries
-        {params.scripts}/formatting/format_metastabayes_input_files.py {input.downsampledSimMatrix} {params.outputdir}
+        {params.scripts}/formatting/format_beam_input_files.py {input.downsampledSimMatrix} {params.outputdir}
         """
 
-rule runMetastabayes:
+rule runBeam:
     input:
-        fasta = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}.fasta",
-        dates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_tip_tissues.csv",
-        editRates = "{outdir}/metastabayes/{sim}_{threshold}/{sim}_{threshold}_edit_rate_proportions.txt"
+        fasta = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}.fasta",
+        dates = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}_date_traits.csv",
+        tissues = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}_tip_tissues.csv",
+        editRates = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}_edit_rate_proportions.txt"
     output:
-        terminalLog = "{outdir}/metastabayes/{sim}_{threshold}/terminal_{num}.log",
-        metastabayesLog = "{outdir}/metastabayes/{sim}_{threshold}/chain_{num}.log",
-        metastabayesResult = "{outdir}/metastabayes/{sim}_{threshold}/chain_{num}.trees"
+        terminalLog = "{outdir}/beam/{sim}_{threshold}/terminal_{num}.log",
+        beamLog = "{outdir}/beam/{sim}_{threshold}/chain_{num}.log",
+        beamResult = "{outdir}/beam/{sim}_{threshold}/chain_{num}.trees"
     params:
         xml = config['xml'],
-        fileDir = "{outdir}/metastabayes/{sim}_{threshold}",
-        metastabayesJar = config['metastabayesJar'],
+        fileDir = "{outdir}/beam/{sim}_{threshold}",
+        beamJar = config['beamJar'],
         generations = config['generations'],
         mcmclength = lambda wildcards: config['mcmcLength'][wildcards.threshold],
         primaryTissue = config['primaryTissue'],
@@ -239,7 +239,7 @@ rule runMetastabayes:
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.metastabayesJar} \
+        java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -258,14 +258,14 @@ rule runMetastabayes:
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
-rule combineMetastabayesChains:
+rule combineBeamChains:
     input:
-        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{sim}_{threshold}/terminal_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir, threshold=wildcards.threshold),
-        metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{sim}_{threshold}/chain_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir, threshold=wildcards.threshold),
-        metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{sim}_{threshold}/chain_{num}.trees", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir, threshold=wildcards.threshold),
+        terminalLog = lambda wildcards: expand("{outdir}/beam/{sim}_{threshold}/terminal_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir, threshold=wildcards.threshold),
+        beamLogs = lambda wildcards: expand("{outdir}/beam/{sim}_{threshold}/chain_{num}.log", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir, threshold=wildcards.threshold),
+        beamResults = lambda wildcards: expand("{outdir}/beam/{sim}_{threshold}/chain_{num}.trees", num=range(1, config['numChains']+1), sim=wildcards.sim, outdir=wildcards.outdir, threshold=wildcards.threshold),
     output:
-        combinedLog = "{outdir}/metastabayes/{sim}_{threshold}/combined.log",
-        combinedTrees = "{outdir}/metastabayes/{sim}_{threshold}/combined.trees"
+        combinedLog = "{outdir}/beam/{sim}_{threshold}/combined.log",
+        combinedTrees = "{outdir}/beam/{sim}_{threshold}/combined.trees"
     params:
         logcombiner = config['logcombiner'],
         essCutoff = config['essCutoff'],
@@ -276,7 +276,7 @@ rule combineMetastabayesChains:
         log_files=""
         trees_files=""
         ess_convergences=()
-        for file in {input.metastabayesLogs}; do
+        for file in {input.beamLogs}; do
             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
             
             ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
@@ -296,13 +296,13 @@ rule combineMetastabayesChains:
 
 rule convertTreePosteriorToGraphPosterior:
     input:
-        combinedTrees = "{outdir}/metastabayes/{sim}_{threshold}/combined.trees"
+        combinedTrees = "{outdir}/beam/{sim}_{threshold}/combined.trees"
     output:
-        graphPosterior = "{outdir}/metastabayes/{sim}_{threshold}/posterior_prob_graph.csv"
+        graphPosterior = "{outdir}/beam/{sim}_{threshold}/posterior_prob_graph.csv"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/metastabayes/{sim}_{threshold}",
+        outdir = "{outdir}/beam/{sim}_{threshold}",
         threads = config['threads']
     conda:
         "../../envs/networkx.yaml"
@@ -313,14 +313,14 @@ rule convertTreePosteriorToGraphPosterior:
 
 rule plotGraphPosterior:
     input:
-        graphPosterior = "{outdir}/metastabayes/{sim}_{threshold}/posterior_prob_graph.csv"
+        graphPosterior = "{outdir}/beam/{sim}_{threshold}/posterior_prob_graph.csv"
     output:
-        probabilityPlot = "{outdir}/metastabayes/{sim}_{threshold}/probability_migration_graph.pdf",
-        thresholdPlot = "{outdir}/metastabayes/{sim}_{threshold}/threshold_migration_graph.pdf"
+        probabilityPlot = "{outdir}/beam/{sim}_{threshold}/probability_migration_graph.pdf",
+        thresholdPlot = "{outdir}/beam/{sim}_{threshold}/threshold_migration_graph.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/metastabayes/{sim}_{threshold}",
+        outdir = "{outdir}/beam/{sim}_{threshold}",
         consensusThreshold = 0.4
     conda:
         "../../envs/networkx.yaml"

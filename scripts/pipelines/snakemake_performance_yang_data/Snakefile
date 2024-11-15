@@ -12,9 +12,9 @@ outdir = config['outdir']
 
 rule all:
     input:
-        expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", mouse=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
-        expand("{outdir}/metastabayes/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir),
-        expand("{outdir}/metastabayes/{mouse}/threshold_70_migration_graph.pdf", mouse=mouse_ids, outdir=outdir)
+        expand("{outdir}/beam/{mouse}/terminal_{num}.log", mouse=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
+        expand("{outdir}/beam/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir),
+        expand("{outdir}/beam/{mouse}/threshold_70_migration_graph.pdf", mouse=mouse_ids, outdir=outdir)
 
 rule runCassiopeiaDs:
     input:
@@ -108,18 +108,18 @@ rule downsampleInputsTree:
         python {params.scripts}/formatting/downsample_tree.py {input.matrix} {input.lamlTreeNoOrigin} {input.leafTissues} {params.threshold} {params.outprefix}
         """
 
-rule prepMetastabayesInputs:
+rule prepBeamInputs:
     input:
         downsampledSimMatrix = "{outdir}/downsampled_data/{mouse}/downsampled_char_matrix.tsv",
         downsampledLeafTissues = "{outdir}/downsampled_data/{mouse}/downsampled_tissue_labels.tsv",
     output:
-        fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
-        dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{mouse}/{mouse}_tip_tissues.csv",
-        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt",
-        expandedMatrix = "{outdir}/metastabayes/{mouse}/expanded_clones_matrix.tsv"
+        fasta = "{outdir}/beam/{mouse}/{mouse}.fasta",
+        dates = "{outdir}/beam/{mouse}/{mouse}_date_traits.csv",
+        tissues = "{outdir}/beam/{mouse}/{mouse}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam/{mouse}/{mouse}_edit_rate_proportions.txt",
+        expandedMatrix = "{outdir}/beam/{mouse}/expanded_clones_matrix.tsv"
     params:
-        outdir = "{outdir}/metastabayes/{mouse}",
+        outdir = "{outdir}/beam/{mouse}",
         scripts = config['scripts'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         threads = config['threads'],
@@ -167,7 +167,7 @@ rule prepMetastabayesInputs:
 
 rule runCassiopeia:
     input:
-        expandedMatrix = "{outdir}/metastabayes/{mouse}/expanded_clones_matrix.tsv"
+        expandedMatrix = "{outdir}/beam/{mouse}/expanded_clones_matrix.tsv"
     output:
         "{outdir}/cassiopeia_greedy/{mouse}/cassiopeia_greedy_inferred.nwk"
     params:
@@ -183,7 +183,7 @@ rule runCassiopeia:
 
 rule runLAML:
     input:
-        expandedMatrix = "{outdir}/metastabayes/{mouse}/expanded_clones_matrix.tsv",
+        expandedMatrix = "{outdir}/beam/{mouse}/expanded_clones_matrix.tsv",
         casTree = "{outdir}/cassiopeia_greedy/{mouse}/cassiopeia_greedy_inferred.nwk"
     output:
         lamlTree = "{outdir}/laml/{mouse}/{mouse}_laml_trees.nwk",
@@ -207,21 +207,21 @@ rule runLAML:
         sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
         """
 
-rule runMetastabayes:
+rule runBeam:
     input:
-        fasta = "{outdir}/metastabayes/{mouse}/{mouse}.fasta",
-        dates = "{outdir}/metastabayes/{mouse}/{mouse}_date_traits.csv",
-        tissues = "{outdir}/metastabayes/{mouse}/{mouse}_tip_tissues.csv",
-        editRateProportions = "{outdir}/metastabayes/{mouse}/{mouse}_edit_rate_proportions.txt",
+        fasta = "{outdir}/beam/{mouse}/{mouse}.fasta",
+        dates = "{outdir}/beam/{mouse}/{mouse}_date_traits.csv",
+        tissues = "{outdir}/beam/{mouse}/{mouse}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam/{mouse}/{mouse}_edit_rate_proportions.txt",
         lamlTree = "{outdir}/laml/{mouse}/{mouse}_laml_trees.nwk"
     output:
-        terminalLog = "{outdir}/metastabayes/{mouse}/terminal_{num}.log",
-        metastabayesLog = "{outdir}/metastabayes/{mouse}/chain_{num}.log",
-        metastabayesResult = "{outdir}/metastabayes/{mouse}/chain_{num}.trees"
+        terminalLog = "{outdir}/beam/{mouse}/terminal_{num}.log",
+        beamLog = "{outdir}/beam/{mouse}/chain_{num}.log",
+        beamResult = "{outdir}/beam/{mouse}/chain_{num}.trees"
     params:
         xml = config['xml'],
-        fileDir = "{outdir}/metastabayes/{mouse}",
-        metastabayesJar = config['metastabayesJar'],
+        fileDir = "{outdir}/beam/{mouse}",
+        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
@@ -279,7 +279,7 @@ rule runMetastabayes:
         # echo "mcmclength: {params.mcmclength}"
         # echo "newick: $newick"
 
-        java -Xmx10g -jar {params.metastabayesJar} \
+        java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -299,14 +299,14 @@ rule runMetastabayes:
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
-rule combineMetastabayesChains:
+rule combineBeamChains:
     input:
-        terminalLog = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-        metastabayesLogs = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-        metastabayesResults = lambda wildcards: expand("{outdir}/metastabayes/{mouse}/chain_{num}.trees", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        terminalLog = lambda wildcards: expand("{outdir}/beam/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        beamLogs = lambda wildcards: expand("{outdir}/beam/{mouse}/chain_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+        beamResults = lambda wildcards: expand("{outdir}/beam/{mouse}/chain_{num}.trees", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
     output:
-        combinedLog = "{outdir}/metastabayes/{mouse}/combined.log",
-        combinedTrees = "{outdir}/metastabayes/{mouse}/combined.trees",
+        combinedLog = "{outdir}/beam/{mouse}/combined.log",
+        combinedTrees = "{outdir}/beam/{mouse}/combined.trees",
     params:
         logcombiner = config['logcombiner'],
         essCutoff = config['essCutoff'],
@@ -318,7 +318,7 @@ rule combineMetastabayesChains:
         log_files=""
         trees_files=""
         ess_convergences=()
-        for file in {input.metastabayesLogs}; do
+        for file in {input.beamLogs}; do
             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
 
             # only use mcmc chains that have converged since many appear to get lost in the search space
@@ -345,13 +345,13 @@ rule combineMetastabayesChains:
     
 rule convertTreePosteriorToGraphPosterior:
     input:
-        combinedTrees = "{outdir}/metastabayes/{mouse}/combined.trees"
+        combinedTrees = "{outdir}/beam/{mouse}/combined.trees"
     output:
-        graphPosterior = "{outdir}/metastabayes/{mouse}/posterior_prob_graph.csv"
+        graphPosterior = "{outdir}/beam/{mouse}/posterior_prob_graph.csv"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/metastabayes/{mouse}",
+        outdir = "{outdir}/beam/{mouse}",
         threads = 1
     conda:
         "../../envs/networkx.yaml"
@@ -367,24 +367,30 @@ rule convertTreePosteriorToGraphPosterior:
 
 rule plotGraphPosterior:
     input:
-        graphPosterior = "{outdir}/metastabayes/{mouse}/posterior_prob_graph.csv"
+        combinedTrees = "{outdir}/beam/{mouse}/combined.trees",
+        graphPosterior = "{outdir}/beam/{mouse}/posterior_prob_graph.csv"
     output:
-        probabilityPlot = "{outdir}/metastabayes/{mouse}/probability_migration_graph.pdf",
-        thresholdPlot = "{outdir}/metastabayes/{mouse}/threshold_70_migration_graph.pdf"
+        probabilityPlot = "{outdir}/beam/{mouse}/probability_migration_graph.pdf",
+        thresholdPlot = "{outdir}/beam/{mouse}/threshold_70_migration_graph.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/metastabayes/{mouse}",
-        threads = 1
+        outdir = "{outdir}/beam/{mouse}",
+        threads = 1,
+        threshold = 0.4
     conda:
         "../../envs/networkx.yaml"
     shell:
         """
-        if [ ! -s {input.graphPosterior} ]; then
-            echo "Graph posterior file is empty. Exiting."
+        if [ ! -s {input.combinedTrees} ] && [ ! -s {input.graphPosterior} ]; then
+            echo "Combined trees and graph posterior files are empty. Convergence likely not reached. Exiting."
+            # touch {output.probabilityPlot}
+            # touch {output.thresholdPlot}
+        elif [ ! -s {input.graphPosterior} ]; then
+            echo "Graph posterior file is empty. Is there expected to be more than one tissue in the graph? Exiting."
             touch {output.probabilityPlot}
             touch {output.thresholdPlot}
         else
-            python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir}
+            python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.threshold}
         fi
         """

@@ -17,7 +17,7 @@ downsampleInputsTree:
   logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}_{wildcards.threshold}.err'
   mem: '1G'
 
-runMetastabayes:
+runBeam:
   cores: 5
   mem: '2G' # need total of 5GB for java BEAST2 submission command in the Snakefile
 
