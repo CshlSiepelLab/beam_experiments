@@ -18,7 +18,7 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
 def get_elements_from_file(path):
     filename = f"{path}/cp_list.txt"
     with open(filename) as f:
-        return [line.strip() for line in f]
+        return [line.strip() for line in f if set(list(line.strip().replace("CP", ""))) != set('0')]
 
 
 rule all:
@@ -50,6 +50,7 @@ rule runEvotracer:
         char_matrix = "{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv",
         asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv",
         mut_dict = "{outdir}/evotracer/{mouse}/asv_analysis/mutation_profile_map.csv",
+        evotracerCassiopeiaTree= "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/tree_all_clones.nwk",
     params:
         evoOutDir = "{outdir}/evotracer/{mouse}",
         scripts = config['scripts'],
@@ -72,136 +73,171 @@ rule runEvotracer:
         rm -r $tempDir
         """
 
-rule prepBeamInputs:
+rule splitCPs:
     input:
         char_matrix = "{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv",
+        asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv",
         mut_dict = "{outdir}/evotracer/{mouse}/asv_analysis/mutation_profile_map.csv",
-        asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv"
     output:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt"
     params:
         outdir = "{outdir}/beam/{mouse}",
-        scripts = config['scripts'],
-        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        modelDropouts = config['modelDropouts'],
-        threads = 1,
-        downsampleDistanceThreshold = config['downsampleDistanceThreshold'],
-        downsampleTipNumThreshold = config['downsampleTipNumThreshold']
-    conda:
-        "../../envs/networkx.yaml"
+        scripts = config['scripts']
     shell:
         """
-        # prep mutation dictionary
+        # prep mutation dictionary for the mouse overall
         sed 's/\",/\\t/g' {input.mut_dict} | sed 's/\"//g' > {params.outdir}/mutation_dict.tsv
 
-        # get CPs from asv stat file
         cps=$(tail -n +2 {input.asv_stat} | cut -d',' -f30 | sort | uniq | tr '\\n' ' ')
-
-        # split mutation matrix and tissues for each cp into cp specific files
         for cp in $cps; do
-            cpOutdir={params.outdir}/${{cp}}
+
+            # make cp dir
+            cpOutdir={params.outdir}/cps/${{cp}}
             mkdir -p $cpOutdir
 
             # get ASVs for the cp
             asvs=$(tail -n +2 {input.asv_stat} | grep -w "$cp" | cut -d',' -f1 | sort | uniq | tr '\\n' ' ')
 
-            # setup temp matrix and tissue per cp
+            # setup temp matrix and tissues headers
             tempMatrix=$cpOutdir/temp_matrix.tsv
-            head -n 1 {input.char_matrix} | sed 's/,/\t/g' | sed 's/\"//g' > $tempMatrix
+            head -n 1 {input.char_matrix} | sed 's/,/\\t/g' | sed 's/\"//g' > $tempMatrix
             tempTissues=$cpOutdir/temp_tissues.tsv
-            echo -e "group_name\ttissues" > $tempTissues
+            echo -e "group_name\\ttissues" > $tempTissues
 
-            # make cp specific temp files
+            # subset matrix and tissues for each cp to only retain ASVs for that CP
             for asv in $asvs; do
-                sed 's/,/\t/g' {input.char_matrix} | sed 's/\"//g' | grep -w "$asv" >> $tempMatrix
-                tail -n +2 {input.asv_stat} | cut -d',' -f1-2 | grep -w "$asv" | awk -F',' '{{if (!seen[$1","$2]++) a[$1]=a[$1]","$2}} END {{for (i in a) {{split(a[i], b, ","); delete seen; c=""; for (j in b) if (b[j] != "" && !seen[b[j]]++) c=(c == "" ? b[j] : c","b[j]); print i"\t"c}}}}' >> ${{tempTissues}}
+                sed 's/,/\\t/g' {input.char_matrix} | sed 's/\"//g' | grep -w "$asv" >> $tempMatrix
+                tail -n +2 {input.asv_stat} | cut -d',' -f1-2 | grep -w "$asv" | awk -F',' '{{if (!seen[$1","$2]++) a[$1]=a[$1]","$2}} END {{for (i in a) {{split(a[i], b, ","); delete seen; c=""; for (j in b) if (b[j] != "" && !seen[b[j]]++) c=(c == "" ? b[j] : c","b[j]); print i"\\t"c}}}}' >> ${{tempTissues}}
             done
-
-            # # downsample data if specified
-            # # need to fix this to use the tree algorithm and a laml tree as input instead of jaccard pairwise distances, which can be run only if the number of tips exceeds a given number, then we apply the threshold
-            # if [ "{params.downsampleDistanceThreshold}" != "0.0" ] && [ $(echo $asvs | wc -w) -gt {params.downsampleTipNumThreshold} ]; then
-            #     # re-run cassiopeia on the CP only (Not sure how to handle environment dependencies)
-
-            #     # run laml to get the branch length resolved tree
-
-            #     lamlTree=""
-
-            #     # downsample based on the tree algorithm
-            #     python {params.scripts}/formatting/downsample_tree.py $tempMatrix $lamlTree $tempTissues {params.downsampleThreshold} $cpOutdir/downsampled
-            #     downsampledMatrix=$cpOutdir/downsampled_char_matrix.tsv
-            #     downsampledTissues=$cpOutdir/downsampled_tissue_labels.tsv
-            # else
-            #     downsampledMatrix=$tempMatrix
-            #     downsampledTissues=$tempTissues
-            # fi
-
-            downsampledMatrix=$tempMatrix
-            downsampledTissues=$tempTissues
-
-            # make mutations successive for each matrix and provide an updated dictionary of int to mutations
-            python {params.scripts}/formatting/matrix_to_successive_matrix.py $downsampledMatrix {params.outdir}/mutation_dict.tsv $cpOutdir
-
-            # expand clones found in multiple tissues to separate entries
-            python {params.scripts}/formatting/expand_clones_multiple_tissues.py $cpOutdir/successive_char_matrix.csv $downsampledTissues $cpOutdir
-            matrixFile=$cpOutdir/expanded_clones_matrix.tsv
-            tissuesFile=$cpOutdir/expanded_clones_tissues.tsv
-
-            # remove temp files
-            # if [ -f $tempMatrix ]; then rm $tempMatrix; fi
-            # if [ -f $tempTissues ]; then rm $tempTissues; fi
-            # if [ -f $downsampledMatrix ]; then rm $downsampledMatrix; fi
-            # if [ -f $downsampledTissues ]; then rm $downsampledTissues; fi
-            # rm $cpOutdir/successive_char_matrix.csv
-
-            # make output files
-            fasta=$cpOutdir/${{cp}}.fasta
-            dates=$cpOutdir/${{cp}}_date_traits.csv
-            tissues=$cpOutdir/${{cp}}_tip_tissues.csv
-            editRateProportions=$cpOutdir/${{cp}}_edit_rate_proportions.txt
-
-            # write tip traits to new csv
-            tail -n +2 $tissuesFile | grep -v '^$' | cut -f1,2 | tr '\\t' ',' > $tissues
-
-            # write date trait
-            tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > $dates
-
-            # get edit rate proportions for new mutation entries, relative so they all sum to 1.0
-            all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\\t' ' ' | tr '\\n' ' ')
-            total_count=$(echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l)
-            uniq_count=$(echo $all_muts | tr ' ' '\\n' | sort | uniq | grep -wv "0" | wc -l)
-            count_sum=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
-            
-            for element in $(seq 1 $uniq_count); do
-                echo "START"
-                echo "element: $element"
-                if echo "$all_muts" | tr ' ' '\\n' | grep -w "$element"; then
-                    echo "FOUND"
-                    count=$(echo "$all_muts" | tr ' ' '\\n' | grep -wc "$element")
-                    proportion=$(echo "scale=10; $count / $count_sum" | bc)
-                else
-                    echo "NOT FOUND"
-                    count=0
-                    proportion=0
-                fi
-                echo "count: $count"
-                echo "proportion: $proportion"
-                echo "$proportion" >> $editRateProportions
-
-            done
-
-            # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
-            if [ "{params.modelDropouts}" == "True" ] || [ "{params.modelDropouts}" == "true" ]; then
-                # to model dropouts, use the highest mutation int representation and add 1 since the dropout column is the last in the rate matrix
-                dropoutMutNum=$(( uniq_count + 1 ))
-                tail -n +2 $matrixFile | grep -v '^$' | sed "s/-1/$dropoutMutNum/g" | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > $fasta
-            else
-                # to not model dropouts
-                tail -n +2 $matrixFile | grep -v '^$' | sed 's/-1/0/g' | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > $fasta
-            fi
 
             # track all CPs as they finish pre-processing
             echo "$cp" >> {output.cpList}
-        done       
+        done
+        """
+
+rule downsampleInputsTree:
+    input:
+        cpList = "{outdir}/beam/{mouse}/cp_list.txt",
+        evotracerCassiopeiaTree= "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/tree_all_clones.nwk",
+        temp_matrix = "{outdir}/beam/{mouse}/{cp}/temp_matrix.tsv",
+        temp_tissues = "{outdir}/beam/{mouse}/{cp}/temp_tissues.tsv"
+    output:
+        downsampledMatrix = "{outdir}/beam/{mouse}/{cp}/downsampled_matrix.tsv",
+        downsampledTissues = "{outdir}/beam/{mouse}/{cp}/downsampled_tissues.tsv"
+    params:
+        outputdir = "{outdir}/downsampled_data/{mouse}/{cp}",
+        scripts = config['scripts'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        max_tips = 150, # downsampling only occurs if the number of tips is greater than this
+        threshold = 0.3 # height of the tree for which downsampling occurs below it
+    conda:
+        "../../envs/laml.yaml"
+    shell:
+        """
+        # Check the number of rows in temp_tissues
+        num_tips=$(tail -n +2 {input.temp_tissues} | wc -l)
+
+        # If the number of rows is greater than 150, downsample
+        if [ "$num_tips" -gt {params.max_tips} ]; then
+            echo "Number of tips is greater than {params.num_tips}. Downsampling with a tree threhold of {params.threshold}."
+
+            # subset the existing cassiopeia tree
+            asv_names=$(tail -n +2 {input.temp_matrix} | cut -f1 | tr '\\n' ',')
+            python {params.scripts}/formatting/subset_evotracer_cassiopeia_tree.py {input.evotracerCassiopeiaTree} $asv_names {params.outputdir}/subset_evotracer_cassiopeia_tree.nwk
+
+            # use the cassiopeia tree to get a laml tree for downsampling
+            sed 's/-1/?/g; s/\t/,/g' {input.temp_matrix} > {params.outputdir}/matrix.csv
+
+            run_laml -c {params.outputdir}/matrix.csv -t {params.outputdir}/subset_evotracer_cassiopeia_tree.nwk -o {params.outputdir}/{wildcards.mouse}_{wildcards.cp}_laml --timescale {params.experimentTime} --parallel
+
+            # remove origin from the laml tree
+            newick=$(sed 's/):.*$//g' {params.outputdir}/{wildcards.mouse}_{wildcards.cp}_laml_trees.nwk)
+            lamlTreeNoOrigin={params.outputdir}/{wildcards.mouse}_{wildcards.cp}_laml_trees_no_origin.nwk
+            echo "${{newick:1}}" > $lamlTreeNoOrigin
+            echo ");" >> $lamlTreeNoOrigin
+
+            # downsample the tree
+            python {params.scripts}/formatting/downsample_tree.py {input.temp_matrix} $lamlTreeNoOrigin {input.temp_tissues} {params.threshold} {params.outputdir}/downsampled
+            
+        else
+            echo "Number of tips is less than {params.max_tips}. No downsampling."
+            cp {input.temp_matrix} {output.downsampledMatrix}
+            cp {input.temp_tissues} {output.downsampledTissues}
+        fi
+        """
+
+rule prepBeamInputs:
+    input:
+        downsampledMatrix = "{outdir}/beam/{mouse}/{cp}/downsampled_matrix.tsv",
+        downsampledTissues = "{outdir}/beam/{mouse}/{cp}/downsampled_tissues.tsv"
+    output:
+        fasta = "{outdir}/beam/{mouse}/{cp}/{cp}.fasta",
+        dates = "{outdir}/beam/{mouse}/{cp}/{cp}_date_traits.csv",
+        tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
+    params:
+        outdir = "{outdir}/beam/{mouse}/{cp}",
+        scripts = config['scripts'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        modelDropouts = config['modelDropouts'],
+        threads = 1,
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        # make mutations successive for each matrix and provide an updated dictionary of int to mutations
+        python {params.scripts}/formatting/matrix_to_successive_matrix.py {input.downsampledMatrix} {params.outdir}/mutation_dict.tsv {params.outdir}
+
+        # expand clones found in multiple tissues to separate entries
+        python {params.scripts}/formatting/expand_clones_multiple_tissues.py {params.outdir}/successive_char_matrix.csv {input.downsampledTissues} {params.outdir}
+        matrixFile={params.outdir}/expanded_clones_matrix.tsv
+        tissuesFile={params.outdir}/expanded_clones_tissues.tsv
+
+        # make output files
+        fasta={params.outdir}/{wildcards.cp}.fasta
+        dates={params.outdir}/{wildcards.cp}_date_traits.csv
+        tissues={params.outdir}/{wildcards.cp}_tip_tissues.csv
+        editRateProportions={params.outdir}/{wildcards.cp}_edit_rate_proportions.txt
+
+        # write tip traits to new csv
+        tail -n +2 $tissuesFile | grep -v '^$' | cut -f1,2 | tr '\\t' ',' > $tissues
+
+        # write date trait
+        tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > $dates
+
+        # get edit rate proportions for new mutation entries, relative so they all sum to 1.0
+        all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\\t' ' ' | tr '\\n' ' ')
+        total_count=$(echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l)
+        uniq_count=$(echo $all_muts | tr ' ' '\\n' | sort | uniq | grep -wv "0" | wc -l)
+        count_sum=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
+        
+        for element in $(seq 1 $uniq_count); do
+            echo "START"
+            echo "element: $element"
+            if echo "$all_muts" | tr ' ' '\\n' | grep -w "$element"; then
+                echo "FOUND"
+                count=$(echo "$all_muts" | tr ' ' '\\n' | grep -wc "$element")
+                proportion=$(echo "scale=10; $count / $count_sum" | bc)
+            else
+                echo "NOT FOUND"
+                count=0
+                proportion=0
+            fi
+            echo "count: $count"
+            echo "proportion: $proportion"
+            echo "$proportion" >> $editRateProportions
+
+        done
+
+        # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
+        if [ "{params.modelDropouts}" == "True" ] || [ "{params.modelDropouts}" == "true" ]; then
+            # to model dropouts, use the highest mutation int representation and add 1 since the dropout column is the last in the rate matrix
+            dropoutMutNum=$(( uniq_count + 1 ))
+            tail -n +2 $matrixFile | grep -v '^$' | sed "s/-1/$dropoutMutNum/g" | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > $fasta
+        else
+            # to not model dropouts
+            tail -n +2 $matrixFile | grep -v '^$' | sed 's/-1/0/g' | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > $fasta
+        fi     
         """
 
 rule runCassiopeia:
@@ -558,7 +594,7 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/metient/{mouse}/{cp}",
-        threads = 75
+        threads = 25
     singularity:
         "../../envs/metient.sif"
     shell:

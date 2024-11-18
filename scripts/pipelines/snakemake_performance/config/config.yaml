@@ -20,17 +20,16 @@ scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scri
 treeannotator: /grid/siepel/home_norepl/staklins/bin/beast/bin/treeannotator
 logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
 
-# set path to metastabayes custom BEAST2 package runnable jar file
-metastabayesJar: /grid/siepel/home_norepl/staklins/metastabayes/metastabayes.jar
+# set path to beam custom BEAST2 package runnable jar file
+beamJar: /grid/siepel/home_norepl/staklins/beam/beam.jar
 
-# set path to the metastabayes model xml template file
-# xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/metastabayes_mcmc_template.xml
-xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/metastabayes_mcmc_template.xml
+# set path to the beam model xml template file
+xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_mcmc_template.xml
 
 # set the length of the simulation datasets in number of cell divisions
 generations: 250
 
-# set the matrix structure and number of rates for the tissue rate matrix in the metastabayes model
+# set the matrix structure and number of rates for the tissue rate matrix in the beam model
 # currently set to GTI model with 10 tissues
 # matrixStructure: "0 0 1 2 3 4 5 6 7 8
 # 9 0 10 11 12 13 14 15 16 17
