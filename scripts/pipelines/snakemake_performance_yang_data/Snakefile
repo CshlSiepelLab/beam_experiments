@@ -6,6 +6,15 @@ import glob
 # specific to yang et al data to get the input files (character matrices and tissue labeling files)
 character_matrices = glob.glob(os.path.join(config['inputpath'], "*_successive_char_matrix_collapsed.txt"))
 mouse_ids = ["_".join(os.path.basename(x).split("_")[0:3]) for x in character_matrices]
+
+# subset mouse_ids to only those that have converged based on 5 day run ending 11/18/24
+mouse_ids = [
+    "3457_Apc_T4",
+    "3460_Lkb1_T1",
+    "3465_Lkb1_T1",
+    "3513_NT_T1",
+]
+
 tissue_labeling_files = [os.path.join(config['inputpath'], f"{x}_successive_char_matrix_collapsing_dict.txt") for x in mouse_ids]
 
 outdir = config['outdir']
@@ -14,7 +23,7 @@ rule all:
     input:
         expand("{outdir}/beam/{mouse}/terminal_{num}.log", mouse=mouse_ids, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/beam/{mouse}/combined.log", mouse=mouse_ids, outdir=outdir),
-        expand("{outdir}/beam/{mouse}/threshold_70_migration_graph.pdf", mouse=mouse_ids, outdir=outdir)
+        expand("{outdir}/beam/{mouse}/threshold_migration_graph.pdf", mouse=mouse_ids, outdir=outdir)
 
 rule runCassiopeiaDs:
     input:
@@ -371,7 +380,7 @@ rule plotGraphPosterior:
         graphPosterior = "{outdir}/beam/{mouse}/posterior_prob_graph.csv"
     output:
         probabilityPlot = "{outdir}/beam/{mouse}/probability_migration_graph.pdf",
-        thresholdPlot = "{outdir}/beam/{mouse}/threshold_70_migration_graph.pdf"
+        thresholdPlot = "{outdir}/beam/{mouse}/threshold_migration_graph.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
