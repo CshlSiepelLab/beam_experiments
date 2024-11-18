@@ -50,7 +50,7 @@ rule runEvotracer:
         char_matrix = "{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv",
         asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv",
         mut_dict = "{outdir}/evotracer/{mouse}/asv_analysis/mutation_profile_map.csv",
-        evotracerCassiopeiaTree= "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/tree_all_clones.nwk",
+        evotracerCassiopeiaTree= "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/tree_all_clones.newick",
     params:
         evoOutDir = "{outdir}/evotracer/{mouse}",
         scripts = config['scripts'],
@@ -79,10 +79,12 @@ rule splitCPs:
         asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv",
         mut_dict = "{outdir}/evotracer/{mouse}/asv_analysis/mutation_profile_map.csv",
     output:
-        cpList = "{outdir}/beam/{mouse}/cp_list.txt"
+        cpList = "{outdir}/beam/{mouse}/cp_list.txt",
+        mutation_dict = "{outdir}/beam/{mouse}/mutation_dict.tsv"
     params:
         outdir = "{outdir}/beam/{mouse}",
-        scripts = config['scripts']
+        scripts = config['scripts'],
+        threads = 1
     shell:
         """
         # prep mutation dictionary for the mouse overall
@@ -92,7 +94,7 @@ rule splitCPs:
         for cp in $cps; do
 
             # make cp dir
-            cpOutdir={params.outdir}/cps/${{cp}}
+            cpOutdir={params.outdir}/${{cp}}
             mkdir -p $cpOutdir
 
             # get ASVs for the cp
@@ -118,7 +120,7 @@ rule splitCPs:
 rule downsampleInputsTree:
     input:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt",
-        evotracerCassiopeiaTree= "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/tree_all_clones.nwk",
+        evotracerCassiopeiaTree= "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/tree_all_clones.newick",
         temp_matrix = "{outdir}/beam/{mouse}/{cp}/temp_matrix.tsv",
         temp_tissues = "{outdir}/beam/{mouse}/{cp}/temp_tissues.tsv"
     output:
@@ -129,7 +131,8 @@ rule downsampleInputsTree:
         scripts = config['scripts'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         max_tips = 150, # downsampling only occurs if the number of tips is greater than this
-        threshold = 0.3 # height of the tree for which downsampling occurs below it
+        threshold = 0.3, # height of the tree for which downsampling occurs below it
+        threads = 25
     conda:
         "../../envs/laml.yaml"
     shell:
@@ -139,16 +142,17 @@ rule downsampleInputsTree:
 
         # If the number of rows is greater than 150, downsample
         if [ "$num_tips" -gt {params.max_tips} ]; then
-            echo "Number of tips is greater than {params.num_tips}. Downsampling with a tree threhold of {params.threshold}."
+            echo "Number of tips is greater than {params.max_tips}. Downsampling with a tree threhold of {params.threshold}."
 
             # subset the existing cassiopeia tree
             asv_names=$(tail -n +2 {input.temp_matrix} | cut -f1 | tr '\\n' ',')
-            python {params.scripts}/formatting/subset_evotracer_cassiopeia_tree.py {input.evotracerCassiopeiaTree} $asv_names {params.outputdir}/subset_evotracer_cassiopeia_tree.nwk
+            subset_cas_tree={params.outputdir}/subset_evotracer_cassiopeia_tree.nwk
+            python {params.scripts}/formatting/subset_evotracer_cassiopeia_tree.py {input.evotracerCassiopeiaTree} $asv_names $subset_cas_tree
 
             # use the cassiopeia tree to get a laml tree for downsampling
             sed 's/-1/?/g; s/\t/,/g' {input.temp_matrix} > {params.outputdir}/matrix.csv
 
-            run_laml -c {params.outputdir}/matrix.csv -t {params.outputdir}/subset_evotracer_cassiopeia_tree.nwk -o {params.outputdir}/{wildcards.mouse}_{wildcards.cp}_laml --timescale {params.experimentTime} --parallel
+            run_laml -c {params.outputdir}/matrix.csv -t $subset_cas_tree -o {params.outputdir}/{wildcards.mouse}_{wildcards.cp}_laml --timescale {params.experimentTime} --parallel
 
             # remove origin from the laml tree
             newick=$(sed 's/):.*$//g' {params.outputdir}/{wildcards.mouse}_{wildcards.cp}_laml_trees.nwk)
@@ -158,7 +162,7 @@ rule downsampleInputsTree:
 
             # downsample the tree
             python {params.scripts}/formatting/downsample_tree.py {input.temp_matrix} $lamlTreeNoOrigin {input.temp_tissues} {params.threshold} {params.outputdir}/downsampled
-            
+
         else
             echo "Number of tips is less than {params.max_tips}. No downsampling."
             cp {input.temp_matrix} {output.downsampledMatrix}
@@ -169,12 +173,14 @@ rule downsampleInputsTree:
 rule prepBeamInputs:
     input:
         downsampledMatrix = "{outdir}/beam/{mouse}/{cp}/downsampled_matrix.tsv",
-        downsampledTissues = "{outdir}/beam/{mouse}/{cp}/downsampled_tissues.tsv"
+        downsampledTissues = "{outdir}/beam/{mouse}/{cp}/downsampled_tissues.tsv",
+        mutation_dict = "{outdir}/beam/{mouse}/mutation_dict.tsv"
     output:
         fasta = "{outdir}/beam/{mouse}/{cp}/{cp}.fasta",
         dates = "{outdir}/beam/{mouse}/{cp}/{cp}_date_traits.csv",
         tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv",
         editRateProportions = "{outdir}/beam/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
+        expandedClonesMatrix = "{outdir}/beam/{mouse}/{cp}/expanded_clones_matrix.tsv",
     params:
         outdir = "{outdir}/beam/{mouse}/{cp}",
         scripts = config['scripts'],
@@ -186,7 +192,7 @@ rule prepBeamInputs:
     shell:
         """
         # make mutations successive for each matrix and provide an updated dictionary of int to mutations
-        python {params.scripts}/formatting/matrix_to_successive_matrix.py {input.downsampledMatrix} {params.outdir}/mutation_dict.tsv {params.outdir}
+        python {params.scripts}/formatting/matrix_to_successive_matrix.py {input.downsampledMatrix} {input.mutation_dict} {params.outdir}
 
         # expand clones found in multiple tissues to separate entries
         python {params.scripts}/formatting/expand_clones_multiple_tissues.py {params.outdir}/successive_char_matrix.csv {input.downsampledTissues} {params.outdir}
@@ -226,7 +232,6 @@ rule prepBeamInputs:
             echo "count: $count"
             echo "proportion: $proportion"
             echo "$proportion" >> $editRateProportions
-
         done
 
         # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
@@ -243,7 +248,7 @@ rule prepBeamInputs:
 rule runCassiopeia:
     input:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt",
-        matrix = "{outdir}/beam/{mouse}/{cp}/expanded_clones_matrix.tsv"
+        expandedClonesMatrix = "{outdir}/beam/{mouse}/{cp}/expanded_clones_matrix.tsv"
     output:
         "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
     params:
@@ -255,7 +260,7 @@ rule runCassiopeia:
     shell:
         """
         # run cassiopeia greedy
-        python {params.cassiopeia_script} {input.matrix} {params.outputdir}
+        python {params.cassiopeia_script} {input.expandedClonesMatrix} {params.outputdir}
         """
 
 rule runLAML:
