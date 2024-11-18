@@ -113,16 +113,16 @@ for tissue in tissue_labels['tissues'].unique():
                 else:
                     nodes_to_remove.add(node1)
                 
-# Plot histogram of values and threshold
-if plot:
-    plt.hist([distance for _, _, distance in distance_values], bins=100, edgecolor='black', color='grey')
-    plt.axvline(x=threshold, color='r', linestyle='dashed', linewidth=1)
-    plt.title('Histogram of pairwise distances for candidate tips')
-    plt.xlabel('Distance (branch length)')
-    plt.ylabel('Frequency')
-    plt.tight_layout()
-    plt.savefig(outprefix + "_downsample_threshold_histogram.png")
-    plt.close()
+# # Plot histogram of values and threshold
+# if plot:
+#     plt.hist([distance for _, _, distance in distance_values], bins=100, edgecolor='black', color='grey')
+#     plt.axvline(x=threshold, color='r', linestyle='dashed', linewidth=1)
+#     plt.title('Histogram of pairwise distances for candidate tips')
+#     plt.xlabel('Distance (branch length)')
+#     plt.ylabel('Frequency')
+#     plt.tight_layout()
+#     plt.savefig(outprefix + "_downsample_threshold_histogram.png")
+#     plt.close()
 
 # remove nodes from the tree in a copy of the tree
 tree_copy = tree.copy()
