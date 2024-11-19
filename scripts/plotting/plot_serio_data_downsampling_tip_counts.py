@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 
 DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
 
-infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_11_24/asv_counts_per_cp.csv"
+infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24/asv_counts_per_cp.csv"
 
-max_tips=150
+max_tips=100
 
-# Load the data from the CSV file
+# Load the data from the C  SV file
 data = pd.read_csv(infile)
 
 # sort by mouse and then by cp in increasing order

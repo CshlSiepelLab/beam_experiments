@@ -13,4 +13,7 @@ splitCPs:
   logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
   logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
 
+runBeam:
+  runtime: '120:00:00'
+
   

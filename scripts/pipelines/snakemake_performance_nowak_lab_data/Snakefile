@@ -124,13 +124,13 @@ rule downsampleInputsTree:
         temp_matrix = "{outdir}/beam/{mouse}/{cp}/temp_matrix.tsv",
         temp_tissues = "{outdir}/beam/{mouse}/{cp}/temp_tissues.tsv"
     output:
-        downsampledMatrix = "{outdir}/beam/{mouse}/{cp}/downsampled_matrix.tsv",
-        downsampledTissues = "{outdir}/beam/{mouse}/{cp}/downsampled_tissues.tsv"
+        downsampledMatrix = "{outdir}/beam/{mouse}/{cp}/downsampled_char_matrix.tsv",
+        downsampledTissues = "{outdir}/beam/{mouse}/{cp}/downsampled_tissue_labels.tsv"
     params:
-        outputdir = "{outdir}/downsampled_data/{mouse}/{cp}",
+        outputdir = "{outdir}/beam/{mouse}/{cp}",
         scripts = config['scripts'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        max_tips = 150, # downsampling only occurs if the number of tips is greater than this
+        max_tips = 100, # downsampling only occurs if the number of tips is greater than this
         threshold = 0.3, # height of the tree for which downsampling occurs below it
         threads = 25
     conda:
@@ -142,15 +142,16 @@ rule downsampleInputsTree:
 
         # If the number of rows is greater than 150, downsample
         if [ "$num_tips" -gt {params.max_tips} ]; then
-            echo "Number of tips is greater than {params.max_tips}. Downsampling with a tree threhold of {params.threshold}."
+            echo "Number of tips is greater than {params.max_tips}. Downsampling with a tree threshold of {params.threshold}."
 
             # subset the existing cassiopeia tree
-            asv_names=$(tail -n +2 {input.temp_matrix} | cut -f1 | tr '\\n' ',')
+            asv_names=$(tail -n +2 {input.temp_matrix} | cut -f1 | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
             subset_cas_tree={params.outputdir}/subset_evotracer_cassiopeia_tree.nwk
             python {params.scripts}/formatting/subset_evotracer_cassiopeia_tree.py {input.evotracerCassiopeiaTree} $asv_names $subset_cas_tree
 
             # use the cassiopeia tree to get a laml tree for downsampling
-            sed 's/-1/?/g; s/\t/,/g' {input.temp_matrix} > {params.outputdir}/matrix.csv
+            cp {input.temp_matrix} {params.outputdir}/matrix.csv
+            sed -i 's/-1/?/g; s/\t/,/g' {params.outputdir}/matrix.csv
 
             run_laml -c {params.outputdir}/matrix.csv -t $subset_cas_tree -o {params.outputdir}/{wildcards.mouse}_{wildcards.cp}_laml --timescale {params.experimentTime} --parallel
 
@@ -172,8 +173,8 @@ rule downsampleInputsTree:
 
 rule prepBeamInputs:
     input:
-        downsampledMatrix = "{outdir}/beam/{mouse}/{cp}/downsampled_matrix.tsv",
-        downsampledTissues = "{outdir}/beam/{mouse}/{cp}/downsampled_tissues.tsv",
+        downsampledMatrix = "{outdir}/beam/{mouse}/{cp}/downsampled_char_matrix.tsv",
+        downsampledTissues = "{outdir}/beam/{mouse}/{cp}/downsampled_tissue_labels.tsv",
         mutation_dict = "{outdir}/beam/{mouse}/mutation_dict.tsv"
     output:
         fasta = "{outdir}/beam/{mouse}/{cp}/{cp}.fasta",
@@ -266,7 +267,7 @@ rule runCassiopeia:
 rule runLAML:
     input:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt",
-        expandedMatrix = "{outdir}/beam/{mouse}/{cp}/expanded_clones_matrix.tsv",
+        expandedClonesMatrix = "{outdir}/beam/{mouse}/{cp}/expanded_clones_matrix.tsv",
         casTree = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
     output:
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
@@ -281,7 +282,7 @@ rule runLAML:
     shell:
         """
         # copy matrix and replace -1 with ? for missing data
-        cp {input.expandedMatrix} {params.outputdir}/matrix.csv
+        cp {input.expandedClonesMatrix} {params.outputdir}/matrix.csv
         sed -i 's/-1/?/g; s/\t/,/g' {params.outputdir}/matrix.csv
 
         # run laml
@@ -328,7 +329,7 @@ rule runBeam:
         # set the mcmc chain length based on the number of tips in the tree
         # use a minimum of 5 million and a maximum of a user specified length
         numTips=$(grep -c '^>' {input.fasta})
-        mcmclength=$(( numTips * 100000 ))
+        mcmclength=$(( numTips * 200000 ))
         if (( mcmclength > {params.mcmclength} )); then
             mcmclength={params.mcmclength}
         elif (( mcmclength < 5000000 )); then
@@ -336,7 +337,7 @@ rule runBeam:
         fi
 
         # for temporary indefinite run
-        mcmclength=200000000
+        mcmclength=500000000
 
         # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
         if [[ $numTissues -eq 1 ]]; then
@@ -525,17 +526,25 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 25
+        threads = 5
     conda:
         "../../envs/machina.yaml"
     shell:
         """
-        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
-        module load EBModules
-        module load Gurobi
+        # check if primary tissue is in the labeling file
+        if grep -q "{params.primaryTissue}" {input.labeling}; then
+            # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
+            module load EBModules
+            module load Gurobi
 
-        # run machina
-        {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
+            # run machina
+            {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
+
+        else
+            most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
+            echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
+            {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue $most_common_tissue --outdir {params.outputdir}
+        fi
         """
 
 rule plotMachinaMigrationGraphs:
