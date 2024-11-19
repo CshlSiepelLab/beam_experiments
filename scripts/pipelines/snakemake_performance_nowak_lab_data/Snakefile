@@ -531,19 +531,21 @@ rule runMachina:
         "../../envs/machina.yaml"
     shell:
         """
+        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
+        module load EBModules
+        module load Gurobi
+        
         # check if primary tissue is in the labeling file
         if grep -q "{params.primaryTissue}" {input.labeling}; then
-            # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
-            module load EBModules
-            module load Gurobi
-
-            # run machina
             {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
-
         else
             most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
             echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
             {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue $most_common_tissue --outdir {params.outputdir}
+
+            # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label will be different due to the different primary tissue
+            cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.dot {output.dotFile}
+            cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.tree {output.machinaEdgeFile}
         fi
         """
 
