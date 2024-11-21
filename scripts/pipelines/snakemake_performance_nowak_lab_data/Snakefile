@@ -25,6 +25,7 @@ rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
         expand("{outdir}/beam/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
+        expand("{outdir}/asv_count_per_cp.pdf", outdir=config['outdir']),
         [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
@@ -81,7 +82,6 @@ rule splitCPs:
     output:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt",
         mutation_dict = "{outdir}/beam/{mouse}/mutation_dict.tsv",
-        tempTissues = "{outdir}/beam/{mouse}/temp_tissues.tsv"
     params:
         outdir = "{outdir}/beam/{mouse}",
         scripts = config['scripts'],
@@ -120,22 +120,27 @@ rule splitCPs:
 
 rule plotCpNumAsvs:
     input:
-        expand("{outdir}/beam/{mouse}/{cp}/temp_tissues.tsv", outdir=config['outdir'], mouse=mice, cp=[get_elements_from_file(f"{config['outdir']}/beam/{m}") for m in mice])
+        cpLists = expand("{outdir}/beam/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice)
     output:
         asvCountCsv = "{outdir}/asv_counts_per_cp.csv",
         asvCountPdf = "{outdir}/asv_count_per_cp.pdf"
     params:
         outdir = "{outdir}",
+        scripts = config['scripts'],
         threads = 1,
         max_tips = config['downsampleTipNumThreshold'],
     conda:
         "../../envs/matplotlib.yaml"
+    
     shell:
         """
         # Count the number of ASVs in each CP for each mouse
         asv_count_csv={params.outdir}/asv_counts_per_cp.csv
         echo "mouse,cp,num_asvs" > $asv_count_csv
-        for file in $input; do
+
+        files=$(find {params.outdir}/beam -type f -name "temp_tissues.tsv")
+
+        for file in $files; do
             mouse=$(echo $file | rev | cut -d'/' -f3 | rev)
             cp=$(echo $file | rev | cut -d'/' -f2 | rev)
             num_asvs=$(($(wc -l < $file) - 1))
@@ -143,7 +148,7 @@ rule plotCpNumAsvs:
         done
 
         # Plot the number of ASVs in each CP for each mouse
-        python {config['scripts']}/plotting/plot_nowak_downsampling_tree_results.py $asv_count_csv {params.max_tips}
+        python {params.scripts}/plotting/plot_serio_downsampling_tree_results.py $asv_count_csv {params.max_tips}
         """
 
 rule downsampleInputsTree:

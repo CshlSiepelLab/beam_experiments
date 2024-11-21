@@ -13,6 +13,10 @@ splitCPs:
   logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
   logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
 
+plotCpNumAsvs:
+  logout: '{wildcards.outdir}/job_logs/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{rule}.err'
+
 runBeam:
   runtime: '120:00:00'
 
