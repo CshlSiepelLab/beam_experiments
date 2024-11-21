@@ -4,7 +4,7 @@ fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/d
 # fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/billy_bladder_cancer_data_7_1_24/fastq_raw"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24"
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50"
 # outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_11_24"
 
 # whether to model dropouts or just consider them as unedited sites
@@ -12,7 +12,7 @@ modelDropouts: true
 
 # threshold for downsampling
 downsampleTipNumThreshold: 150 # any CP with more ASVs than this will be downsampled
-downsampleDistanceThreshold: 0.3 # for CPs being downsampled, this threshold will be used. 0.0 will always bypass downsampling
+downsampleDistanceThreshold: 0.0 # for CPs being downsampled, this threshold will be used. 0.0 will always bypass downsampling
 
 # primary tissue name
 primaryTissue: 
@@ -75,7 +75,7 @@ experimentTime:
 #   MMUS1782: 218
 
 # set the desired maximum mcmc chain length
-mcmcLength: 100000000
+mcmcLength: 50000000
 
 # set the desired number of parallel mcmc chains to run
 numChains: 3

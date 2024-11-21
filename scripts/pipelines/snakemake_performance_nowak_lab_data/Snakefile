@@ -80,7 +80,8 @@ rule splitCPs:
         mut_dict = "{outdir}/evotracer/{mouse}/asv_analysis/mutation_profile_map.csv",
     output:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt",
-        mutation_dict = "{outdir}/beam/{mouse}/mutation_dict.tsv"
+        mutation_dict = "{outdir}/beam/{mouse}/mutation_dict.tsv",
+        tempTissues = "{outdir}/beam/{mouse}/temp_tissues.tsv"
     params:
         outdir = "{outdir}/beam/{mouse}",
         scripts = config['scripts'],
@@ -117,6 +118,34 @@ rule splitCPs:
         done
         """
 
+rule plotCpNumAsvs:
+    input:
+        expand("{outdir}/beam/{mouse}/{cp}/temp_tissues.tsv", outdir=config['outdir'], mouse=mice, cp=[get_elements_from_file(f"{config['outdir']}/beam/{m}") for m in mice])
+    output:
+        asvCountCsv = "{outdir}/asv_counts_per_cp.csv",
+        asvCountPdf = "{outdir}/asv_count_per_cp.pdf"
+    params:
+        outdir = "{outdir}",
+        threads = 1,
+        max_tips = config['downsampleTipNumThreshold'],
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        # Count the number of ASVs in each CP for each mouse
+        asv_count_csv={params.outdir}/asv_counts_per_cp.csv
+        echo "mouse,cp,num_asvs" > $asv_count_csv
+        for file in $input; do
+            mouse=$(echo $file | rev | cut -d'/' -f3 | rev)
+            cp=$(echo $file | rev | cut -d'/' -f2 | rev)
+            num_asvs=$(($(wc -l < $file) - 1))
+            echo "$mouse,$cp,$num_asvs" >> $asv_count_csv
+        done
+
+        # Plot the number of ASVs in each CP for each mouse
+        python {config['scripts']}/plotting/plot_nowak_downsampling_tree_results.py $asv_count_csv {params.max_tips}
+        """
+
 rule downsampleInputsTree:
     input:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt",
@@ -130,8 +159,8 @@ rule downsampleInputsTree:
         outputdir = "{outdir}/beam/{mouse}/{cp}",
         scripts = config['scripts'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        max_tips = 100, # downsampling only occurs if the number of tips is greater than this
-        threshold = 0.3, # height of the tree for which downsampling occurs below it
+        max_tips = config['downsampleTipNumThreshold'], # downsampling only occurs if the number of tips is greater than this
+        threshold = config['downsampleDistanceThreshold'], # height of the tree for which downsampling occurs below it
         threads = 25
     conda:
         "../../envs/laml.yaml"
@@ -336,8 +365,7 @@ rule runBeam:
             mcmclength=5000000
         fi
 
-        # for temporary indefinite run
-        mcmclength=500000000
+        mcmclength=200000000
 
         # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
         if [[ $numTissues -eq 1 ]]; then
@@ -526,7 +554,7 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 5
+        threads = 25
     conda:
         "../../envs/machina.yaml"
     shell:
@@ -610,7 +638,7 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/metient/{mouse}/{cp}",
-        threads = 25
+        threads = 50
     singularity:
         "../../envs/metient.sif"
     shell:

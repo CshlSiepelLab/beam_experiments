@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -7,9 +8,10 @@ import matplotlib.pyplot as plt
 
 DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
 
-infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24/asv_counts_per_cp.csv"
+infile = sys.argv[1]
+# infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24/asv_counts_per_cp.csv"
 
-max_tips=100
+max_tips=sys.argv[2]
 
 # Load the data from the C  SV file
 data = pd.read_csv(infile)
