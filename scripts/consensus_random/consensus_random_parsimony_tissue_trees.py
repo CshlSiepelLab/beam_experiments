@@ -26,8 +26,8 @@ def label_tissues_consensus(tree, tissues_df):
                 consensus_tissue = most_common_elements[0][0]
             else:
                 # tie breaker goes to primary
-                if any('P' in elem for elem in most_common_elements):
-                    consensus_tissue = 'P'
+                if any(primary_tissue in elem for elem in most_common_elements):
+                    consensus_tissue = primary_tissue
                 # if tie doesn't involve primary, choose randomly
                 else:
                     tied_elements = [elem[0] for elem in most_common_elements]
@@ -116,6 +116,8 @@ def label_tissues_parsimony(tree, tissues_df):
 tree_file = sys.argv[1]
 leaf_tissues_tsv = sys.argv[2]
 outdir = sys.argv[3]
+
+primary_tissue = 'P'
 
 # tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees_no_branch_lengths.nwk"
 # leaf_tissues_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"

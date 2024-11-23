@@ -40,8 +40,6 @@ def get_migration_counts(tree):
     return migration_counts, sorted(tissues)
 
 def process_tree(filepath):
-    # set primary tissue
-    primary_tissue="P"
     # read in tree files to ete3 tree
     tree = Tree(filepath, format=8)
     # set tree root to primary
@@ -55,6 +53,7 @@ def process_tree(filepath):
 newick = sys.argv[1]
 primary_tissue=sys.argv[2]
 outfile = sys.argv[3]
+
 
 # read in the true tree to ete3 and get the migration counts
 migration_graph, all_tissues = process_tree(newick)

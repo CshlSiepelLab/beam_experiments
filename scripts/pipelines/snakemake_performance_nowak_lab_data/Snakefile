@@ -25,22 +25,22 @@ rule all:
     input:
         expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
         expand("{outdir}/beam/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
-        expand("{outdir}/asv_count_per_cp.pdf", outdir=config['outdir']),
+        expand("{outdir}/asv_counts_per_cp_boxplot.pdf", outdir=config['outdir']),
         [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/beam/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
-        [expand("{outdir}/beam/{mouse}/{cp}/combined.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/beam/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/beam/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        # [expand("{outdir}/beam/{mouse}/{cp}/combined.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/beam/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice],
-        [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues.nwk", outdir=config['outdir'],
+        [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues.pdf", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice]
                 
 
@@ -55,7 +55,8 @@ rule runEvotracer:
     params:
         evoOutDir = "{outdir}/evotracer/{mouse}",
         scripts = config['scripts'],
-        threads = 10
+        threads = 10,
+        asvThreshold = config['asvThreshold']
     singularity:
         '../../envs/evotracer.sif'
     shell:
@@ -68,7 +69,7 @@ rule runEvotracer:
         # evotracer needs fastqs to be unzipped
         gunzip $tempDir/*
 
-        Rscript {params.scripts}/evotracer/evotracer.R $tempDir {params.evoOutDir}
+        Rscript {params.scripts}/evotracer/evotracer.R $tempDir {params.evoOutDir} {params.asvThreshold}
 
         # remove temp dir
         rm -r $tempDir
@@ -122,8 +123,7 @@ rule plotCpNumAsvs:
     input:
         cpLists = expand("{outdir}/beam/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice)
     output:
-        asvCountCsv = "{outdir}/asv_counts_per_cp.csv",
-        asvCountPdf = "{outdir}/asv_count_per_cp.pdf"
+        asvCountPdf = "{outdir}/asv_counts_per_cp_boxplot.pdf"
     params:
         outdir = "{outdir}",
         scripts = config['scripts'],
@@ -131,7 +131,6 @@ rule plotCpNumAsvs:
         max_tips = config['downsampleTipNumThreshold'],
     conda:
         "../../envs/matplotlib.yaml"
-    
     shell:
         """
         # Count the number of ASVs in each CP for each mouse
@@ -148,7 +147,7 @@ rule plotCpNumAsvs:
         done
 
         # Plot the number of ASVs in each CP for each mouse
-        python {params.scripts}/plotting/plot_serio_downsampling_tree_results.py $asv_count_csv {params.max_tips}
+        python {params.scripts}/plotting/plot_nowak_data_downsampling_tip_counts.py $asv_count_csv {params.max_tips}
         """
 
 rule downsampleInputsTree:
@@ -363,13 +362,14 @@ rule runBeam:
         # set the mcmc chain length based on the number of tips in the tree
         # use a minimum of 5 million and a maximum of a user specified length
         numTips=$(grep -c '^>' {input.fasta})
-        mcmclength=$(( numTips * 200000 ))
+        mcmclength=$(( numTips * 250000 ))
         if (( mcmclength > {params.mcmclength} )); then
             mcmclength={params.mcmclength}
         elif (( mcmclength < 5000000 )); then
             mcmclength=5000000
         fi
 
+        # To set a fixed length temporarily
         mcmclength=200000000
 
         # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
@@ -568,17 +568,27 @@ rule runMachina:
         module load EBModules
         module load Gurobi
         
-        # check if primary tissue is in the labeling file
-        if grep -q "{params.primaryTissue}" {input.labeling}; then
-            {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
-        else
-            most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
-            echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
-            {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue $most_common_tissue --outdir {params.outputdir}
+        unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
+        num_unique_tissues=$(echo "$unique_tissues" | wc -l)
 
-            # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label will be different due to the different primary tissue
-            cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.dot {output.dotFile}
-            cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.tree {output.machinaEdgeFile}
+        if [ "$num_unique_tissues" -gt 1 ]; then
+
+            # check if primary tissue is in the labeling file
+            if grep -q "{params.primaryTissue}" {input.labeling}; then
+                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
+            else
+                most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
+                echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
+                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue $most_common_tissue --outdir {params.outputdir}
+
+                # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label will be different due to the different primary tissue
+                cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.dot {output.dotFile}
+                cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.tree {output.machinaEdgeFile}
+            fi
+        else
+            echo "Only one unique tissue found in the labeling fine, so not enough to run Machina. Exiting."
+            touch {output.machinaEdgeFile}
+            touch {output.dotFile}
         fi
         """
 
@@ -643,7 +653,7 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/metient/{mouse}/{cp}",
-        threads = 50
+        threads = 25
     singularity:
         "../../envs/metient.sif"
     shell:
@@ -674,6 +684,23 @@ rule runParsimony:
     shell:
         """
         python {params.scripts}/consensus_random/parsimony_only.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir} {params.primaryTissue}
+        """
+
+rule plotParsimony:
+    input:
+        parsimonyResult = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues.nwk"
+    output:
+        parsimonyPlot = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues.pdf"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}",
+        threads = 1,
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse]
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.parsimonyResult} {params.primaryTissue} {output.parsimonyPlot}
         """
 
 # rule callMigrationComigrationCounts:

@@ -11,9 +11,9 @@ DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27
 infile = sys.argv[1]
 # infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24/asv_counts_per_cp.csv"
 
-max_tips=sys.argv[2]
+max_tips=int(sys.argv[2])
 
-# Load the data from the C  SV file
+# Load the data from the CSV file
 data = pd.read_csv(infile)
 
 # sort by mouse and then by cp in increasing order
