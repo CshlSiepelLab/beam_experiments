@@ -9,6 +9,10 @@ runEvotracer:
   logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
   logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
 
+plotEvotracerResults:
+  logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
 splitCPs:
   logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
   logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
@@ -19,6 +23,10 @@ plotCpNumAsvs:
 
 runBeam:
   runtime: '120:00:00'
+
+summarizeMachina:
+  logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
 
 runMetient:
   mem: '2G'

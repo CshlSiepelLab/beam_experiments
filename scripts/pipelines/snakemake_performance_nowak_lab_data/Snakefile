@@ -23,7 +23,7 @@ def get_elements_from_file(path):
 
 rule all:
     input:
-        expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
+        expand("{outdir}/evotracer/{mouse}/hist_freq_indels.pdf", outdir=config['outdir'], mouse=mice),
         expand("{outdir}/beam/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
         expand("{outdir}/asv_counts_per_cp_boxplot.pdf", outdir=config['outdir']),
         [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", outdir=config['outdir'], 
@@ -38,6 +38,7 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        expand("{outdir}/machina/{mouse}/all_results_extended.txt", outdir=config['outdir'], mouse=mice),
         [expand("{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice],
         [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues.pdf", outdir=config['outdir'],
@@ -75,6 +76,33 @@ rule runEvotracer:
         rm -r $tempDir
         """
 
+rule plotEvotracerResults:
+    input:
+        rDataObject = "{outdir}/evotracer/{mouse}/evotracer.RData",
+    output:
+        indels = "{outdir}/evotracer/{mouse}/hist_freq_indels.pdf",
+        dispersal = "{outdir}/evotracer/{mouse}/stat_cps_dispersal_bargraph_hm.pdf",
+        phylo = "{outdir}/evotracer/{mouse}/cp_tree_msa_cna_bc_bubble_qnt_ggtree_mp.pdf",
+    params:
+        evoPlotsOutDir = "{outdir}/evotracer/{mouse}/plots",
+        scripts = config['scripts'],
+        threads = 1,
+    singularity:
+        "../../envs/evotracer_plotting.sif"
+    shell:
+        """
+        Rscript {params.scripts}/plotting_nowak_lab/2_barcode_edits_analysis/04.1_hist_freq_indels.R {input.rDataObject} "{params.evoPlotsOutDir}"
+
+        Rscript {params.scripts}/plotting_nowak_lab/2_barcode_edits_analysis/04.2_hist_freq_seq_length.R {input.rDataObject} "{params.evoPlotsOutDir}"
+
+        Rscript {params.scripts}/plotting_nowak_lab//2_barcode_edits_analysis/04.3_hist_freq_site_marked.R {input.rDataObject} "{params.evoPlotsOutDir}"
+
+        Rscript {params.scripts}/plotting_nowak_lab/3_clonal_population_analysis/05.1_cp_stat_vis.R {input.rDataObject} "{params.evoPlotsOutDir}"
+
+        Rscript {params.scripts}/plotting_nowak_lab/4_phylogenetic_analysis/06.1_tree_msa_bubble_all_clones.R {input.rDataObject} "{params.evoPlotsOutDir}"
+
+        """
+
 rule splitCPs:
     input:
         char_matrix = "{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv",
@@ -105,13 +133,13 @@ rule splitCPs:
             # setup temp matrix and tissues headers
             tempMatrix=$cpOutdir/temp_matrix.tsv
             head -n 1 {input.char_matrix} | sed 's/,/\\t/g' | sed 's/\"//g' > $tempMatrix
-            tempTissues=$cpOutdir/temp_tissues.tsv
-            echo -e "group_name\\ttissues" > $tempTissues
+            temparams.primary_tissues=$cpOutdir/temp_tissues.tsv
+            echo -e "group_name\\ttissues" > $temparams.primary_tissues
 
             # subset matrix and tissues for each cp to only retain ASVs for that CP
             for asv in $asvs; do
                 sed 's/,/\\t/g' {input.char_matrix} | sed 's/\"//g' | grep -w "$asv" >> $tempMatrix
-                tail -n +2 {input.asv_stat} | cut -d',' -f1-2 | grep -w "$asv" | awk -F',' '{{if (!seen[$1","$2]++) a[$1]=a[$1]","$2}} END {{for (i in a) {{split(a[i], b, ","); delete seen; c=""; for (j in b) if (b[j] != "" && !seen[b[j]]++) c=(c == "" ? b[j] : c","b[j]); print i"\\t"c}}}}' >> ${{tempTissues}}
+                tail -n +2 {input.asv_stat} | cut -d',' -f1-2 | grep -w "$asv" | awk -F',' '{{if (!seen[$1","$2]++) a[$1]=a[$1]","$2}} END {{for (i in a) {{split(a[i], b, ","); delete seen; c=""; for (j in b) if (b[j] != "" && !seen[b[j]]++) c=(c == "" ? b[j] : c","b[j]); print i"\\t"c}}}}' >> ${{temparams.primary_tissues}}
             done
 
             # track all CPs as they finish pre-processing
@@ -559,7 +587,7 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 1
+        threads = 50
     conda:
         "../../envs/machina.yaml"
     shell:
@@ -586,12 +614,64 @@ rule runMachina:
                 cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.tree {output.machinaEdgeFile}
             fi
         else
-            echo "Only one unique tissue found in the labeling fine, so not enough to run Machina. Exiting."
+            echo "Only one unique tissue found in the labeling file, so not enough to run Machina. Exiting."
             touch {output.machinaEdgeFile}
             touch {output.dotFile}
             touch {output.machinaResults}
         fi
         """
+
+rule summarizeMachina:
+    input:
+        asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv",
+        cp_list = "{outdir}/beam/{mouse}/cp_list.txt"
+    output:
+        resultsMachina = "{outdir}/machina/{mouse}/all_results.txt",
+        extendedMachina = "{outdir}/machina/{mouse}/all_results_extended.txt",
+        migrationMachina = "{outdir}/machina/{mouse}/migration.txt",
+        seedingMachina = "{outdir}/machina/{mouse}/seeding_topology.txt"
+    params:
+        threads = 1,
+        scripts = config['scripts'],
+        outdir = "{outdir}/machina/{mouse}",
+        primary_tissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+    conda:
+        "../../envs/machina.yaml"
+    shell:
+        """
+        while read CP; do 
+            cp_dir="{params.outdir}/${{CP}}"
+
+            # Check if machina converged for this CP
+            if [ ! -f "${{cp_dir}}/{params.primary_tissue}-G-{params.primary_tissue}-R.dot" ] || [ ! -f "${{cp_dir}}/machina_results.txt" ]; then
+                continue
+            fi
+
+            # Consider when the primary tissue is not an option for the CP, so machina uses the most common tissue in the CP tip labels
+            cp_primary_tissue=$(find "${{cp_dir}}" -type f -name "*R.txt" | rev | cut -d'/' -f1 | rev | cut -d'-' -f1)
+
+            cat ${{cp_dir}}/laml_trees_no_branch_lengths_colors.txt| tr '\\t' ' ' | sed "s/^/${{CP}} color /"
+            best=`grep "PS" "${{cp_dir}}/machina_results.txt" | tail -1|cut -f6| sed 's/[a-z]//g'`
+            best_full=`grep "PS" "${{cp_dir}}/machina_results.txt" | tail -1|cut -f6`
+
+            echo "${{CP}} model ${{best_full}} NA"
+            cat ${{cp_dir}}/${{cp_primary_tissue}}-G-${{cp_primary_tissue}}-R.tree | sed "s/^/${{CP}} migration /" | tr '\\t' ' '
+            grep label ${{cp_dir}}/${{cp_primary_tissue}}-T-${{cp_primary_tissue}}-R.dot | sed 's/.*color=//' | sed 's/,label="/ /' | sed 's/".*//' | cut -d'\\' -f1 | sed "s/^/${{CP}} label /" | tr '\\t' ' ' | awk 'NF==4'
+            
+            tail -n +2 ${{cp_dir}}/${{cp_primary_tissue}}-T-${{cp_primary_tissue}}-R.tree | awk '{{$1=$1; print}}' | awk '{{if (NF==1) $0="0 "$0}}1' > ${{cp_dir}}/modified_tree.txt
+            cat ${{cp_dir}}/modified_tree.txt | sed "s/^/${{CP}} tree /" | tr '\\t' ' '
+            rm ${{cp_dir}}/modified_tree.txt
+        done < {input.cp_list} | tr '\\t' ' ' >> {output.resultsMachina}
+
+        sed -i 's/\\t/ /g' {output.resultsMachina}
+
+        python {params.scripts}/machina/print_seeding_topology.py {output.resultsMachina} {params.primary_tissue} > {output.seedingMachina}
+
+        python {params.scripts}/machina/count_migrations.py {output.resultsMachina} > {output.migrationMachina}
+
+        python {params.scripts}/machina/add_freq_prob_to_results.py {output.migrationMachina} {input.asv_stat} {output.resultsMachina} > {output.extendedMachina}
+        """
+
 
 rule plotMachinaMigrationGraphs:
     input:
