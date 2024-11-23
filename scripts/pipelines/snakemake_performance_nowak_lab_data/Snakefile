@@ -559,7 +559,7 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 25
+        threads = 1
     conda:
         "../../envs/machina.yaml"
     shell:
@@ -589,6 +589,7 @@ rule runMachina:
             echo "Only one unique tissue found in the labeling fine, so not enough to run Machina. Exiting."
             touch {output.machinaEdgeFile}
             touch {output.dotFile}
+            touch {output.machinaResults}
         fi
         """
 
@@ -653,7 +654,7 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/metient/{mouse}/{cp}",
-        threads = 25
+        threads = 50
     singularity:
         "../../envs/metient.sif"
     shell:
