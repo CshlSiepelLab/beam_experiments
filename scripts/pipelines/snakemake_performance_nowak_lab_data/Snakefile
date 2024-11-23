@@ -38,7 +38,7 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        expand("{outdir}/machina/{mouse}/all_results_extended.txt", outdir=config['outdir'], mouse=mice),
+        expand("{outdir}/machina/{mouse}/plots/machina_migration_plots/trans_mx_all.pdf", outdir=config['outdir'], mouse=mice),
         [expand("{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice],
         [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues.pdf", outdir=config['outdir'],
@@ -645,7 +645,7 @@ rule summarizeMachina:
             cp_dir="{params.outdir}/${{CP}}"
 
             # Check if machina converged for this CP
-            if [ ! -f "${{cp_dir}}/{params.primary_tissue}-G-{params.primary_tissue}-R.dot" ] || [ ! -f "${{cp_dir}}/machina_results.txt" ]; then
+            if [ ! -f "${{cp_dir}}/{params.primary_tissue}-G-{params.primary_tissue}-R.dot" ] || [ ! -f "${{cp_dir}}/machina_results.txt" ] || [ ! -s "${{cp_dir}}/machina_results.txt" ]; then
                 continue
             fi
 
@@ -672,6 +672,29 @@ rule summarizeMachina:
         python {params.scripts}/machina/count_migrations.py {output.resultsMachina} > {output.migrationMachina}
 
         python {params.scripts}/machina/add_freq_prob_to_results.py {output.migrationMachina} {input.asv_stat} {output.resultsMachina} > {output.extendedMachina}
+        """
+
+rule plotMachina:
+    input:
+        extendedMachina = "{outdir}/machina/{mouse}/all_results_extended.txt",
+        migrationMachina = "{outdir}/machina/{mouse}/migration.txt",
+        seedingMachina = "{outdir}/machina/{mouse}/seeding_topology.txt"
+    output:
+        machinaRateMatrix = "{outdir}/machina/{mouse}/plots/machina_migration_plots/trans_mx_all.pdf",
+        machinaSeedingTopology = "{outdir}/machina/{mouse}/plots/machina_seeding_topology/seed_topology_pie_per_cp_all.pdf",
+    params:
+        outdir = "{outdir}/machina/{mouse}/plots",
+        scripts = config['scripts'],
+        threads = 1
+    singularity:
+        "../../envs/evotracer_plotting.sif"
+    shell:
+        """
+        Rscript {params.scripts}/plotting_nowak_lab/5_machina_analysis/02_machina_tree_v1.R {input.extendedMachina} {params.outdir};
+
+        Rscript {params.scripts}/plotting_nowak_lab/5_machina_analysis/03_machina_migration_v1.R {input.migrationMachina} {params.outdir};
+
+        Rscript {params.scripts}/plotting_nowak_lab/5_machina_analysis/04_machina_seeding_topology_v1.R {input.seedingMachina} {params.outdir};
         """
 
 
@@ -736,7 +759,7 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/metient/{mouse}/{cp}",
-        threads = 50
+        threads = 150
     singularity:
         "../../envs/metient.sif"
     shell:

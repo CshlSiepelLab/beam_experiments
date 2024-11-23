@@ -28,7 +28,11 @@ summarizeMachina:
   logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
   logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
 
+plotMachina:
+  logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
 runMetient:
-  mem: '2G'
+  mem: '5G'
 
   
