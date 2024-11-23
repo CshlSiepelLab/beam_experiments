@@ -623,6 +623,8 @@ rule runMachina:
 
 rule summarizeMachina:
     input:
+        # comment out below to not wait for all machina results to be generated before running this rule, which is the default behavior
+        machinaResults = lambda wildcards: ["{outdir}/machina/{mouse}/{cp}/machina_results.txt".format(outdir=config['outdir'], mouse=wildcards.mouse, cp=cp) for cp in get_elements_from_file(f"{config['outdir']}/beam/{wildcards.mouse}")],
         asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv",
         cp_list = "{outdir}/beam/{mouse}/cp_list.txt"
     output:
