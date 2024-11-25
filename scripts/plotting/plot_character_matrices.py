@@ -11,7 +11,7 @@ import seaborn as sns
 character_matrix_tsv = sys.argv[1]
 
 # # testing
-# character_matrix_tsv = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/raw_data/mig4_mut001_231/mig4_mut001_231_indel_character_matrix.tsv"
+# character_matrix_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/beam/MMUS1544/CP01/downsampled_char_matrix.tsv"
 
 outfile = character_matrix_tsv.replace(".tsv", ".pdf")
 
@@ -19,19 +19,26 @@ outfile = character_matrix_tsv.replace(".tsv", ".pdf")
 df = pd.read_csv(character_matrix_tsv, sep='\t', index_col=0)
 
 # Define color palette
-values = np.array([x for sublist in df.values.tolist() for x in sublist])
-uniq_values = np.unique(values)
-colors = sns.color_palette("hsv", len(uniq_values))
+uniq_values = np.unique(np.array([x for sublist in df.values.tolist() for x in sublist]))
 
 # Map colors to values
-color_map = {0: 'white', -1: 'white'}
-for i, val in enumerate(uniq_values):
-    if val not in color_map:
-        color_map[val] = colors[i]
+color_map = {'0': '#FFFFFF', '-1': '#808080'}
+uniq_values = uniq_values[~np.isin(uniq_values, [0, -1])]
+for val in uniq_values:
+    color = '#%06X' % np.random.randint(0, 0xFFFFFF)
+    while color in color_map.values():
+        color = '#%06X' % np.random.randint(0, 0xFFFFFF)
+    color_map[str(val)] = color
 
 # Plot the character matrix
 fig, ax = plt.subplots(figsize=(10, 10))
-sns.heatmap(df.values, ax=ax, cmap=list(color_map.values()), cbar=False, xticklabels=False, yticklabels=False, linecolor='black', linewidths=0.5)
+
+sns.heatmap(df.values, ax=ax, cbar=False, xticklabels=False, yticklabels=False, linecolor='black', linewidths=0.5)
+
+# Iterate over the cells and change the color based on the value
+for i in range(df.shape[0]):
+    for j in range(df.shape[1]):
+        ax.add_patch(plt.Rectangle((j, i), 1, 1, fill=True, edgecolor='black', facecolor=color_map.get(str(df.values[i, j]), '#FFFFFF')))
 
 # Set the y-axis label and title
 ax.set_ylabel("Cells", fontsize=22)
