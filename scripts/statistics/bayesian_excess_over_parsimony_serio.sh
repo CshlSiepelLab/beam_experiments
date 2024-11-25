@@ -5,7 +5,7 @@
 
 posterior_file=$1
 # posterior_file="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24/beam/MMUS1457/CP01/combined.trees"
-primary_tissue="PRL"
+primary_tissue=$2
 echo "Starting $posterior_file"
 dir=$(dirname $posterior_file)
 name=$(basename $dir)

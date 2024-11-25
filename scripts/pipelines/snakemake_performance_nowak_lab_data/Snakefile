@@ -528,13 +528,13 @@ rule plotGraphPosterior:
         graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv"
     output:
         probabilityPlot = "{outdir}/beam/{mouse}/{cp}/probability_migration_graph.pdf",
-        thresholdPlot = "{outdir}/beam/{mouse}/{cp}/threshold_migration_graph.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         outdir = "{outdir}/beam/{mouse}/{cp}",
         threads = 1,
-        threshold = 0.4
+        minThreshold = 0.4,
+        maxThreshold = 0.9,
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -548,7 +548,10 @@ rule plotGraphPosterior:
             touch {output.probabilityPlot}
             touch {output.thresholdPlot}
         else
-            python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.threshold}
+            # output a consensus plot for several thresholds from the specified min and max thresholds
+            for threshold in $(seq {params.minThreshold} 0.1 {params.maxThreshold}); do
+                python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} ${threshold}
+            done
         fi
         """
 
@@ -833,6 +836,23 @@ rule plotParsimony:
     shell:
         """
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.parsimonyResult} {params.primaryTissue} {output.parsimonyPlot}
+        """
+
+rule calculatePosteriorExcessOverParsimony:
+    input:
+        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees",
+    output:
+        posteriorExcess = "{outdir}/beam/{mouse}/{cp}/posterior_expected_over_parsimony/posterior_expected_migration_counts_over_parsimony.csv"
+    params:
+        scripts = config['scripts'],
+        threads = 1,
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse]
+    conda:
+        "../../envs/compare_trees.yaml"
+    shell:
+        """
+        # this bash script depends on local hard paths, so not the best way to do this, but okay for now
+        {params.scripts}/statistics/bayesian_excess_over_parsimony_serio.sh {input.combinedTrees} {params.primaryTissue}
         """
 
 # rule callMigrationComigrationCounts:
