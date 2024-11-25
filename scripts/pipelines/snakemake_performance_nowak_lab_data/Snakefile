@@ -14,6 +14,8 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
         mouse_fastqs[mouse] = []
     mouse_fastqs[mouse].append(file)
 
+mice=['MMUS1910']
+
 
 def get_elements_from_file(path):
     filename = f"{path}/cp_list.txt"
@@ -36,6 +38,8 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/beam/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        # [expand("{outdir}/beam/{mouse}/{cp}/combined_migration_graph_1.pdf", outdir=config['outdir'],
+        #                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         expand("{outdir}/machina/{mouse}/plots/machina_migration_plots/trans_mx_all.pdf", outdir=config['outdir'], mouse=mice),
@@ -548,6 +552,24 @@ rule plotGraphPosterior:
         fi
         """
 
+rule sampleFromBeamPosteriorGraphs:
+    input:
+        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees",
+        graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv"
+    output:
+        sampledGraphs = "{outdir}/beam/{mouse}/{cp}/combined_migration_graph_1.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = 1,
+        numGraphs = 10
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.numGraphs}
+        """
+
 rule prepMachina:
     input:
         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
@@ -587,7 +609,7 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 50
+        threads = 65
     conda:
         "../../envs/machina.yaml"
     shell:
@@ -604,6 +626,10 @@ rule runMachina:
             # check if primary tissue is in the labeling file
             if grep -q "{params.primaryTissue}" {input.labeling}; then
                 {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
+                
+                # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label might be different
+                cp {params.outputdir}/{params.primaryTissue}-G-{params.primaryTissue}-R.dot {output.dotFile}
+                cp {params.outputdir}/{params.primaryTissue}-G-{params.primaryTissue}-R.tree {output.machinaEdgeFile}
             else
                 most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
                 echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
@@ -759,7 +785,7 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/metient/{mouse}/{cp}",
-        threads = 150
+        threads = 180
     singularity:
         "../../envs/metient.sif"
     shell:
