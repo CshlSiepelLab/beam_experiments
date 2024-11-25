@@ -134,6 +134,10 @@ with open(posterior_file, 'r') as file:
             value = key_value[1].replace(',', '')
             names_dict[key] = value
 
+# discard 10% of tree for burnin
+burnin = int(len(trees) * 0.1)
+trees = trees[burnin:]
+
 # get n number of trees randomly from the posterior
 mcc_top_n_trees = random.sample(trees, k=n) # a better approach would be to group the posterior by common features and then sample from those groups, but this is not yet implemented
 
