@@ -814,7 +814,7 @@ rule runParsimony:
         outputdir = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 1,
-        maxSolutions = 25
+        maxSolutions = 100
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -840,10 +840,8 @@ rule plotParsimony:
 
         files=$(find {params.outputdir} -type f -name "parsimony_tissues_all_solutions*")
         if [ ! -z "$files" ]; then
-            outdir={params.outputdir}/all_solutions_enumerated
-            mkdir $outdir
             for file in $files; do
-                python {params.scripts}/plotting/plot_migration_graph_from_newick.py $file {params.primaryTissue} $outdir/$(basename $file .nwk).pdf
+                python {params.scripts}/plotting/plot_migration_graph_from_newick.py $file {params.primaryTissue} {params.outputdir}/$(basename $file .nwk).pdf
             done
         fi
         """

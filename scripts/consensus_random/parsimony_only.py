@@ -65,15 +65,20 @@ def label_tissues_parsimony(tree, tissues_df, threshold_num_solutions):
         all_solutions = [tree]
 
         for node in tree.traverse():
+            print(node.name)
             if node.decision == "random":
+                print("random")
                 tissues = list(node.tissue_set)
                 split = node.name.split("_")
                 label = split[0]
                 first_tissue = split[1]
                 tissues_subset = [tis for tis in tissues if tis != first_tissue]
+                print(tissues_subset)
+                count = len(all_solutions)
                 for tissue in tissues_subset:
-                    current_solutions = all_solutions
-                    for i in range(len(current_solutions)):
+                    print(tissue)
+                    for i in range(count):
+                        print(i)
                         tree_copy = all_solutions[i].copy()
                         node_copy = tree_copy.search_nodes(name=node.name)[0]
                         node_copy.name = f"{label}_{tissue}"
@@ -100,10 +105,12 @@ def label_tissues_parsimony(tree, tissues_df, threshold_num_solutions):
 
     # If the total number of solutions is less than the specified threshold, then re-run the preorder and enumerate all solutions to be returned as a list of trees
     print(f"Num solutions: {num_solutions}")
-    if num_solutions < threshold_num_solutions:
+    if num_solutions < threshold_num_solutions and num_solutions != 1:
         all_solutions = traverse_all_solutions(copy_tree)
+    elif num_solutions == 1:
+        all_solutions = [copy_tree]
     else:
-        all_solutions = []
+        all_sollutions = []
 
     return copy_tree, all_solutions
 
@@ -115,10 +122,11 @@ primary_tissue = sys.argv[4] # the known tissue label of the root node
 threshold_num_solutions = int(sys.argv[5]) # the maximum number of possible solutions to enumerate them all in the output
 
 # # Testing
-# tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_22_24/laml/MMUS1834/CP05/laml_trees_no_branch_lengths.nwk"
-# leaf_tissues_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_22_24/machina/MMUS1834/CP05/laml_trees_no_branch_lengths.labeling"
+# tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_22_24/laml/MMUS3012/CP06/laml_trees_no_branch_lengths.nwk"
+# leaf_tissues_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_22_24/machina/MMUS3012/CP06/laml_trees_no_branch_lengths.labeling"
 # outdir = "./"
 # primary_tissue = "BDR"
+# threshold_num_solutions = 25
 
 tree = ete3.Tree(tree_file, format=8)
 tissue_map = pd.read_csv(leaf_tissues_tsv, sep=r'\s+', header=None, names=['cell', 'tissue'], dtype={'cell': str, 'tissue': str})
