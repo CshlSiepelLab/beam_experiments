@@ -112,7 +112,7 @@ tree_file = sys.argv[1] # newick file
 leaf_tissues_tsv = sys.argv[2]  # tsv file with tip cell names and tissue labels as columns, and no header
 outdir = sys.argv[3] # where to write the output
 primary_tissue = sys.argv[4] # the known tissue label of the root node
-threshold_num_solutions = sys.argv[5] # the maximum number of possible solutions to enumerate them all in the output
+threshold_num_solutions = int(sys.argv[5]) # the maximum number of possible solutions to enumerate them all in the output
 
 # # Testing
 # tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_22_24/laml/MMUS1834/CP05/laml_trees_no_branch_lengths.nwk"

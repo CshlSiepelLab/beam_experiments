@@ -840,7 +840,7 @@ rule plotParsimony:
 
         files=$(find {params.outputdir} -type f -name "parsimony_tissues_all_solutions*")
         if [ ! -z "$files" ]; then
-            outdir={params.outdir}/all_solutions_enumerated
+            outdir={params.outputdir}/all_solutions_enumerated
             mkdir $outdir
             for file in $files; do
                 python {params.scripts}/plotting/plot_migration_graph_from_newick.py $file {params.primaryTissue} $outdir/$(basename $file .nwk).pdf
