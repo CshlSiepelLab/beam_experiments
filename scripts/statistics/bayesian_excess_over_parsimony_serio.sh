@@ -26,8 +26,8 @@ while IFS= read -r line; do
     tip_tissues=$working_dir_id/${id}_tip_tissues.tsv
 
     # get parsimony result
-    python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/consensus_random/parsimony_only.py $plain_newick $tip_tissues $working_dir_id $primary_tissue
-    parsimony_result=$working_dir_id/parsimony_tissues.nwk
+    python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/consensus_random/parsimony_only.py $plain_newick $tip_tissues $working_dir_id $primary_tissue 1
+    parsimony_result=$working_dir_id/parsimony_tissues_random.nwk
 
     # get migration counts
     python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/statistics/migration_count_from_tree.py $beast_result $primary_tissue > $working_dir_id/beast_count.txt
