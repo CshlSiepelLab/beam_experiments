@@ -110,7 +110,7 @@ def label_tissues_parsimony(tree, tissues_df, threshold_num_solutions):
     elif num_solutions == 1:
         all_solutions = [copy_tree]
     else:
-        all_sollutions = []
+        all_solutions = []
 
     return copy_tree, all_solutions
 
