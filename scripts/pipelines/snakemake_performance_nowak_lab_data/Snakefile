@@ -877,7 +877,7 @@ rule calculatePosteriorExcessOverParsimony:
 #         "../../envs/compare_trees.yaml"
 #     shell:
 #         """
-#         python {config['scripts']}/formatting/call_migration_counts_machian_metient_beam.py {input.machinaEdgeFile} {input.metientResults} {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.name}
+#         python {config['scripts']}/formatting/call_migration_counts_machina_metient_beam.py {input.machinaEdgeFile} {input.metientResults} {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.name}
 #         """
 
 # rule aggregateMigrationCounts:

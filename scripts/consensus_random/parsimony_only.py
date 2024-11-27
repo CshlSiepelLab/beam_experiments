@@ -104,7 +104,7 @@ def label_tissues_parsimony(tree, tissues_df, threshold_num_solutions):
     total_parsimony_score = sum(node.parsimony_score for node in copy_tree.traverse())
 
     # If the total number of solutions is less than the specified threshold, then re-run the preorder and enumerate all solutions to be returned as a list of trees
-    print(f"Num solutions: {num_solutions}")
+    # print(f"Num solutions: {num_solutions}")
     if num_solutions < threshold_num_solutions and num_solutions != 1:
         all_solutions = traverse_all_solutions(copy_tree)
     elif num_solutions == 1:
