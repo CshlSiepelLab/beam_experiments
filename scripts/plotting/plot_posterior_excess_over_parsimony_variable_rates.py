@@ -9,6 +9,12 @@ csv_file = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/r
 
 data = pd.read_csv(csv_file)
 
+# Remove the first 10% per group for burnin
+data = data.groupby('name').apply(lambda x: x.iloc[int(0.1 * len(x)):])
+
+# Ungroup the data
+data = data.reset_index(drop=True)
+
 # Calculate the difference between the two columns
 data['difference'] = data['beast_migration_count'] - data['parsimony_migration_count']
 data['original_name'] = data['name']
@@ -56,9 +62,9 @@ for mig in grouped['mig'].unique():
         plt.ylabel('Number of datasets', fontsize=fontsize)
         plt.xticks(fontsize=fontsize)
         plt.yticks(fontsize=fontsize)
-        plt.xlim(0, 22)
+        plt.xlim(0, 25)
         # plt.ylim(0, subset['difference'].max() + 1)
-        plt.xticks(np.arange(0, 23, 5), fontsize=fontsize)
+        plt.xticks(np.arange(0, 26, 5), fontsize=fontsize)
         max_y = plt.ylim()[1]
         if max_y < 10:
             inc = 1

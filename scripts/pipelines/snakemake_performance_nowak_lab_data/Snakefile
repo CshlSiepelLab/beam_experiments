@@ -786,7 +786,7 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/metient/{mouse}/{cp}",
-        threads = 26
+        threads = 80
     singularity:
         "../../envs/metient.sif"
     shell:

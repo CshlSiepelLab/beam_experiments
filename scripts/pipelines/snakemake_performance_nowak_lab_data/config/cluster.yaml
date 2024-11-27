@@ -33,6 +33,6 @@ plotMachina:
   logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
 
 runMetient:
-  mem: '5G'
+  mem: '2G'
 
   

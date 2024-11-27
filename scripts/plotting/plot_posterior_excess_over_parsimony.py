@@ -5,9 +5,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load the CSV file
-csv_file = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/metastabayes/all_posterior_expected_migration_counts_over_parsimony.csv'
+# csv_file = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/metastabayes/all_posterior_expected_migration_counts_over_parsimony.csv'
+csv_file = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/beam/all_posterior_expected_migration_counts_over_parsimony.csv'
 
 data = pd.read_csv(csv_file)
+
+# Remove the first 10% per group for burnin
+data = data.groupby('name').apply(lambda x: x.iloc[int(0.1 * len(x)):])
+
+# Ungroup the data
+data = data.reset_index(drop=True)
 
 # Calculate the difference between the two columns
 data['difference'] = data['beast_migration_count'] - data['parsimony_migration_count']
@@ -34,10 +41,14 @@ plt.xlabel('Posterior expected\n[BEAM migration count - Parsimony migration coun
 plt.ylabel('Number of datasets', fontsize=fontsize)
 plt.xticks(fontsize=fontsize)
 plt.yticks(fontsize=fontsize)
-plt.xlim(0, 7)
-plt.ylim(0, 35)
-plt.xticks(np.arange(0, 7.5, 1), fontsize=fontsize)
-plt.yticks(np.arange(0, 40, 5), fontsize=fontsize)
+# plt.xlim(0, 7)
+# plt.ylim(0, 35)
+# plt.xticks(np.arange(0, 7.5, 1), fontsize=fontsize)
+# plt.yticks(np.arange(0, 40, 5), fontsize=fontsize)
+plt.xlim(0, 55)
+plt.ylim(0, 22)
+plt.xticks(np.arange(0, 56, 5), fontsize=fontsize)
+plt.yticks(np.arange(0, 23, 5), fontsize=fontsize)
 plt.tight_layout()
 outfile = csv_file.replace('.csv', '_difference_means_histogram.pdf')
 plt.savefig(outfile)
