@@ -155,6 +155,11 @@ if os.path.isfile(parsimony):
     parsimony_comigration_count = sum(comigration_counts) / len(comigration_counts)
     parsimony_met_to_met = max(set(met_to_mets), key=met_to_mets.count)
     parsimony_reseeding = max(set(reseedings), key=reseedings.count)
+else:
+    parsimony_migration_count = float('nan')
+    parsimony_comigration_count = float('nan')
+    parsimony_met_to_met = float('nan')
+    parsimony_reseeding = float('nan')
 
 # get beam counts and boolean topology classifications
 if os.path.isfile(beam):
@@ -210,6 +215,11 @@ if os.path.isfile(beam):
     beam_comigration_count = sum(beam_comigration_counts) / len(beam_comigration_counts)
     beam_met_to_met = max(set(beam_met_to_met_counts), key=beam_met_to_met_counts.count)
     beam_reseeding = max(set(beam_reseeding_counts), key=beam_reseeding_counts.count)
+else:
+    beam_migration_count = float('nan')
+    beam_comigration_count = float('nan')
+    beam_met_to_met = float('nan')
+    beam_reseeding = float('nan')
 
 # write migration and co-migration counts to file (Note: not temporally consistent co-migrations since the counts are taken from the graphs alone)
 with open(f"{outdir}/{name}_migration_counts.csv", "w") as f:
