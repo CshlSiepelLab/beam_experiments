@@ -73,9 +73,14 @@ if os.path.isfile(machina):
                 machina_met_to_met = True
             if not machina_reseeding and recipient == primaryTissue:
                 machina_reseeding = True
+    
+    all_tissues = set([tissue for migration in machina_migrations.keys() for tissue in migration.split("_")])
+    # when no tips have the primary label then we have to force the origin to root migration from the known primary tissue
+    if primaryTissue not in all_tissues:
+        machina_migrations[f"{primaryTissue}_{primaryTissue}"] = 1
 
     machina_migration_count = sum([value for key, value in machina_migrations.items()])
-    machina_comigration_count = len(machina_migrations.keys())
+    machina_comigration_count = sum(1 for key, value in machina_migrations.items() if value > 1)
 else:
     machina_migration_count = float('nan')
     machina_comigration_count = float('nan')
