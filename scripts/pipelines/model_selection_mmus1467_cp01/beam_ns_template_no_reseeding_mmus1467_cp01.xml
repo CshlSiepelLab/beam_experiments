@@ -50,7 +50,7 @@
 
 <siteModel spec="SiteModel" id="siteModel" mutationRate="@mutationRate" proportionInvariant="@proportionInvariant" gammaCategoryCount="0" substModel="@substModel"></siteModel>
 
-<run id="mcmc" spec="MCMC" chainLength="15750000">
+<run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="1" subChainLength="10000" epsilon="1e-10">
         <state id="state" spec="State" storeEvery="5000">
             <stateNode id="tree" spec="beam.tree.BeamStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="((ASV171:154.4626526845564,((ASV071:140.6146834354222,(ASV126:133.69069501926472,(ASV145:126.76669739226352,(ASV002_0:6.923979756934053,ASV002_1:6.923979756934053,ASV002_3:6.923979756934053,ASV002_2:6.923979756934053):119.84271763532946):6.923997627001205):6.923988416157467):6.923985419883616,(ASV011_0:6.923979239890297,ASV011_1:6.923979239890297,ASV011_3:6.923979239890297,ASV011_2:6.923979239890297):140.61468961541553):6.923983829250555):126.07697419082876,((ASV125:118.10005330560426,(ASV175:111.1760624086905,ASV076:111.1760624086905):6.923990896913768):155.51558452766255,((ASV119:90.89942569574707,(ASV008_0:6.923979755800357,ASV008_1:6.923979755800357,ASV008_3:6.923979755800357,ASV008_2:6.923979755800357):83.97544593994671):175.79222390984975,((ASV118:186.15399047186608,(ASV133:179.23000920884323,ASV170:179.23000920884323):6.923981263022852):73.61367310184252,(ASV020:252.62485926958686,((((ASV041:224.92890580284973,(((ASV051:204.15695284955663,(ASV052:197.23297118967113,(ASV055:190.30898999923465,(((ASV070:169.53705664174217,(ASV075:162.61307621839507,(ASV088:155.68909584712844,(ASV093:148.7651154704039,(ASV094:141.8411350275797,(ASV120:134.9171544423871,(ASV124:127.99317360669562,(ASV149:121.06919234609502,(ASV150:114.145210331848,(ASV159:107.22122678911198,((ASV050_0:6.923979972093711,ASV050_1:6.923979972093711):93.373258972172,(ASV005_0:6.923979494403629,ASV005_1:6.923979494403629,ASV005_3:6.923979494403629,ASV005_2:6.923979494403629):93.37325944986209):6.923987844846267):6.923983542736038):6.923982014247003):6.923981260600603):6.923980835691495):6.923980585192569):6.923980442824226):6.923980376724546):6.923980371266612):6.923980423347114):6.92398048284529,(ASV061_0:6.92398108379934,ASV061_1:6.92398108379934):169.53705604078814):6.923980622325208,(ASV056_0:6.923981150492572,ASV056_1:6.923981150492572):176.46103549402147):6.923980815072276):6.923981190436501):6.923981659885491):6.9239823258838715,(ASV049_0:6.923981447424672,ASV049_1:6.923981447424672):204.15695372801585):6.923983382319638,(ASV046_0:6.923979972839342,ASV046_2:6.923979972839342,ASV046_1:6.923979972839342):211.08093609112476):6.923985181272909):6.923982284945711,(ASV037_0:6.923979294301163,ASV037_1:6.923979294301163,ASV037_3:6.923979294301163,ASV037_2:6.923979294301163):224.92890879349426):6.923983709886329,(ASV028_0:6.923981688647552,ASV028_1:6.923981688647552):231.85288699148666):6.9239865050870995,(ASV021_0:6.923979313793535,ASV021_1:6.923979313793535,ASV021_3:6.923979313793535,ASV021_2:6.923979313793535):238.77687568739339):6.9239945075443154):7.142804304121761):6.923984718554773):6.923985849877414):6.923986719748662):139.46037312461485">
                 <trait idref="dateTrait"/>
@@ -63,7 +63,7 @@
             <parameter spec="parameter.RealParameter" estimate="false" lower="0.0" id="proportionInvariant" name="stateNode" upper="1.0">0.0</parameter>
             <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="420.0001">420.001</parameter>
             
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="10" name="stateNode">1.0</parameter>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="9" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>
         
@@ -128,7 +128,7 @@
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
                         <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
-                        <substModel id="svs.s:tissue" spec="beam.substitutionmodel.BeamOneRateReseedingTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue">
+                        <substModel id="svs.s:tissue" spec="beam.substitutionmodel.BeamNoReseedingTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
                                 <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="4" name="frequencies">.2500000000</parameter>
                             </frequencies>
@@ -158,7 +158,7 @@
     <operator id="geoMuScaler.c:tissue" spec="ScaleOperator" parameter="@traitClockRate.c:tissue" scaleFactor="0.9" weight="3.0"/>
     
     <!-- loggers -->
-        <logger id="tracelog" spec="Logger" fileName="one_rate_reseeding.log" logEvery="10000" model="@posterior" sanitiseHeaders="true" sort="smart">
+        <logger id="tracelog" spec="NSLogger" fileName="$(outname).log" logEvery="10000" model="@posterior" sanitiseHeaders="true" sort="smart">
             <log idref="posterior"/>
             <log idref="likelihood"/>
             <log idref="prior"/>
@@ -168,7 +168,7 @@
             <log idref="clockRate.c"/>
             <log idref="relativeGeoRates.s:tissue"/>
             <log idref="traitClockRate.c:tissue"/>
-            <log id="geoSubstModelLogger.s:tissue" spec="beam.substitutionmodel.BeamOneRateReseedingTissueSubstitutionModelLogger" dataType="@codeMap" model="@svs.s:tissue"/>
+            <log id="geoSubstModelLogger.s:tissue" spec="beam.substitutionmodel.BeamNoReseedingTissueSubstitutionModelLogger" dataType="@codeMap" model="@svs.s:tissue"/>
             <log idref="treeLikelihood"/>
             <log idref="traitLikelihood"/>
         </logger>
@@ -180,7 +180,7 @@
             <log idref="prior"/>
         </logger>
 
-        <logger id="treeWithTraitLogger" spec="Logger" fileName="one_rate_reseeding.trees" logEvery="10000" mode="tree">
+        <logger id="treeWithTraitLogger" spec="Logger" fileName="$(outname).trees" logEvery="10000" mode="tree">
                 <log id="treeWithTraitLoggerItem" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@tree">
                     <metadata idref="posterior"/>
                     <metadata idref="treeLikelihood"/>

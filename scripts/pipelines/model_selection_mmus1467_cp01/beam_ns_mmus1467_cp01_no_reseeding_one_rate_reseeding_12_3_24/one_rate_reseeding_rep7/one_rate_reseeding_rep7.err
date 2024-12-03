@@ -1,0 +1,160 @@
+File: beam_ns_mmus1467_cp01_one_rate_reseeding_replicate_7.xml seed: 1733232929010 threads: 5
+Loading package FixedTreeAnalysis v0.0.2 BEAST.app v2.7.7 ORC v1.2.0 feast v10.3.1 BEAST_CLASSIC v1.6.3 starbeast3 v1.1.8 CCD v1.0.0 BEAST.base v2.7.7 BDSKY v1.5.0 MODEL_SELECTION v1.6.2 BEASTLabs v2.0.2 SA v2.1.1 NS v1.2.2 tidetree v1.0.0    
+ASV020=420
+ASV041=420
+ASV051=420
+ASV052=420
+ASV055=420
+ASV070=420
+ASV071=420
+ASV075=420
+ASV076=420
+ASV088=420
+ASV093=420
+ASV094=420
+ASV118=420
+ASV119=420
+ASV120=420
+ASV124=420
+ASV125=420
+ASV126=420
+ASV133=420
+ASV145=420
+ASV149=420
+ASV150=420
+ASV159=420
+ASV170=420
+ASV171=420
+ASV175=420
+ASV002_0=420
+ASV002_1=420
+ASV002_2=420
+ASV002_3=420
+ASV005_0=420
+ASV005_1=420
+ASV005_2=420
+ASV005_3=420
+ASV008_0=420
+ASV008_1=420
+ASV008_2=420
+ASV008_3=420
+ASV011_0=420
+ASV011_1=420
+ASV011_2=420
+ASV011_3=420
+ASV021_0=420
+ASV021_1=420
+ASV021_2=420
+ASV021_3=420
+ASV028_0=420
+ASV028_1=420
+ASV037_0=420
+ASV037_1=420
+ASV037_2=420
+ASV037_3=420
+ASV046_0=420
+ASV046_1=420
+ASV046_2=420
+ASV049_0=420
+ASV049_1=420
+ASV050_0=420
+ASV050_1=420
+ASV056_0=420
+ASV056_1=420
+ASV061_0=420
+ASV061_1=420
+  Ignoring ambiguities in tree likelihood.
+  Ignoring character uncertainty in tree likelihood.
+  With 6 unique site patterns.
+  Using rescaling scheme : dynamic
+ASV020=FML
+ASV041=LNSL
+ASV051=PRL
+ASV052=LNSL
+ASV055=LNSL
+ASV070=FML
+ASV071=PRL
+ASV075=FML
+ASV076=FML
+ASV088=FML
+ASV093=FML
+ASV094=FML
+ASV118=FML
+ASV119=LNSL
+ASV120=PRL
+ASV124=PRL
+ASV125=FML
+ASV126=PRL
+ASV133=FML
+ASV145=FML
+ASV149=FML
+ASV150=FML
+ASV159=PRL
+ASV170=FML
+ASV171=UNL
+ASV175=FML
+ASV002_0=PRL
+ASV002_1=LNSL
+ASV002_2=FML
+ASV002_3=UNL
+ASV005_0=FML
+ASV005_1=UNL
+ASV005_2=LNSL
+ASV005_3=PRL
+ASV008_0=LNSL
+ASV008_1=UNL
+ASV008_2=PRL
+ASV008_3=FML
+ASV011_0=FML
+ASV011_1=UNL
+ASV011_2=LNSL
+ASV011_3=PRL
+ASV021_0=FML
+ASV021_1=PRL
+ASV021_2=UNL
+ASV021_3=LNSL
+ASV028_0=LNSL
+ASV028_1=PRL
+ASV037_0=FML
+ASV037_1=UNL
+ASV037_2=PRL
+ASV037_3=LNSL
+ASV046_0=FML
+ASV046_1=UNL
+ASV046_2=PRL
+ASV049_0=PRL
+ASV049_1=FML
+ASV050_0=FML
+ASV050_1=LNSL
+ASV056_0=FML
+ASV056_1=PRL
+ASV061_0=LNSL
+ASV061_1=FML
+  Ignoring ambiguities in tree likelihood.
+  Ignoring character uncertainty in tree likelihood.
+  With 1 unique site patterns.
+  Using rescaling scheme : dynamic
+Warning: state contains a node mutationRate for which there is no operator.
+Warning: state contains a node proportionInvariant for which there is no operator.
+Warning: state contains a node origin for which there is no operator.
+Counting 303 parameters
+Writing file /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection/beam_ns_mmus1467_cp01_no_reseeding_one_rate_reseeding_12_3_24/one_rate_reseeding_rep7/one_rate_reseeding_rep7.trees
+Writing file /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection/beam_ns_mmus1467_cp01_no_reseeding_one_rate_reseeding_12_3_24/one_rate_reseeding_rep7/one_rate_reseeding_rep7.log
+1 particles initialised
+End likelihood: -405.5476649461788
+Producing posterior samples
+
+Marginal likelihood: -572.1612092982241 sqrt(H/N)=(11.109995026832019)=?=SD=(10.88874382708755) Information: 123.4319894962322
+Max ESS: 10.904533125485216
+
+
+Processing 249 trees from file.
+Log file written to /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection/beam_ns_mmus1467_cp01_no_reseeding_one_rate_reseeding_12_3_24/one_rate_reseeding_rep7/one_rate_reseeding_rep7.posterior.trees
+Done!
+
+Marginal likelihood: -571.6067350210642 sqrt(H/N)=(11.07391603050252)=?=SD=(11.48848643317364) Information: 122.6316162506207
+Max ESS: 9.921718022467191
+
+
+Log file written to /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection/beam_ns_mmus1467_cp01_no_reseeding_one_rate_reseeding_12_3_24/one_rate_reseeding_rep7/one_rate_reseeding_rep7.posterior.log
+Done!

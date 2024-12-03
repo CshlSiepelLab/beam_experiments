@@ -1,0 +1,15 @@
+
+# set path to data dirs
+inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/uniform_50cells_50sites_data_7_24_24"
+
+# set where output should go (data is also copied there initially to retain original data in raw form)
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_reseeding_no_reseeding_uniform_50cells_50sites_data_7_24_24"
+
+# set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
+threads: 5
+
+# primary tissue name
+primaryTissue: P
+
+# set path to scripts
+scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
