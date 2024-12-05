@@ -5,6 +5,18 @@ __default__:
   logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}.err'
   runtime: 24:00:00
 
+runLAML:
+  cores: '{params.threads}'
+  mem: '1G'
+
+runBeamNoReseeding:
+  cores: '{params.threads}'
+  mem: '2G'
+
+runBeamOneRateReseeding:
+  cores: '{params.threads}'
+  mem: '2G'
+
 
 
   

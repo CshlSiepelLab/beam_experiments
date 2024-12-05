@@ -7,11 +7,31 @@ def get_sims():
     return [d for d in os.listdir(config['inputpath']) if os.path.isdir(os.path.join(config['inputpath'], d))]
 
 sims = get_sims()
+
+# Found all reseeding sims from the model selection reseeding path, discarding any with mut0005 or mig04 due to poor performance on previous evaluations
+all_reseeding_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_reseeding_no_reseeding_12_5_24_variable_rates_data_8_19_24/reseeding_sims.txt"
+with open(all_reseeding_path, 'r') as f:
+    all_reseeding = [line.strip() for line in f]
+
+# Counted the number of reseeding sims that were available, noticed none of them had mig7, then found all non-reseeding sims and discarded mig4 and mut0005 and mig7, and then randomly shuffled the file and took the top n to match the number of reseeding n from above (done to prevent any class imbalance)
+chosen_non_reseeding_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_reseeding_no_reseeding_12_5_24_variable_rates_data_8_19_24/no_reseeding_sims_randomly_chosen.txt"
+with open(chosen_non_reseeding_path, 'r') as f:
+    chosen_non_reseeding = [line.strip() for line in f]
+
+# Keep only the sims that are in the chosen reseeding and non-reseeding sims
+sims = [sim for sim in sims if sim in all_reseeding or sim in chosen_non_reseeding]
+
 outdir = config['outdir']
 
 rule all:
     input:
         expand("{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.pdf", sim=sims, outdir=outdir),
+        expand("{outdir}/true_reseeding_classification/{sim}/reseeding.txt", sim=sims, outdir=outdir),
+        expand("{outdir}/beam_prep/{sim}/{sim}.fasta", sim=sims, outdir=outdir),
+        expand("{outdir}/beam_no_reseeding/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, config['numReps']), outdir=outdir),
+        expand("{outdir}/beam_one_rate_reseeding/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, config['numReps']), outdir=outdir),
+
 
 rule labelTrueTreeWithTissues:
     input:
@@ -29,14 +49,254 @@ rule labelTrueTreeWithTissues:
         python {params.scripts}/formatting/format_add_tissues_to_newick.py {input.true_tree} {input.true_tissues} {output}
         """
 
-# rule obtainTrueDataReseedingClassifications:
-#     input:
-#         "{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.nwk"
-#     output:
-#         "{outdir}/classification/{sim}/tissue_labeled_tree.nwk"
-#     shell:
-#         """
-#         outdir=$(dirname $(dirname {output}))
-#         cp -r {input} $outdir
-#         touch {output}
-#         """
+rule plotTrueMigrationGraph:
+    input:
+        "{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.nwk"
+    output:
+        "{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue']
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input} {params.primaryTissue} {output}
+        """
+
+rule obtainTrueDataReseedingClassifications:
+    input:
+        "{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.nwk"
+    output:
+        "{outdir}/true_reseeding_classification/{sim}/reseeding.txt"
+    params:
+        primaryTissue = config['primaryTissue'],
+        scripts = config['scripts']
+    conda:
+        "../../envs/compare_trees.yaml"
+    shell:
+        """
+        python {params.scripts}/formatting/classify_is_reseeding_from_newick.py {input} {params.primaryTissue} {output}
+        """
+
+rule runCassiopeia:
+    input:
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
+    output:
+        "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    params:
+        cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
+        outputdir = "{outdir}/cassiopeia_greedy/{sim}"
+    singularity:
+        "../../envs/simulate.sif"
+    shell:
+        """
+        # run cassiopeia greedy
+        python {params.cassiopeia_script} {input.sim_matrix} {params.outputdir}
+        """
+
+rule runLAML:
+    input:
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    output:
+        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+    params:
+        outputdir = "{outdir}/laml/{sim}",
+        threads = 25
+    conda:
+        "../../envs/laml.yaml"
+    shell:
+        """
+        # copy sim matrix and replace -1 with ? for missing data
+        cp {input.sim_matrix} {outdir}/laml/{wildcards.sim}/sim_matrix.csv
+        sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.sim}/sim_matrix.csv
+
+        # run laml
+        run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml --parallel
+        """
+
+rule prepBeamInputs:
+    input:
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
+        leafTissues = lambda wildcards: glob.glob(os.path.join(config['inputpath'], wildcards.sim,"cell_tree_*[0-9].labeling")),
+    output:
+        fasta = "{outdir}/beam_prep/{sim}/{sim}.fasta",
+        dates = "{outdir}/beam_prep/{sim}/{sim}_date_traits.csv",
+        tissues = "{outdir}/beam_prep/{sim}/{sim}_tip_tissues.csv",
+    params:
+        scripts = config['scripts'],
+        generations = config['generations'],
+        outputdir = "{outdir}/beam_prep/{sim}"
+    conda:
+        "../../envs/compare_trees.yaml"
+    shell:
+        """
+        # write tip traits to new csv
+        sed 's/ /,/g' {input.leafTissues} > {output.tissues}
+
+        # write date trait
+        sed 's/ /,/g' {input.leafTissues} | cut -d',' -f1 | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.leafTissues})) > {output.dates}
+
+        # format fasta, re-label mutations sequentially, and get edit rate proportions for new mutation entries
+        {params.scripts}/formatting/format_beam_input_files.py {input.sim_matrix} {params.outputdir}
+        """
+
+rule runBeamNoReseeding:
+    input:
+        fasta = "{outdir}/beam_prep/{sim}/{sim}.fasta",
+        dates = "{outdir}/beam_prep/{sim}/{sim}_date_traits.csv",
+        tissues = "{outdir}/beam_prep/{sim}/{sim}_tip_tissues.csv",
+        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+    output:
+        terminalLog = "{outdir}/beam_no_reseeding/{sim}/{num}/terminal_{num}.log",
+    params:
+        xml = config['noReseedingTemplate'],
+        fileDir = "{outdir}/beam_prep/{sim}",
+        outDir = "{outdir}/beam_no_reseeding/{sim}/{num}",
+        beamJar = config['beamJar'],
+        generations = config['generations'],
+        primaryTissue = config['primaryTissue'],
+        threads = 5
+    shell:
+        """
+        cp {params.xml} {params.outDir}/{wildcards.num}.xml
+
+        # use LAML starting tree
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {wildcards.outdir}/beam_prep/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
+
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+
+        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
+        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
+            numTissues=$(( numTissues + 1 ))
+        fi
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
+        # key to prep the correct rate matrix with no reseeding rates
+        numTissueRates=$(( (numTissues * numTissues) - (numTissues + (numTissues - 1)) ))
+
+        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
+        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
+
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
+
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.outDir}/{wildcards.num}.xml
+
+        java -Xmx10g -jar {params.beamJar} \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.sim} \
+        -D fileDir={params.fileDir} \
+        -D newick=\"$newick\" \
+        -D generations={params.generations} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D equalTissueFreqs=\"$equalTissueFreqs\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D outname={wildcards.num} \
+        {params.outDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
+    
+rule runBeamOneRateReseeding:
+    input:
+        fasta = "{outdir}/beam_prep/{sim}/{sim}.fasta",
+        dates = "{outdir}/beam_prep/{sim}/{sim}_date_traits.csv",
+        tissues = "{outdir}/beam_prep/{sim}/{sim}_tip_tissues.csv",
+        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+    output:
+        terminalLog = "{outdir}/beam_one_rate_reseeding/{sim}/{num}/terminal_{num}.log",
+    params:
+        xml = config['oneRateReseedingTemplate'],
+        fileDir = "{outdir}/beam_prep/{sim}",
+        outDir = "{outdir}/beam_one_rate_reseeding/{sim}/{num}",
+        beamJar = config['beamJar'],
+        generations = config['generations'],
+        primaryTissue = config['primaryTissue'],
+        threads = 5
+    shell:
+        """
+        cp {params.xml} {params.outDir}/{wildcards.num}.xml
+
+        # use LAML starting tree
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {wildcards.outdir}/beam_prep/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
+
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+
+        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
+        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
+            numTissues=$(( numTissues + 1 ))
+        fi
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
+        # key to prep the correct rate matrix with one reseeding rate
+        numTissueRates=$(( ((numTissues * numTissues) - (numTissues + (numTissues - 1))) + 1 ))
+
+        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
+        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
+
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
+
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.outDir}/{wildcards.num}.xml
+
+        java -Xmx10g -jar {params.beamJar} \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.sim} \
+        -D fileDir={params.fileDir} \
+        -D newick=\"$newick\" \
+        -D generations={params.generations} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D equalTissueFreqs=\"$equalTissueFreqs\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D outname={wildcards.num} \
+        {params.outDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
+

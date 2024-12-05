@@ -1,8 +1,8 @@
 #!/bin/bash
 
-files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1467_cp01/beam_ns_mmus1467_cp01_no_reseeding_one_rate_reseeding_12_3_24 -type f -name "*terminal.log")
+files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/beam_ns_mmus1467_cp01_no_reseeding_one_rate_reseeding_12_3_24 -type f -name "*terminal.log")
 
-outfile="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1467_cp01/beam_ns_mmus1467_cp01_no_reseeding_one_rate_reseeding_12_3_24/all_reps_results_ml_mmus1467_cp01.csv"
+outfile="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/beam_ns_mmus1467_cp01_no_reseeding_one_rate_reseeding_12_3_24/all_reps_results_ml_mmus1467_cp01.csv"
 
 echo -e "model,rep,marginal_likelihood" >> $outfile
 

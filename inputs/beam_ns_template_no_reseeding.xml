@@ -35,16 +35,16 @@
 <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
     
 <!-- input data -->
-<data  id="alignment" spec="feast.fileio.AlignmentFromFasta" fileName="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/beam/MMUS1467/CP01/CP01.fasta">
-    <userDataType spec="tidetree.evolution.datatype.EditData" nrOfStates="39"/>
+<data  id="alignment" spec="feast.fileio.AlignmentFromFasta" fileName="$(fileDir)/$(inName).fasta">
+    <userDataType spec="tidetree.evolution.datatype.EditData" nrOfStates="$(numEditRatesPlusTwo)"/>
 </data>
 
 <taxonset id="taxonset" spec="TaxonSet" alignment="@alignment"/>
 
-<traitSet id="dateTrait" spec="feast.fileio.TraitSetFromXSV" taxa="@taxonset" fileName="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/beam/MMUS1467/CP01/CP01_date_traits.csv" sep="," taxonNameCol="0" traitValueCol="1" skipFirstRow="false" traitname="date-forward"/>
+<traitSet id="dateTrait" spec="feast.fileio.TraitSetFromXSV" taxa="@taxonset" fileName="$(fileDir)/$(inName)_date_traits.csv" sep="," taxonNameCol="0" traitValueCol="1" skipFirstRow="false" traitname="date-forward"/>
 
 
-<substModel id="substModel" spec="beam.substitutionmodel.BeamGeneralMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="420" editDuration="420">
+<substModel id="substModel" spec="beam.substitutionmodel.BeamGeneralMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="$(generations)" editDuration="$(generations)">
     <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
 </substModel>
 
@@ -52,18 +52,18 @@
 
 <run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="1" subChainLength="10000" epsilon="1e-10">
         <state id="state" spec="State" storeEvery="5000">
-            <stateNode id="tree" spec="beam.tree.BeamStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="((ASV171:154.4626526845564,((ASV071:140.6146834354222,(ASV126:133.69069501926472,(ASV145:126.76669739226352,(ASV002_0:6.923979756934053,ASV002_1:6.923979756934053,ASV002_3:6.923979756934053,ASV002_2:6.923979756934053):119.84271763532946):6.923997627001205):6.923988416157467):6.923985419883616,(ASV011_0:6.923979239890297,ASV011_1:6.923979239890297,ASV011_3:6.923979239890297,ASV011_2:6.923979239890297):140.61468961541553):6.923983829250555):126.07697419082876,((ASV125:118.10005330560426,(ASV175:111.1760624086905,ASV076:111.1760624086905):6.923990896913768):155.51558452766255,((ASV119:90.89942569574707,(ASV008_0:6.923979755800357,ASV008_1:6.923979755800357,ASV008_3:6.923979755800357,ASV008_2:6.923979755800357):83.97544593994671):175.79222390984975,((ASV118:186.15399047186608,(ASV133:179.23000920884323,ASV170:179.23000920884323):6.923981263022852):73.61367310184252,(ASV020:252.62485926958686,((((ASV041:224.92890580284973,(((ASV051:204.15695284955663,(ASV052:197.23297118967113,(ASV055:190.30898999923465,(((ASV070:169.53705664174217,(ASV075:162.61307621839507,(ASV088:155.68909584712844,(ASV093:148.7651154704039,(ASV094:141.8411350275797,(ASV120:134.9171544423871,(ASV124:127.99317360669562,(ASV149:121.06919234609502,(ASV150:114.145210331848,(ASV159:107.22122678911198,((ASV050_0:6.923979972093711,ASV050_1:6.923979972093711):93.373258972172,(ASV005_0:6.923979494403629,ASV005_1:6.923979494403629,ASV005_3:6.923979494403629,ASV005_2:6.923979494403629):93.37325944986209):6.923987844846267):6.923983542736038):6.923982014247003):6.923981260600603):6.923980835691495):6.923980585192569):6.923980442824226):6.923980376724546):6.923980371266612):6.923980423347114):6.92398048284529,(ASV061_0:6.92398108379934,ASV061_1:6.92398108379934):169.53705604078814):6.923980622325208,(ASV056_0:6.923981150492572,ASV056_1:6.923981150492572):176.46103549402147):6.923980815072276):6.923981190436501):6.923981659885491):6.9239823258838715,(ASV049_0:6.923981447424672,ASV049_1:6.923981447424672):204.15695372801585):6.923983382319638,(ASV046_0:6.923979972839342,ASV046_2:6.923979972839342,ASV046_1:6.923979972839342):211.08093609112476):6.923985181272909):6.923982284945711,(ASV037_0:6.923979294301163,ASV037_1:6.923979294301163,ASV037_3:6.923979294301163,ASV037_2:6.923979294301163):224.92890879349426):6.923983709886329,(ASV028_0:6.923981688647552,ASV028_1:6.923981688647552):231.85288699148666):6.9239865050870995,(ASV021_0:6.923979313793535,ASV021_1:6.923979313793535,ASV021_3:6.923979313793535,ASV021_2:6.923979313793535):238.77687568739339):6.9239945075443154):7.142804304121761):6.923984718554773):6.923985849877414):6.923986719748662):139.46037312461485">
+            <stateNode id="tree" spec="beam.tree.BeamStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)">
                 <trait idref="dateTrait"/>
                 <taxonset idref="taxonset"/>
             </stateNode>
-            <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" dimension="37">.0888888888 .4666666666 .0370370370 .0518518518 .0074074074 .0296296296 .0148148148 .0296296296 .0074074074 .0222222222 .0148148148 .0074074074 .0074074074 .0074074074 .0148148148 .0148148148 .0074074074 .0074074074 .0074074074 .0222222222 .0074074074 .0074074074 .0074074074 .0074074074 .0148148148 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074</parameter>
+            <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" dimension="$(numEditRates)">$(initialEditRates)</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0001</parameter>
             <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">.0016</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" id="mutationRate" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" lower="0.0" id="proportionInvariant" name="stateNode" upper="1.0">0.0</parameter>
-            <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="420.0001">420.001</parameter>
+            <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="$(generations).0001">$(generations).001</parameter>
             
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="9" name="stateNode">1.0</parameter>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="$(numTissueRates)" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>
         
@@ -84,7 +84,6 @@
                     </Exponential>
                 </prior>
 
-                <!-- optional silencing rate prior if silencing is being modeled -->
                 <prior id="silencingRatePrior" name="distribution" x="@silencingRate">
                     <Exponential name="distr">
                         <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.0001</parameter>
@@ -114,15 +113,15 @@
             
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 
-                <distribution id="treeLikelihood" spec="beam.likelihood.BeamBeagleTreeLikelihood" origin="420.001" data="@alignment" tree="@tree" siteModel="@siteModel">
+                <distribution id="treeLikelihood" spec="beam.likelihood.BeamBeagleTreeLikelihood" origin="$(generations).001" data="@alignment" tree="@tree" siteModel="@siteModel">
                     <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c"/>
                 </distribution>
                 
                 <distribution id="traitLikelihood" spec="beam.likelihood.BeamAncestralStateBeagleTreeLikelihood" origin="@origin" tag="location" tree="@tree">
-                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0" estimate="false"/>
+                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="$(tissueRootFreqs)" estimate="false"/>
                     <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
-                        <traitSet id="traitset" spec="feast.fileio.TraitSetFromXSV" fileName="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/beam/MMUS1467/CP01/CP01_tip_tissues.csv" taxa="@taxonset" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
-                        <userDataType id="codeMap" spec="beast.base.evolution.datatype.UserDataType" codeMap="PRL=0,FML=1,LNSL=2,UNL=3,? = 0 1 2 3" codelength="-1" states="4"/>
+                        <traitSet id="traitset" spec="feast.fileio.TraitSetFromXSV" fileName="$(fileDir)/$(inName)_tip_tissues.csv" taxa="@taxonset" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
+                        <userDataType id="codeMap" spec="beast.base.evolution.datatype.UserDataType" codeMap="$(tissueCodeMap)" codelength="-1" states="$(numTissues)"/>
                     </data>
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
@@ -130,7 +129,7 @@
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
                         <substModel id="svs.s:tissue" spec="beam.substitutionmodel.BeamNoReseedingTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
-                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="4" name="frequencies">.2500000000</parameter>
+                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="$(numTissues)" name="frequencies">$(equalTissueFreqs)</parameter>
                             </frequencies>
                         </substModel>
                     </siteModel>

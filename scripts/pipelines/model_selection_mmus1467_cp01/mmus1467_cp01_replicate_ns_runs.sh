@@ -1,11 +1,11 @@
 #!/bin/bash
 
-noReseedingRemplate="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1467_cp01/beam_ns_template_no_reseeding_mmus1467_cp01.xml"
-oneRateReseedingTemplate="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1467_cp01/beam_ns_template_one_rate_reseeding_mmus1467_cp01.xml"
+noReseedingRemplate="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/beam_ns_template_no_reseeding_mmus1467_cp01.xml"
+oneRateReseedingTemplate="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/beam_ns_template_one_rate_reseeding_mmus1467_cp01.xml"
 
 numReplicates=10
 
-outdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1467_cp01/beam_ns_mmus1467_cp01_no_reseeding_one_rate_reseeding_12_3_24"
+outdir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/beam_ns_mmus1467_cp01_no_reseeding_one_rate_reseeding_12_3_24"
 
 mkdir -p $outdir
 
