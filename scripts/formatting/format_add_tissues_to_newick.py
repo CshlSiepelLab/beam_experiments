@@ -6,6 +6,7 @@ from ete3 import Tree
 def main():
     nwk_file = sys.argv[1]
     tissues_file = sys.argv[2]
+    out_file = sys.argv[3]
 
     out_file = os.path.dirname(nwk_file) + "/" + "tissue_labeled_tree.nwk"
 
