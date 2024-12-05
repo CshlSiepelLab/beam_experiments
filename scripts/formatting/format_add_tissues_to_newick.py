@@ -8,8 +8,6 @@ def main():
     tissues_file = sys.argv[2]
     out_file = sys.argv[3]
 
-    out_file = os.path.dirname(nwk_file) + "/" + "tissue_labeled_tree.nwk"
-
     tree = Tree(nwk_file, format=3)
 
     tissues = {}
