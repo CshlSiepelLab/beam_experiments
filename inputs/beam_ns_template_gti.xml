@@ -65,6 +65,7 @@
             
             <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="$(numTissueRates)" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
+            <parameter id="tissueRateIndicators" spec="parameter.BooleanParameter" dimension="$(numTissueRates)" name="stateNode">true</parameter>
         </state>
         
         
@@ -127,7 +128,7 @@
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
                         <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
-                        <substModel id="svs.s:tissue" spec="beam.substitutionmodel.BeamOneRateReseedingTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue">
+                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rates="@relativeGeoRates.s:tissue" rateIndicator="@tissueRateIndicators" symmetric="false">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
                                 <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="$(numTissues)" name="frequencies">$(equalTissueFreqs)</parameter>
                             </frequencies>
@@ -167,7 +168,7 @@
             <log idref="clockRate.c"/>
             <log idref="relativeGeoRates.s:tissue"/>
             <log idref="traitClockRate.c:tissue"/>
-            <log id="geoSubstModelLogger.s:tissue" spec="beam.substitutionmodel.BeamOneRateReseedingTissueSubstitutionModelLogger" dataType="@codeMap" model="@svs.s:tissue"/>
+            <log id="geoSubstModelLogger.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModelLogger" dataType="@codeMap" model="@svs.s:tissue"/>
             <log idref="treeLikelihood"/>
             <log idref="traitLikelihood"/>
         </logger>

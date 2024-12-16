@@ -21,7 +21,6 @@ rule all:
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
-        expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir)
 
 rule copyDataToOutDir:
     input:
@@ -374,40 +373,6 @@ rule runMetient:
         python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.sim} {params.primaryTissue} {params.outputdir}
         """
 
-rule prepPathfinder:
-    input:
-        os.path.join(outdir, "raw_data/{sim}", "done"),
-        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling")),
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv"))
-    output:
-        pathfinderTissues = "{outdir}/pathfinder/{sim}/clone_presence.txt",
-        pathfinderFasta = "{outdir}/pathfinder/{sim}/clone_aln.fas"
-    params:
-        scripts = config['scripts'],
-        outputdir = "{outdir}/pathfinder/{sim}"
-    conda:
-        "../../envs/compare_trees.yaml"
-    shell:
-        """
-        python {params.scripts}/pathfinder/format_pathfinder.py {input.leafTissues} {input.sim_matrix} {params.outputdir}
-        """
-
-rule runPathfinder:
-    input:
-        pathfinderTissues = "{outdir}/pathfinder/{sim}/clone_presence.txt",
-        pathfinderFasta = "{outdir}/pathfinder/{sim}/clone_aln.fas"
-    output:
-        pathfinderResult = "{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt"
-    params:
-        outputdir = "{outdir}/pathfinder/{sim}",
-        primaryTissue = config['primaryTissue'],
-        scripts = config['scripts'],
-    singularity:
-        "../../envs/pathfinder.sif"
-    shell:
-        """
-        python {params.scripts}/pathfinder/pathfinder.py {input.pathfinderFasta} {input.pathfinderTissues} --primary {params.primaryTissue} -o {params.outputdir} --relax_threshold --scripts {params.scripts}/pathfinder --verbosity 4
-        """
 
 rule labelTrueTreeWithTissues:
     input:
@@ -451,7 +416,6 @@ rule plotPrecisionRecall:
         machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         combinedTreesDone = expand("{outdir}/beam/{sim}/combined.trees", sim=sims, outdir=outdir),
         metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
-        pathfinderResultDone = expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
         # actual input used
         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
     output:

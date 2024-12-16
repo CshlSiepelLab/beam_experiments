@@ -9,12 +9,12 @@ def get_sims():
 sims = get_sims()
 
 # Found all reseeding sims from the model selection reseeding path, discarding any with mut0005 or mig04 due to poor performance on previous evaluations
-all_reseeding_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_reseeding_no_reseeding_12_5_24_variable_rates_data_8_19_24/reseeding_sims.txt"
+all_reseeding_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_2_or_3_parameters_reseeding_no_reseeding_12_7_24_variable_rates_data_8_19_24/reseeding_sims.txt"
 with open(all_reseeding_path, 'r') as f:
     all_reseeding = [line.strip() for line in f]
 
 # Counted the number of reseeding sims that were available, noticed none of them had mig7, then found all non-reseeding sims and discarded mig4 and mut0005 and mig7, and then randomly shuffled the file and took the top n to match the number of reseeding n from above (done to prevent any class imbalance)
-chosen_non_reseeding_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_reseeding_no_reseeding_12_5_24_variable_rates_data_8_19_24/no_reseeding_sims_randomly_chosen.txt"
+chosen_non_reseeding_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_2_or_3_parameters_reseeding_no_reseeding_12_7_24_variable_rates_data_8_19_24/no_reseeding_sims_randomly_chosen.txt"
 with open(chosen_non_reseeding_path, 'r') as f:
     chosen_non_reseeding = [line.strip() for line in f]
 
@@ -31,6 +31,8 @@ rule all:
         expand("{outdir}/beam_prep/{sim}/{sim}.fasta", sim=sims, outdir=outdir),
         expand("{outdir}/beam_no_reseeding/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, config['numReps']), outdir=outdir),
         expand("{outdir}/beam_one_rate_reseeding/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, config['numReps']), outdir=outdir),
+        # expand("{outdir}/beam_no_reseeding/{sim}/combined.log", sim=sims, outdir=outdir),
+        # expand("{outdir}/beam_one_rate_reseeding/{sim}/combined.log", sim=sims, outdir=outdir)
 
 
 rule labelTrueTreeWithTissues:
@@ -157,6 +159,7 @@ rule runBeamNoReseeding:
         beamJar = config['beamJar'],
         generations = config['generations'],
         primaryTissue = config['primaryTissue'],
+        numParticles = config['numParticles'],
         threads = 5
     shell:
         """
@@ -184,7 +187,8 @@ rule runBeamNoReseeding:
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
         # key to prep the correct rate matrix with no reseeding rates
-        numTissueRates=$(( (numTissues * numTissues) - (numTissues + (numTissues - 1)) ))
+        # numTissueRates=$(( (numTissues * numTissues) - (numTissues + (numTissues - 1)) ))
+        numTissueRates=2
 
         equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
         equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
@@ -217,6 +221,7 @@ rule runBeamNoReseeding:
         -D numTissues=\"$numTissues\" \
         -D equalTissueFreqs=\"$equalTissueFreqs\" \
         -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D numParticles={params.numParticles} \
         -D outname={wildcards.num} \
         {params.outDir}/{wildcards.num}.xml > {output.terminalLog}
         """
@@ -236,6 +241,7 @@ rule runBeamOneRateReseeding:
         beamJar = config['beamJar'],
         generations = config['generations'],
         primaryTissue = config['primaryTissue'],
+        numParticles = config['numParticles'],
         threads = 5
     shell:
         """
@@ -263,7 +269,8 @@ rule runBeamOneRateReseeding:
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
         # key to prep the correct rate matrix with one reseeding rate
-        numTissueRates=$(( ((numTissues * numTissues) - (numTissues + (numTissues - 1))) + 1 ))
+        # numTissueRates=$(( ((numTissues * numTissues) - (numTissues + (numTissues - 1))) + 1 ))
+        numTissueRates=3
 
         equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
         equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
@@ -296,7 +303,38 @@ rule runBeamOneRateReseeding:
         -D numTissues=\"$numTissues\" \
         -D equalTissueFreqs=\"$equalTissueFreqs\" \
         -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D numParticles={params.numParticles} \
         -D outname={wildcards.num} \
         {params.outDir}/{wildcards.num}.xml > {output.terminalLog}
         """
+
+# rule combineNoReseedingParticles:
+#     input:
+#         logs = lambda wildcards: expand("{outdir}/beam_no_reseeding/{sim}/{num}/terminal_{num}.log", sim=wildcards.sim, num=range(0, config['numReps']), outdir=wildcards.outdir)
+#     output:
+#         log = "{outdir}/beam_no_reseeding/{sim}/combined.log",
+#         terminal = "{outdir}/beam_no_reseeding/{sim}/combined_terminal.log"
+#     params:
+#         beamJar = config['beamJar'],
+#         applauncher = config['applauncher'],
+#         numParticles = config['numParticles']
+#     shell:
+#         """
+#         {params.applauncher} NSLogAnalyser -N {params.numParticles} -noposterior -log {input.logs} -out {output.log} > {output.terminal} 2>&1
+#         """
+
+# rule combineOneRateReseedingParticles:
+#     input:
+#         logs = lambda wildcards: expand("{outdir}/beam_one_rate_reseeding/{sim}/{num}/terminal_{num}.log", sim=wildcards.sim, num=range(0, config['numReps']), outdir=wildcards.outdir)
+#     output:
+#         log = "{outdir}/beam_one_rate_reseeding/{sim}/combined.log",
+#         terminal = "{outdir}/beam_one_rate_reseeding/{sim}/combined_terminal.log"
+#     params:
+#         beamJar = config['beamJar'],
+#         applauncher = config['applauncher'],
+#         numParticles = config['numParticles']
+#     shell:
+#         """
+#         {params.applauncher} NSLogAnalyser -N {params.numParticles} -noposterior -log {input.logs} -out {output.log} > {output.terminal} 2>&1
+#         """
 

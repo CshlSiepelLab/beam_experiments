@@ -207,7 +207,7 @@ debug = False
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header="sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Parsimony_f1,Parsimony_recall,Parsimony_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,Metient_f1,Metient_recall,Metient_precision,PathFinder_f1,PathFinder_recall,PathFinder_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
+    header="sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Parsimony_f1,Parsimony_recall,Parsimony_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,Metient_f1,Metient_recall,Metient_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
     file.write(header)
 
 machina_precisions = np.zeros(len(dirs))
@@ -221,7 +221,6 @@ random_recalls = np.zeros(len(dirs))
 parsimony_precisions = np.zeros(len(dirs))
 parsimony_recalls = np.zeros(len(dirs))
 all_thresh_rows = []
-pathfinder_all_thresh_rows = []
 i=0
 
 for true_tree_file in dirs:
@@ -244,7 +243,6 @@ for true_tree_file in dirs:
     machina_file = f"{dir}/machina/{sim}/machina_tree_all_tissue_labels.nwk"
     metient_file = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_migration_graphs.txt"
     beast_posterior_file = f"{dir}/metastabayes/{sim}/combined.trees"
-    pathfinder_posterior_file = f"{dir}/pathfinder/{sim}/clone_aln_all_output_counts.txt"
     consensus_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk"
     random_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk"
     parsimony_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk"
@@ -302,32 +300,6 @@ for true_tree_file in dirs:
         metient_f1, metient_recall, metient_precision = calculate_metrics(true_counts, metient_counts)
         metient_precisions[i] = metient_precision
         metient_recalls[i] = metient_recall
-
-    # process pathfinder result to get precision and recall
-    pathfinder_post_prob_f1 = float('nan')
-    pathfinder_post_prob_recall = float('nan')
-    pathfinder_post_prob_precision = float('nan')
-    if os.path.exists(pathfinder_posterior_file):
-        pathfinder_raw_output = pd.read_csv(pathfinder_posterior_file, sep='\t')
-        pathfinder_raw_output = pathfinder_raw_output.drop_duplicates()
-        raw_posterior_probs = pathfinder_raw_output['probability'].tolist()
-        # pathfinder probabilities do not sum to 1, so normalize them across all output migration graphs
-        pathfinder_posterior_probs = [posterior_prob / sum(raw_posterior_probs) for posterior_prob in raw_posterior_probs]
-        pathfinder_all_inferred_counts = []
-        for raw_graph in pathfinder_raw_output['paths'].tolist():
-            graph = raw_graph.split(';')
-            cleaned_graph = {}
-            for item in graph:
-                item = re.sub(r'\[.*?\]', '', item)
-                item = item.replace('->', '_')
-                if item not in cleaned_graph:
-                    cleaned_graph[item] = 1
-                else:
-                    cleaned_graph[item] += 1
-            pathfinder_all_inferred_counts.append(cleaned_graph)
-
-        pathfinder_thresh_prec_rec, pathfinder_rows, pathfinder_posterior_prob_graph, pathfinder_post_prob_f1, pathfinder_post_prob_recall, pathfinder_post_prob_precision = posterior_threshold_metrics(pathfinder_posterior_probs, pathfinder_all_inferred_counts, true_counts, sim)
-        pathfinder_all_thresh_rows.extend(pathfinder_rows)
 
     # process random result to get precision and recall
     random_f1 = float('nan')
@@ -406,9 +378,6 @@ for true_tree_file in dirs:
         if os.path.exists(beast_posterior_file):
             # plt.scatter(thresh_prec_rec['recall'], thresh_prec_rec['precision'], c=thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
             plt.plot(thresh_prec_rec['recall'], thresh_prec_rec['precision'], color = "grey", label='Beast')
-        if os.path.exists(beast_posterior_file):
-            # plt.scatter(pathfinder_thresh_prec_rec['recall'], pathfinder_thresh_prec_rec['precision'], c=pathfinder_thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
-            plt.plot(pathfinder_thresh_prec_rec['recall'], pathfinder_thresh_prec_rec['precision'], color = "brown", label='PathFinder')
         if os.path.exists(machina_file):
             plt.scatter(machina_recall, machina_precision, color='red', label='Machina', s=size, marker = "x")
         if os.path.exists(metient_file):
@@ -437,19 +406,18 @@ for true_tree_file in dirs:
 
     # write metrics used for the plot to a file
     with open(outfile_metrics, "a") as file:
-        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{parsimony_f1},{parsimony_recall},{parsimony_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{pathfinder_post_prob_f1},{pathfinder_post_prob_recall},{pathfinder_post_prob_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
+        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{parsimony_f1},{parsimony_recall},{parsimony_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
         file.write(data)
 
 all_thresh_df = pd.DataFrame(all_thresh_rows)
-pathfinder_all_thresh_df = pd.DataFrame(pathfinder_all_thresh_rows)
 
 # save intermediate variables to a file for later re-plotting
 with open(f"{outdir}/precision_recall_vars.pkl", "wb") as file:
-    pickle.dump([machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, all_thresh_df, pathfinder_all_thresh_df], file)
+    pickle.dump([machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, all_thresh_df], file)
 
 # # optionally to open from pickle file and avoid recalculations above
 # with open(f"{outdir}/precision_recall_vars.pkl", "rb") as file:
-#     machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, all_thresh_df, pathfinder_all_thresh_df = pickle.load(file)
+#     machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, all_thresh_df = pickle.load(file)
 
 # make an overall averaged precision/recall curve
 outfile = f"{outdir}/precision_recall.pdf"
@@ -488,18 +456,12 @@ if not all_thresh_df.empty:
     avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
     all_thresh_df.to_csv(f"{outdir}/all_threshold_stats.csv", index=False)
 
-if not pathfinder_all_thresh_df.empty:
-    pathfinder_avg_df = pathfinder_all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
-
 size = 75
 textsize = 18
 plt.figure()
 if not avg_df.empty:
     # plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(avg_df['recall'], avg_df['precision'], color = 'grey', label='BEAM')
-if not pathfinder_avg_df.empty:
-    # plt.scatter(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], c=pathfinder_avg_df['Threshold'], cmap='viridis', s=25, marker='x')
-    plt.plot(pathfinder_avg_df['recall'], pathfinder_avg_df['precision'], color='brown', label='PathFinder')
 if not np.isnan(avg_machina_recall) and not np.isnan(avg_machina_precision):
     plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='MACHINA', s=size, marker="x")
 if not np.isnan(avg_metient_recall) and not np.isnan(avg_metient_precision):

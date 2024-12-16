@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 # input_file = sys.argv[1]
 # primary_tissue = sys.argv[2]
 
-input_file = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/beam/MMUS1467/CP01/combined.log'
+input_file = '/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/beam/MMUS1467/CP01/combined.log'
 primary_tissue = 'PRL'
 
 outfile = input_file.replace(".log", "_tissue_rate_matrix_hypothesis_setups.pdf")
@@ -28,9 +28,6 @@ num_tissues = len(tissues)
 rate_matrix_labels = np.empty((num_tissues, num_tissues), dtype=object)
 rate_matrix_primary_zero = np.empty((num_tissues, num_tissues), dtype=object)
 
-rate_counter_continuous = 1
-rate_counter_zero = 1
-
 for i, source in enumerate(tissues):
     for j, recipient in enumerate(tissues):
         if source == recipient:
@@ -39,25 +36,27 @@ for i, source in enumerate(tissues):
         else:
             if recipient == primary_tissue:
                 rate_matrix_primary_zero[i, j] = 0
-                rate_matrix_labels[i, j] = 10   # set specific to 4x4 matrix
+                rate_matrix_labels[i, j] = 3   # set specific to 4x4 matrix
+            elif source == primary_tissue:
+                rate_matrix_primary_zero[i, j] = 1
+                rate_matrix_labels[i, j] = 1
             else:
-                rate_matrix_primary_zero[i, j] = rate_counter_zero
-                rate_counter_zero += 1
-                rate_matrix_labels[i, j] = rate_counter_continuous
-                rate_counter_continuous += 1
+                rate_matrix_primary_zero[i, j] = 2
+                rate_matrix_labels[i, j] = 2
 
 rate_matrix_labels = rate_matrix_labels.astype(int)
 rate_matrix_primary_zero = rate_matrix_primary_zero.astype(int)
 
 # Plot the rate matrices
-fs = 28
+fs = 36
 fig, axes = plt.subplots(1, 2, figsize=(20, 8))
 
-
-colors = ['grey', 'white'] + ['grey'] * 9
+colors = ['grey', 'white', "blue", "orange"]
+# colors = ['grey', 'white', "#6fa8dc", "#e69138"]
 cmap_null = ListedColormap(colors)
 
-colors = ['grey', 'white'] + ['grey'] * 9 + ['orange']
+# colors = ['grey', 'white', "#6fa8dc", "#e69138", "#c27ba0"]
+colors = ['grey', 'white', "blue", "orange", "green"]
 cmap_alt = ListedColormap(colors)
 
 

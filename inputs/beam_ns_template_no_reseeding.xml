@@ -50,7 +50,7 @@
 
 <siteModel spec="SiteModel" id="siteModel" mutationRate="@mutationRate" proportionInvariant="@proportionInvariant" gammaCategoryCount="0" substModel="@substModel"></siteModel>
 
-<run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="1" subChainLength="10000" epsilon="1e-10">
+<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="$(numParticles)" subChainLength="10000" epsilon="1e-10">
         <state id="state" spec="State" storeEvery="5000">
             <stateNode id="tree" spec="beam.tree.BeamStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)">
                 <trait idref="dateTrait"/>
