@@ -3,6 +3,8 @@
 export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/information_content_sim
 
 snakemake \
+--dry-run \
+--reason \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
 --latency-wait 300 \

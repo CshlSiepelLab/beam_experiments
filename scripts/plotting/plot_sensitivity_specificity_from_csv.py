@@ -81,20 +81,3 @@ plt.tight_layout()
 outfile = file_path.replace('.csv', '_sensitivity_specificity.png')
 plt.savefig(outfile)
 plt.close()
-
-# Plot the information content by migration and mutation rates
-df['information'] = df['information'].astype(float)
-df['mut_mig'] = ["_".join(name.split('_')[0:2]) for name in df['sim_name']]
-
-plt.figure(figsize=(10, 6))
-sns.boxplot(x='mut_mig', y='information', data=df, showcaps=True, boxprops=dict(facecolor='none', edgecolor='black'), whiskerprops=dict(color='black'), flierprops=dict(marker='o', color='black', alpha=0))
-sns.stripplot(x='mut_mig', y='information', data=df, color='black', alpha=0.5, jitter=True)
-
-plt.xlabel('Migration and mutation rate pairs', fontsize=fs)
-plt.ylabel('Information Content', fontsize=fs)
-plt.xticks(rotation=45)
-plt.tick_params(axis='both', which='major', labelsize=fs)
-plt.tight_layout()
-outfile_info = file_path.replace('.csv', '_information_content.png')
-plt.savefig(outfile_info)
-plt.close()

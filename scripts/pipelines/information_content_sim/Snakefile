@@ -13,6 +13,7 @@ outdir = config['outdir']
 rule all:
     input:
         expand("{outdir}/beam_information_content/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, config['numReps']), outdir=outdir),
+        expand("{outdir}/beam_information_content.pdf", outdir=outdir)
 
 
 rule runCassiopeia:
@@ -157,4 +158,34 @@ rule runBeam:
         -D numParticles={params.numParticles} \
         -D outname={wildcards.num} \
         {params.outDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
+
+rule collectInformation:
+    input:
+        logs = expand("{outdir}/beam_information_content/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, config['numReps']), outdir=outdir)
+    output:
+        csv = "{outdir}/beam_information_content.csv"
+    shell:
+        """
+        echo "sim_name,information_content" > {output.csv}
+
+        for file in {input.logs}; do
+            sim_name=$(basename $(dirname $(dirname $file)))
+            information=$(grep "Information:" $file | tail -n 1 | cut -d' ' -f2)
+            echo "$sim_name,$information" >> {output.csv}
+        done
+        """
+
+rule plotInformation:
+    input:
+        csv = "{outdir}/beam_information_content.csv"
+    output:
+        plot = "{outdir}/beam_information_content.pdf"
+    params:
+        scripts = config['scripts'],
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_information_from_csv.py {input.csv} {output.plot}
         """
