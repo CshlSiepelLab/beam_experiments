@@ -35,16 +35,16 @@
 <map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
     
 <!-- input data -->
-<data  id="alignment" spec="feast.fileio.AlignmentFromFasta" fileName="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1875_cp07/CP07.fasta">
+<data  id="alignment" spec="feast.fileio.AlignmentFromFasta" fileName="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1544_cp04/CP04.fasta">
     <userDataType spec="tidetree.evolution.datatype.EditData" nrOfStates="6"/>
 </data>
 
 <taxonset id="taxonset" spec="TaxonSet" alignment="@alignment"/>
 
-<traitSet id="dateTrait" spec="feast.fileio.TraitSetFromXSV" taxa="@taxonset" fileName="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1875_cp07/CP07_date_traits.csv" sep="," taxonNameCol="0" traitValueCol="1" skipFirstRow="false" traitname="date-forward"/>
+<traitSet id="dateTrait" spec="feast.fileio.TraitSetFromXSV" taxa="@taxonset" fileName="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1544_cp04/CP04_date_traits.csv" sep="," taxonNameCol="0" traitValueCol="1" skipFirstRow="false" traitname="date-forward"/>
 
 
-<substModel id="substModel" spec="beam.substitutionmodel.BeamGeneralMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="398" editDuration="398">
+<substModel id="substModel" spec="beam.substitutionmodel.BeamGeneralMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="224" editDuration="224">
     <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
 </substModel>
 
@@ -52,18 +52,18 @@
 
 <run id="mcmc" spec="beast.gss.NS" chainLength="1000000" particleCount="1" subChainLength="10000" epsilon="1e-10">
         <state id="state" spec="State" storeEvery="5000">
-            <stateNode id="tree" spec="beam.tree.BeamStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="(ASV144:216.71183252511648,(ASV221:206.1763536590939,(ASV225:195.64087500325388,(ASV045_0:10.53547753173527,ASV045_2:10.53547753173527,ASV045_1:10.53547753173527):185.10539747151861):10.535478655840032):10.535478866022554):181.28816747488355">
+            <stateNode id="tree" spec="beam.tree.BeamStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="((ASV045:100.19651046919138,(ASV063:94.56158951132169,(ASV022_0:5.634914187904696,ASV022_2:5.634914187904696,ASV022_1:5.634914187904696):88.92667532341699):5.6349209578696975):5.634917848177743,(ASV015_0:5.634914058018864,ASV015_1:5.634914058018864):100.19651425935027):118.16857168263087">
                 <trait idref="dateTrait"/>
                 <taxonset idref="taxonset"/>
             </stateNode>
-            <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" dimension="4">.6666666666 .1111111111 .1111111111 .1111111111</parameter>
+            <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" dimension="4">.6363636363 .1818181818 .0909090909 .0909090909</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0001</parameter>
             <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">.0016</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" id="mutationRate" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" lower="0.0" id="proportionInvariant" name="stateNode" upper="1.0">0.0</parameter>
-            <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="398.0001">398.001</parameter>
+            <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="224.0001">224.001</parameter>
             
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="2" name="stateNode">1.0</parameter>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="3" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
         </state>
         
@@ -113,23 +113,23 @@
             
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 
-                <distribution id="treeLikelihood" spec="beam.likelihood.BeamBeagleTreeLikelihood" origin="398.001" data="@alignment" tree="@tree" siteModel="@siteModel">
+                <distribution id="treeLikelihood" spec="beam.likelihood.BeamBeagleTreeLikelihood" origin="224.001" data="@alignment" tree="@tree" siteModel="@siteModel">
                     <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c"/>
                 </distribution>
                 
                 <distribution id="traitLikelihood" spec="beam.likelihood.BeamAncestralStateBeagleTreeLikelihood" origin="@origin" tag="location" tree="@tree">
-                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0" estimate="false"/>
+                    <rootFrequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0 0" estimate="false"/>
                     <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
-                        <traitSet id="traitset" spec="feast.fileio.TraitSetFromXSV" fileName="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1875_cp07/CP07_tip_tissues.csv" taxa="@taxonset" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
-                        <userDataType id="codeMap" spec="beast.base.evolution.datatype.UserDataType" codeMap="PRL=0,LGR=1,LGL=2,? = 0 1 2" codelength="-1" states="3"/>
+                        <traitSet id="traitset" spec="feast.fileio.TraitSetFromXSV" fileName="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_mmus1544_cp04/CP04_tip_tissues.csv" taxa="@taxonset" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
+                        <userDataType id="codeMap" spec="beast.base.evolution.datatype.UserDataType" codeMap="PRL=0,LVL=1,LVR=2,LGR=3,? = 0 1 2 3" codelength="-1" states="4"/>
                     </data>
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
                         <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
                         <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
                         <parameter id="proportionInvariant.s:tissue" spec="parameter.RealParameter" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
-                        <substModel id="svs.s:tissue" spec="beam.substitutionmodel.BeamNoReseedingTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue">
+                        <substModel id="svs.s:tissue" spec="beam.substitutionmodel.BeamOneRateReseedingTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
-                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="3" name="frequencies">.3333333333333</parameter>
+                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="4" name="frequencies">.2500000000</parameter>
                             </frequencies>
                         </substModel>
                     </siteModel>
@@ -167,7 +167,7 @@
             <log idref="clockRate.c"/>
             <log idref="relativeGeoRates.s:tissue"/>
             <log idref="traitClockRate.c:tissue"/>
-            <log id="geoSubstModelLogger.s:tissue" spec="beam.substitutionmodel.BeamNoReseedingTissueSubstitutionModelLogger" dataType="@codeMap" model="@svs.s:tissue"/>
+            <log id="geoSubstModelLogger.s:tissue" spec="beam.substitutionmodel.BeamOneRateReseedingTissueSubstitutionModelLogger" dataType="@codeMap" model="@svs.s:tissue"/>
             <log idref="treeLikelihood"/>
             <log idref="traitLikelihood"/>
         </logger>

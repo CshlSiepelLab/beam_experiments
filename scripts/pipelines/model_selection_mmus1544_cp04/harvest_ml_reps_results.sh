@@ -1,6 +1,6 @@
 #!/bin/bash
 
-main_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/beam_ns_mmus1875_cp07_no_reseeding_one_rate_reseeding_12_18_24"
+main_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/beam_ns_mmus1544_cp04_no_reseeding_one_rate_reseeding_12_18_24"
 
 # No reseeding
 dirs=$(find $main_dir -mindepth 1 -maxdepth 1 -type d -name "no_reseeding*")
