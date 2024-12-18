@@ -86,3 +86,7 @@ numChains: 3
 
 # set the minimum ess to include a chain in the combined output across chains (default: 200)
 essCutoff: 200
+
+# Nested sampling parameters
+xmlNS: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_ns_template_gti.xml
+numParticlesNS: 1
