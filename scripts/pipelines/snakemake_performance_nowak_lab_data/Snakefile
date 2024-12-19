@@ -48,7 +48,7 @@ rule all:
         [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues_random.pdf", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/beam_information/{mouse}/{cp}/{num}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numParticlesNS']+1), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numRunsNs']+1), mouse=m) for m in mice],
                 
 
 rule runEvotracer:
@@ -956,14 +956,16 @@ rule runBeamInformation:
         beamResult = "{outdir}/beam_information/{mouse}/{cp}/{num}/chain_{num}.trees"
     params:
         xml = config['xmlNS'],
-        fileDir = "{outdir}/beam_information/{mouse}/{cp}/{num}",
+        fileDir = "{outdir}/beam/{mouse}/{cp}",
+        infoDir = "{outdir}/beam_information/{mouse}/{cp}/{num}",
         beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
+        numNsParticles = config['numNsParticles'],
     shell:
         """
-        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+        cp {params.xml} {params.infoDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
         initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
@@ -1011,7 +1013,7 @@ rule runBeamInformation:
         tissueCodeMap+="${{trailingCodeMap}}"
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
-        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.infoDir}/{wildcards.num}.xml
 
         # use LAML starting tree
         # remove node names from newick and the origin node
@@ -1033,5 +1035,6 @@ rule runBeamInformation:
         -D equalTissueFreqs=\"$equalTissueFreqs\" \
         -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D outname=chain_{wildcards.num} \
-        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
+        -D numParticles={params.numNsParticles} \
+        {params.infoDir}/{wildcards.num}.xml > {output.terminalLog}
         """

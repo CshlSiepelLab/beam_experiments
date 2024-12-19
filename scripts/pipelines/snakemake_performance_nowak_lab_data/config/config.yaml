@@ -89,4 +89,5 @@ essCutoff: 200
 
 # Nested sampling parameters
 xmlNS: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_ns_template_gti.xml
-numParticlesNS: 1
+numRunsNs: 1
+numNsParticles: 1
