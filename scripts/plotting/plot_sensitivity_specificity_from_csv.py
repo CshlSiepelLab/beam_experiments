@@ -60,7 +60,7 @@ plt.ylabel('Frequency', fontsize=fs)
 plt.legend(fontsize=fs, bbox_to_anchor=(1.05, 1), loc='upper left')
 plt.tick_params(axis='both', which='major', labelsize=fs)
 plt.tight_layout()
-outfile_dist = file_path.replace('.csv', '_beam_bf_distribution.png')
+outfile_dist = file_path.replace('.csv', '_beam_bf_distribution.pdf')
 plt.savefig(outfile_dist)
 plt.close()
 
@@ -78,6 +78,11 @@ axes[1].set_ylabel('Specificity', fontsize=fs)
 axes[1].tick_params(axis='both', which='major', labelsize=fs)
 
 plt.tight_layout()
-outfile = file_path.replace('.csv', '_sensitivity_specificity.png')
+outfile = file_path.replace('.csv', '_sensitivity_specificity.pdf')
 plt.savefig(outfile)
 plt.close()
+
+# QC to report any sims needing more nested sampling runs
+sims_needing_particles = df[abs(df['beam_bf']) < df['min_bf_diff']]['sim_name'].tolist()
+print(f"{len(sims_needing_particles)} sims need more particles to decrease the minimum Bayes factor difference threshold.")
+print(sims_needing_particles)

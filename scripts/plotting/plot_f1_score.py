@@ -20,7 +20,7 @@ def plot_f1_score(csv_path, output_dir):
     # Create a boxplot for all f1 columns
     plt.figure()
     fs=18
-    sns.boxplot(data=data_f1, orient='v')
+    sns.boxplot(data=data_f1, orient='v', showfliers=False)
     sns.stripplot(data=data_f1, orient='v', color='black', alpha=0.5)
     plt.ylabel('F1 score', fontsize=fs)
     plt.xticks(fontsize=fs)
