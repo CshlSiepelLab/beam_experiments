@@ -41,7 +41,7 @@ DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27
 plt.figure(figsize=(12, 8))
 
 sns.boxplot(x='group', y='count', hue='type', data=melted_data, palette=DEFAULT_COLORS[2:], showfliers=False, linewidth=2)
-# sns.stripplot(x='group', y='count', hue='type', data=melted_data, dodge=True, color='black', alpha=0.5, legend=False)
+# sns.stripplot(x='group', y='count', hue='type', data=melted_data, dodge=True, color='grey', alpha=0.5, legend=False)
 
 # Set the labels and title
 plt.xlabel('', fontsize=28)

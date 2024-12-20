@@ -46,7 +46,7 @@ def getMigrationComigrationCountsFromNewick(newick):
         if parent_tissue != child_tissue:
             migration_count += 1
             edge = f"{parent_tissue}_{child_tissue}"
-            if edge in edges and edge not in comigration_edges_already_checked:
+            if edge not in comigration_edges_already_checked: # All unique edges are considered a co-migration
                 comigration_count += 1
                 comigration_edges_already_checked.append(edge)
             if not met_to_met and parent_tissue != primaryTissue and child_tissue != primaryTissue:
@@ -80,7 +80,7 @@ if os.path.isfile(machina):
         machina_migrations[f"{primaryTissue}_{primaryTissue}"] = 1
 
     machina_migration_count = sum([value for key, value in machina_migrations.items()])
-    machina_comigration_count = sum(1 for key, value in machina_migrations.items() if value > 1)
+    machina_comigration_count = sum(1 for key, value in machina_migrations.items() if value > 0) # All unique edges are considered a co-migration
 else:
     machina_migration_count = float('nan')
     machina_comigration_count = float('nan')
@@ -117,7 +117,7 @@ if os.path.isfile(metient):
                     continue
                 else:
                     migration_count += int(v)
-                    comigration_count += 1
+                    comigration_count += 1   # All unique edges are considered a co-migration
                     if not met_to_met and key != primaryTissue and k != primaryTissue:
                         met_to_met = True
                     if not reseeding and k == primaryTissue:

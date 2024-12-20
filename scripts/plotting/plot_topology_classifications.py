@@ -33,7 +33,7 @@ summary_df = pd.DataFrame(summary)
 # Rename the categories
 summary_df['category'] = summary_df['category'].replace({
     'met_to_met': 'Met to Met',
-    'reseeding': 'Reseeding'
+    'reseeding': 'Primary Reseeding'
 })
 
 summary_df['group'] = summary_df['group'].replace({
