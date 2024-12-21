@@ -23,7 +23,6 @@ def plot_f1_score(csv_path, output_dir):
     sns.boxplot(data=data_f1, orient='v', showfliers=False)
     sns.stripplot(data=data_f1, orient='v', color='black', alpha=0.5)
     plt.ylabel('F1 score', fontsize=fs)
-    plt.xticks(fontsize=fs)
     plt.xticks(rotation=45, fontsize=fs)
     plt.yticks(fontsize=fs)
     plt.ylim(-0.05,1.05)

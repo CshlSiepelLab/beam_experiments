@@ -6,7 +6,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
-threshold_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/all_threshold_stats.csv"
+# threshold_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/all_threshold_stats.csv"
+threshold_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_repeat_origin_scaling_implemented_10_25_24_data_from_8_19_24/precision_recall_variable_rates/all_threshold_stats.csv"
 
 df = pd.read_csv(threshold_file)
 
@@ -34,4 +35,5 @@ plt.ylabel('F1 Score', fontsize=24)
 plt.xticks(fontsize=18, rotation=0)
 plt.yticks(fontsize=18)
 plt.tight_layout()
-plt.savefig("/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/thresholds_f1_lineplot.pdf")
+# plt.savefig("/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/thresholds_f1_lineplot.pdf")
+plt.savefig("/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_repeat_origin_scaling_implemented_10_25_24_data_from_8_19_24/precision_recall_variable_rates/thresholds_f1_lineplot.pdf")
