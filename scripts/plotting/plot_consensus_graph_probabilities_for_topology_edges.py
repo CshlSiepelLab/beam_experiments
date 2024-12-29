@@ -34,7 +34,7 @@ fs = 24
 # Create the boxplot
 plt.figure(figsize=(8, 8))
 sns.boxplot(x="Probability_Type", y="Probability", data=melted_data, showcaps=True, boxprops=dict(facecolor='none', edgecolor='black'), whiskerprops=dict(color='black'), medianprops=dict(color='black'))
-sns.stripplot(x="Probability_Type", y="Probability", data=melted_data, palette=DEFAULT_COLORS, alpha=0.5, jitter=True, dodge=False)
+sns.stripplot(x="Probability_Type", y="Probability", data=melted_data, palette=DEFAULT_COLORS, alpha=0.5, jitter=True, dodge=False, size=8)
 
 # Set plot labels and title
 plt.xlabel("")

@@ -23,7 +23,7 @@ noReseedingTemplate: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_met
 oneRateReseedingTemplate: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_ns_template_one_rate_reseeding.xml
 
 # number of nested sampling replicates to run for each model
-numReps: 40
+numReps: 70
 
 # number of particles per rep to use for nested sampling per run
 numParticles: 1 # Keep this fixed to 1 since we use numReps above to parallelize more than one particle instead of using more particles per run

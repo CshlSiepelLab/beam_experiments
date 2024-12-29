@@ -9,9 +9,10 @@ import matplotlib.pyplot as plt
 DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
 
 infile = sys.argv[1]
-# infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24/asv_counts_per_cp.csv"
+# infile = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/asv_counts_per_cp.csv"
 
 max_tips=int(sys.argv[2])
+# max_tips = 150
 
 # Load the data from the CSV file
 data = pd.read_csv(infile)
@@ -54,7 +55,7 @@ plt.xlabel('', fontsize=fs)
 plt.ylabel('Tip count per clonal population', fontsize=fs)
 plt.xticks(rotation=45, fontsize=fs)
 plt.yticks(fontsize=fs)
-plt.ylim(0, 400)
+plt.ylim(0, 200)
 plt.tight_layout()
 plt.savefig(infile.replace('.csv', '_boxplot.pdf'), dpi=1000)
 plt.close()

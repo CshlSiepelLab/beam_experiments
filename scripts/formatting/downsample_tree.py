@@ -11,17 +11,17 @@ import plot_phylo
 
 
 # inputs
-char_matrix_file = sys.argv[1]
-tree_file = sys.argv[2]
-tissue_labels_file = sys.argv[3]
-thresh = float(sys.argv[4])
-outprefix = sys.argv[5]
+# char_matrix_file = sys.argv[1]
+# tree_file = sys.argv[2]
+# tissue_labels_file = sys.argv[3]
+# thresh = float(sys.argv[4])
+# outprefix = sys.argv[5]
 
-# char_matrix_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/processed_metadata/3451_Lkb1_T1_successive_char_matrix_collapsed.txt"
-# tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_lung_cancer_data_11_13_24/ds_laml/3451_Lkb1_T1/3451_Lkb1_T1_laml_trees_no_origin.nwk"
-# tissue_labels_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/processed_metadata/3451_Lkb1_T1_successive_char_matrix_collapsing_dict.txt"
-# thresh = 0.5 # to be adjusted as a scalar of the tree height
-# outprefix = "test"
+char_matrix_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/downsampling_tree_test_100_tips_10_31_24/raw_data/6316/6316_indel_character_matrix.tsv"
+tree_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/downsampling_tree_test_100_tips_10_31_24/laml/6316/laml_trees_no_origin.nwk"
+tissue_labels_file = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/downsampling_tree_test_100_tips_10_31_24/raw_data/6316/cell_tree_seed412772896.labeling"
+thresh = 0.75 # to be adjusted as a scalar of the tree height
+outprefix = f"/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/downsampling_tree_test_100_tips_10_31_24/downsampled_data/6316/threshold_{thresh}"
 
 # print("Character matrix file: ", char_matrix_file)
 # print("Tree file: ", tree_file)
@@ -203,7 +203,7 @@ if plot:
     ax.axvline(x=(82 + (35 * thresh)), color='r', linestyle='dashed', linewidth=1)
     f.suptitle(f"Threshold at {thresh*100}% of tree height", fontsize=16)
     plt.tight_layout()
-    plt.savefig(outprefix + "_downsampled_tree_comparison.png")
+    plt.savefig(outprefix + "_downsampled_tree_comparison.pdf")
     plt.close()
 
 # output downsampled tree and tissue labels

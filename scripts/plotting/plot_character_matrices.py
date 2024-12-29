@@ -41,8 +41,8 @@ for i in range(df.shape[0]):
         ax.add_patch(plt.Rectangle((j, i), 1, 1, fill=True, edgecolor='black', facecolor=color_map.get(str(df.values[i, j]), '#FFFFFF')))
 
 # Set the y-axis label and title
-ax.set_ylabel("Cells", fontsize=22)
-ax.set_title("Barcode mutation sites", fontsize=22)
+ax.set_ylabel("Cells", fontsize=32)
+ax.set_title("Barcode mutation sites", fontsize=32)
 
 ax = plt.gca()
 for spine in ax.spines.values():

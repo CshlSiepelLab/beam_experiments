@@ -23,13 +23,13 @@ file_path = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/
 df = pd.read_csv(file_path)
 
 # Classify beam Bayes factors as supporting reseeding or not
-min_bf = 0  # 0 = support barely worth mentioning, 1.1 = positive support, 3 = strong support, 5 = overwhelming support
+min_bf = 5 # 0 = support barely worth mentioning, 1.1 = positive support, 3 = strong support, 5 = overwhelming support
 df['beam'] = df.apply(lambda row: 'yes' if row['beam_bf'] > min_bf and row['beam_bf'] > row['min_bf_diff'] else 'no', axis=1)
 
 # Drop rows with NaN values
 df = df.fillna('no')    # assumes those that did not converge are not supporting reseeding. This is a safe assumption since the null hypothesis is no reseeding.
 
-methods = [name for name in df.columns if name not in ['simname', 'true', 'beam_bf', 'min_bf_diff', 'information']]
+methods = [name for name in df.columns if name not in ['sim_name', 'true', 'beam_bf', 'min_bf_diff', 'information']]
 sensitivity = []
 specificity = []
 
