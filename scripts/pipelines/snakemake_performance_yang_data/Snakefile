@@ -380,7 +380,7 @@ rule plotGraphPosterior:
         primaryTissue = config['primaryTissue'],
         outdir = "{outdir}/beam/{mouse}",
         threads = 1,
-        threshold = 0.4
+        threshold = 0.5
     conda:
         "../../envs/networkx.yaml"
     shell:
