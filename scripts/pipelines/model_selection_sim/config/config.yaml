@@ -3,7 +3,7 @@
 inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/variable_migration_and_mutation_rates_8_19_24"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_2_or_3_parameters_reseeding_no_reseeding_12_7_24_variable_rates_data_8_19_24"
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_2_or_3_parameters_reseeding_no_reseeding_12_31_24_variable_rates_data_8_19_24"
 
 # primary tissue name
 primaryTissue: P

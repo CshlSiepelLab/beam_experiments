@@ -3,13 +3,14 @@
 inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/downsampling_test_100_tips_9_12_24"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_test_100_tips_10_31_24"
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_test_100_tips_12_31_24"
 
 # downsampling thresholds
 thresholds:
   - 1.0
   - 0.75
   - 0.5
+  - 0.4
   - 0.3
   - 0.2
   - 0.15

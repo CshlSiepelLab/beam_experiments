@@ -19,7 +19,7 @@ rule all:
         expand("{outdir}/beam/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/beam/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
-        f"{outdir}/precision_recall_curve/precision_recall.pdf",
+        # f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
 
 rule copyDataToOutDir:
@@ -304,7 +304,7 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{sim}",
         primaryTissue = config['primaryTissue'],
-        threads = config['threads']
+        threads = 50
     conda:
         "../../envs/machina.yaml"
     shell:
@@ -317,8 +317,35 @@ rule runMachina:
         module load EBModules
         module load Gurobi
 
-        # run machina
-        {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue P --outdir {params.outputdir}
+        labeling={params.outputdir}/*.labeling
+        unique_tissues=$(cut -f2 $labeling | sort | uniq)
+        num_unique_tissues=$(echo "$unique_tissues" | wc -l)
+
+        if [ "$num_unique_tissues" -gt 1 ]; then
+
+            # check if primary tissue is in the labeling file
+            if grep -q "{params.primaryTissue}" $labeling; then
+                # run machina
+                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue {params.primary_tissue} --outdir {params.outputdir}
+                
+                # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label might be different
+                cp {params.outputdir}/{params.primaryTissue}-G-{params.primaryTissue}-R.dot {output.machinaTree}
+                cp {params.outputdir}/{params.primaryTissue}-G-{params.primaryTissue}-R.tree {output.machinaTissues}
+            else
+                most_common_tissue=$(cut -f2 $labeling | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
+                echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
+                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling--colors {params.outputdir}/*_colors.txt --primary-tissue $most_common_tissue --outdir {params.outputdir}
+
+                # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label will be different due to the different primary tissue
+                cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.dot {output.machinaTree}
+                cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.tree {output.machinaTissues}
+            fi
+        else
+            echo "Only one unique tissue found in the labeling file, so not enough to run Machina. Exiting."
+            touch {output.machinaTissues}
+            touch {output.machinaTree}
+            touch {output.machinaResults}
+        fi
         """
 
 rule processMachinaResults:
@@ -365,7 +392,8 @@ rule runMetient:
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outputdir = "{outdir}/metient/{sim}"
+        outputdir = "{outdir}/metient/{sim}",
+        threads = 50
     singularity:
         "../../envs/metient.sif"
     shell:
@@ -406,32 +434,32 @@ rule plotTrueMigrationGraph:
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
         """
 
-rule plotPrecisionRecall:
-    input:
-        # necessary input files so that the rule is triggered after all other rules have finished
-        randomResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
-        consensusResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
-        parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
-        trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
-        machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        combinedTreesDone = expand("{outdir}/beam/{sim}/combined.trees", sim=sims, outdir=outdir),
-        metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
-        # actual input used
-        trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
-    output:
-        overallPrecisionRecall = f"{outdir}/precision_recall_curve/precision_recall.pdf",
-        # individualPrecisionRecalls = [f"{outdir}/precision_recall_curve/{s}/precision_recall.pdf" for s in sims],
-        overallF1 = f"{outdir}/precision_recall_curve/f1_score.pdf",
-    params:
-        scripts = config['scripts'],
-        primaryTissue = config['primaryTissue'],
-        outputdir = outdir + "/precision_recall_curve"
-    conda:
-        "../../envs/matplotlib.yaml"
-    shell:
-        """
-        true_trees=$(echo {input.trueTrees} | tr ' ' ',')
-        python {params.scripts}/plotting/plot_precision_recall.py $true_trees {params.primaryTissue} {params.outputdir}
-        python {params.scripts}/plotting/plot_f1_score.py {params.outputdir}/metrics.csv {params.outputdir}
-        """
+# rule plotPrecisionRecall:
+#     input:
+#         # necessary input files so that the rule is triggered after all other rules have finished
+#         randomResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
+#         consensusResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
+#         parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
+#         trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+#         machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+#         combinedTreesDone = expand("{outdir}/beam/{sim}/combined.trees", sim=sims, outdir=outdir),
+#         metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
+#         # actual input used
+#         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
+#     output:
+#         overallPrecisionRecall = f"{outdir}/precision_recall_curve/precision_recall.pdf",
+#         # individualPrecisionRecalls = [f"{outdir}/precision_recall_curve/{s}/precision_recall.pdf" for s in sims],
+#         overallF1 = f"{outdir}/precision_recall_curve/f1_score.pdf",
+#     params:
+#         scripts = config['scripts'],
+#         primaryTissue = config['primaryTissue'],
+#         outputdir = outdir + "/precision_recall_curve"
+#     conda:
+#         "../../envs/matplotlib.yaml"
+#     shell:
+#         """
+#         true_trees=$(echo {input.trueTrees} | tr ' ' ',')
+#         python {params.scripts}/plotting/plot_precision_recall.py $true_trees {params.primaryTissue} {params.outputdir}
+#         python {params.scripts}/plotting/plot_f1_score.py {params.outputdir}/metrics.csv {params.outputdir}
+#         """
 

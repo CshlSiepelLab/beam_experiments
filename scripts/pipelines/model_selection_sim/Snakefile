@@ -22,7 +22,7 @@ with open(chosen_non_reseeding_path, 'r') as f:
 sims = [sim for sim in sims if sim in all_reseeding or sim in chosen_non_reseeding]
 
 # specific sims that need more particles to reduce the threshold for the minimum bayes factor
-sims = ['mig5_mut001_3367', 'mig5_mut0025_19909', 'mig5_mut005_10364', 'mig5_mut005_21812', 'mig5_mut005_23817', 'mig5_mut005_24716', 'mig5_mut005_28953', 'mig5_mut005_6169', 'mig5_mut01_15285', 'mig5_mut01_22994', 'mig5_mut01_28920', 'mig5_mut01_6228', 'mig6_mut001_13259', 'mig6_mut001_18037', 'mig6_mut001_22636', 'mig6_mut001_25214', 'mig6_mut0025_1342', 'mig6_mut0025_17715', 'mig6_mut0025_25796', 'mig6_mut0025_6921', 'mig6_mut005_2171', 'mig6_mut005_28340', 'mig6_mut005_8463', 'mig6_mut005_9570', 'mig6_mut01_13401', 'mig6_mut01_18521', 'mig6_mut01_21493', 'mig6_mut01_26589', 'mig6_mut01_28748', 'mig6_mut01_30006', 'mig6_mut01_32163', 'mig6_mut01_4374']
+# sims = ['mig5_mut001_3367', 'mig5_mut0025_19909', 'mig5_mut005_10364', 'mig5_mut005_21812', 'mig5_mut005_23817', 'mig5_mut005_24716', 'mig5_mut005_28953', 'mig5_mut005_6169', 'mig5_mut01_15285', 'mig5_mut01_22994', 'mig5_mut01_28920', 'mig5_mut01_6228', 'mig6_mut001_13259', 'mig6_mut001_18037', 'mig6_mut001_22636', 'mig6_mut001_25214', 'mig6_mut0025_1342', 'mig6_mut0025_17715', 'mig6_mut0025_25796', 'mig6_mut0025_6921', 'mig6_mut005_2171', 'mig6_mut005_28340', 'mig6_mut005_8463', 'mig6_mut005_9570', 'mig6_mut01_13401', 'mig6_mut01_18521', 'mig6_mut01_21493', 'mig6_mut01_26589', 'mig6_mut01_28748', 'mig6_mut01_30006', 'mig6_mut01_32163', 'mig6_mut01_4374']
 
 
 outdir = config['outdir']

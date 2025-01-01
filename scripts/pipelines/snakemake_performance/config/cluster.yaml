@@ -20,7 +20,7 @@ plotPrecisionRecall:
   logerror: '{outdir}/job_logs/{rule}.err'
 
 runMetient:
-  cores: 25
-  mem: '1G'
+  cores: '{params.threads}'
+  mem: '5G'
 
   
