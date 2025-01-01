@@ -65,6 +65,11 @@
             
             <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="2" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
+
+            <!-- birth rate corresponds to cell division rate -->
+            <parameter id="birthRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.6</parameter>
+            <!-- death rate corresponds to apoptosis rate -->
+            <parameter id="deathRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.01</parameter>
         </state>
         
         
@@ -74,7 +79,7 @@
 
                 <distribution id="birthDeathSamplingModel" spec="bdsky.evolution.speciation.BirthDeathSkylineModel"
                           conditionOnSurvival="True" tree="@tree" origin="@origin" contemp="true"
-                          birthRate="0.6" deathRate="0.01" rho="1.0"
+                          birthRate="@birthRate" deathRate="@deathRate" rho="1.0"
                           samplingRate="0.0" >
                 </distribution>
 
@@ -107,6 +112,15 @@
                     </Exponential>
                 </prior>
 
+
+                <!-- prior distributions on phylodynamic parameters -->
+                <prior id="birthRatePrior" name="distribution" x="@birthRate">
+                    <LogNormal name="distr" M="0" S="0.6"/>
+                </prior>
+                
+                <prior id="deathRatePrior" name="distribution" x="@deathRate">
+                    <LogNormal name="distr" M="-2" S="1.4"/>
+                </prior>
 
             </distribution>
             
@@ -155,7 +169,12 @@
     <!-- operators on ancestral state model sparameters -->
     <operator id="georateScaler.s:tissue" spec="ScaleOperator" parameter="@relativeGeoRates.s:tissue" scaleAllIndependently="true" scaleFactor="0.99" weight="30.0"/>
     <operator id="geoMuScaler.c:tissue" spec="ScaleOperator" parameter="@traitClockRate.c:tissue" scaleFactor="0.9" weight="3.0"/>
-    
+
+    <!-- Operators on phylodynamic parameters -->
+    <operator id="birthRateScaler" spec="ScaleOperator" parameter="@birthRate" scaleFactor="0.8" weight="3.0"/>
+    <operator id="deathRateScaler" spec="ScaleOperator" parameter="@deathRate" scaleFactor="0.8" weight="3.0"/>
+
+
     <!-- loggers -->
         <logger id="tracelog" spec="NSLogger" fileName="$(outname).log" logEvery="10000" model="@posterior" sanitiseHeaders="true" sort="smart">
             <log idref="posterior"/>

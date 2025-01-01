@@ -8,13 +8,13 @@ outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/resu
 # outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_22_24"
 
 # set the asv count threshold for filtering in evotracer
-asvThreshold: 3
+asvThreshold: 50
 
 # whether to model dropouts or just consider them as unedited sites
 modelDropouts: true
 
 # threshold for downsampling
-downsampleTipNumThreshold: 200 # any CP with more ASVs than this will be downsampled
+downsampleTipNumThreshold: 150 # any CP with more ASVs than this will be downsampled
 downsampleDistanceThreshold: 0.0 # for CPs being downsampled, this threshold will be used. 0.0 will always bypass downsampling
 
 # primary tissue name

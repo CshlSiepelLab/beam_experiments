@@ -139,13 +139,13 @@ rule splitCPs:
             # setup temp matrix and tissues headers
             tempMatrix=$cpOutdir/temp_matrix.tsv
             head -n 1 {input.char_matrix} | sed 's/,/\\t/g' | sed 's/\"//g' > $tempMatrix
-            temparams.primary_tissues=$cpOutdir/temp_tissues.tsv
-            echo -e "group_name\\ttissues" > $temparams.primary_tissues
+            tempTissues=$cpOutdir/temp_tissues.tsv
+            echo -e "group_name\\ttissues" > $tempTissues
 
             # subset matrix and tissues for each cp to only retain ASVs for that CP
             for asv in $asvs; do
                 sed 's/,/\\t/g' {input.char_matrix} | sed 's/\"//g' | grep -w "$asv" >> $tempMatrix
-                tail -n +2 {input.asv_stat} | cut -d',' -f1-2 | grep -w "$asv" | awk -F',' '{{if (!seen[$1","$2]++) a[$1]=a[$1]","$2}} END {{for (i in a) {{split(a[i], b, ","); delete seen; c=""; for (j in b) if (b[j] != "" && !seen[b[j]]++) c=(c == "" ? b[j] : c","b[j]); print i"\\t"c}}}}' >> ${{temparams.primary_tissues}}
+                tail -n +2 {input.asv_stat} | cut -d',' -f1-2 | grep -w "$asv" | awk -F',' '{{if (!seen[$1","$2]++) a[$1]=a[$1]","$2}} END {{for (i in a) {{split(a[i], b, ","); delete seen; c=""; for (j in b) if (b[j] != "" && !seen[b[j]]++) c=(c == "" ? b[j] : c","b[j]); print i"\\t"c}}}}' >> ${{tempTissues}}
             done
 
             # track all CPs as they finish pre-processing
