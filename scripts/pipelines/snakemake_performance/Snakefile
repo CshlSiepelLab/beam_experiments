@@ -326,19 +326,19 @@ rule runMachina:
             # check if primary tissue is in the labeling file
             if grep -q "{params.primaryTissue}" $labeling; then
                 # run machina
-                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue {params.primary_tissue} --outdir {params.outputdir}
+                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
                 
                 # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label might be different
-                cp {params.outputdir}/{params.primaryTissue}-G-{params.primaryTissue}-R.dot {output.machinaTree}
-                cp {params.outputdir}/{params.primaryTissue}-G-{params.primaryTissue}-R.tree {output.machinaTissues}
+                cp {params.outputdir}/{params.primaryTissue}-T-{params.primaryTissue}-R.dot {output.machinaTree}
+                cp {params.outputdir}/{params.primaryTissue}-T-{params.primaryTissue}-R.tree {output.machinaTissues}
             else
                 most_common_tissue=$(cut -f2 $labeling | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
                 echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
                 {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling--colors {params.outputdir}/*_colors.txt --primary-tissue $most_common_tissue --outdir {params.outputdir}
 
                 # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label will be different due to the different primary tissue
-                cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.dot {output.machinaTree}
-                cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.tree {output.machinaTissues}
+                cp {params.outputdir}/$most_common_tissue-T-$most_common_tissue-R.dot {output.machinaTree}
+                cp {params.outputdir}/$most_common_tissue-T-$most_common_tissue-R.tree {output.machinaTissues}
             fi
         else
             echo "Only one unique tissue found in the labeling file, so not enough to run Machina. Exiting."
