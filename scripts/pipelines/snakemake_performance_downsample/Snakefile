@@ -144,6 +144,7 @@ rule downsampleInputsTree:
     output:
         downsampledSimMatrix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_char_matrix.tsv",
         downsampledLeafTissues = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_tissue_labels.tsv",
+        lamlTreeDownsampledNoOrigin = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_laml_trees_no_origin.nwk",
     params:
         outprefix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}",
         scripts = config['scripts'],
@@ -188,7 +189,8 @@ rule runBeam:
         fasta = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}.fasta",
         dates = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}_date_traits.csv",
         tissues = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}_tip_tissues.csv",
-        editRates = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}_edit_rate_proportions.txt"
+        editRates = "{outdir}/beam/{sim}_{threshold}/{sim}_{threshold}_edit_rate_proportions.txt",
+        lamlTreeDownsampledNoOrigin = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_downsampled_tree.nwk",
     output:
         terminalLog = "{outdir}/beam/{sim}_{threshold}/terminal_{num}.log",
         beamLog = "{outdir}/beam/{sim}_{threshold}/chain_{num}.log",
@@ -239,12 +241,16 @@ rule runBeam:
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
+        # use LAML starting tree from downsampled output
+        newick=$(cat {input.lamlTreeOriginal} )
+
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
         -overwrite \
         -working \
         -D inName={wildcards.sim}_{wildcards.threshold} \
         -D fileDir={params.fileDir} \
+        -D newick=\"$newick\" \
         -D generations={params.generations} \
         -D numEditRates=\"$numEditRates\" \
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
