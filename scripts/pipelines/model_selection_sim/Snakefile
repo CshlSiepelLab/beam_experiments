@@ -109,7 +109,8 @@ rule runLAML:
         lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
     params:
         outputdir = "{outdir}/laml/{sim}",
-        threads = 25
+        threads = 25,
+        experimentTime = config['generations'],
     conda:
         "../../envs/laml.yaml"
     shell:
@@ -119,7 +120,7 @@ rule runLAML:
         sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.sim}/sim_matrix.csv
 
         # run laml
-        run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml --parallel
+        run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --parallel
         """
 
 rule prepBeamInputs:
