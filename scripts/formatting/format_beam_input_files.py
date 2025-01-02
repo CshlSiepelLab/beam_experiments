@@ -33,7 +33,7 @@ for vals in indel_matrix.values.tolist():
 indel_matrix = indel_matrix.replace(mut_dict)
 
 # get all indel proportions
-muts = np.array([v for vals in indel_matrix.values.tolist() for v in vals if v != 0 and v != -1])
+muts = np.array([v for vals in indel_matrix.values.tolist() for v in vals if v != 0 and v != -1]) # unedited and silenced state is not included in the editRatePropostions calculations since they have their own free parameter input in Beam
 ordered_value_counts = np.unique(muts, return_counts=True)[1]
 sum_proportions = sum(ordered_value_counts)
 proportions = [str(count / sum_proportions) for count in ordered_value_counts]
@@ -41,6 +41,7 @@ proportions = [str(count / sum_proportions) for count in ordered_value_counts]
 # replace the -1 with the largest value + 1 for dropout as the last column in tidetree
 max_val = max(mut_dict.values())
 mut_dict[-1] = max_val + 1
+indel_matrix = indel_matrix.replace(-1, mut_dict[-1])
 
 # write mutation proportions for initial states in the edit model
 outfile_proportions = f"{outdir}/{outname}_edit_rate_proportions.txt"
