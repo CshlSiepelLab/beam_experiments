@@ -56,7 +56,7 @@ generations: 250
 # numRates: 1
 
 # set the desired mcmc chain length
-mcmcLength: 50000000
+mcmcLength: 30000000
 
 # set the desired number of parallel mcmc chains to run
 numChains: 3

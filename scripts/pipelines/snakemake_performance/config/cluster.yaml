@@ -23,4 +23,8 @@ runMetient:
   cores: '{params.threads}'
   mem: '5G'
 
+runLAML:
+  cores: '{params.threads}'
+  mem: '5G'
+
   

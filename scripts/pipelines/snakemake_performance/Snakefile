@@ -34,6 +34,62 @@ rule copyDataToOutDir:
         touch {output}
         """
 
+
+rule runCassiopeia:
+    input:
+        os.path.join(outdir, "raw_data/{sim}", "done"),
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+    output:
+        "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    params:
+        cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
+        outputdir = "{outdir}/cassiopeia_greedy/{sim}"
+    singularity:
+        "../../envs/simulate.sif"
+    shell:
+        """
+        # run cassiopeia greedy
+        python {params.cassiopeia_script} {input.sim_matrix} {params.outputdir}
+        """
+
+rule runLAML:
+    input:
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    output:
+        lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+        lamlTreeNoOrigin = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin.nwk",
+        lamlAnnotations = "{outdir}/laml/{sim}/{sim}_laml_annotations.txt",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.nwk"
+    params:
+        outputdir = "{outdir}/laml/{sim}",
+        experimentTime = config['generations'],
+        threads = 50
+    conda:
+        "../../envs/laml.yaml"
+    shell:
+        """
+        # copy sim matrix and replace -1 with ? for missing data
+        cp {input.sim_matrix} {outdir}/laml/{wildcards.sim}/sim_matrix.csv
+        sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.sim}/sim_matrix.csv
+
+        # run laml
+        run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --parallel
+
+        # remove fake root from tree
+        fixed_newick=$(sed "s/);//g" {output.lamlTreeOriginal})
+        fixed_newick="${{fixed_newick:1}});"
+        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
+        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
+        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
+        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
+
+        echo $modified_newick > {output.lamlTreeNoOrigin}
+
+        # obtain newick without branch lengths
+        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTreeNoOrigin} > {output.lamlTreeNoBranchLengths}
+        """
+
 rule prepBeamInputs:
     input:
         os.path.join(outdir, "raw_data/{sim}", "done"),
@@ -68,6 +124,7 @@ rule runBeam:
         dates = "{outdir}/beam/{sim}/{sim}_date_traits.csv",
         tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
         editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
+        lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
     output:
         terminalLog = "{outdir}/beam/{sim}/terminal_{num}.log",
         beamLog = "{outdir}/beam/{sim}/chain_{num}.log",
@@ -118,12 +175,17 @@ rule runBeam:
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
+        # use LAML starting tree
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
         -overwrite \
         -working \
         -D inName={wildcards.sim} \
         -D fileDir={params.fileDir} \
+        -D newick=\"$newick\" \
         -D generations={params.generations} \
         -D numEditRates=\"$numEditRates\" \
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
@@ -223,62 +285,9 @@ rule plotSampledPosteriorGraphs:
         python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.numGraphs}
         """
 
-
-rule runCassiopeia:
-    input:
-        os.path.join(outdir, "raw_data/{sim}", "done"),
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
-    output:
-        "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
-    params:
-        cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
-        outputdir = "{outdir}/cassiopeia_greedy/{sim}"
-    singularity:
-        "../../envs/simulate.sif"
-    shell:
-        """
-        # run cassiopeia greedy
-        python {params.cassiopeia_script} {input.sim_matrix} {params.outputdir}
-        """
-
-rule runLAML:
-    input:
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
-        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
-    output:
-        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
-        lamlAnnotations = "{outdir}/laml/{sim}/{sim}_laml_annotations.txt",
-        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk"
-    params:
-        outputdir = "{outdir}/laml/{sim}"
-    conda:
-        "../../envs/laml.yaml"
-    shell:
-        """
-        # copy sim matrix and replace -1 with ? for missing data
-        cp {input.sim_matrix} {outdir}/laml/{wildcards.sim}/sim_matrix.csv
-        sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.sim}/sim_matrix.csv
-
-        # run laml
-        run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml
-
-        # remove fake root from tree
-        fixed_newick=$(sed "s/);//g" {output.lamlTree})
-        fixed_newick="${{fixed_newick:1}});"
-        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
-        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
-        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
-        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
-
-        echo $modified_newick > {output.lamlTree}
-
-        # obtain newick without branch lengths
-        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
-        """
-
 rule runRandomAndConsensusTissueInference:
     input:
-        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.nwk",
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
         randomResult = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk",
@@ -296,7 +305,7 @@ rule runRandomAndConsensusTissueInference:
 
 rule runMachina:
     input:
-        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_branch_lengths.nwk",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.nwk",
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
         machinaResults = "{outdir}/machina/{sim}/machina_results.txt",
@@ -368,7 +377,7 @@ rule processMachinaResults:
 
 rule prepMetient:
     input:
-        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+        lamlTreeNoOrigin = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin.nwk",
         leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
         metientTree = "{outdir}/metient/{sim}/tree.txt",
@@ -382,7 +391,7 @@ rule prepMetient:
     shell:
         """
         # format tsv file and edge list
-        python {params.scripts}/metient/format_metient.py {input.lamlTree} {input.leafTissues} {params.primaryTissue} {params.outputdir}
+        python {params.scripts}/metient/format_metient.py {input.lamlTreeNoOrigin} {input.leafTissues} {params.primaryTissue} {params.outputdir}
         """
 
 rule runMetient:
