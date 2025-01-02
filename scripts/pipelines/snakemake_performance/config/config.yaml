@@ -24,7 +24,7 @@ logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
 beamJar: /grid/siepel/home_norepl/staklins/beam/beam.jar
 
 # set path to the beam model xml template file
-xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_mcmc_template_sim.xml
+xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_mcmc_template.xml
 
 # set the length of the simulation datasets in number of cell divisions
 generations: 250

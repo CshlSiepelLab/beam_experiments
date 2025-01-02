@@ -399,12 +399,9 @@ rule runBeam:
         mcmclength=$(( numTips * 250000 ))
         if (( mcmclength > {params.mcmclength} )); then
             mcmclength={params.mcmclength}
-        elif (( mcmclength < 5000000 )); then
-            mcmclength=5000000
+        elif (( mcmclength < 10000000 )); then
+            mcmclength=10000000
         fi
-
-        # To set a fixed length temporarily
-        mcmclength=200000000
 
         # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
         if [[ $numTissues -eq 1 ]]; then

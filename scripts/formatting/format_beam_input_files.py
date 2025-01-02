@@ -19,7 +19,7 @@ indel_matrix = pd.read_csv(indel_matrix_file, sep="\t", index_col=0)
 
 # replace mutation values with sequential values required for the editing model
 done = []
-mut_dict = {-1: 0}
+mut_dict = {-1: -1} # keep as a dropout site to replace later
 i = 1
 for vals in indel_matrix.values.tolist():
     for v in vals:
@@ -33,10 +33,14 @@ for vals in indel_matrix.values.tolist():
 indel_matrix = indel_matrix.replace(mut_dict)
 
 # get all indel proportions
-muts = np.array([v for vals in indel_matrix.values.tolist() for v in vals if v != 0])
+muts = np.array([v for vals in indel_matrix.values.tolist() for v in vals if v != 0 and v != -1])
 ordered_value_counts = np.unique(muts, return_counts=True)[1]
 sum_proportions = sum(ordered_value_counts)
 proportions = [str(count / sum_proportions) for count in ordered_value_counts]
+
+# replace the -1 with the largest value + 1 for dropout as the last column in tidetree
+max_val = max(mut_dict.values())
+mut_dict[-1] = max_val + 1
 
 # write mutation proportions for initial states in the edit model
 outfile_proportions = f"{outdir}/{outname}_edit_rate_proportions.txt"

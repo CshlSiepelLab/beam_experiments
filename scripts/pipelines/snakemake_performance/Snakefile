@@ -43,6 +43,7 @@ rule prepBeamInputs:
         fasta = "{outdir}/beam/{sim}/{sim}.fasta",
         dates = "{outdir}/beam/{sim}/{sim}_date_traits.csv",
         tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
     params:
         scripts = config['scripts'],
         generations = config['generations'],
@@ -66,6 +67,7 @@ rule runBeam:
         fasta = "{outdir}/beam/{sim}/{sim}.fasta",
         dates = "{outdir}/beam/{sim}/{sim}_date_traits.csv",
         tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
     output:
         terminalLog = "{outdir}/beam/{sim}/terminal_{num}.log",
         beamLog = "{outdir}/beam/{sim}/chain_{num}.log",
@@ -83,7 +85,7 @@ rule runBeam:
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {wildcards.outdir}/beam/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
+        initialEditRates=$(cat {input.editRateProportions} | tr '\\n' ' ')
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))

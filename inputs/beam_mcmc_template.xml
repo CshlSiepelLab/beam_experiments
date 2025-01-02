@@ -124,11 +124,11 @@
 
                 <!-- prior distributions on phylodynamic parameters -->
                 <prior id="birthRatePrior" name="distribution" x="@birthRate">
-                    <LogNormal name="distr" M="0" S="0.6"/>
+                    <Uniform name="distr" lower="0.0" upper="5.0"/>
                 </prior>
                 
                 <prior id="deathRatePrior" name="distribution" x="@deathRate">
-                    <LogNormal name="distr" M="-2" S="1.4"/>
+                    <Uniform name="distr" lower="0.0" upper="5.0"/>
                 </prior>
 
 
