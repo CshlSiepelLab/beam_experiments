@@ -144,7 +144,7 @@ rule downsampleInputsTree:
     output:
         downsampledSimMatrix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_char_matrix.tsv",
         downsampledLeafTissues = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_tissue_labels.tsv",
-        lamlTreeDownsampledNoOrigin = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_laml_trees_no_origin.nwk",
+        lamlTreeDownsampledNoOrigin = "{outdir}/downsampled_data/{sim}/threshold_{threshold}_downsampled_tree.nwk",
     params:
         outprefix = "{outdir}/downsampled_data/{sim}/threshold_{threshold}",
         scripts = config['scripts'],
@@ -175,10 +175,10 @@ rule prepBeamInputs:
     shell:
         """
         # write tip traits to new csv
-        sed 's/ /,/g' {input.downsampledLeafTissues} > {output.tissues}
+        tail -n +2 {input.downsampledLeafTissues} | sed 's/[[:space:]]/,/g' > {output.tissues}
 
         # write date trait
-        sed 's/ /,/g' {input.downsampledLeafTissues} | cut -d',' -f1 | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.downsampledLeafTissues})) > {output.dates}
+        tail -n +2 {input.downsampledLeafTissues} | sed 's/[[:space:]]/,/g' | cut -d',' -f1 | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.downsampledLeafTissues})) > {output.dates}
 
         # format fasta, re-label mutations sequentially, and get edit rate proportions for new mutation entries
         {params.scripts}/formatting/format_beam_input_files.py {input.downsampledSimMatrix} {params.outputdir}
@@ -242,7 +242,7 @@ rule runBeam:
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
         # use LAML starting tree from downsampled output
-        newick=$(cat {input.lamlTreeOriginal} )
+        newick=$(cat {input.lamlTreeDownsampledNoOrigin} )
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \

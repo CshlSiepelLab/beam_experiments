@@ -3,7 +3,7 @@ __default__:
   mem: '5G'
   logout: '{outdir}/job_logs/{wildcards.sim}/{rule}.out'
   logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}.err'
-  runtime: 24:00:00  # timelimit for all methods in hr:min:sec
+  runtime: 120:00:00  # timelimit for all methods in hr:min:sec
 
 downsampleInputsJaccard:
   cores: '{params.threads}'

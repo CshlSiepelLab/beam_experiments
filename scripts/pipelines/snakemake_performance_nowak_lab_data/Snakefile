@@ -396,12 +396,15 @@ rule runBeam:
         # set the mcmc chain length based on the number of tips in the tree
         # use a minimum of 5 million and a maximum of a user specified length
         numTips=$(grep -c '^>' {input.fasta})
-        mcmclength=$(( numTips * 250000 ))
+        mcmclength=$(( numTips * 1000000 ))
         if (( mcmclength > {params.mcmclength} )); then
             mcmclength={params.mcmclength}
-        elif (( mcmclength < 10000000 )); then
-            mcmclength=10000000
+        elif (( mcmclength < 30000000 )); then
+            mcmclength=30000000
         fi
+
+        # fix mcmc length to the specified number instead of dynamically calculating it based on the number of tips
+        mcmclength={params.mcmclength}
 
         # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
         if [[ $numTissues -eq 1 ]]; then

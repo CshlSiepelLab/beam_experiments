@@ -3,7 +3,7 @@
 inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/downsampling_test_100_tips_9_12_24"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_test_100_tips_12_31_24"
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_tree_test_100_tips_12_31_24"
 
 # downsampling thresholds
 thresholds:
@@ -13,8 +13,6 @@ thresholds:
   - 0.4
   - 0.3
   - 0.2
-  - 0.15
-  - 0.1
   - 0.0
 
 # set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
@@ -71,11 +69,10 @@ mcmcLength:
     '1.0': 15000000
     '0.75': 15000000
     '0.5': 15000000
+    '0.4': 20000000
     '0.3': 20000000
-    '0.2': 20000000
-    '0.15': 25000000
-    '0.1': 25000000
-    '0.0': 30000000
+    '0.2': 25000000
+    '0.0': 40000000
 
 # set the desired number of parallel mcmc chains to run
 numChains: 3
