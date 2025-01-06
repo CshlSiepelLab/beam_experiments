@@ -4,7 +4,7 @@ fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/d
 # fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/billy_bladder_cancer_data_7_1_24/fastq_raw"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_12_31_24_asv_cutoff_50"
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_6_25_asv_cutoff_50"
 # outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_22_24"
 
 # set the asv count threshold for filtering in evotracer

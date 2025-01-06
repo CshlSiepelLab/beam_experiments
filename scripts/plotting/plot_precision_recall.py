@@ -179,8 +179,8 @@ def posterior_threshold_metrics(posterior_probs, all_inferred_counts, true_count
         rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i, 'thresh_counts': thresh_counts})
     thresh_prec_rec = pd.DataFrame(rows)
 
-    # use the 70% posterior thresholded values as the final precision, recall, and f1 instead of the full posterior weighted values
-    t = 0.40
+    # use a specified t threshold to obtain posterior thresholded values as the final precision, recall, and f1 instead of the full posterior weighted values
+    t = 0.50
     # check that the max for the data is not below the threshold for the consensus graph
     if max_threshold < t:
         t = np.floor(max_threshold * 100) / 100
@@ -242,7 +242,7 @@ for true_tree_file in dirs:
     # get other files to compare
     machina_file = f"{dir}/machina/{sim}/machina_tree_all_tissue_labels.nwk"
     metient_file = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_migration_graphs.txt"
-    beast_posterior_file = f"{dir}/metastabayes/{sim}/combined.trees"
+    beast_posterior_file = f"{dir}/beam/{sim}/combined.trees"
     consensus_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk"
     random_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk"
     parsimony_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk"
@@ -406,7 +406,7 @@ for true_tree_file in dirs:
 
     # write metrics used for the plot to a file
     with open(outfile_metrics, "a") as file:
-        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{parsimony_f1},{parsimony_recall},{parsimony_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
+        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{parsimony_f1},{parsimony_recall},{parsimony_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
         file.write(data)
 
 all_thresh_df = pd.DataFrame(all_thresh_rows)

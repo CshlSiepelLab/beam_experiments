@@ -399,12 +399,12 @@ rule runBeam:
         mcmclength=$(( numTips * 1000000 ))
         if (( mcmclength > {params.mcmclength} )); then
             mcmclength={params.mcmclength}
-        elif (( mcmclength < 30000000 )); then
-            mcmclength=30000000
+        elif (( mcmclength < 50000000 )); then
+            mcmclength=50000000
         fi
 
-        # fix mcmc length to the specified number instead of dynamically calculating it based on the number of tips
-        mcmclength={params.mcmclength}
+        # # fix mcmc length to the specified number instead of dynamically calculating it based on the number of tips
+        # mcmclength={params.mcmclength}
 
         # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
         if [[ $numTissues -eq 1 ]]; then
