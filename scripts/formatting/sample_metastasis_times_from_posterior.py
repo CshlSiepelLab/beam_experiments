@@ -37,6 +37,7 @@ def rename_tree(tree):
 def level_order_traversal_met_events(tree, root_to_origin_height):
 
     met_times = {}
+    migrations = set()
 
     for node in tree.traverse("levelorder"):
         if node.is_root():
@@ -55,10 +56,15 @@ def level_order_traversal_met_events(tree, root_to_origin_height):
         if node_tissue != parent_tissue:
             migration = f"{parent_tissue}_{node_tissue}"
             migration_time = (parent_time, node_time)
-            if migration not in met_times:
-                met_times[migration] = [migration_time]
+            if migration not in migrations:
+                migrations.add(migration)
+                migration = migration + "_1"
+                met_times[migration] = migration_time
             else:
-                met_times[migration].append(migration_time)
+                existing_migrations = [key for key in met_times.keys() if migration in key]
+                i = max([int(key.split("_")[-1]) for key in existing_migrations]) + 1
+                migration = migration + "_" + str(i)
+                met_times[migration] = migration_time
     
     return met_times
 

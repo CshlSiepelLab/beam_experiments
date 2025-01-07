@@ -3,7 +3,7 @@
 export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_performance_yang_data
 
 snakemake \
---until runBeam \
+--until prepBeamInputs \
 --use-conda \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
