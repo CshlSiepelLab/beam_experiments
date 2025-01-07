@@ -8,6 +8,7 @@ import seaborn as sns
 from collections import defaultdict
 
 file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/test_metastasis_times.pkl"
+consensus_graph_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/chain_3_consensus_graph.csv"
 origin_time = 250   # given in days
 origin_tissue = "P"
 min_prob_threshold = 0.5
@@ -16,25 +17,31 @@ outfile = "./test_metastasis_times.pdf"
 with open(file_path, 'rb') as file:
     met_times = pkl.load(file)
 
-possible_migrations = set()
-migration_counts = defaultdict(lambda: np.zeros(origin_time + 1))
+allowable_migrations = set()
+with open(consensus_graph_file, 'r') as file:
+    for line in file:
+        migration, prob = line.strip().split(',')
+        if float(prob) >= min_prob_threshold:
+            allowable_migrations.add(migration)
 
-prob = 1/len(met_times)
+migration_counts = defaultdict(lambda: np.zeros(origin_time + 1))
 
 for graph in met_times.values():
     for migration, time in graph.items():
-        possible_migrations.add(migration)
+        if migration not in allowable_migrations:
+            continue
         start_range = round(time[0])
         end_range = round(time[1])
+        num_intervals = end_range - start_range + 1
+        prob = 1/(len(met_times)*num_intervals)
         migration_counts[migration][start_range:end_range+1] += prob
+
 
 df = pd.DataFrame(migration_counts, index=np.arange(0, origin_time + 1)).T
 
 # Split the migration strings into source and target tissues
 df.index = pd.MultiIndex.from_tuples([tuple([migration.split('_')[0], "_".join(migration.split('_')[1:])]) for migration in df.index], names=['source', 'target'])
 
-# remove rows without any time over the min probability threshold, indicating no high probability migrations from that source
-df = df.loc[df.max(axis=1) >= min_prob_threshold]
 remaining_sources = sorted(set(df.index.get_level_values('source').unique()) - {origin_tissue})
 remaining_sources.insert(0, origin_tissue)
 
@@ -55,16 +62,24 @@ tissue_colors = {tissue: palette[i] for i, tissue in enumerate(target_tissues_re
 
 for i, source in enumerate(remaining_sources):
     ax = axes[i]
+    y=0.1
     for target in target_tissues:
         if (source, target) in df.index:
+            y+=1
             if "_1" in target:
                 target_reformatted = target.split('_')[0]
             else:
                 target_reformatted = target
             sns.lineplot(x=df.columns, y=df.loc[(source, target)], ax=ax, color=tissue_colors[target_reformatted])
             ax.fill_between(df.columns, df.loc[(source, target)], alpha=0.3, color=tissue_colors[target_reformatted])
+            # non_zero_indices = np.nonzero(df.loc[(source, target)])[0]
+            # if len(non_zero_indices) > 0:
+            #     start = non_zero_indices[0]
+            #     end = non_zero_indices[-1]
+            #     ax.hlines(y=y, xmin=df.columns[start], xmax=df.columns[end], color=tissue_colors[target_reformatted], linewidth=5)
     ax.set_ylabel(source, fontsize=fs)
     ax.tick_params(axis='both', which='major', labelsize=fs)
+    # ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
     if i == len(remaining_sources) - 1:
         ax.set_xlabel('Time (days)', fontsize=fs)
 
@@ -75,6 +90,6 @@ fig.legend(handles, labels, bbox_to_anchor=(1.05, 0.75), title='Target Tissue', 
 
 fig.text(0.001, 0.5, 'Source tissue', va='center', ha='center', rotation='vertical', fontsize=fs)
 
-plt.tight_layout(rect=[0, 0, 0.85, 1])  # Adjust the layout to make room for the legend
+plt.tight_layout(rect=[0.02, 0, 0.88, 1])
 plt.savefig(outfile, bbox_inches='tight')
 plt.close()
