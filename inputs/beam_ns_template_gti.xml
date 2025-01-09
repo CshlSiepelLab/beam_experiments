@@ -56,14 +56,14 @@
                 <trait idref="dateTrait"/>
                 <taxonset idref="taxonset"/>
             </stateNode>
-            <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" dimension="$(numEditRates)">$(initialEditRates)</parameter>
+            <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" lower="0.0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0001</parameter>
             <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" id="mutationRate" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" lower="0.0" id="proportionInvariant" name="stateNode" upper="1.0">0.0</parameter>
             <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="$(generations).0001">$(generations).001</parameter>
             
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="$(numTissueRates)" name="stateNode">1.0</parameter>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" lower="0.0" dimension="$(numTissueRates)" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
             <parameter id="tissueRateIndicators" spec="parameter.BooleanParameter" dimension="$(numTissueRates)" name="stateNode">true</parameter>
 

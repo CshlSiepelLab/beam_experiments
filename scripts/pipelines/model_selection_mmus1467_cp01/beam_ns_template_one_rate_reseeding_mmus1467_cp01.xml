@@ -56,14 +56,14 @@
                 <trait idref="dateTrait"/>
                 <taxonset idref="taxonset"/>
             </stateNode>
-            <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" dimension="37">.0888888888 .4666666666 .0370370370 .0518518518 .0074074074 .0296296296 .0148148148 .0296296296 .0074074074 .0222222222 .0148148148 .0074074074 .0074074074 .0074074074 .0148148148 .0148148148 .0074074074 .0074074074 .0074074074 .0222222222 .0074074074 .0074074074 .0074074074 .0074074074 .0148148148 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074</parameter>
+            <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" lower="0.0" dimension="37">.0888888888 .4666666666 .0370370370 .0518518518 .0074074074 .0296296296 .0148148148 .0296296296 .0074074074 .0222222222 .0148148148 .0074074074 .0074074074 .0074074074 .0148148148 .0148148148 .0074074074 .0074074074 .0074074074 .0222222222 .0074074074 .0074074074 .0074074074 .0074074074 .0148148148 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074 .0074074074</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0001</parameter>
             <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" id="mutationRate" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" lower="0.0" id="proportionInvariant" name="stateNode" upper="1.0">0.0</parameter>
             <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="420.0001">420.001</parameter>
             
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" dimension="3" name="stateNode">1.0</parameter>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" lower="0.0" dimension="3" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
 
             <!-- birth rate corresponds to cell division rate -->
