@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 
 import sys
-import os
-import re
 from ete3 import Tree
 from copy import deepcopy
 import dendropy
-from multiprocessing import Pool
-from collections import deque
-import csv
 import pickle as pkl
 
 def rename_tree(tree):
@@ -34,7 +29,7 @@ def rename_tree(tree):
 
     return ete_tree
 
-def level_order_traversal_met_events(tree, root_to_origin_height):
+def level_order_traversal_met_events(tree, origin_to_root_height):
 
     met_times = {}
     migrations = set()
@@ -42,14 +37,14 @@ def level_order_traversal_met_events(tree, root_to_origin_height):
     for node in tree.traverse("levelorder"):
         if node.is_root():
             parent_tissue = origin_tissue
-            parent_time = origin_time
-            node_time = root_to_origin_height
+            parent_time = 0 # origin is at the start of the experiment so time is 0
+            node_time = origin_to_root_height # time from the start ofthe experiment to the root of the tree, so origin - total tree height
         else:
             parent_node = node.up
             parent_tissue = parent_node.name.split("_")[-1]
             root = tree.get_tree_root()
-            parent_time = root_to_origin_height + root.get_distance(parent_node.name)
-            node_time = root_to_origin_height + root.get_distance(node.name)
+            parent_time = origin_to_root_height + root.get_distance(parent_node.name)
+            node_time = origin_to_root_height + root.get_distance(node.name)
 
         node_tissue = node.name.split("_")[-1]
 
@@ -79,11 +74,16 @@ def is_ultrametric(tree):
         
 
 # user inputs
-posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/chain_3.trees"
-origin_time = 250
-origin_tissue = "P"
-outfile = "./test_metastasis_times.pkl"
-cores=1
+posterior_file = str(sys.argv[1])
+origin_time = float(sys.argv[2])
+origin_tissue = str(sys.argv[3])
+outfile = str(sys.argv[4])
+
+# # testing
+# posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/chain_3.trees"
+# origin_time = 250
+# origin_tissue = "P"
+# outfile = "./test_metastasis_times.pkl"
 
 # process beast posterior
 burnin_percent = 0.1
@@ -108,10 +108,10 @@ for tree in beast_tree_list:
     tree_height = named_tree.get_farthest_leaf()[1]
 
     # calculate the time from the root to the origin, which is not output directly by BEAM so needs to be considered independently
-    root_to_origin_height = origin_time - tree_height
+    origin_to_root_height = origin_time - tree_height
 
     # traverse the tree to get the times of all metastatic envents in the migration graph implied by the tree
-    timed_met_events = level_order_traversal_met_events(named_tree, root_to_origin_height)
+    timed_met_events = level_order_traversal_met_events(named_tree, origin_to_root_height)
 
     # record met events with the sample number in the posterior
     all_met_events[tree.label.split(" ")[1]] = timed_met_events

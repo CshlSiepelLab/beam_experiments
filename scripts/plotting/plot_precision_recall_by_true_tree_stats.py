@@ -15,8 +15,8 @@ import pickle
 # tree_stats_path = sys.argv[2]
 
 # testing
-file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_12_31_24_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/precision_recall_vars.pkl"
-tree_stats_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_12_31_24_uniform_50cells_50sites_data_7_24_24/true_tree_stats.txt"
+file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_6_25_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/precision_recall_vars.pkl"
+tree_stats_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_6_25_uniform_50cells_50sites_data_7_24_24/true_tree_stats.txt"
 
 outdir = os.path.dirname(file)
 

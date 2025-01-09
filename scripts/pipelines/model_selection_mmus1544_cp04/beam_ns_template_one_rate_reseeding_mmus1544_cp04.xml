@@ -58,7 +58,7 @@
             </stateNode>
             <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" dimension="4">.6363636363 .1818181818 .0909090909 .0909090909</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0001</parameter>
-            <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">.0016</parameter>
+            <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" id="mutationRate" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" lower="0.0" id="proportionInvariant" name="stateNode" upper="1.0">0.0</parameter>
             <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="224.0001">224.001</parameter>

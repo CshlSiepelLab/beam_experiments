@@ -3,7 +3,7 @@
 # need an environment with ete3 installed
 # mamba activate compare_trees
 
-posterior_files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_12_31_24_uniform_50cells_50sites_data_7_24_24/beam -type f -name "combined.trees")
+posterior_files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_6_25_uniform_50cells_50sites_data_7_24_24/beam -type f -name "combined.trees")
 
 num_cpus=80
 

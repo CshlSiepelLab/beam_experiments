@@ -231,8 +231,12 @@ rule combineBeamChains:
         done
 
         # combine logs and trees that passed
-        {params.logcombiner} $log_files -o {output.combinedLog}
-        {params.logcombiner} $trees_files -o {output.combinedTrees}
+        if [ -n "$log_files" ]; then
+            {params.logcombiner} $log_files -o {output.combinedLog}
+            {params.logcombiner} $trees_files -o {output.combinedTrees}
+        else
+            echo "No chains passed the ESS threshold of {params.essCutoff}, so not combining any chains"
+        fi
         """
 
 rule convertTreePosteriorToGraphPosterior:

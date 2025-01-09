@@ -20,7 +20,18 @@ def plot_f1_score(csv_path, output_dir):
     # Create a boxplot for all f1 columns
     plt.figure()
     fs=18
-    sns.boxplot(data=data_f1, orient='v', showfliers=False)
+
+    colors = {
+        'BEAM': 'lightgrey',
+        'Random': 'darkgrey',
+        'Parsimony': 'purple',
+        'MACHINA': 'red',
+        'Metient': 'green',
+        'Consensus': 'blue',
+    }
+    colors = [colors[col] for col in data_f1.columns]
+
+    sns.boxplot(data=data_f1, orient='v', showfliers=False, palette=colors, boxprops=dict(edgecolor="black", alpha=0.9), whiskerprops=dict(color="black"), capprops=dict(color="black"), medianprops=dict(color="black"))
     sns.stripplot(data=data_f1, orient='v', color='black', alpha=0.5)
     plt.ylabel('F1 score', fontsize=fs)
     plt.xticks(rotation=45, fontsize=fs)

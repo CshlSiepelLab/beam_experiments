@@ -58,7 +58,7 @@
             </stateNode>
             <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" dimension="$(numEditRates)">$(initialEditRates)</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0001</parameter>
-            <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">.0016</parameter>
+            <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" id="mutationRate" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" lower="0.0" id="proportionInvariant" name="stateNode" upper="1.0">0.0</parameter>
             <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="$(generations).0001">$(generations).001</parameter>
@@ -97,9 +97,7 @@
                 </prior>
 
                 <prior id="ClockPrior.c" name="distribution" x="@clockRate.c">
-                    <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.5</parameter>
-                    </Exponential>
+                    <Uniform name="distr" lower="0.0" upper="Infinity"/>
                 </prior>
 
                 <prior id="relativeGeoRatesPrior.s:tissue" name="distribution" x="@relativeGeoRates.s:tissue">
@@ -108,9 +106,7 @@
                     </Exponential>
                 </prior>
                 <prior id="geoclockPrior.c:tissue" name="distribution" x="@traitClockRate.c:tissue">
-                    <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">1.0</parameter>
-                    </Exponential>
+                    <Uniform name="distr" lower="0.0" upper="Infinity"/>
                 </prior>
 
                 <!-- prior distributions on phylodynamic parameters -->

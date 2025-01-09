@@ -14,6 +14,9 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
         mouse_fastqs[mouse] = []
     mouse_fastqs[mouse].append(file)
 
+# temporarily skip mouse
+mice = [m for m in mice if m != "MMUS1466"]
+
 
 def get_elements_from_file(path):
     filename = f"{path}/cp_list.txt"
@@ -49,6 +52,8 @@ rule all:
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/beam_information/{mouse}/{cp}/{num}/terminal_{num}.log", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numRunsNs']+1), mouse=m) for m in mice],
+        [expand("{outdir}/beam/{mouse}/{cp}/metastasis_timing.pdf", outdir=config['outdir'], 
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice]
                 
 
 rule runEvotracer:
@@ -571,6 +576,44 @@ rule sampleFromBeamPosteriorGraphs:
     shell:
         """
         python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.numGraphs}
+        """
+
+rule sampleBeamMetastasisTiming:
+    input:
+        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees",
+    output:
+        metastasisTiming = "{outdir}/beam/{mouse}/{cp}/metastasis_timing.pkl"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        outdir = "{outdir}/beam/{mouse}/{cp}",
+        threads = 1
+    conda:
+        "../../envs/compare_trees.yaml"
+    shell:
+        """
+        python {params.scripts}/formatting/sample_metastasis_times_from_posterior.py {input.combinedTrees} {params.experimentTime} {params.primaryTissue} {output.metastasisTiming}
+        """
+
+rule plotBeamMetastasisTiming:
+    input:
+        metastasisTiming = "{outdir}/beam/{mouse}/{cp}/metastasis_timing.pkl",
+        graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv"
+    output:
+        metastasisTimingPlot = "{outdir}/beam/{mouse}/{cp}/metastasis_timing.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        outdir = "{outdir}/beam/{mouse}/{cp}",
+        consensusThreshold = 0.5,
+        threads = 1
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_metastasis_times.py {input.metastasisTiming} {input.graphPosterior} {params.experimentTime} {params.primaryTissue} {params.consensusThreshold} {output.metastasisTimingPlot}
         """
 
 rule prepMachina:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import pickle as pkl
 import pandas as pd
 import numpy as np
@@ -7,12 +8,21 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from collections import defaultdict
 
-file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/test_metastasis_times.pkl"
-consensus_graph_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/chain_3_consensus_graph.csv"
-origin_time = 250   # given in days
-origin_tissue = "P"
-min_prob_threshold = 0.5
-outfile = "./test_metastasis_times.pdf"
+# user input
+file_path = sys.argv[1]
+consensus_graph_file = sys.argv[2]
+origin_time = int(sys.argv[3])  # given in days
+origin_tissue = sys.argv[4]
+min_prob_threshold = float(sys.argv[5])
+outfile = sys.argv[6]
+
+# # testing
+# file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_6_25_asv_cutoff_50/beam/MMUS1544/CP01/metastasis_timing.pkl"
+# consensus_graph_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_6_25_asv_cutoff_50/beam/MMUS1544/CP01/posterior_prob_graph.csv"
+# origin_time = 224   # given in days
+# origin_tissue = "PRL"
+# min_prob_threshold = 0.50
+# outfile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_6_25_asv_cutoff_50/beam/MMUS1544/CP01/metastasis_timing.pdf"
 
 with open(file_path, 'rb') as file:
     met_times = pkl.load(file)
@@ -30,9 +40,10 @@ for graph in met_times.values():
     for migration, time in graph.items():
         if migration not in allowable_migrations:
             continue
+        print(migration, time)
         start_range = round(time[0])
         end_range = round(time[1])
-        num_intervals = end_range - start_range + 1
+        num_intervals = start_range - end_range + 1
         prob = 1/(len(met_times)*num_intervals)
         migration_counts[migration][start_range:end_range+1] += prob
 
@@ -52,7 +63,7 @@ tissues = sorted(set(df.index.get_level_values('source')).union(target_tissues_n
 tissues.insert(0, origin_tissue)
 
 # Create a grid of subplots with one row per source tissue
-fig, axes = plt.subplots(len(remaining_sources), 1, figsize=(15,3 * len(remaining_sources)), sharex=True, sharey=True)
+fig, axes = plt.subplots(len(remaining_sources), 1, figsize=(15, 3 * len(remaining_sources)), sharex=True, sharey=True)
 fs = 22
 
 # Create a color palette for the tissues
@@ -61,7 +72,10 @@ target_tissues_reformatted = [tissue.split('_')[0] if "_1" in tissue else tissue
 tissue_colors = {tissue: palette[i] for i, tissue in enumerate(target_tissues_reformatted)}
 
 for i, source in enumerate(remaining_sources):
-    ax = axes[i]
+    if len(remaining_sources) == 1:
+        ax = axes
+    else:
+        ax = axes[i]
     y=0.1
     for target in target_tissues:
         if (source, target) in df.index:
