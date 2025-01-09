@@ -40,10 +40,10 @@ for graph in met_times.values():
     for migration, time in graph.items():
         if migration not in allowable_migrations:
             continue
-        print(migration, time)
+        # range is from origin at 0 to the end of experiment at origin_time
         start_range = round(time[0])
         end_range = round(time[1])
-        num_intervals = start_range - end_range + 1
+        num_intervals = end_range - start_range + 1
         prob = 1/(len(met_times)*num_intervals)
         migration_counts[migration][start_range:end_range+1] += prob
 
