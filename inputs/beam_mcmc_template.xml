@@ -60,8 +60,6 @@
 
             <!-- the clock rate is the rate of acquiring edited state -->
             <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
-            <!-- the mutation rate could be another rate multiplier, but we leave it fixed to 1 -->
-            <parameter spec="parameter.RealParameter" estimate="false" id="mutationRate" name="stateNode">1.0</parameter>
             <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="$(generations).0001">$(generations).001</parameter>
             <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" lower="0.0" dimension="$(numTissueRates)" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
@@ -126,8 +124,8 @@
             
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 
-                <distribution id="treeLikelihood" spec="beam.likelihood.BeamBeagleTreeLikelihood" origin="@origin" data="@alignment" tree="@tree" siteModel="@siteModel">
-                    <siteModel spec="SiteModel" id="siteModel" mutationRate="@mutationRate" proportionInvariant="@proportionInvariant" gammaCategoryCount="0" substModel="@substModel">
+                <distribution id="treeLikelihood" spec="beam.likelihood.BeamBeagleTreeLikelihood" origin="@origin" data="@alignment" tree="@tree">
+                    <siteModel spec="SiteModel" id="siteModel" mutationRate="1.0" gammaCategoryCount="1">
                         <substModel id="substModel" spec="beam.substitutionmodel.BeamGeneralMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="$(generations)" editDuration="$(generations)">
                             <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
                         </substModel>
@@ -135,11 +133,10 @@
                     <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c"/>
                 </distribution>
                 
-                <distribution id="traitLikelihood" spec="beam.likelihood.BeamAncestralStateBeagleTreeLikelihood" origin="@origin" tag="location" tree="@tree" data="@tissue">
-                    <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1">
-                        <parameter id="mutationRate.s:tissue" spec="parameter.RealParameter" estimate="false" name="mutationRate">1.0</parameter>
+                <distribution id="traitLikelihood" spec="beam.likelihood.BeamBeagleAncestralTissueLikelihood" origin="@origin" tag="location" tree="@tree" data="@tissue">
+                    <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1" mutationRate="1.0">
                         <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
-                        <substModel id="svs.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModel" rates="@relativeGeoRates.s:tissue" rateIndicator="@tissueRateIndicators" symmetric="false">
+                        <substModel id="substModelMigration" spec="beam.substitutionmodel.BeamGtiTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
                                 <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="$(numTissues)" name="frequencies">$(tissueRootFreqs)</parameter>
                             </frequencies>
@@ -190,7 +187,7 @@
             <log idref="clockRate.c"/>
             <log idref="relativeGeoRates.s:tissue"/>
             <log idref="traitClockRate.c:tissue"/>
-            <log id="geoSubstModelLogger.s:tissue" spec="beastclassic.evolution.substitutionmodel.SVSGeneralSubstitutionModelLogger" dataType="@codeMap" model="@svs.s:tissue"/>
+            <log id="geoSubstModelLogger.s:tissue" spec="beam.substitutionmodel.BeamGtiTissueSubstitutionModelLogger" dataType="@codeMap" model="@substModelMigration"/>
             <log idref="treeLikelihood"/>
             <log idref="traitLikelihood"/>
             <log idref="birthRate"/>

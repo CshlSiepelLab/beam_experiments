@@ -250,7 +250,6 @@ rule prepBeamInputs:
         mutation_dict = "{outdir}/beam/{mouse}/mutation_dict.tsv"
     output:
         fasta = "{outdir}/beam/{mouse}/{cp}/{cp}.fasta",
-        dates = "{outdir}/beam/{mouse}/{cp}/{cp}_date_traits.csv",
         tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv",
         editRateProportions = "{outdir}/beam/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
         expandedClonesMatrix = "{outdir}/beam/{mouse}/{cp}/expanded_clones_matrix.tsv",
@@ -274,15 +273,11 @@ rule prepBeamInputs:
 
         # make output files
         fasta={params.outdir}/{wildcards.cp}.fasta
-        dates={params.outdir}/{wildcards.cp}_date_traits.csv
         tissues={params.outdir}/{wildcards.cp}_tip_tissues.csv
         editRateProportions={params.outdir}/{wildcards.cp}_edit_rate_proportions.txt
 
         # write tip traits to new csv
         tail -n +2 $tissuesFile | grep -v '^$' | cut -f1,2 | tr '\\t' ',' > $tissues
-
-        # write date trait
-        tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > $dates
 
         # get edit rate proportions for new mutation entries, relative so they all sum to 1.0
         all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\\t' ' ' | tr '\\n' ' ')
@@ -431,8 +426,6 @@ rule runBeam:
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
         numTissueRates=$(( numTissues * (numTissues - 1) ))
-        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
-        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
 
         tissueCodeMap=""
         trailingCodeMap="? = "
@@ -464,7 +457,6 @@ rule runBeam:
         -D initialEditRates=\"$initialEditRates\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
-        -D equalTissueFreqs=\"$equalTissueFreqs\" \
         -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D mcmclength=\"$mcmclength\" \
         -D outname=chain_{wildcards.num} \
@@ -1042,8 +1034,6 @@ rule runBeamInformation:
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
         numTissueRates=$(( numTissues * (numTissues - 1) ))
-        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
-        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
 
         tissueCodeMap=""
         trailingCodeMap="? = "
@@ -1075,7 +1065,6 @@ rule runBeamInformation:
         -D initialEditRates=\"$initialEditRates\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
-        -D equalTissueFreqs=\"$equalTissueFreqs\" \
         -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D outname=chain_{wildcards.num} \
         -D numParticles={params.numNsParticles} \
