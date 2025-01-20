@@ -11,34 +11,23 @@ outdir = config['outdir']
 
 rule all:
     input:
-        expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
-        expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/beam/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
-        expand("{outdir}/beam/{sim}/combined.log", sim=sims, outdir=outdir),
-        expand("{outdir}/beam/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
-        expand("{outdir}/beam/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
-        expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
-        f"{outdir}/precision_recall_curve/precision_recall.pdf",
-        expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
-
-rule copyDataToOutDir:
-    input:
-        lambda wildcards: os.path.join(config['inputpath'], wildcards.sim)
-    output:
-        os.path.join(outdir, "raw_data/{sim}", "done")
-    shell:
-        """
-        outdir=$(dirname $(dirname {output}))
-        cp -r {input} $outdir
-        touch {output}
-        """
+        # expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+        # expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
+        # expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        # expand("{outdir}/beam/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
+        # expand("{outdir}/beam/{sim}/combined.log", sim=sims, outdir=outdir),
+        # expand("{outdir}/beam/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
+        # expand("{outdir}/beam/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
+        # expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
+        # f"{outdir}/precision_recall_curve/precision_recall.pdf",
+        # expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
+        expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 2), outdir=outdir),
+        expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 2), outdir=outdir),
 
 
 rule runCassiopeia:
     input:
-        os.path.join(outdir, "raw_data/{sim}", "done"),
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
     output:
         "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
     params:
@@ -54,7 +43,7 @@ rule runCassiopeia:
 
 rule runLAML:
     input:
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
         casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
     output:
         lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
@@ -92,12 +81,10 @@ rule runLAML:
 
 rule prepBeamInputs:
     input:
-        os.path.join(outdir, "raw_data/{sim}", "done"),
-        sim_matrix = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "*_indel_character_matrix.tsv")),
-        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling")),
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
+        leafTissues = lambda wildcards: glob.glob(os.path.join(config['inputpath'], wildcards.sim,"cell_tree_*[0-9].labeling")),
     output:
         fasta = "{outdir}/beam/{sim}/{sim}.fasta",
-        dates = "{outdir}/beam/{sim}/{sim}_date_traits.csv",
         tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
         editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
     params:
@@ -111,9 +98,6 @@ rule prepBeamInputs:
         # write tip traits to new csv
         sed 's/ /,/g' {input.leafTissues} > {output.tissues}
 
-        # write date trait
-        sed 's/ /,/g' {input.leafTissues} | cut -d',' -f1 | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.leafTissues})) > {output.dates}
-
         # format fasta, re-label mutations sequentially, and get edit rate proportions for new mutation entries
         {params.scripts}/formatting/format_beam_input_files.py {input.sim_matrix} {params.outputdir}
         """
@@ -121,7 +105,6 @@ rule prepBeamInputs:
 rule runBeam:
     input:
         fasta = "{outdir}/beam/{sim}/{sim}.fasta",
-        dates = "{outdir}/beam/{sim}/{sim}_date_traits.csv",
         tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
         editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
         lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
@@ -130,7 +113,7 @@ rule runBeam:
         beamLog = "{outdir}/beam/{sim}/chain_{num}.log",
         beamResult = "{outdir}/beam/{sim}/chain_{num}.trees"
     params:
-        xml = config['xml'],
+        xml = config['gtrXml'],
         fileDir = "{outdir}/beam/{sim}",
         beamJar = config['beamJar'],
         generations = config['generations'],
@@ -158,9 +141,7 @@ rule runBeam:
         fi
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
-        numTissueRates=$(( numTissues * (numTissues - 1) ))
-        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
-        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
+        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
 
         tissueCodeMap=""
         trailingCodeMap="? = "
@@ -192,7 +173,6 @@ rule runBeam:
         -D initialEditRates=\"$initialEditRates\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
-        -D equalTissueFreqs=\"$equalTissueFreqs\" \
         -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D mcmclength={params.mcmclength} \
         -D outname=chain_{wildcards.num} \
@@ -292,7 +272,7 @@ rule plotSampledPosteriorGraphs:
 rule runRandomAndConsensusTissueInference:
     input:
         lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.nwk",
-        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
+        leafTissues = lambda wildcards: glob.glob(os.path.join(config['inputpath'], wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
         randomResult = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk",
         consensusResult = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk",
@@ -310,7 +290,7 @@ rule runRandomAndConsensusTissueInference:
 rule runMachina:
     input:
         lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.nwk",
-        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
+        leafTissues = lambda wildcards: glob.glob(os.path.join(config['inputpath'], wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
         machinaResults = "{outdir}/machina/{sim}/machina_results.txt",
         machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
@@ -382,7 +362,7 @@ rule processMachinaResults:
 rule prepMetient:
     input:
         lamlTreeNoOrigin = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin.nwk",
-        leafTissues = lambda wildcards: glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim,"cell_tree_*[0-9].labeling"))
+        leafTissues = lambda wildcards: glob.glob(os.path.join(config['inputpath'], wildcards.sim,"cell_tree_*[0-9].labeling"))
     output:
         metientTree = "{outdir}/metient/{sim}/tree.txt",
         metientTsv = "{outdir}/metient/{sim}/metadata.tsv"
@@ -419,9 +399,8 @@ rule runMetient:
 
 rule labelTrueTreeWithTissues:
     input:
-        copiedData = os.path.join(outdir, "raw_data/{sim}", "done"),
-        true_tree = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*[0-9].nwk")),
-        true_tissues = lambda wildcards : glob.glob(os.path.join(wildcards.outdir, "raw_data", wildcards.sim, "cell_tree_seed*.vertex.labeling"))
+        true_tree = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "cell_tree_seed*[0-9].nwk")),
+        true_tissues = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "cell_tree_seed*.vertex.labeling"))
     output:
         "{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk"
     params:
@@ -476,5 +455,162 @@ rule plotPrecisionRecall:
         true_trees=$(echo {input.trueTrees} | tr ' ' ',')
         python {params.scripts}/plotting/plot_precision_recall.py $true_trees {params.primaryTissue} {params.outputdir}
         python {params.scripts}/plotting/plot_f1_score.py {params.outputdir}/metrics.csv {params.outputdir}
+        """
+
+
+rule runBeamGtrNs:
+    input:
+        fasta = "{outdir}/beam/{sim}/{sim}.fasta",
+        tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
+        lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+    output:
+        terminalLog = "{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log",
+        beamLog = "{outdir}/beam_gtr_ns/{sim}/chain_{num}.log",
+        beamResult = "{outdir}/beam_gtr_ns/{sim}/chain_{num}.trees"
+    params:
+        xml = config['gtrXml'],
+        inFileDir = "{outdir}/beam/{sim}",
+        fileDir = "{outdir}/beam_gtr_ns/{sim}",
+        beamJar = config['beamJar'],
+        generations = config['generations'],
+        mcmclength = config['mcmcLength'],
+        primaryTissue = config['primaryTissue'],
+        threads = config['threads']
+    shell:
+        """
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {input.editRateProportions} | tr '\\n' ' ')
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
+
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+
+        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
+        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
+            numTissues=$(( numTissues + 1 ))
+        fi
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
+        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
+
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
+
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+
+        # use LAML starting tree
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+        java -Xmx10g -jar {params.beamJar} \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.sim} \
+        -D fileDir={params.inFileDir} \
+        -D newick=\"$newick\" \
+        -D generations={params.generations} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D mcmclength={params.mcmclength} \
+        -D outname=chain_{wildcards.num} \
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
+
+rule runBeamRandomNs:
+    input:
+        fasta = "{outdir}/beam/{sim}/{sim}.fasta",
+        tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
+        lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+    output:
+        terminalLog = "{outdir}/beam_random_ns/{sim}/terminal_{num}.log",
+        beamLog = "{outdir}/beam_random_ns/{sim}/chain_{num}.log",
+        beamResult = "{outdir}/beam_random_ns/{sim}/chain_{num}.trees"
+    params:
+        xml = config['randomXml'],
+        inFileDir = "{outdir}/beam/{sim}",
+        fileDir = "{outdir}/beam_random_ns/{sim}",
+        beamJar = config['beamJar'],
+        generations = config['generations'],
+        mcmclength = config['mcmcLength'],
+        primaryTissue = config['primaryTissue'],
+        threads = config['threads']
+    shell:
+        """
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {input.editRateProportions} | tr '\\n' ' ')
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
+
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+
+        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
+        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
+            numTissues=$(( numTissues + 1 ))
+        fi
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
+        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
+
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
+
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+
+        # use LAML starting tree
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+        java -Xmx10g -jar {params.beamJar} \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.sim} \
+        -D fileDir={params.inFileDir} \
+        -D newick=\"$newick\" \
+        -D generations={params.generations} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D mcmclength={params.mcmclength} \
+        -D outname=chain_{wildcards.num} \
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 

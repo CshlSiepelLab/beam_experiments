@@ -11,7 +11,7 @@ runMachina:
 
 runBeam:
   cores: '{params.threads}'
-  mem: '2G' # need total of 5GB for java BEAST2 submission command in the Snakefile
+  mem: '2G'
 
 plotPrecisionRecall:
   cores: 1
@@ -26,5 +26,13 @@ runMetient:
 runLAML:
   cores: '{params.threads}'
   mem: '5G'
+
+runBeamGtrNs:
+  cores: '{params.threads}'
+  mem: '2G'
+
+runBeamRandomNs:
+  cores: '{params.threads}'
+  mem: '2G'
 
   

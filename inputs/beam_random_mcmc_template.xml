@@ -46,27 +46,21 @@
 </data>
 
 
-
-<run id="mcmc" spec="MCMC" chainLength="$(mcmclength)">
+<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="10" subChainLength="10000" epsilon="1e-10">
+<!-- <run id="mcmc" spec="MCMC" chainLength="$(mcmclength)"> -->
         <state id="state" spec="State" storeEvery="5000">
             <stateNode id="tree" spec="beam.tree.BeamStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)">
                 <taxonset id="taxonset" spec="TaxonSet" alignment="@alignment"/>
             </stateNode>
 
             <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" lower="0.0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
-
-            <!-- optional silencing rate if silencing is being modeled -->
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0001</parameter>
+            <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">0.0001</parameter>
 
-            <!-- the clock rate is the rate of acquiring edited state -->
-            <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
-            <parameter id="origin" spec="parameter.RealParameter" name="stateNode" upper="$(generations).0001">$(generations).001</parameter>
             <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" lower="0.0" dimension="$(numTissueRates)" name="stateNode">1.0</parameter>
-            <parameter id="traitClockRate.c:tissue" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
+            <parameter id="traitClockRate" spec="parameter.RealParameter" name="stateNode">0.0001</parameter>
 
-            <!-- birth rate corresponds to cell division rate -->
             <parameter id="birthRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.6</parameter>
-            <!-- death rate corresponds to apoptosis rate -->
             <parameter id="deathRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.01</parameter>
 
         </state>
@@ -77,7 +71,7 @@
             <distribution id="prior" spec="CompoundDistribution">
 
                 <distribution id="birthDeathSamplingModel" spec="bdsky.evolution.speciation.BirthDeathSkylineModel"
-                          conditionOnSurvival="True" tree="@tree" origin="@origin" contemp="true"
+                          conditionOnSurvival="True" tree="@tree" origin="$(generations).0001" contemp="true"
                           birthRate="@birthRate" deathRate="@deathRate" rho="1.0"
                           samplingRate="0.0" >
                 </distribution>
@@ -88,7 +82,6 @@
                     </Exponential>
                 </prior>
 
-                <!-- optional silencing rate prior if silencing is being modeled -->
                 <prior id="silencingRatePrior" name="distribution" x="@silencingRate">
                     <Exponential name="distr">
                         <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.0001</parameter>
@@ -96,20 +89,11 @@
                 </prior>
 
                 <prior id="ClockPrior.c" name="distribution" x="@clockRate.c">
-                    <Uniform name="distr" lower="0.0" upper="Infinity"/>
-                </prior>
-
-                <prior id="relativeGeoRatesPrior.s:tissue" name="distribution" x="@relativeGeoRates.s:tissue">
                     <Exponential name="distr">
                         <parameter spec="parameter.RealParameter" estimate="false" name="mean">1.0</parameter>
                     </Exponential>
                 </prior>
-                <prior id="geoclockPrior.c:tissue" name="distribution" x="@traitClockRate.c:tissue">
-                    <Uniform name="distr" lower="0.0" upper="Infinity"/>
-                </prior>
 
-
-                <!-- prior distributions on phylodynamic parameters -->
                 <prior id="birthRatePrior" name="distribution" x="@birthRate">
                     <Uniform name="distr" lower="0.0" upper="5.0"/>
                 </prior>
@@ -124,25 +108,24 @@
             
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 
-                <distribution id="treeLikelihood" spec="beam.likelihood.BeamBeagleTreeLikelihood" origin="@origin" data="@alignment" tree="@tree">
+                <distribution id="treeLikelihood" spec="beam.likelihood.BeamBeagleTreeLikelihood" origin="$(generations).0001" data="@alignment" tree="@tree">
                     <siteModel spec="SiteModel" id="siteModel" mutationRate="1.0" gammaCategoryCount="1">
-                        <substModel id="substModel" spec="beam.substitutionmodel.BeamGeneralMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="$(generations)" editDuration="$(generations)">
+                        <substModel id="substModel" spec="beam.substitutionmodel.BeamMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="$(generations)" editDuration="$(generations)">
                             <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
                         </substModel>
                     </siteModel>
                     <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c"/>
                 </distribution>
                 
-                <distribution id="traitLikelihood" spec="beam.likelihood.BeamBeagleAncestralTissueLikelihood" origin="@origin" tag="location" tree="@tree" data="@tissue">
+                <distribution id="traitLikelihood" spec="beam.likelihood.BeamBeagleAncestralTissueLikelihood" origin="$(generations).0001" tag="location" tree="@tree" data="@tissue">
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1" mutationRate="1.0">
-                        <parameter id="gammaShape.s:tissue" spec="parameter.RealParameter" estimate="false" name="shape">1.0</parameter>
-                        <substModel id="substModelMigration" spec="beam.substitutionmodel.BeamGtiTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue">
+                        <substModel id="substModelMigration" spec="beam.substitutionmodel.BeamRandomTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
                                 <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="$(numTissues)" name="frequencies">$(tissueRootFreqs)</parameter>
                             </frequencies>
                         </substModel>
                     </siteModel>
-                    <branchRateModel id="StrictClockModel.c:tissue" spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@traitClockRate.c:tissue"/>
+                    <branchRateModel id="StrictClockModel.c:tissue" spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@traitClockRate"/>
                 </distribution>
                 
             </distribution>
@@ -160,11 +143,6 @@
     <operator id="editRateScaler" spec="DeltaExchangeOperator" parameter="@editRate" weight="3.0"/>
     <operator id="clockRateScaler" spec="ScaleOperator" parameter="@clockRate.c" scaleFactor="0.8" weight="3.0"/>
     <operator id="silencingRateScaler" spec="ScaleOperator" parameter="@silencingRate" scaleFactor="0.8" weight="3.0"/>
-        
-    <!-- operators on ancestral state model sparameters -->
-    <operator id="georateScaler.s:tissue" spec="ScaleOperator" parameter="@relativeGeoRates.s:tissue" scaleAllIndependently="true" scaleFactor="0.99" weight="30.0"/>
-    <operator id="geoMuScaler.c:tissue" spec="ScaleOperator" parameter="@traitClockRate.c:tissue" scaleFactor="0.8" weight="3.0"/>
-    
 
     <!-- Operators on phylodynamic parameters -->
     <operator id="birthRateScaler" spec="ScaleOperator" parameter="@birthRate" scaleFactor="0.8" weight="3.0"/>
@@ -186,8 +164,8 @@
             <log idref="silencingRate" />
             <log idref="clockRate.c"/>
             <log idref="relativeGeoRates.s:tissue"/>
-            <log idref="traitClockRate.c:tissue"/>
-            <log id="geoSubstModelLogger.s:tissue" spec="beam.substitutionmodel.BeamGtiTissueSubstitutionModelLogger" dataType="@codeMap" model="@substModelMigration"/>
+            <log idref="traitClockRate"/>
+            <log id="tissueSubstModelLogger" spec="beam.substitutionmodel.BeamTissueSubstitutionModelLogger" dataType="@codeMap" model="@substModelMigration"/>
             <log idref="treeLikelihood"/>
             <log idref="traitLikelihood"/>
             <log idref="birthRate"/>
@@ -203,15 +181,8 @@
 
         <logger id="treeWithTraitLogger" spec="Logger" fileName="$(outname).trees" logEvery="10000" mode="tree">
                 <log id="treeWithTraitLoggerItem" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@tree">
-                    <metadata idref="posterior"/>
-                    <metadata idref="treeLikelihood"/>
                     <metadata idref="traitLikelihood"/>
                 </log>
-        </logger>
-
-        <!-- log tree -->
-        <logger id="treelog.t:cluster" spec="Logger" fileName="$(outname)_no_trait.trees" logEvery="10000" mode="tree">
-                    <log idref="tree" printMetaData="true"/>
         </logger>
 
     <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
