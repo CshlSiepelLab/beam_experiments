@@ -63,10 +63,15 @@ def main(barcode_file, tissue_file, primary_tissue, outfile):
     tissue_sums = tissue_df.sum(axis=0)
     non_zero_tissues = tissue_sums[tissue_sums > 0].index.tolist()
     extended_palette = generate_extended_palette(len(unique_values) - len(non_zero_tissues))
-    tissue_colors = ["black", "blue", "red", "green", "purple", "orange", "brown", "pink", "cyan", "magenta", "yellow", "black"]
+    tissue_colors = ["darkgrey", "blue", "red", "green", "purple", "orange", "brown", "pink", "cyan", "magenta", "yellow", "black"]
     subset_tissue_colors = [tissue_colors[i] for i in range(num_tissues) if tissue_df[unique_tissues[i]].sum() > 0]
-    extended_palette = ['lightgrey', 'white'] + extended_palette + subset_tissue_colors
-    index_to_color = [extended_palette[i] for i, val in enumerate(sorted(np.unique(barcode_df.values)))]
+    extended_palette = extended_palette + subset_tissue_colors
+    values = sorted(np.unique(barcode_df.values))
+    if 0 in values:
+        extended_palette = ["white"] + extended_palette
+    if -1 in values:
+        extended_palette = ["grey"] + extended_palette
+    index_to_color = [extended_palette[i] for i, val in enumerate(values)]
 
     # Create a custom colormap for the dashed line fill
     cmap = ListedColormap(index_to_color)
@@ -112,13 +117,14 @@ def main(barcode_file, tissue_file, primary_tissue, outfile):
 
 if __name__ == "__main__":
 
-    # barcode_file = sys.argv[1]
-    # tissue_file = sys.argv[2]
-    # outfile = sys.argv[3]
+    barcode_file = sys.argv[1]
+    tissue_file = sys.argv[2]
+    primary_tissue = sys.argv[3]
+    outfile = sys.argv[4]
 
-    barcode_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3/beam/MMUS1544/CP14/downsampled_char_matrix.tsv"
-    tissue_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3/beam/MMUS1544/CP14/downsampled_tissue_labels.tsv"
-    primary_tissue = "PRL"
-    outfile="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3/beam/MMUS1544/CP14/char_matrix_with_tissues.pdf"
+    # barcode_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3/beam/MMUS1544/CP14/downsampled_char_matrix.tsv"
+    # tissue_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3/beam/MMUS1544/CP14/downsampled_tissue_labels.tsv"
+    # primary_tissue = "PRL"
+    # outfile="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3/beam/MMUS1544/CP14/char_matrix_with_tissues.pdf"
 
     main(barcode_file, tissue_file, primary_tissue, outfile)
