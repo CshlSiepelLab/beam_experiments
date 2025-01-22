@@ -55,9 +55,9 @@ rule all:
         # [expand("{outdir}/beam/{mouse}/{cp}/metastasis_timing.pdf", outdir=config['outdir'], 
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice]
         [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 2), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 11), mouse=m) for m in mice],
         [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 2), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 11), mouse=m) for m in mice],
                 
 
 rule runEvotracer:
@@ -428,7 +428,7 @@ rule runBeam:
         fi
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
-        numTissueRates=$(( numTissues * (numTissues - 1) ))
+        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
 
         tissueCodeMap=""
         trailingCodeMap="? = "
@@ -1035,7 +1035,7 @@ rule runBeamInformation:
         fi
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
-        numTissueRates=$(( numTissues * (numTissues - 1) ))
+        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
 
         tissueCodeMap=""
         trailingCodeMap="? = "
@@ -1086,6 +1086,7 @@ rule runBeamGtrNS:
         beamResult = "{outdir}/beam_gtr_ns/{mouse}/{cp}/chain_{num}.trees"
     params:
         xml = config['gtrXml'],
+        inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_gtr_ns/{mouse}/{cp}",
         beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
@@ -1124,7 +1125,7 @@ rule runBeamGtrNS:
         fi
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
-        numTissueRates=$(( numTissues * (numTissues - 1) ))
+        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
 
         tissueCodeMap=""
         trailingCodeMap="? = "
@@ -1148,7 +1149,7 @@ rule runBeamGtrNS:
         -overwrite \
         -working \
         -D inName={wildcards.cp} \
-        -D fileDir={params.fileDir} \
+        -D fileDir={params.inFileDir} \
         -D newick=\"$newick\" \
         -D generations={params.experimentTime} \
         -D numEditRates=\"$numEditRates\" \
@@ -1157,7 +1158,6 @@ rule runBeamGtrNS:
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
         -D tissueRootFreqs=\"$tissueRootFreqs\" \
-        -D mcmclength=\"$mcmclength\" \
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
@@ -1175,6 +1175,7 @@ rule runBeamRandomNS:
         beamResult = "{outdir}/beam_random_ns/{mouse}/{cp}/chain_{num}.trees"
     params:
         xml = config['randomXml'],
+        inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_random_ns/{mouse}/{cp}",
         beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
@@ -1213,7 +1214,7 @@ rule runBeamRandomNS:
         fi
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
-        numTissueRates=$(( numTissues * (numTissues - 1) ))
+        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
 
         tissueCodeMap=""
         trailingCodeMap="? = "
@@ -1237,7 +1238,7 @@ rule runBeamRandomNS:
         -overwrite \
         -working \
         -D inName={wildcards.cp} \
-        -D fileDir={params.fileDir} \
+        -D fileDir={params.inFileDir} \
         -D newick=\"$newick\" \
         -D generations={params.experimentTime} \
         -D numEditRates=\"$numEditRates\" \
@@ -1246,7 +1247,6 @@ rule runBeamRandomNS:
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
         -D tissueRootFreqs=\"$tissueRootFreqs\" \
-        -D mcmclength=\"$mcmclength\" \
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """

@@ -1,9 +1,8 @@
 #!/bin/bash
 
-export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_performance_nowak_lab_data
+export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_nowak_lab_data
 
 snakemake \
---until runLAML \
 --latency-wait 180 \
 --use-conda \
 --use-singularity \
