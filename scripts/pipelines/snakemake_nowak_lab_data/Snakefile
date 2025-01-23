@@ -33,8 +33,8 @@ rule all:
         #        cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/beam/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
         # [expand("{outdir}/beam/{mouse}/{cp}/combined.log", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/beam/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
@@ -50,8 +50,6 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice],
         # [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues_random.pdf", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/beam_information/{mouse}/{cp}/{num}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numRunsNs']+1), mouse=m) for m in mice],
         # [expand("{outdir}/beam/{mouse}/{cp}/metastasis_timing.pdf", outdir=config['outdir'], 
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice]
         [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
@@ -371,12 +369,13 @@ rule runBeam:
         editRateProportions = "{outdir}/beam/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
     output:
-        terminalLog = "{outdir}/beam/{mouse}/{cp}/terminal_{num}.log",
-        beamLog = "{outdir}/beam/{mouse}/{cp}/chain_{num}.log",
-        beamResult = "{outdir}/beam/{mouse}/{cp}/chain_{num}.trees"
+        terminalLog = "{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log",
+        beamLog = "{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.log",
+        beamResult = "{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.trees"
     params:
         xml = config['gtrXml'],
-        fileDir = "{outdir}/beam/{mouse}/{cp}",
+        inFileDir = "{outdir}/beam/{mouse}/{cp}",
+        fileDir = "{outdir}/beam_gtr/{mouse}/{cp}",
         beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
@@ -452,7 +451,7 @@ rule runBeam:
         -overwrite \
         -working \
         -D inName={wildcards.cp} \
-        -D fileDir={params.fileDir} \
+        -D fileDir={params.inFileDir} \
         -D newick=\"$newick\" \
         -D generations={params.experimentTime} \
         -D numEditRates=\"$numEditRates\" \
@@ -979,100 +978,6 @@ rule calculatePosteriorExcessOverParsimony:
 #         """
 
 
-
-rule runBeamInformation:
-    input:
-        cpList = "{outdir}/beam/{mouse}/cp_list.txt",
-        fasta = "{outdir}/beam/{mouse}/{cp}/{cp}.fasta",
-        tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv",
-        editRateProportions = "{outdir}/beam/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
-        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
-    output:
-        terminalLog = "{outdir}/beam_information/{mouse}/{cp}/{num}/terminal_{num}.log",
-        beamLog = "{outdir}/beam_information/{mouse}/{cp}/{num}/chain_{num}.log",
-        beamResult = "{outdir}/beam_information/{mouse}/{cp}/{num}/chain_{num}.trees"
-    params:
-        xml = config['xmlNS'],
-        fileDir = "{outdir}/beam/{mouse}/{cp}",
-        infoDir = "{outdir}/beam_information/{mouse}/{cp}/{num}",
-        beamJar = config['beamJar'],
-        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 5,
-        numNsParticles = config['numNsParticles'],
-    shell:
-        """
-        cp {params.xml} {params.infoDir}/{wildcards.num}.xml
-
-        # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
-        array=($initialEditRates)
-        numEditRates=${{#array[@]}}
-        numEditRatesPlusTwo=$(( numEditRates + 2 ))
-
-        # format tissue information
-        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
-        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
-
-        numTips=$(grep -c '^>' {input.fasta})
-
-        # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
-        if [[ $numTissues -eq 1 ]]; then
-            # if the primary already exists then add a dummy
-            if echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
-                unique_tissues="$unique_tissues dummy"
-            # if not, then add the primary as the dummy
-            else
-                unique_tissues="{params.primaryTissue} $unique_tissues"
-            fi
-            numTissues=$(( numTissues + 1 ))
-        fi
-
-        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
-        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
-        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
-            numTissues=$(( numTissues + 1 ))
-        fi
-        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
-
-        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
-
-        tissueCodeMap=""
-        trailingCodeMap="? = "
-        i=0
-        for tissue in $sorted_unique_tissues; do
-            tissueCodeMap+="$tissue=$i,"
-            trailingCodeMap+="$i "
-            i=$((i+1))
-        done
-        tissueCodeMap+="${{trailingCodeMap}}"
-
-        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
-        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.infoDir}/{wildcards.num}.xml
-
-        # use LAML starting tree
-        # remove node names from newick and the origin node
-        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
-
-        java -Xmx10g -jar {params.beamJar} \
-        -threads {params.threads} \
-        -overwrite \
-        -working \
-        -D inName={wildcards.cp} \
-        -D fileDir={params.fileDir} \
-        -D newick=\"$newick\" \
-        -D generations={params.experimentTime} \
-        -D numEditRates=\"$numEditRates\" \
-        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-        -D initialEditRates=\"$initialEditRates\" \
-        -D numTissueRates=\"$numTissueRates\" \
-        -D numTissues=\"$numTissues\" \
-        -D tissueRootFreqs=\"$tissueRootFreqs\" \
-        -D outname=chain_{wildcards.num} \
-        -D numParticles={params.numNsParticles} \
-        {params.infoDir}/{wildcards.num}.xml > {output.terminalLog}
-        """
-
 rule runBeamGtrNS:
     input:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt",
@@ -1143,6 +1048,11 @@ rule runBeamGtrNS:
         # use LAML starting tree
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+        # Replace mcmc specs with nested sampling specs
+        mcmc_specs="<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"\$(mcmclength)\">"
+        ns_specs="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"100000000\" particleCount=\"1\" subChainLength=\"10000\" epsilon=\"1e-10\">"
+        sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
@@ -1232,6 +1142,11 @@ rule runBeamRandomNS:
         # use LAML starting tree
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+        # Replace mcmc specs with nested sampling specs
+        mcmc_specs="<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"\$(mcmclength)\">"
+        ns_specs="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"100000000\" particleCount=\"1\" subChainLength=\"10000\" epsilon=\"1e-10\">"
+        sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \

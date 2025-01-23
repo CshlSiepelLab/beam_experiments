@@ -45,9 +45,7 @@
     <userDataType id="codeMap" spec="beast.base.evolution.datatype.UserDataType" codeMap="$(tissueCodeMap)" codelength="-1" states="$(numTissues)"/>
 </data>
 
-
-<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">
-<!-- <run id="mcmc" spec="MCMC" chainLength="$(mcmclength)"> -->
+<run id="mcmc" spec="MCMC" chainLength="$(mcmclength)">
         <state id="state" spec="State" storeEvery="5000">
             <stateNode id="tree" spec="beam.tree.BeamStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)">
                 <taxonset id="taxonset" spec="TaxonSet" alignment="@alignment"/>
@@ -61,8 +59,8 @@
             <parameter id="traitClockRate" spec="parameter.RealParameter" name="stateNode">0.001</parameter>
             <parameter id="piPrimaryTissueFreq" spec="parameter.RealParameter" dimension="1" estimate="true" lower="0.0" upper="1.0" name="stateNode">0.50</parameter>
 
-            <parameter id="birthRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.6</parameter>
-            <parameter id="deathRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.01</parameter>
+            <parameter id="birthRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.01</parameter>
+            <parameter id="deathRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.002</parameter>
 
         </state>
         

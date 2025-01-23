@@ -55,12 +55,21 @@ for file in $files; do
     random_sd=$(grep "Marginal likelihood" $random_file | cut -d' ' -f4 | cut -d'(' -f4 | sed 's/)//g')
 
     # Bayes factor is reported with Hnull as the no reseeding and Halt as one rate reseeding, so a positive Bayes factor value supports reseeding and negative supports no reseeding
-    beam_bf=$(echo "scale=10; $gtr_ml - $random_ml" | bc -l)
+    if [[ -z $gtr_ml || -z $random_ml ]]; then
+        beam_bf=""
+    else
+        beam_bf=$(echo "scale=10; $gtr_ml - $random_ml" | bc -l)
+    fi
 
     # Required Bayes factor difference threshold based on the estimated standard deviations of the marginal likelihoods from nested sampling
-    diff_threshold=$(echo "scale=10; 2 * sqrt(($gtr_sd^2) + ($random_sd^2))" | bc -l)
+    if [[ -z $gtr_sd || -z $random_sd ]]; then
+        diff_threshold=""
+    else
+        diff_threshold=$(echo "scale=10; 2 * sqrt(($gtr_sd^2) + ($random_sd^2))" | bc -l)
+    fi
 
     # Write to outfile
     echo -e "$name,$gtr_ml,$gtr_sd,$random_ml,$random_sd,$beam_bf,$diff_threshold" >> $outfile
 
 done
+

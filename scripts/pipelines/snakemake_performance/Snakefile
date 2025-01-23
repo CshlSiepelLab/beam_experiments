@@ -14,7 +14,7 @@ rule all:
         # expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         # expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         # expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        # expand("{outdir}/beam/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
+        expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         # expand("{outdir}/beam/{sim}/combined.log", sim=sims, outdir=outdir),
         # expand("{outdir}/beam/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
         # expand("{outdir}/beam/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
@@ -109,12 +109,13 @@ rule runBeam:
         editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
         lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
     output:
-        terminalLog = "{outdir}/beam/{sim}/terminal_{num}.log",
-        beamLog = "{outdir}/beam/{sim}/chain_{num}.log",
-        beamResult = "{outdir}/beam/{sim}/chain_{num}.trees"
+        terminalLog = "{outdir}/beam_gtr/{sim}/terminal_{num}.log",
+        beamLog = "{outdir}/beam_gtr/{sim}/chain_{num}.log",
+        beamResult = "{outdir}/beam_gtr/{sim}/chain_{num}.trees"
     params:
         xml = config['gtrXml'],
-        fileDir = "{outdir}/beam/{sim}",
+        inFileDir = "{outdir}/beam/{sim}",
+        fileDir = "{outdir}/beam_gtr/{sim}",
         beamJar = config['beamJar'],
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
@@ -165,7 +166,7 @@ rule runBeam:
         -overwrite \
         -working \
         -D inName={wildcards.sim} \
-        -D fileDir={params.fileDir} \
+        -D fileDir={params.inFileDir} \
         -D newick=\"$newick\" \
         -D generations={params.generations} \
         -D numEditRates=\"$numEditRates\" \
@@ -517,6 +518,12 @@ rule runBeamGtrNs:
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
+        # Replace mcmc specs with nested sampling specs
+        mcmc_specs="<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"\$(mcmclength)\">"
+        ns_specs="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"100000000\" particleCount=\"1\" subChainLength=\"10000\" epsilon=\"1e-10\">"
+        sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
+
+
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
         -overwrite \
@@ -594,6 +601,12 @@ rule runBeamRandomNs:
         # use LAML starting tree
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+        # Replace mcmc specs with nested sampling specs
+        mcmc_specs="<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"\$(mcmclength)\">"
+        ns_specs="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"100000000\" particleCount=\"1\" subChainLength=\"10000\" epsilon=\"1e-10\">"
+        sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
+
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \

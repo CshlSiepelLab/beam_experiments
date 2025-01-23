@@ -5,16 +5,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_bayes_factors(file_path, outfile, bin_width=2, threshold=5):
+def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=5):
     # Read the data
     df = pd.read_csv(file_path)
     
     # Get the Bayes factor column
     bf_column = 'bf(gtr-random)'
-    
-    # Calculate counts above and below threshold
-    count_above = sum(df[bf_column] >= threshold)
-    count_below = sum(df[bf_column] < threshold)
     
     # Create the figure with specific size
     plt.figure(figsize=(12, 6))
@@ -27,35 +23,34 @@ def plot_bayes_factors(file_path, outfile, bin_width=2, threshold=5):
     # Create histogram
     plt.hist(df[bf_column], 
             bins=bins, 
-            color='black',
-            edgecolor='black',
-            linewidth=0.5)
+            color='grey',
+            edgecolor='grey',
+            linewidth=0)
     
     # Add vertical line at threshold
-    plt.axvline(x=threshold, color='#666666', linestyle='--', linewidth=2)
-    plt.text(threshold + 1, plt.gca().get_ylim()[1]*0.95, 
-             f'Threshold = {threshold}', 
-             rotation=0, va='top')
+    plt.axvline(x=threshold, color='black', linestyle='--', linewidth=2)
     
     # Add count annotations
-    plt.text(plt.gca().get_xlim()[1]*0.7, plt.gca().get_ylim()[1]*0.8,
-             f'Count ≥ {threshold}: {count_above}',
-             color='#4CAF50')
-    plt.text(plt.gca().get_xlim()[1]*0.7, plt.gca().get_ylim()[1]*0.7,
-             f'Count < {threshold}: {count_below}',
-             color='#666666')
+    fs = 20
+    plt.text(plt.gca().get_xlim()[1]*0.6, 
+             plt.gca().get_ylim()[1]*0.8,
+             f'Count ≥ {threshold}: {sum(df[bf_column] >= threshold)}',
+             color='black', fontsize=fs)
+    
+    plt.text(plt.gca().get_xlim()[1]*0.6, 
+             plt.gca().get_ylim()[1]*0.7,
+             f'Count < {threshold}: {sum(df[bf_column] < threshold)}',
+             color='black', fontsize=fs)
     
     # Customize x-axis ticks
-    min_tick = np.floor(min_val / 5) * 5
-    max_tick = np.ceil(max_val / 5) * 5
-    xticks = np.arange(min_tick, max_tick + 5, 5)
-    if 0 not in xticks and min_tick < 0 and max_tick > 0:
+    increment = 10
+    xticks = np.arange(np.floor(min_val / increment) * increment, np.ceil(max_val / increment) * increment + increment, increment)
+    if 0 not in xticks:
         xticks = np.sort(np.append(xticks, 0))
-    plt.xticks(xticks, rotation=45)
-    
-    # Labels and title
-    plt.xlabel('ln(Bayes Factor) from (GTR - Random)')
-    plt.ylabel('Count')
+    plt.xticks(xticks, rotation=0, fontsize=fs)
+    plt.yticks(fontsize=fs)
+    plt.xlabel('ln(Bayes factor)\nfrom ln(Marginal likelihood GTR) - ln(Marginal likelihood Random)', fontsize=fs)
+    plt.ylabel('Count', fontsize=fs)
     
     # Adjust layout to prevent label cutoff
     plt.tight_layout()

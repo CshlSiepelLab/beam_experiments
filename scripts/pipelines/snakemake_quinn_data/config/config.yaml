@@ -3,7 +3,7 @@
 inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/quinn_2021_real_data/GSE161363"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_20_25"
+outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25"
 
 # set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
 threads: 5
