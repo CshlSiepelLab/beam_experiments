@@ -51,7 +51,7 @@ logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
 beamJar: /grid/siepel/home_norepl/staklins/beam/beam.jar
 
 # set path to the beam model xml template file
-gtrXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template2.xml
+gtrXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
 randomXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_random_mcmc_template.xml
 
 # set the length of the experiment

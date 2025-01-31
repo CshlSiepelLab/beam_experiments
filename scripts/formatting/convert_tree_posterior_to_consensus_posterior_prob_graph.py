@@ -91,12 +91,11 @@ def get_consensus_graph(all_inferred_counts):
 
 def process_tree_parallel(args):
     tree, primary_tissue = args
-    posterior = float(tree.annotations.get_value('posterior'))
     remove_zero_length_nodes(tree)
     inferred_tree = dendropy_beast_to_ete_newick_with_strict_locations(tree)
     inferred_counts = get_migration_counts(inferred_tree)
     inferred_counts = optionally_add_origin_migration(inferred_tree, inferred_counts, primary_tissue)
-    return posterior, inferred_counts
+    return inferred_counts
 
 # user inputs
 beast_posterior_file = sys.argv[1]
@@ -118,7 +117,7 @@ output = pool.map(process_tree_parallel, [(tree, primary_tissue) for tree in bea
 pool.close()
 pool.join()
 
-posteriors, all_inferred_counts = zip(*output)
+all_inferred_counts = zip(*output)
 
 
 # fit a gaussian kernel density estimate to the posterior values to get a probability density function

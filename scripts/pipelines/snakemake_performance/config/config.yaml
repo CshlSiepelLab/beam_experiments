@@ -24,7 +24,7 @@ logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
 beamJar: /grid/siepel/home_norepl/staklins/beam/beam.jar
 
 # set path to the beam model xml template file
-gtrXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template2.xml
+gtrXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
 randomXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_random_mcmc_template.xml
 
 # set the length of the simulation datasets in number of cell divisions
@@ -57,13 +57,13 @@ generations: 250
 # numRates: 1
 
 # set the desired mcmc chain length
-mcmcLength: 25000000
+mcmcLength: 50000000
 
 # set the desired number of parallel mcmc chains to run
 numChains: 3
 
 # set the minimum ess to include a chain in the combined output across chains (default: 200)
-essCutoff: 200
+essCutoff: 100
 
 # probability threshold for the consensus tree from the beast posterior probability tree
 consensusThreshold: 0.5
