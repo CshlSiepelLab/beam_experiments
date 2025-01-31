@@ -117,7 +117,7 @@ output = pool.map(process_tree_parallel, [(tree, primary_tissue) for tree in bea
 pool.close()
 pool.join()
 
-all_inferred_counts = zip(*output)
+all_inferred_counts = [dict(counts) for counts in output]
 
 
 # fit a gaussian kernel density estimate to the posterior values to get a probability density function
