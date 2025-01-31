@@ -45,7 +45,7 @@ def label_nodes(newick):
     return node_labeled_newick
 
 def tree_to_migration_graph(tree, primary_tissue, outfile):
-    newick_str = ''.join(tree.split(' ')[4:])
+    newick_str = tree.split(' ')[3]
     tree = Tree(newick_str, format=1)
     all_tissues = set()
     all_tissues.add(primary_tissue)
