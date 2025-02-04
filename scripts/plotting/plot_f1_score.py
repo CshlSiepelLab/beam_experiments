@@ -11,7 +11,7 @@ def plot_f1_score(csv_path, output_dir):
     df = pd.read_csv(csv_path)
     
     # Filter columns with "f1" in the name
-    f1_columns = [col for col in df.columns if 'f1' in col and 'PathFinder' not in col]
+    f1_columns = [col for col in df.columns if 'f1' in col]
 
     data_f1 = df[f1_columns]
     # Remove "_f1" from all column names

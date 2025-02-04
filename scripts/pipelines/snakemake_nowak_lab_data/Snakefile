@@ -14,9 +14,6 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
         mouse_fastqs[mouse] = []
     mouse_fastqs[mouse].append(file)
 
-# temporarily skip mouse
-mice = [m for m in mice if m != "MMUS1466"]
-
 
 def get_elements_from_file(path):
     filename = f"{path}/cp_list.txt"
@@ -33,8 +30,8 @@ rule all:
         #        cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        # [expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
         # [expand("{outdir}/beam/{mouse}/{cp}/combined.log", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/beam/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
@@ -1050,8 +1047,8 @@ rule runBeamGtrNS:
         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
         # Replace mcmc specs with nested sampling specs
-        mcmc_specs="<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"\$(mcmclength)\">"
-        ns_specs="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"100000000\" particleCount=\"1\" subChainLength=\"10000\" epsilon=\"1e-10\">"
+        mcmc_specs='<run id="mcmc" spec="MCMC" chainLength="\$(mcmclength)">'
+        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
         java -Xmx10g -jar {params.beamJar} \
@@ -1144,8 +1141,8 @@ rule runBeamRandomNS:
         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
         # Replace mcmc specs with nested sampling specs
-        mcmc_specs="<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"\$(mcmclength)\">"
-        ns_specs="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"100000000\" particleCount=\"1\" subChainLength=\"10000\" epsilon=\"1e-10\">"
+        mcmc_specs='<run id="mcmc" spec="MCMC" chainLength="\$(mcmclength)">'
+        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
         java -Xmx10g -jar {params.beamJar} \

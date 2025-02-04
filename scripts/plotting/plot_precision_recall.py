@@ -242,7 +242,7 @@ for true_tree_file in dirs:
     # get other files to compare
     machina_file = f"{dir}/machina/{sim}/machina_tree_all_tissue_labels.nwk"
     metient_file = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_migration_graphs.txt"
-    beast_posterior_file = f"{dir}/beam/{sim}/combined.trees"
+    beast_posterior_file = f"{dir}/beam_gtr/{sim}/combined.trees"
     consensus_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk"
     random_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk"
     parsimony_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk"

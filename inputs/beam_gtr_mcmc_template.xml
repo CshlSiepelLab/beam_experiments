@@ -52,11 +52,11 @@
             </stateNode>
 
             <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" lower="0.0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
-            <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.00001</parameter>
-            <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">0.005</parameter>
+            <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.001</parameter>
+            <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">0.01</parameter>
 
             <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" lower="0.0" dimension="$(numTissueRates)" name="stateNode">1.0</parameter>
-            <parameter id="traitClockRate" spec="parameter.RealParameter" name="stateNode">0.0001</parameter>
+            <parameter id="traitClockRate" spec="parameter.RealParameter" name="stateNode">0.01</parameter>
             <parameter id="piPrimaryTissueFreq" spec="parameter.RealParameter" dimension="1" estimate="true" lower="0.0" upper="1.0" name="stateNode">0.50</parameter>
 
             <parameter id="birthRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.006</parameter>
@@ -83,7 +83,7 @@
 
                 <prior id="silencingRatePrior" name="distribution" x="@silencingRate">
                     <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.01</parameter>
+                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.1</parameter>
                     </Exponential>
                 </prior>
 
