@@ -31,10 +31,10 @@ randomXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/in
 # set the length of the experiment
 # for Quinn et al. 2021 data, the experiment lengths vary by mouse and are found in the supplementary figures caption by searching "days post-implantation"
 experimentTime:
-  M5K: 54
-  M10K: 53
-  M100K: 67
-  M30K: 80
+  5k: 54
+  10k: 53
+  100k: 67
+  30k: 80
 
 # set the desired mcmc chain length
 mcmcLength: 50000000

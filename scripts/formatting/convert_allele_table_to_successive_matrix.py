@@ -11,14 +11,10 @@ def convert_matrix_to_successive(character_matrix, mutation_dict):
     i = 1
     for clone, row in character_matrix.iterrows():
         for site, mut in row.items():
-            # Skip missing sites
-            if mut == '?':
-                continue
-
             mut = int(mut)
 
-            # Skip undedited sites
-            if mut == 0:
+            # Skip undedited and missing sites
+            if mut == 0 or mut == -1:
                 continue
 
             mut_str = mut_dict[int(site[1:])-1][mut]
@@ -50,7 +46,7 @@ char_matrices = {}
 
 # Convert each lineage group's allele table to a character matrix
 for lineage, group in lineage_groups:
-    char_matrix = cas.pp.convert_alleletable_to_character_matrix(group, missing_data_state='?')
+    char_matrix = cas.pp.convert_alleletable_to_character_matrix(group, missing_data_state=-1)
     char_matrix_df = char_matrix[0]
     mut_dict = char_matrix[2]
     successive_matrix, new_mut_dict = convert_matrix_to_successive(char_matrix_df, mut_dict)

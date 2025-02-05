@@ -37,7 +37,9 @@ outdir = config['outdir']
 rule all:
     input:
         [expand("{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/successive_raw_data/{mouse}/lg1_successive_character_matrix.txt", mouse=m, outdir=outdir) for m in mouse_ids]
+        [expand("{outdir}/successive_raw_data/{mouse}/1_successive_character_matrix.tsv", mouse=m, outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids]
 
 
 rule formatTissues:
@@ -60,7 +62,7 @@ rule convertMatrixToSuccessive:
     input:
         alleleTable = config['inputpath'] + "/GSM4905334_alleleTable.{mouse}.txt"
     output:
-        successive_matrix = "{outdir}/successive_raw_data/{mouse}/lg1_successive_character_matrix.txt"
+        successive_matrix = "{outdir}/successive_raw_data/{mouse}/1_successive_character_matrix.tsv"
     params:
         outdir = "{outdir}/successive_raw_data/{mouse}/",
         scripts = config['scripts'],
@@ -70,77 +72,55 @@ rule convertMatrixToSuccessive:
         "../../envs/simulate.sif"
     shell:
         """
-        python {params.scripts}/formatting/convert_matrix_to_successive.py {input.alleleTable} {params.outdir}
+        python {params.scripts}/formatting/convert_allele_table_to_successive_matrix.py {input.alleleTable} {params.outdir}
         """
 
-# rule runCassiopeiaDs:
-#     input:
-#         matrix = os.path.join(config['inputpath'], "{mouse}_successive_char_matrix_collapsed.txt")
-#     output:
-#         "{outdir}/ds_cassiopeia_greedy/{mouse}/cassiopeia_greedy_inferred.nwk"
-#     params:
-#         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
-#         outputdir = "{outdir}/ds_cassiopeia_greedy/{mouse}"
-#     singularity:
-#         "../../envs/simulate.sif"
-#     shell:
-#         """
-#         # run cassiopeia greedy
-#         python {params.cassiopeia_script} {input.matrix} {params.outputdir}
-#         """
+rule runCassiopeia:
+    input:
+        matrix = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv"
+    output:
+        "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/",
+        threads = 1,
+        mem = "1G"
+    singularity:
+        "../../envs/simulate.sif"
+    shell:
+        """
+        # run cassiopeia greedy
+        python {params.scripts}/cassiopeia/cassiopeia_greedy.py {input.matrix} {params.outputdir}
+        """
 
-# rule runLAMLds:
-#     input:
-#         matrix = os.path.join(config['inputpath'], "{mouse}_successive_char_matrix_collapsed.txt"),
-#         casTree = "{outdir}/ds_cassiopeia_greedy/{mouse}/cassiopeia_greedy_inferred.nwk"
-#     output:
-#         lamlTree = "{outdir}/ds_laml/{mouse}/{mouse}_laml_trees.nwk",
-#         lamlAnnotations = "{outdir}/ds_laml/{mouse}/{mouse}_laml_annotations.txt",
-#         lamlTreeNoBranchLengths = "{outdir}/ds_laml/{mouse}/{mouse}_laml_trees_no_branch_lengths.nwk",
-#         lamlTreeNoOrigin = "{outdir}/ds_laml/{mouse}/{mouse}_laml_trees_no_origin.nwk",
-#         matrix2 = "{outdir}/ds_laml/{mouse}/matrix.csv"
-#     params:
-#         outputdir = "{outdir}/ds_laml/{mouse}",
-#         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-#     conda:
-#         "../../envs/laml.yaml"
-#     shell:
-#         """
-#         # copy matrix and replace -1 with ? for missing data
-#         cp {input.matrix} {params.outputdir}/matrix.csv
-#         sed -i 's/-1/?/g; s/\t/,/g' {params.outputdir}/matrix.csv
+rule runLAML:
+    input:
+        matrix = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv",
+        casTree = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
+    output:
+        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
+        lamlAnnotations = "{outdir}/laml/{mouse}/{cp}/laml_annotations.txt",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk"
+    params:
+        outputdir = "{outdir}/laml/{mouse}/{cp}",
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        threads = 25,
+        mem = "1G"
+    conda:
+        "../../envs/laml.yaml"
+    shell:
+        """
+        # copy matrix and replace -1 with ? for missing data
+        cp {input.matrix} {params.outputdir}/matrix.csv
+        sed -i 's/-1/?/g; s/\t/,/g' {params.outputdir}/matrix.csv
 
-#         # run laml
-#         run_laml -c {params.outputdir}/matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.mouse}_laml --timescale {params.experimentTime} --parallel
+        # run laml
+        run_laml -c {params.outputdir}/matrix.csv -t {input.casTree} -o laml --timescale {params.experimentTime} --parallel
 
-#         # obtain newick without branch lengths
-#         sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
+        # obtain newick without branch lengths
+        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
+        """
 
-#         # remove origin from tree
-#         newick=$(sed 's/):.*$//g' {params.outputdir}/{wildcards.mouse}_laml_trees.nwk) 
-#         echo "${{newick:1}}" > {output.lamlTreeNoOrigin}
-#         echo ");" >> {output.lamlTreeNoOrigin}
-#         """
-
-
-# rule downsampleInputsTree:
-#     input:
-#         matrix = os.path.join(config['inputpath'], "{mouse}_successive_char_matrix_collapsed.txt"),
-#         leafTissues = os.path.join(config['inputpath'], "{mouse}_successive_char_matrix_collapsing_dict.txt"),
-#         lamlTreeNoOrigin = "{outdir}/ds_laml/{mouse}/{mouse}_laml_trees_no_origin.nwk",
-#     output:
-#         downsampledSimMatrix = "{outdir}/downsampled_data/{mouse}/downsampled_char_matrix.tsv",
-#         downsampledLeafTissues = "{outdir}/downsampled_data/{mouse}/downsampled_tissue_labels.tsv",
-#     params:
-#         outprefix = "{outdir}/downsampled_data/{mouse}/downsampled",
-#         scripts = config['scripts'],
-#         threshold = config['downsample_threshold']
-#     conda:
-#         "../../envs/compare_trees.yaml"
-#     shell:
-#         """
-#         python {params.scripts}/formatting/downsample_tree.py {input.matrix} {input.lamlTreeNoOrigin} {input.leafTissues} {params.threshold} {params.outprefix}
-#         """
 
 # rule prepBeamInputs:
 #     input:
@@ -193,47 +173,6 @@ rule convertMatrixToSuccessive:
 #         tail -n +2 $matrixFile | grep -v '^$' | sed \"s/-1/$dropoutMutNum/g\" | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > {output.fasta}
 #         """
 
-# rule runCassiopeia:
-#     input:
-#         expandedMatrix = "{outdir}/beam/{mouse}/expanded_clones_matrix.tsv"
-#     output:
-#         "{outdir}/cassiopeia_greedy/{mouse}/cassiopeia_greedy_inferred.nwk"
-#     params:
-#         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
-#         outputdir = "{outdir}/cassiopeia_greedy/{mouse}"
-#     singularity:
-#         "../../envs/simulate.sif"
-#     shell:
-#         """
-#         # run cassiopeia greedy
-#         python {params.cassiopeia_script} {input.expandedMatrix} {params.outputdir}
-#         """
-
-# rule runLAML:
-#     input:
-#         expandedMatrix = "{outdir}/beam/{mouse}/expanded_clones_matrix.tsv",
-#         casTree = "{outdir}/cassiopeia_greedy/{mouse}/cassiopeia_greedy_inferred.nwk"
-#     output:
-#         lamlTree = "{outdir}/laml/{mouse}/{mouse}_laml_trees.nwk",
-#         lamlAnnotations = "{outdir}/laml/{mouse}/{mouse}_laml_annotations.txt",
-#         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{mouse}_laml_trees_no_branch_lengths.nwk"
-#     params:
-#         outputdir = "{outdir}/laml/{mouse}",
-#         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-#     conda:
-#         "../../envs/laml.yaml"
-#     shell:
-#         """
-#         # copy matrix and replace -1 with ? for missing data
-#         cp {input.expandedMatrix} {outdir}/laml/{wildcards.mouse}/matrix.csv
-#         sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.mouse}/matrix.csv
-
-#         # run laml
-#         run_laml -c {outdir}/laml/{wildcards.mouse}/matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.mouse}_laml --timescale {params.experimentTime} --parallel
-
-#         # obtain newick without branch lengths
-#         sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
-#         """
 
 # rule runBeam:
 #     input:
