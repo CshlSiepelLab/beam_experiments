@@ -3,7 +3,6 @@
 export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_performance
 
 snakemake \
--n \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
 --latency-wait 300 \
@@ -14,6 +13,6 @@ snakemake \
 --keep-going \
 --ignore-incomplete \
 --cores 1 \
---jobs 1000 \
+--jobs 1 \
 --cluster-config $REPO_PATH/config/cluster.yaml \
 --cluster 'qsub -cwd -pe threads {cluster.cores} -l m_mem_free={cluster.mem} -l h_rt={cluster.runtime} -o {cluster.logout} -e {cluster.logerror}'

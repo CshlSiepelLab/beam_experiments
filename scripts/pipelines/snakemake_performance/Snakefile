@@ -13,7 +13,7 @@ rule all:
     input:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
-        expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        # expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
@@ -21,8 +21,8 @@ rule all:
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         # f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
-        # expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 11), outdir=outdir),
-        # expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 11), outdir=outdir),
+        expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 11), outdir=outdir),
+        expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 11), outdir=outdir),
 
 
 rule runCassiopeia:
@@ -519,7 +519,7 @@ rule runBeamGtrNs:
         newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
         # Replace mcmc specs with nested sampling specs
-        mcmc_specs="<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"\$(mcmclength)\">"
+        mcmc_specs="<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"$(mcmclength)\">"
         ns_specs="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"100000000\" particleCount=\"1\" subChainLength=\"10000\" epsilon=\"1e-10\">"
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
@@ -603,7 +603,7 @@ rule runBeamRandomNs:
         newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
         # Replace mcmc specs with nested sampling specs
-        mcmc_specs="<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"\$(mcmclength)\">"
+        mcmc_specs="<run id=\"mcmc\" spec=\"MCMC\" chainLength=\"$(mcmclength)\">"
         ns_specs="<run id=\"mcmc\" spec=\"beast.gss.NS\" chainLength=\"100000000\" particleCount=\"1\" subChainLength=\"10000\" epsilon=\"1e-10\">"
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 

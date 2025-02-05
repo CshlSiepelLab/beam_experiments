@@ -80,16 +80,16 @@ def compute_migration_mutual_info(nexus_path, origin_tissue, threads):
     
     return mutual_info, count_matrix, tissue_list
 
-# posterior_file = sys.argv[1]
-# origin_tissue = sys.argv[2]
-# outdir = sys.argv[3]
-# threads = int(sys.argv[4])
+posterior_file = sys.argv[1]
+origin_tissue = sys.argv[2]
+outdir = sys.argv[3]
+threads = int(sys.argv[4])
 
-# testing
-posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_20_25_uniform_50cells_50sites_data_7_24_24/beam_gtr/mS_854/combined.trees"
-origin_tissue = "P"
-outdir = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_20_25_uniform_50cells_50sites_data_7_24_24/beam_gtr/mS_854"
-threads = 50
+# # testing
+# posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3/beam_gtr/MMUS1544/CP04/chain_1.trees"
+# origin_tissue = "PRL"
+# outdir = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3/beam_gtr/MMUS1544/CP04"
+# threads = 50
 
 mi, counts, tissues = compute_migration_mutual_info(posterior_file, origin_tissue, threads)
 
