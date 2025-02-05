@@ -5,12 +5,15 @@ import glob
 
 # specific to yang et al data to get the input files (character matrices and tissue labeling files)
 character_matrices = glob.glob(os.path.join(config['inputpath'], "character_matrices", "*_character_matrix.alleleThresh.txt"))
-mouse_ids = list(set([os.path.basename(f).split("_")[0] for f in character_matrices]))
+mouse_ids = list(set([os.path.basename(f).split("_")[0].replace("m", "") for f in character_matrices]))
+
+# Only use the 5k mouse for now since it is what the authors used and otherwise the metadata for each mouse is differently formatting causing pipeline complications
+mouse_ids = [m for m in mouse_ids if m == "5k"]
 
 cps_for_mouse = {}
 for mouse in mouse_ids:
     mouse_matrices = [f for f in character_matrices if mouse in f]
-    mouse_cps = [os.path.basename(f).split("_")[1] for f in mouse_matrices]
+    mouse_cps = [os.path.basename(f).split("_")[1].replace("lg", "") for f in mouse_matrices]
     cps_for_mouse[mouse] = mouse_cps
 
 
@@ -33,52 +36,42 @@ outdir = config['outdir']
 
 rule all:
     input:
-        [expand("{outdir}/successive_raw_data/{mouse}/{cp}/tissue_labels.tsv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/successive_raw_data/{mouse}/lg1_successive_character_matrix.txt", mouse=m, outdir=outdir) for m in mouse_ids]
 
 
 rule formatTissues:
     input:
-        metafile = glob.glob(os.path.join(config['inputpath'], "*_meta.{mouse}.tsv")),
-        matrix = glob.glob(os.path.join(config['inputpath'], "character_matrices", "{mouse}_{cp}_character_matrix.alleleThresh.txt"))
+        matrix = config['inputpath'] + "/character_matrices/m{mouse}_lg{cp}_character_matrix.alleleThresh.txt",
+        metafile = config['inputpath'] + "/GSM4905335_meta.{mouse}.tsv"
     output:
-        tissues = "{outdir}/successive_raw_data/{mouse}/{cp}/tissue_labels.tsv"
+        tissues = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
     params:
         scripts = config['scripts'],
-        outdir = "{outdir}/successive_raw_data/{mouse}/{cp}"
-    resources:
-        cores = 1,
-        mem_mb = 1024,
-        runtime = "1:00:00"
-    log:
-        out = "{outdir}/job_logs/{mouse}/{cp}/formatTissues.out",
-        err = "{outdir}/job_logs/{mouse}/{cp}/formatTissues.err"
+        threads = 10,
+        mem = "1G"
     shell:
         """
-        # get cell names from the CP specific matrix
-        cellNames=$(tail -n +2 {input.matrix} | cut -f1)
-
-        # write the header to the tissues file for that cp
-        echo -e "group_name\ttissues" > {output.tissues}
-
-        for cell in $cellNames; do
-            grep "$cell" ${input.metafile} | cut -f1,6 >> {output.tissues}
+        # get cell names from the CP specific matrix and find tissues for those cells in the metafile
+        grep -Ff <(tail -n +2 {input.matrix} | cut -f1 | tr ' ' '\n') {input.metafile} | cut -f1,6 | tr '\t' ',' > {output.tissues}
         """
 
-    # rule convertMatrixToSuccessive:
-    #     input:
-    #         matrix = "{character_matrix}"
-    #     output:
-    #         successive_matrix = "{outdir}/successive_raw_data/{mouse}/{cp}/successive_char_matrix_collapsed.txt"
-    #     params:
-    #         scripts = config['scripts'],
-    #         outdir = "{outdir}/successive_raw_data/{mouse}/{cp}",
-    #         threads = 1
-    #     conda:
-    #         "../../envs/compare_trees.yaml"
-    #     shell:
-    #         """
-    #         python {params.scripts}/formatting/convert_matrix_to_successive.py {input.matrix} {output.successive_matrix}
-    #         """
+rule convertMatrixToSuccessive:
+    input:
+        alleleTable = config['inputpath'] + "/GSM4905334_alleleTable.{mouse}.txt"
+    output:
+        successive_matrix = "{outdir}/successive_raw_data/{mouse}/lg1_successive_character_matrix.txt"
+    params:
+        outdir = "{outdir}/successive_raw_data/{mouse}/",
+        scripts = config['scripts'],
+        threads = 1,
+        mem = "1G"
+    singularity:
+        "../../envs/simulate.sif"
+    shell:
+        """
+        python {params.scripts}/formatting/convert_matrix_to_successive.py {input.alleleTable} {params.outdir}
+        """
 
 # rule runCassiopeiaDs:
 #     input:
