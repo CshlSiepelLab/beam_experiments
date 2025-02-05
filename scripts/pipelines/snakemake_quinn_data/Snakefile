@@ -112,10 +112,10 @@ rule runLAML:
         """
         # copy matrix and replace -1 with ? for missing data
         cp {input.matrix} {params.outputdir}/matrix.csv
-        sed -i 's/-1/?/g; s/\t/,/g' {params.outputdir}/matrix.csv
+        sed -i 's/\t/,/g; s/,-1/,?/g' {params.outputdir}/matrix.csv
 
         # run laml
-        run_laml -c {params.outputdir}/matrix.csv -t {input.casTree} -o laml --timescale {params.experimentTime} --parallel
+        run_laml -c {params.outputdir}/matrix.csv -t {input.casTree} -o {params.outputdir}/laml --timescale {params.experimentTime} --parallel
 
         # obtain newick without branch lengths
         sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
