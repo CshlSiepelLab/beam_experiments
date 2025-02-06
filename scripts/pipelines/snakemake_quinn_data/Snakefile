@@ -180,22 +180,20 @@ rule prepBeamInputs:
         """
         # get all mutations, replacing -1 with 0 to get relative mutation rates amongst mutations
         all_muts=$(tail -n +2 {input.matrix} | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\\t' ' ' | tr '\\n' ' ')
+        echo $all_muts
 
         # count all mutations not 0
         total_count=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
+        echo $total_count
 
         # count all unique characters
         uniq_count=$( echo $all_muts | tr ' ' '\\n' | sort | uniq | grep -wv "0" | wc -l )
 
-        # get the proportion of all unique character mutations out of all possible matrix sites, if that character exists in successive ordering (which is should given the successive matrix preprocessing prior)
+        # get the proportion of all unique character mutations out of all possible matrix sites
         for element in $(seq 1 $uniq_count); do
-            if echo "$all_muts" | tr ' ' '\\n' | grep -qw "$element"; then
-                count=$(echo "$all_muts" | tr ' ' '\\n' | grep -wc "$element")
-            else
-                count=0
-            fi
+            count=$(echo "$all_muts" | tr ' ' '\\n' | grep -wc "$element")
             proportion=$(bc <<< "scale=10; $count / $total_count")
-            echo -e "$proportion\t" >> {output.editRateProportions}
+            echo $proportion >> {output.editRateProportions}
         done
 
         # format fasta, making -1 into a unique character at the next available int
@@ -216,7 +214,7 @@ rule runBeamGtr:
     params:
         xml = config['gtrXml'],
         inFileDir = "{outdir}/beam_prep/{mouse}/{cp}",
-        fileDir = "{outdir}/beam_gtr/{mouse}",
+        fileDir = "{outdir}/beam_gtr/{mouse}/{cp}",
         beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         mcmclength = config['mcmcLength'],
@@ -271,6 +269,9 @@ rule runBeamGtr:
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
+        # initial edit rates are often too long to be taken in at a java command line argument for this data, so replace it here
+        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
+
         # use LAML starting tree
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
@@ -279,13 +280,12 @@ rule runBeamGtr:
         -threads {params.threads} \
         -overwrite \
         -working \
-        -D inName={wildcards.cp} \
+        -D inName={wildcards.mouse}_{wildcards.cp} \
         -D fileDir={params.inFileDir} \
         -D newick=\"$newick\" \
         -D generations={params.experimentTime} \
         -D numEditRates=\"$numEditRates\" \
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-        -D initialEditRates=\"$initialEditRates\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
         -D tissueRootFreqs=\"$tissueRootFreqs\" \

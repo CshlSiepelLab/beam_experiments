@@ -34,25 +34,27 @@ outdir = sys.argv[2]
 
 # # testing
 # infile = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/quinn_2021_real_data/GSE161363/GSM4905334_alleleTable.5k.txt'
-# outdir = './'
+# outdir = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25/successive_raw_data/5k'
 
 # read in the proivded allele table
-allele_table = pd.read_csv(infile, sep='\t', index_col=0, header=0)
-# Group allele table by 'LineageGroup' column
+allele_table = pd.read_csv(infile, sep='\t', usecols = ['cellBC', 'intBC', 'r1', 'r2', 'r3', 'allele', 'LineageGroup', 'sampleID', 'readCount', 'UMI'])
+
+# get indel priors as per Cassiopeis docs
+indel_priors = cas.pp.compute_empirical_indel_priors(allele_table, grouping_variables=['intBC', 'LineageGroup'])
+
+# group allele table by 'LineageGroup' column
 lineage_groups = allele_table.groupby('LineageGroup')
 
-# Initialize a dictionary to hold character matrices for each lineage group
+# initialize a dictionary to hold character matrices for each lineage group
 char_matrices = {}
 
-# Convert each lineage group's allele table to a character matrix
+# convert each lineage group's allele table to a character matrix
 for lineage, group in lineage_groups:
-    char_matrix = cas.pp.convert_alleletable_to_character_matrix(group, missing_data_state=-1)
-    char_matrix_df = char_matrix[0]
-    mut_dict = char_matrix[2]
+    char_matrix_df, priors, mut_dict = cas.pp.convert_alleletable_to_character_matrix(group, missing_data_state='-1', allele_rep_thresh=0.9, mutation_priors = indel_priors)
     successive_matrix, new_mut_dict = convert_matrix_to_successive(char_matrix_df, mut_dict)
     char_matrices[lineage] = (char_matrix_df, mut_dict, successive_matrix, new_mut_dict)
 
-# Write each lineage group's successive matrix to its own file
+# write each lineage group's successive matrix to its own file
 for lineage, data in char_matrices.items():
     og_matrix = data[0]
     og_matrix.to_csv(f"{outdir}/{lineage}_original_character_matrix.tsv", sep='\t', index=True, header=True)
