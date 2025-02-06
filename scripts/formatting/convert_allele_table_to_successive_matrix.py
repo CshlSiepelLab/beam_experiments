@@ -68,7 +68,7 @@ for lineage, data in char_matrices.items():
     successive_matrix.to_csv(f"{outdir}/{lineage}_successive_character_matrix.tsv", sep='\t', index=True, header=True)
 
     og_to_successive_mut_dict = data[3]
-    with open(f"{outdir}/{lineage}_original_character_int_to_successive_int_mutation_dict.txt", 'w') as f:
+    with open(f"{outdir}/{lineage}_successive_int_to_mutation_string_dict.txt", 'w') as f:
         f.write(f"successive_char_int,mut_str\n")
         for key, value in og_to_successive_mut_dict.items():
             f.write(f"{value},{key}\n")

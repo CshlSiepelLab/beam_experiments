@@ -24,23 +24,43 @@ tissue_labeling_files.remove("/grid/siepel/home_norepl/staklins/bayesian_phyloge
 
 outdir = config['outdir']
 
-# print("Character Matrices:", character_matrices)
-# print("Mouse IDs:", mouse_ids)
-# print("CPS for Mouse:")
-# for key, value in cps_for_mouse.items():
-#     print(key)
-#     print(f"{len(value)} cps")
-#     print(value)
-# print("Tissue Labeling Files:", tissue_labeling_files)
-# print("Output Directory:", outdir)
-
 rule all:
     input:
         [expand("{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/successive_raw_data/{mouse}/1_successive_character_matrix.tsv", mouse=m, outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids]
+        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}.fasta", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        expand("{outdir}/asv_counts_per_cp.csv", outdir=outdir),
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
 
+rule plotCountsPerCP:
+    input:
+        [expand(config['inputpath'] + "/character_matrices/m{mouse}_lg{cp}_character_matrix.alleleThresh.txt", mouse=m, cp=cps_for_mouse[m]) for m in mouse_ids],
+    output:
+        counts = "{outdir}/asv_counts_per_cp.csv",
+    params:
+        max_tips = 150,
+        scripts = config['scripts'],
+        threads = 1,
+        mem = "1G"
+    singularity:
+        "../../envs/matplotlib.sif"
+    shell:
+        """
+        # get the counts csv file
+        echo "mouse,cp,num_asvs" > {output.counts}
+        for file in {input}; do
+            mouse=$(basename $file | cut -d'_' -f1 | sed 's/m//')
+            cp=$(basename $file | cut -d'_' -f2 | sed 's/lg//')
+            count=$(tail -n +2 $file | wc -l)
+            echo "$mouse,$cp,$count" >> {output.counts}
+        done
+
+        # plot the counts
+        python {params.scripts}/plotting/plot_tip_counts.py {output.counts} {params.max_tips}
+        """
 
 rule formatTissues:
     input:
@@ -62,9 +82,9 @@ rule convertMatrixToSuccessive:
     input:
         alleleTable = config['inputpath'] + "/GSM4905334_alleleTable.{mouse}.txt"
     output:
-        successive_matrix = "{outdir}/successive_raw_data/{mouse}/1_successive_character_matrix.tsv"
+        expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv", mouse=mouse_ids, cp=lambda wildcards: cps_for_mouse[wildcards.mouse], outdir=outdir)
     params:
-        outdir = "{outdir}/successive_raw_data/{mouse}/",
+        outputdir = "{outdir}/successive_raw_data/{mouse}/",
         scripts = config['scripts'],
         threads = 1,
         mem = "1G"
@@ -72,7 +92,31 @@ rule convertMatrixToSuccessive:
         "../../envs/simulate.sif"
     shell:
         """
-        python {params.scripts}/formatting/convert_allele_table_to_successive_matrix.py {input.alleleTable} {params.outdir}
+        python {params.scripts}/formatting/convert_allele_table_to_successive_matrix.py {input.alleleTable} {params.outputdir}
+        """
+
+rule plotCharacterMatrix:
+    input:
+        matrix = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv",
+        tissues = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
+    output:
+        charMatrixPlot = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.pdf",
+        reformattedTissues = temp("{outdir}/successive_raw_data/{mouse}/{cp}_reformatted_tissues.tsv")
+    params:
+        primaryTissue = config['primaryTissue'],
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G',
+    singularity:
+        "../../envs/matplotlib.sif"
+    shell:
+        """
+        # convert tissues to expected format with "group_name,tissues" header and tsv sep
+        echo "group_name,tissues" > {output.reformattedTissues}
+        cat {input.tissues} >> {output.reformattedTissues}
+        sed -i 's/,/\\t/g' {output.reformattedTissues}
+
+        python {params.scripts}/plotting/plot_character_matrix_and_tissues.py {input.matrix} {output.reformattedTissues} {params.primaryTissue} {output.charMatrixPlot}
         """
 
 rule runCassiopeia:
@@ -122,149 +166,133 @@ rule runLAML:
         """
 
 
-# rule prepBeamInputs:
-#     input:
-#         downsampledSimMatrix = "{outdir}/downsampled_data/{mouse}/downsampled_char_matrix.tsv",
-#         downsampledLeafTissues = "{outdir}/downsampled_data/{mouse}/downsampled_tissue_labels.tsv",
-#     output:
-#         fasta = "{outdir}/beam/{mouse}/{mouse}.fasta",
-#         dates = "{outdir}/beam/{mouse}/{mouse}_date_traits.csv",
-#         tissues = "{outdir}/beam/{mouse}/{mouse}_tip_tissues.csv",
-#         editRateProportions = "{outdir}/beam/{mouse}/{mouse}_edit_rate_proportions.txt",
-#         expandedMatrix = "{outdir}/beam/{mouse}/expanded_clones_matrix.tsv"
-#     params:
-#         outdir = "{outdir}/beam/{mouse}",
-#         scripts = config['scripts'],
-#         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-#         threads = config['threads'],
-#     conda:
-#         "../../envs/pandas.yaml"
-#     shell:
-#         """
-#         # expand clones found in multiple tissues to separate entries
-#         python {params.scripts}/formatting/expand_clones_multiple_tissues.py {input.downsampledSimMatrix} {input.downsampledLeafTissues} {params.outdir}
-#         matrixFile="{params.outdir}/expanded_clones_matrix.tsv"
-#         tissuesFile="{params.outdir}/expanded_clones_tissues.tsv"
+rule prepBeamInputs:
+    input:
+        matrix = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv",
+    output:
+        fasta = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}.fasta",
+        editRateProportions = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_edit_rate_proportions.txt"
+    params:
+        scripts = config['scripts'],
+        threads = 1,
+        mem = "1G"
+    shell:
+        """
+        # get all mutations, replacing -1 with 0 to get relative mutation rates amongst mutations
+        all_muts=$(tail -n +2 {input.matrix} | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\\t' ' ' | tr '\\n' ' ')
 
-#         # write tip traits to new csv
-#         tail -n +2 $tissuesFile | grep -v '^$' | cut -f1,2 | tr '\\t' ',' > {output.tissues}
+        # count all mutations not 0
+        total_count=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
 
-#         # write date trait
-#         tail -n +2 $tissuesFile | grep -v '^$' | cut -f1 | paste -d',' - <(yes {params.experimentTime} | head -n $(( $(wc -l < $tissuesFile) - 1 ))) > {output.dates}
-#         # get edit rate proportions for new mutation entries, relative to the first edit as 1.0 frequency
-#         all_muts=$(tail -n +2 $matrixFile | grep -v '^$' | cut -f2- | sed 's/-1/0/g' | tr '\\t' ' ' | tr '\\n' ' ')
-#         total_count=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
-#         uniq_count=$( echo $all_muts | tr ' ' '\\n' | sort | uniq | grep -wv "0" | wc -l )
-#         count_sum=$( echo $all_muts | tr ' ' '\\n' | grep -wv "0" | wc -l )
+        # count all unique characters
+        uniq_count=$( echo $all_muts | tr ' ' '\\n' | sort | uniq | grep -wv "0" | wc -l )
 
-#         for element in $(seq 1 $uniq_count); do
-#             if echo "$all_muts" | tr ' ' '\\n' | grep -qw "$element"; then
-#                 count=$(echo "$all_muts" | tr ' ' '\\n' | grep -wc "$element")
-#             else
-#                 count=0
-#             fi
-#             proportion=$(bc <<< "scale=10; $count / $count_sum")
-#             echo -e "$proportion\t" >> {output.editRateProportions}
-#         done
+        # get the proportion of all unique character mutations out of all possible matrix sites, if that character exists in successive ordering (which is should given the successive matrix preprocessing prior)
+        for element in $(seq 1 $uniq_count); do
+            if echo "$all_muts" | tr ' ' '\\n' | grep -qw "$element"; then
+                count=$(echo "$all_muts" | tr ' ' '\\n' | grep -wc "$element")
+            else
+                count=0
+            fi
+            proportion=$(bc <<< "scale=10; $count / $total_count")
+            echo -e "$proportion\t" >> {output.editRateProportions}
+        done
 
-#         # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
-#         # to model dropouts, use the highest mutation int representation and add 1 since the dropout column is the last in the rate matrix
-#         dropoutMutNum=$(( uniq_count + 1 ))
-#         tail -n +2 $matrixFile | grep -v '^$' | sed \"s/-1/$dropoutMutNum/g\" | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > {output.fasta}
-#         """
+        # format fasta, making -1 into a unique character at the next available int
+        dropoutMutNum=$(( uniq_count + 1 ))
+        tail -n +2 {input.matrix} | grep -v '^$' | awk -v dropoutMutNum="$dropoutMutNum" '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? ($i == -1 ? dropoutMutNum : $i)"\\n" : ($i == -1 ? dropoutMutNum : $i) ",")}}' > {output.fasta}
+        """
 
+rule runBeamGtr:
+    input:
+        fasta = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}.fasta",
+        tissues = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_edit_rate_proportions.txt",
+        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
+    output:
+        terminalLog = "{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log",
+        beamLog = "{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.log",
+        beamResult = "{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.trees"
+    params:
+        xml = config['gtrXml'],
+        inFileDir = "{outdir}/beam_prep/{mouse}/{cp}",
+        fileDir = "{outdir}/beam_gtr/{mouse}",
+        beamJar = config['beamJar'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        mcmclength = config['mcmcLength'],
+        primaryTissue = config['primaryTissue'],
+        threads = 5,
+        mem = "2G"
+    shell:
+        """
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
-# rule runBeam:
-#     input:
-#         fasta = "{outdir}/beam/{mouse}/{mouse}.fasta",
-#         dates = "{outdir}/beam/{mouse}/{mouse}_date_traits.csv",
-#         tissues = "{outdir}/beam/{mouse}/{mouse}_tip_tissues.csv",
-#         editRateProportions = "{outdir}/beam/{mouse}/{mouse}_edit_rate_proportions.txt",
-#         lamlTree = "{outdir}/laml/{mouse}/{mouse}_laml_trees.nwk"
-#     output:
-#         terminalLog = "{outdir}/beam/{mouse}/terminal_{num}.log",
-#         beamLog = "{outdir}/beam/{mouse}/chain_{num}.log",
-#         beamResult = "{outdir}/beam/{mouse}/chain_{num}.trees"
-#     params:
-#         xml = config['gtrXml'],
-#         fileDir = "{outdir}/beam/{mouse}",
-#         beamJar = config['beamJar'],
-#         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-#         mcmclength = config['mcmcLength'],
-#         primaryTissue = config['primaryTissue'],
-#         threads = config['threads']
-#     shell:
-#         """
-#         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
 
-#         # calculate necessary inputs for the editing model
-#         initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
-#         array=($initialEditRates)
-#         numEditRates=${{#array[@]}}
-#         numEditRatesPlusTwo=$(( numEditRates + 2 ))
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
 
-#         # format tissue information
-#         unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
-#         numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+        # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
+        if [[ $numTissues -eq 1 ]]; then
+            # if the primary already exists then add a dummy
+            if echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
+                unique_tissues="$unique_tissues dummy"
+            # if not, then add the primary as the dummy
+            else
+                unique_tissues="{params.primaryTissue} $unique_tissues"
+            fi
+            numTissues=$(( numTissues + 1 ))
+        fi
 
-#         # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
-#         sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
-#         if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
-#             numTissues=$(( numTissues + 1 ))
-#         fi
-#         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+        # force the known primary tissue at the origin for root frequencies in the likelihood calculation
+        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
+            numTissues=$(( numTissues + 1 ))
+        fi
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
-#         numTissueRates=$(( numTissues * (numTissues - 1) ))
-#         equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
-#         equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
-        
-#         tissueCodeMap=""
-#         trailingCodeMap="? = "
-#         i=0
-#         for tissue in $sorted_unique_tissues; do
-#             tissueCodeMap+="${{tissue}}=${{i}},"
-#             trailingCodeMap+="${{i}} "
-#             i=$((i+1))
-#         done
-#         tissueCodeMap+="${{trailingCodeMap}}"
+        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
 
-#         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
-#         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
 
-#         # use LAML starting tree
-#         # remove node names from newick and the origin node
-#         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
 
-#         # # print all the variables to the terminal
-#         # echo "numEditRates: $numEditRates"
-#         # echo "numEditRatesPlusTwo: $numEditRatesPlusTwo"
-#         # echo "initialEditRates: $initialEditRates"
-#         # echo "numTissueRates: $numTissueRates"
-#         # echo "numTissues: $numTissues"
-#         # echo "equalTissueFreqs: $equalTissueFreqs"
-#         # echo "tissueRootFreqs: $tissueRootFreqs"
-#         # echo "mcmclength: {params.mcmclength}"
-#         # echo "newick: $newick"
+        # use LAML starting tree
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
-#         java -Xmx10g -jar {params.beamJar} \
-#         -threads {params.threads} \
-#         -overwrite \
-#         -working \
-#         -D inName={wildcards.mouse} \
-#         -D fileDir={params.fileDir} \
-#         -D newick=\"$newick\" \
-#         -D generations={params.experimentTime} \
-#         -D numEditRates=\"$numEditRates\" \
-#         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-#         -D initialEditRates=\"$initialEditRates\" \
-#         -D numTissueRates=\"$numTissueRates\" \
-#         -D numTissues=\"$numTissues\" \
-#         -D equalTissueFreqs=\"$equalTissueFreqs\" \
-#         -D tissueRootFreqs=\"$tissueRootFreqs\" \
-#         -D mcmclength={params.mcmclength} \
-#         -D outname=chain_{wildcards.num} \
-#         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
-#         """
+        java -Xmx10g -jar {params.beamJar} \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.cp} \
+        -D fileDir={params.inFileDir} \
+        -D newick=\"$newick\" \
+        -D generations={params.experimentTime} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D mcmclength={params.mcmclength} \
+        -D outname=chain_{wildcards.num} \
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
 
 # rule combineBeamChains:
 #     input:

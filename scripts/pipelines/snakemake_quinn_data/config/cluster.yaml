@@ -9,4 +9,8 @@ convertMatrixToSuccessive:
     logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
     logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
 
+plotCountsPerCP:
+    logout: '{outdir}/job_logs/{rule}.out'
+    logerror: '{outdir}/job_logs/{rule}.err'
+
   

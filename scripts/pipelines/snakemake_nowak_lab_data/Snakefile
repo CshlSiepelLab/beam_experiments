@@ -185,7 +185,7 @@ rule plotCpNumAsvs:
         done
 
         # Plot the number of ASVs in each CP for each mouse
-        python {params.scripts}/plotting/plot_nowak_data_downsampling_tip_counts.py $asv_count_csv {params.max_tips}
+        python {params.scripts}/plotting/plot_tip_counts.py $asv_count_csv {params.max_tips}
         """
 
 rule downsampleInputsTree:
@@ -417,7 +417,7 @@ rule runBeam:
             numTissues=$(( numTissues + 1 ))
         fi
 
-        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
+        # force the known primary tissue at the origin for root frequencies in the likelihood calculation
         sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
         if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
             numTissues=$(( numTissues + 1 ))
