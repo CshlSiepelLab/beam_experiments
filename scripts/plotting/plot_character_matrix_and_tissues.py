@@ -110,6 +110,9 @@ def main(barcode_file, tissue_file, primary_tissue, outfile):
     ax.set_xlabel(ax.get_xlabel(), fontsize=fs)
     ax.set_ylabel(ax.get_ylabel(), fontsize=fs)
 
+    # turn off y tick labels
+    ax.set_yticklabels([])
+
     # Show the plot
     plt.tight_layout()
     plt.savefig(outfile)

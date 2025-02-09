@@ -82,7 +82,7 @@ rule convertMatrixToSuccessive:
     input:
         alleleTable = config['inputpath'] + "/GSM4905334_alleleTable.{mouse}.txt"
     output:
-        expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv", mouse=mouse_ids, cp=lambda wildcards: cps_for_mouse[wildcards.mouse], outdir=outdir)
+        matrix = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv"
     params:
         outputdir = "{outdir}/successive_raw_data/{mouse}/",
         scripts = config['scripts'],
@@ -92,7 +92,7 @@ rule convertMatrixToSuccessive:
         "../../envs/simulate.sif"
     shell:
         """
-        python {params.scripts}/formatting/convert_allele_table_to_successive_matrix.py {input.alleleTable} {params.outputdir}
+        python {params.scripts}/formatting/convert_allele_table_to_successive_matrix.py {input.alleleTable} {wildcards.cp} {params.outputdir}
         """
 
 rule plotCharacterMatrix:
@@ -220,7 +220,7 @@ rule runBeamGtr:
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
         threads = 5,
-        mem = "2G"
+        mem = "4G"
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -276,13 +276,23 @@ rule runBeamGtr:
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
+        # starting newick can often be too long to be taken in at a java command line argument for this data, so replace it here
+        # but even bash commands have length limits, so split the newick string into manageable chunks and replace them one by one
+        chunk_size=1000
+        newick_length=${{#newick}}
+        for ((i=0; i<newick_length; i+=chunk_size)); do
+            chunk=${{newick:i:chunk_size}}
+            sed -i "s/\$(newick)/$chunk\$(newick)/" {params.fileDir}/{wildcards.num}.xml
+        done
+        # Remove the remaining placeholder
+        sed -i "s/\$(newick)//" {params.fileDir}/{wildcards.num}.xml
+
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
         -overwrite \
         -working \
         -D inName={wildcards.mouse}_{wildcards.cp} \
         -D fileDir={params.inFileDir} \
-        -D newick=\"$newick\" \
         -D generations={params.experimentTime} \
         -D numEditRates=\"$numEditRates\" \
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
