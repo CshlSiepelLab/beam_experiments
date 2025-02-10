@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+from ete3 import Tree
+import cassiopeia as cas
+import pandas as pd
+
+newick_file = sys.argv[1]
+tissues_file = sys.argv[2]
+outdir = sys.argv[3]
+
+# # testing
+# newick_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_20_25_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees_no_origin.nwk"
+# tissues_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_20_25_uniform_50cells_50sites_data_7_24_24/beam/mS_854/mS_854_tip_tissues.csv"
+# outdir = "./"
+
+# read in newick to ete3 tree
+ete_tree = Tree(newick_file, format=3)
+ete_tree.name = "root"
+
+# load the tissues to dictionary
+tissues_df = pd.read_csv(tissues_file, header=None, index_col=0, names=["cell", "tissue"], dtype=str)
+tissues_df.index = tissues_df.index.astype(str)
+
+# load the tree to cassiopeia object
+tree = cas.data.CassiopeiaTree(tree=ete_tree, cell_meta = tissues_df)
+
+# run fitch-hartigan to get a randomly selected parsimonious tissue labeling on the tree
+fh_tree = cas.tl.fitch_hartigan(cassiopeia_tree = tree, meta_item = "tissue", copy=True)
+
+# show and save results (keep in mind that only the origin is known above the root, which the parsimony here does not consider but it should not matter)
+name_map = {}
+for node in fh_tree.depth_first_traverse_nodes(postorder=False):
+    # attribute_names = fh_tree._CassiopeiaTree__network.nodes[node].keys()
+    # print(node, list(attribute_names))
+    label = fh_tree.get_attribute(node, "label")
+    new_name = f"{node}_{label}"
+    name_map[node] = new_name
+fh_tree.relabel_nodes(name_map)
+
+with open(f"{outdir}/cassiopeia_fitch_hartigan_result.nwk", "w") as f:
+    f.write(fh_tree.get_newick())
+
+
+# Optional: run fitch-count to get a transition matrix of tissue change frequencies across all parsimonious labelings
+fc_matrix = cas.tl.fitch_count(cassiopeia_tree = tree, meta_item = "tissue")
+fc_matrix.to_csv(f"{outdir}/cassiopeia_fitch_count_result.csv")

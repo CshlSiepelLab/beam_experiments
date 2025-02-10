@@ -9,6 +9,10 @@ runMachina:
   cores: '{params.threads}'
   mem: '5G'
 
+runMach2:
+  cores: '{params.threads}'
+  mem: '5G'
+
 runBeam:
   cores: '{params.threads}'
   mem: '2G'

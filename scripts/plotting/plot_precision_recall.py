@@ -207,7 +207,7 @@ debug = False
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header="sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Parsimony_f1,Parsimony_recall,Parsimony_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,Metient_f1,Metient_recall,Metient_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
+    header="sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Parsimony_f1,Parsimony_recall,Parsimony_precision,fitchcount_f1,fitchcount_recall,fitchcount_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,Metient_f1,Metient_recall,Metient_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
     file.write(header)
 
 machina_precisions = np.zeros(len(dirs))
@@ -220,6 +220,8 @@ random_precisions = np.zeros(len(dirs))
 random_recalls = np.zeros(len(dirs))
 parsimony_precisions = np.zeros(len(dirs))
 parsimony_recalls = np.zeros(len(dirs))
+fitchcount_precisions = np.zeros(len(dirs))
+fitchcount_recalls = np.zeros(len(dirs))
 all_thresh_rows = []
 i=0
 
@@ -246,6 +248,7 @@ for true_tree_file in dirs:
     consensus_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk"
     random_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk"
     parsimony_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk"
+    fitchcount_file =f"{dir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk"
     outfile = f"{outdir}/{sim}/precision_recall.pdf"
 
     # print all file paths to output
@@ -331,6 +334,16 @@ for true_tree_file in dirs:
         parsimony_f1, parsimony_recall, parsimony_precision = calculate_metrics(true_counts, parsimony_counts)
         parsimony_precisions[i] = parsimony_precision
         parsimony_recalls[i] = parsimony_recall
+    
+    # process fitchcount result in the same was as parsimony
+    fitchcount_f1 = float('nan')
+    fitchcount_recall = float('nan')
+    fitchcount_precision = float('nan')
+    if os.path.exists(fitchcount_file):
+        fitchcount_counts = process_tree(fitchcount_file)
+        fitchcount_f1, fitchcount_recall, fitchcount_precision = calculate_metrics(true_counts, fitchcount_counts)
+        fitchcount_precisions[i] = fitchcount_precision
+        fitchcount_recalls[i] = fitchcount_recall
 
     # process beast posterior result to get precision and recall
     post_prob_f1 = float('nan')
@@ -388,6 +401,8 @@ for true_tree_file in dirs:
             plt.scatter(random_recall, random_precision, color='black', label='Random', s=size, marker = "x")
         if os.path.exists(parsimony_file):
             plt.scatter(parsimony_recall, parsimony_precision, color='Purple', label='Parsimony', s=size, marker = "x")
+        if os.path.exists(fitchcount_file):
+            plt.scatter(fitchcount_recall, fitchcount_precision, color='orange', label='FitchCount', s=size, marker = "x")
         plt.xlim(-0.05,1.05)
         plt.ylim(-0.05,1.05)
         plt.xlabel('Recall', fontsize=textsize)
@@ -406,18 +421,18 @@ for true_tree_file in dirs:
 
     # write metrics used for the plot to a file
     with open(outfile_metrics, "a") as file:
-        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{parsimony_f1},{parsimony_recall},{parsimony_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
+        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{parsimony_f1},{parsimony_recall},{parsimony_precision},{fitchcount_f1},{fitchcount_recall},{fitchcount_precision},{machina_f1},{machina_recall},{machina_precision},{metient_f1},{metient_recall},{metient_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
         file.write(data)
 
 all_thresh_df = pd.DataFrame(all_thresh_rows)
 
 # save intermediate variables to a file for later re-plotting
 with open(f"{outdir}/precision_recall_vars.pkl", "wb") as file:
-    pickle.dump([machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, all_thresh_df], file)
+    pickle.dump([machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, fitchcount_precisions, fitchcount_recalls, all_thresh_df], file)
 
 # # optionally to open from pickle file and avoid recalculations above
 # with open(f"{outdir}/precision_recall_vars.pkl", "rb") as file:
-#     machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, all_thresh_df = pickle.load(file)
+#     machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, fitchcount_precisions, fitchcount_recalls, all_thresh_df = pickle.load(file)
 
 # make an overall averaged precision/recall curve
 outfile = f"{outdir}/precision_recall.pdf"
@@ -451,6 +466,10 @@ if np.any(parsimony_precisions):
     avg_parsimony_precision = sum(parsimony_precisions) / len(parsimony_precisions)
 if np.any(parsimony_recalls):
     avg_parsimony_recall = sum(parsimony_recalls) / len(parsimony_recalls)
+if np.any(fitchcount_precisions):
+    avg_fitchcount_precision = sum(fitchcount_precisions) / len(fitchcount_precisions)
+if np.any(fitchcount_recalls):
+    avg_fitchcount_recall = sum(fitchcount_recalls) / len(fitchcount_recalls)
 
 if not all_thresh_df.empty:
     avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
@@ -472,6 +491,8 @@ if not np.isnan(avg_random_recall) and not np.isnan(avg_random_precision):
     plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker="x")
 if not np.isnan(avg_parsimony_recall) and not np.isnan(avg_parsimony_precision):
     plt.scatter(avg_parsimony_recall, avg_parsimony_precision, color='purple', label='Parsimony', s=size, marker="x")
+if not np.isnan(avg_fitchcount_recall) and not np.isnan(avg_fitchcount_precision):
+    plt.scatter(avg_fitchcount_recall, avg_fitchcount_precision, color='orange', label='FitchCount', s=size, marker="x")
 plt.xlim(-0.05,1.05)
 # plt.xlim(0.4, 1.01)
 # plt.xticks(np.arange(0.4, 1.01, 0.2))

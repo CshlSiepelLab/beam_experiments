@@ -13,7 +13,13 @@ mouse_ids = [m for m in mouse_ids if m == "5k"]
 cps_for_mouse = {}
 for mouse in mouse_ids:
     mouse_matrices = [f for f in character_matrices if mouse in f]
-    mouse_cps = [os.path.basename(f).split("_")[1].replace("lg", "") for f in mouse_matrices]
+    mouse_cps = [str(os.path.basename(f).split("_")[1].replace("lg", "")) for f in mouse_matrices]
+
+    # Filter 5k mouse to remove cps that are too large
+    if mouse == "5k":
+        excluded_cps_5k = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "19", "20", "21", "22", "23", "24", "27", "28", "29", "30", "31", "32", "34", "36", "42", "43", "45", "53"]
+        mouse_cps = [cp for cp in mouse_cps if cp not in excluded_cps_5k]
+
     cps_for_mouse[mouse] = mouse_cps
 
 
@@ -39,6 +45,7 @@ rule plotCountsPerCP:
     input:
         [expand(config['inputpath'] + "/character_matrices/m{mouse}_lg{cp}_character_matrix.alleleThresh.txt", mouse=m, cp=cps_for_mouse[m]) for m in mouse_ids],
     output:
+        unsortedCounts = temp("{outdir}/asv_counts_per_cp_unsorted.csv"),
         counts = "{outdir}/asv_counts_per_cp.csv",
     params:
         max_tips = 150,
@@ -50,13 +57,16 @@ rule plotCountsPerCP:
     shell:
         """
         # get the counts csv file
-        echo "mouse,cp,num_asvs" > {output.counts}
+        echo "mouse,cp,num_asvs" > {output.unsortedCounts}
         for file in {input}; do
             mouse=$(basename $file | cut -d'_' -f1 | sed 's/m//')
             cp=$(basename $file | cut -d'_' -f2 | sed 's/lg//')
             count=$(tail -n +2 $file | wc -l)
-            echo "$mouse,$cp,$count" >> {output.counts}
+            echo "$mouse,$cp,$count" >> {output.unsortedCounts}
         done
+
+        # sort the counts by CP to make interpretation of the csv easier
+        (head -n1 {output.unsortedCounts} &&  tail -n +2 {output.unsortedCounts} | sort -t, -k2,2n)  > {output.counts}
 
         # plot the counts
         python {params.scripts}/plotting/plot_tip_counts.py {output.counts} {params.max_tips}

@@ -13,16 +13,18 @@ rule all:
     input:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
-        # expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/mach2/{sim}/P-G-0.graph", outdir=outdir, sim=sims),
         expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk", sim=sims, outdir=outdir),
         # f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
-        expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 11), outdir=outdir),
-        expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 11), outdir=outdir),
+        # expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 11), outdir=outdir),
+        # expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 11), outdir=outdir),
 
 
 rule runCassiopeia:
@@ -288,10 +290,46 @@ rule runRandomAndConsensusTissueInference:
         python {params.scripts}/consensus_random/consensus_random_parsimony_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
         """
 
-rule runMachina:
+rule runCassiopeiaFitchCount:
+    input:
+        lamlTreeNoOrigin = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin.nwk",
+        tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
+    output:
+        fitchHartigan = "{outdir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/cassiopeia_fitch_count/{sim}"
+    singularity:
+        "../../envs/simulate.sif"
+    shell:
+        """
+        python {params.scripts}/cassiopeia/cassiopeia_fitch_hartigan.py {input.lamlTreeNoOrigin} {input.tissues} {params.outputdir}
+        """
+
+rule prepMachina:
     input:
         lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.nwk",
         leafTissues = lambda wildcards: glob.glob(os.path.join(config['inputpath'], wildcards.sim,"cell_tree_*[0-9].labeling"))
+    output:
+        labeling = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.labeling",
+        edges = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.tree",
+        colors = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths_colors.txt",
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/machina/{sim}",
+        primaryTissue = config['primaryTissue'],
+    singularity:
+        "../../envs/simulate.sif"
+    shell:
+        """
+        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {input.leafTissues}
+        """
+
+rule runMachina:
+    input:
+        labeling = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.labeling",
+        edges = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.tree",
+        colors = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths_colors.txt",
     output:
         machinaResults = "{outdir}/machina/{sim}/machina_results.txt",
         machinaTree = "{outdir}/machina/{sim}/P-T-P-R.tree",
@@ -305,32 +343,27 @@ rule runMachina:
         "../../envs/machina.yaml"
     shell:
         """
-        echo {input.leafTissues}
-        # prep machina inputs
-        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {input.leafTissues}
-
         # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
         module load EBModules
         module load Gurobi
 
-        labeling={params.outputdir}/*.labeling
-        unique_tissues=$(cut -f2 $labeling | sort | uniq)
+        unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
         num_unique_tissues=$(echo "$unique_tissues" | wc -l)
 
         if [ "$num_unique_tissues" -gt 1 ]; then
 
             # check if primary tissue is in the labeling file
-            if grep -q "{params.primaryTissue}" $labeling; then
+            if grep -q "{params.primaryTissue}" {input.labeling}; then
                 # run machina
-                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling --colors {params.outputdir}/*_colors.txt --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
+                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.edges} --labels {input.labeling} --colors {input.colors} --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
                 
                 # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label might be different
                 cp {params.outputdir}/{params.primaryTissue}-T-{params.primaryTissue}-R.dot {output.machinaTree}
                 cp {params.outputdir}/{params.primaryTissue}-T-{params.primaryTissue}-R.tree {output.machinaTissues}
             else
-                most_common_tissue=$(cut -f2 $labeling | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
+                most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
                 echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
-                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {params.outputdir}/*.tree --labels {params.outputdir}/*.labeling--colors {params.outputdir}/*_colors.txt --primary-tissue $most_common_tissue --outdir {params.outputdir}
+                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.edges} --labels {input.labeling} --colors {input.colors} --primary-tissue $most_common_tissue --outdir {params.outputdir}
 
                 # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label will be different due to the different primary tissue
                 cp {params.outputdir}/$most_common_tissue-T-$most_common_tissue-R.dot {output.machinaTree}
@@ -358,6 +391,55 @@ rule processMachinaResults:
     shell:
         """
         python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
+        """
+
+rule runMach2:
+    input:
+        labeling = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.labeling",
+        edges = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.tree",
+        colors = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths_colors.txt",
+    output:
+        mach2tree = "{outdir}/mach2/{sim}/P-T-0.tree",
+        mach2labeling = "{outdir}/mach2/{sim}/P-T-0.labeling",
+        mach2graph = "{outdir}/mach2/{sim}/P-G-0.graph",
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/mach2/{sim}",
+        primaryTissue = config['primaryTissue'],
+        threads = 50
+    conda:
+        "../../envs/mach2.yaml"
+    shell:
+        """
+        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
+        module load EBModules
+        module load Gurobi
+
+        unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
+        num_unique_tissues=$(echo "$unique_tissues" | wc -l)
+
+        if [ "$num_unique_tissues" -gt 1 ]; then
+            # check if primary tissue is in the labeling file
+            if grep -q "{params.primaryTissue}" {input.labeling}; then
+                mach2 {input.edges} {input.labeling} --colormap {input.colors} -p {params.primaryTissue} --log -o {params.outputdir} -t {params.threads}
+
+                # Need to touch output files to satisfy output, only if output with a different name exists
+                if [ $(ls {params.outputdir}/*.graph | wc -l) -gt 0 ] && [ ! -f {output.mach2graph} ]; then
+                    touch {output}
+                fi
+            else
+                most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
+                echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
+                mach2 {input.edges} {input.labeling} --colormap {input.colors} -p $most_common_tissue --log -o {params.outputdir} -t {params.threads}
+
+                # Need to touch output files to satisfy output, only if output with a different name exists
+                if [ $(ls {params.outputdir}/*.graph | wc -l) -gt 0 ] && [ ! -f {output.mach2graph} ]; then
+                    touch {output}
+                fi
+            fi
+        else
+            echo "Only one unique tissue found in the labeling file, so not enough to run Machina. Exiting."
+        fi
         """
 
 rule prepMetient:
@@ -435,6 +517,7 @@ rule plotPrecisionRecall:
         randomResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         consensusResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
         parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
+        fitchcountResultDone = expand("{outdir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk", sim=sims, outdir=outdir),
         trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         combinedTreesDone = expand("{outdir}/beam_gtr/{sim}/combined.trees", sim=sims, outdir=outdir),
