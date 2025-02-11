@@ -4,7 +4,6 @@ export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metasta
 
 snakemake \
 -n \
---until runMach2 \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
 --latency-wait 300 \

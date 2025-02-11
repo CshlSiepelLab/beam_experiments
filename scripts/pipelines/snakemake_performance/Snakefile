@@ -15,6 +15,7 @@ rule all:
         expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/mach2/{sim}/P-G-0.graph", outdir=outdir, sim=sims),
+        expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
         expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
@@ -442,6 +443,33 @@ rule runMach2:
         fi
         """
 
+rule gatherMach2Results:
+    input:
+        mach2graph = "{outdir}/mach2/{sim}/P-G-0.graph"
+    output:
+        mach2Combined = "{outdir}/mach2/{sim}/graph_results_combined.txt",
+        mach2Consensus = "{outdir}/mach2/{sim}/consensus_graph.txt",
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/mach2/{sim}",
+    shell:
+        """
+        # get all graph files
+        results=$(find $(dirname {input.mach2graph}) -name "*.graph")
+
+        # combine all results
+        echo "result_num,source,target,count" > {output.mach2Combined}
+        for file in $results; do
+            result_num=$(basename $file | cut -d'-' -f3 | cut -d'.' -f1)
+            while IFS= read -r line; do
+                echo "$result_num,$(echo $line | tr ' ' ',')" >> {output.mach2Combined}
+            done < "$file"
+        done
+
+        # get the probability weighted edge consensus graph
+        python {params.scripts}/formatting/convert_mach2_results_to_consensus_graph.py {output.mach2Combined} {output.mach2Consensus}
+        """
+
 rule prepMetient:
     input:
         lamlTreeNoOrigin = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin.nwk",
@@ -513,15 +541,15 @@ rule plotTrueMigrationGraph:
 
 rule plotPrecisionRecall:
     input:
-        # necessary input files so that the rule is triggered after all other rules have finished
-        randomResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
-        consensusResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
-        parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
-        fitchcountResultDone = expand("{outdir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk", sim=sims, outdir=outdir),
-        trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
-        machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        combinedTreesDone = expand("{outdir}/beam_gtr/{sim}/combined.trees", sim=sims, outdir=outdir),
-        metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
+        # # necessary input files so that the rule is triggered after all other rules have finished
+        # randomResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
+        # consensusResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
+        # parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
+        # fitchcountResultDone = expand("{outdir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk", sim=sims, outdir=outdir),
+        # trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
+        # machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        # combinedTreesDone = expand("{outdir}/beam_gtr/{sim}/combined.trees", sim=sims, outdir=outdir),
+        # metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
         # actual input used
         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
     output:

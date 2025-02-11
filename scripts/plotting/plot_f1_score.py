@@ -28,6 +28,8 @@ def plot_f1_score(csv_path, output_dir):
         'MACHINA': 'red',
         'Metient': 'green',
         'Consensus': 'blue',
+        'MACH2' : 'navy',
+        'FitchCount' : 'orange'
     }
     colors = [colors[col] for col in data_f1.columns]
 

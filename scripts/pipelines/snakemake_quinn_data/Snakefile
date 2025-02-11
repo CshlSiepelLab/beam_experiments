@@ -299,7 +299,7 @@ rule runBeamGtr:
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
-        -overwrite \
+        -resume \
         -working \
         -D inName={wildcards.mouse}_{wildcards.cp} \
         -D fileDir={params.inFileDir} \
