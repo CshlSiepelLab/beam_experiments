@@ -1,42 +1,19 @@
 __default__:
-  cores: 1
-  mem: '5G'
+  cores: '{params.threads}'
+  mem: '{params.mem}'
   logout: '{outdir}/job_logs/{wildcards.sim}/{rule}.out'
   logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}.err'
-  runtime: 24:00:00  # 12 hours timelimit for all methods
-
-runMachina:
-  cores: '{params.threads}'
-  mem: '5G'
-
-runMach2:
-  cores: '{params.threads}'
-  mem: '5G'
-
-runBeam:
-  cores: '{params.threads}'
-  mem: '2G'
+  runtime: 400:00:00
 
 plotPrecisionRecall:
-  cores: 1
-  mem: '5G'
   logout: '{outdir}/job_logs/{rule}.out'
   logerror: '{outdir}/job_logs/{rule}.err'
 
-runMetient:
-  cores: '{params.threads}'
-  mem: '5G'
+checkCombinedBeamConvergence:
+  logout: '{outdir}/job_logs/{rule}.out'
+  logerror: '{outdir}/job_logs/{rule}.err'
 
-runLAML:
-  cores: '{params.threads}'
-  mem: '5G'
-
-runBeamGtrNs:
-  cores: '{params.threads}'
-  mem: '2G'
-
-runBeamRandomNs:
-  cores: '{params.threads}'
-  mem: '2G'
-
+collectMutualInformationAndPlot:
+  logout: '{outdir}/job_logs/{rule}.out'
+  logerror: '{outdir}/job_logs/{rule}.err'
   

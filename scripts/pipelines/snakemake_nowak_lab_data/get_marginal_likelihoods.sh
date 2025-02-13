@@ -15,7 +15,7 @@ process_dir() {
 
 export -f process_dir
 
-num_threads=25
+num_threads=40
 
 # gtr
 dirs=$(find $main_dir/beam_gtr_ns -maxdepth 2 -mindepth 2 -type d )
@@ -31,19 +31,21 @@ gtr_dir=$main_dir/beam_gtr_ns
 
 outfile=$main_dir/marginal_likelihoods.csv
 
-# Write header
 echo "name,gtr_ml,gtr_sd,random_ml,random_sd,bf(gtr-random),diff_threshold" > $outfile
 
 files=$(find $gtr_dir -type f -name "combined_terminal*")
 
-for file in $files; do
+export outfile
+
+process_file() {
+    file=$1
 
     gtr_file=$file
     random_file=$(echo $gtr_file | sed 's/beam_gtr_ns/beam_random_ns/g')
 
     if [[ ! -f $random_file || ! -f $gtr_file ]]; then
         echo "Missing file: $random_file or $gtr_file"
-        continue
+        return
     fi
 
     name=$(echo $file | rev | cut -d'/' -f2-3 | sed 's/ /_/g' | rev)
@@ -54,22 +56,28 @@ for file in $files; do
     random_ml=$(grep "Marginal likelihood" $random_file | cut -d' ' -f3)
     random_sd=$(grep "Marginal likelihood" $random_file | cut -d' ' -f4 | cut -d'(' -f4 | sed 's/)//g')
 
-    # Bayes factor is reported with Hnull as the no reseeding and Halt as one rate reseeding, so a positive Bayes factor value supports reseeding and negative supports no reseeding
     if [[ -z $gtr_ml || -z $random_ml ]]; then
         beam_bf=""
     else
         beam_bf=$(echo "scale=10; $gtr_ml - $random_ml" | bc -l)
     fi
 
-    # Required Bayes factor difference threshold based on the estimated standard deviations of the marginal likelihoods from nested sampling
     if [[ -z $gtr_sd || -z $random_sd ]]; then
         diff_threshold=""
     else
         diff_threshold=$(echo "scale=10; 2 * sqrt(($gtr_sd^2) + ($random_sd^2))" | bc -l)
     fi
 
-    # Write to outfile
-    echo -e "$name,$gtr_ml,$gtr_sd,$random_ml,$random_sd,$beam_bf,$diff_threshold" >> $outfile
+    while ! echo -e "$name,$gtr_ml,$gtr_sd,$random_ml,$random_sd,$beam_bf,$diff_threshold" >> $outfile; do
+        sleep 1
+    done
+}
 
-done
+export -f process_file
 
+echo "$files" | parallel -j $num_threads process_file
+
+
+# sort results by Bayes factor from high to low
+(head -n1 $outfile &&  tail -n +2 $outfile | sort -t, -k6,6nr)  > $outfile.tmp
+mv $outfile.tmp $outfile

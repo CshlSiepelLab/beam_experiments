@@ -43,7 +43,7 @@ def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=5):
              color='black', fontsize=fs)
     
     # Customize x-axis ticks
-    increment = 10
+    increment = 20
     xticks = np.arange(np.floor(min_val / increment) * increment, np.ceil(max_val / increment) * increment + increment, increment)
     if 0 not in xticks:
         xticks = np.sort(np.append(xticks, 0))

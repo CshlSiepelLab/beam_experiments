@@ -18,6 +18,8 @@ rule all:
         expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
         expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir=outdir),
+        expand("{outdir}/beam_gtr/incomplete.txt", outdir=outdir),
+        expand("{outdir}/gtr_beam_mutual_information.csv", outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
@@ -35,7 +37,9 @@ rule runCassiopeia:
         "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
     params:
         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
-        outputdir = "{outdir}/cassiopeia_greedy/{sim}"
+        outputdir = "{outdir}/cassiopeia_greedy/{sim}",
+        threads = 1,
+        mem = '1G'
     singularity:
         "../../envs/simulate.sif"
     shell:
@@ -56,7 +60,8 @@ rule runLAML:
     params:
         outputdir = "{outdir}/laml/{sim}",
         experimentTime = config['generations'],
-        threads = 50
+        threads = 50,
+        mem = '1G'
     conda:
         "../../envs/laml.yaml"
     shell:
@@ -93,7 +98,9 @@ rule prepBeamInputs:
     params:
         scripts = config['scripts'],
         generations = config['generations'],
-        outputdir = "{outdir}/beam/{sim}"
+        outputdir = "{outdir}/beam/{sim}",
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -123,7 +130,8 @@ rule runBeam:
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
-        threads = config['threads']
+        threads = 5,
+        mem= '2G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -194,7 +202,9 @@ rule combineBeamChains:
     params:
         logcombiner = config['logcombiner'],
         essCutoff = config['essCutoff'],
-        treeannotator = config['treeannotator']
+        treeannotator = config['treeannotator'],
+        threads = 1,
+        mem = '1G'
     shell:
         """
         # find chains that have converged based on ess threshold specified
@@ -223,6 +233,80 @@ rule combineBeamChains:
         fi
         """
 
+rule checkCombinedBeamConvergence:
+    input:
+        combinedLog = expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir="{outdir}")
+    output:
+        complete = "{outdir}/beam_gtr/complete.txt",
+        incomplete = "{outdir}/beam_gtr/incomplete.txt"
+    params:
+        scripts = config['scripts'],
+        parameter = "posterior",
+        essCutoff = config['essCutoff'],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        echo "name,ess" > {output.complete}
+        echo "name,ess" > {output.incomplete}
+
+        files="{input.combinedLog}"
+        for file in $files; do
+            ess_output=$(python {params.scripts}/statistics/ess_from_beast_log.py "$file" "{params.parameter}")
+            ess_value=$(echo "$ess_output" | cut -d' ' -f4)
+            name=$(basename $(dirname $file))
+            if (( $(echo "$ess_value < {params.essCutoff}" | bc -l) )); then
+                echo "$name,$ess_value" >> {output.incomplete}
+            else
+                echo "$name,$ess_value" >> {output.complete}
+            fi
+        done
+        """
+
+rule mutualInformationBeam:
+    input:
+        combinedTrees = "{outdir}/beam_gtr/{sim}/combined.trees"
+    output:
+        mutualInformation = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        threads = 5,
+        mem = '1G'
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/statistics/mutual_information_from_beast_posterior.py {input.combinedTrees} {params.primaryTissue} $(dirname {input.combinedTrees}) {params.threads}
+        """
+
+rule collectMutualInformationAndPlot:
+    input:
+        mutualInformation = expand("{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt", sim=sims, outdir='{outdir}')
+    output:
+        combinedResults = "{outdir}/gtr_beam_mutual_information.csv",
+        plot = "{outdir}/gtr_beam_mutual_information.pdf"
+    params:
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        echo "simname,mutual_information_normalized" > {output.combinedResults}
+        
+        for file in {input.mutualInformation}; do
+            simname=$(basename $(dirname $file))
+            mutual_information=$(head -n 1 $file | tr -d '[:space:]')
+            echo "$simname,$mutual_information" >> {output.combinedResults}
+        done
+
+        python {params.scripts}/plotting/plot_mutual_information_normalized_histogram.py {output.combinedResults} {output.plot}
+        """
+
 rule convertTreePosteriorToGraphPosterior:
     input:
         combinedTrees = "{outdir}/beam_gtr/{sim}/combined.trees"
@@ -232,7 +316,8 @@ rule convertTreePosteriorToGraphPosterior:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         outdir = "{outdir}/beam_gtr/{sim}",
-        threads = config['threads']
+        threads = 5,
+        mem = "1G"
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -249,7 +334,9 @@ rule plotGraphPosterior:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         outdir = "{outdir}/beam_gtr/{sim}",
-        consensusThreshold = config['consensusThreshold']
+        consensusThreshold = config['consensusThreshold'],
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -265,7 +352,9 @@ rule plotSampledPosteriorGraphs:
     params:
         numGraphs = 10,
         scripts = config['scripts'],
-        primaryTissue = config['primaryTissue']
+        primaryTissue = config['primaryTissue'],
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -283,7 +372,9 @@ rule runRandomAndConsensusTissueInference:
         parsimonyResult = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk"
     params:
         scripts = config['scripts'],
-        outputdir = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}"
+        outputdir = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}",
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -299,7 +390,9 @@ rule runCassiopeiaFitchCount:
         fitchHartigan = "{outdir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk"
     params:
         scripts = config['scripts'],
-        outputdir = "{outdir}/cassiopeia_fitch_count/{sim}"
+        outputdir = "{outdir}/cassiopeia_fitch_count/{sim}",
+        threads = 1,
+        mem = '1G'
     singularity:
         "../../envs/simulate.sif"
     shell:
@@ -319,6 +412,8 @@ rule prepMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{sim}",
         primaryTissue = config['primaryTissue'],
+        threads = 1,
+        mem = '1G'
     singularity:
         "../../envs/simulate.sif"
     shell:
@@ -339,7 +434,8 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{sim}",
         primaryTissue = config['primaryTissue'],
-        threads = 50
+        threads = 50,
+        mem = '5G'
     conda:
         "../../envs/machina.yaml"
     shell:
@@ -386,7 +482,9 @@ rule processMachinaResults:
         machinaTissueTree = "{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk",
     params:
         scripts = config['scripts'],
-        outputdir = "{outdir}/machina/{sim}"
+        outputdir = "{outdir}/machina/{sim}",
+        threads = 1,
+        mem = '1G'
     singularity:
         "../../envs/simulate.sif"
     shell:
@@ -407,7 +505,8 @@ rule runMach2:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{sim}",
         primaryTissue = config['primaryTissue'],
-        threads = 50
+        threads = 50,
+        mem = '5G'
     conda:
         "../../envs/mach2.yaml"
     shell:
@@ -452,6 +551,8 @@ rule gatherMach2Results:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{sim}",
+        threads = 1,
+        mem = '1G'
     shell:
         """
         # get all graph files
@@ -480,7 +581,9 @@ rule prepMetient:
     params:
         primaryTissue = config['primaryTissue'],
         scripts = config['scripts'],
-        outputdir = "{outdir}/metient/{sim}"
+        outputdir = "{outdir}/metient/{sim}",
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -499,7 +602,8 @@ rule runMetient:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         outputdir = "{outdir}/metient/{sim}",
-        threads = 50
+        threads = 50,
+        mem = '2G'
     singularity:
         "../../envs/metient.sif"
     shell:
@@ -515,7 +619,9 @@ rule labelTrueTreeWithTissues:
     output:
         "{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk"
     params:
-        scripts = config['scripts']
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -531,7 +637,9 @@ rule plotTrueMigrationGraph:
         trueTissueGraph = "{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf"
     params:
         scripts = config['scripts'],
-        primaryTissue = config['primaryTissue']
+        primaryTissue = config['primaryTissue'],
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -559,7 +667,9 @@ rule plotPrecisionRecall:
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outputdir = outdir + "/precision_recall_curve"
+        outputdir = outdir + "/precision_recall_curve",
+        threads = 1,
+        mem = '5G'
     conda:
         "../../envs/matplotlib.yaml"
     shell:
@@ -588,7 +698,8 @@ rule runBeamGtrNs:
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
-        threads = config['threads']
+        threads = 5,
+        mem = '2G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -672,7 +783,8 @@ rule runBeamRandomNs:
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
-        threads = config['threads']
+        threads = 5,
+        mem = '2G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml

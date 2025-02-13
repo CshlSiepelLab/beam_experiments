@@ -16,9 +16,37 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
 
 
 def get_elements_from_file(path):
-    filename = f"{path}/cp_list.txt"
-    with open(filename) as f:
-        return [line.strip() for line in f if set(list(line.strip().replace("CP", ""))) != set('0')]
+    # # to get all cps
+    # filename = f"{path}/cp_list.txt"
+    # with open(filename) as f:
+    #     cps = [line.strip() for line in f if set(list(line.strip().replace("CP", ""))) != set('0')]
+
+    mouse = os.path.basename(path)
+    if mouse == "MMUS1874":
+        cps = ['CP01', 'CP09', 'CP04', 'CP06']
+    elif mouse == "MMUS1495":
+        cps = ['CP004', 'CP007', 'CP003', 'CP006', 'CP009', 'CP001']
+    elif mouse == "MMUS1492":
+        cps = ['CP05']
+    elif mouse == "MMUS1588":
+        cps = ['CP06', 'CP02', 'CP03', 'CP01']
+    elif mouse == "MMUS1457":
+        cps = ['CP11', 'CP13', 'CP05', 'CP12', 'CP07', 'CP08', 'CP04', 'CP02']
+    elif mouse == "MMUS1469":
+        cps = ['CP003', 'CP043', 'CP005', 'CP001', 'CP009', 'CP006', 'CP007', 'CP002']
+    elif mouse == "MMUS1875":
+        cps = ['CP05', 'CP06', 'CP09', 'CP02', 'CP08', 'CP03']
+    elif mouse == "MMUS1466":
+        cps = ['CP03']
+    elif mouse == "MMUS1467":
+        cps = ['CP07']
+    elif mouse == "MMUS1544":
+        cps = ['CP03', 'CP07', 'CP05', 'CP02']
+    else:
+        cps = []
+
+    return cps
+
 
 rule all:
     input:
@@ -50,9 +78,9 @@ rule all:
         # [expand("{outdir}/beam/{mouse}/{cp}/metastasis_timing.pdf", outdir=config['outdir'], 
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice]
         [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 11), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
         [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 11), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
                 
 
 rule runEvotracer:

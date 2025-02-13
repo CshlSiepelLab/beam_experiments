@@ -230,7 +230,7 @@ rule runBeamGtr:
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
         threads = 5,
-        mem = "4G"
+        mem = "2G"
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
