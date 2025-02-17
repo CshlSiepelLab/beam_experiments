@@ -174,20 +174,24 @@ def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
 
     for migration, times in metastasis_times.items():
         source, target = migration.split('_')
-        color = custom_colors[target]
+        source_color = custom_colors[source]
+        target_color = custom_colors[target]
         for time in times:
-            ax.plot([time, time], [0, 1], color=color, linewidth=4)
+            ax.plot([time, time], [0.5, 1], color=source_color, linewidth=3)
+            ax.plot([time, time], [0, 0.5], color=target_color, linewidth=3)
 
     fs = 18
     ax.set_xlim(0, total_time)
     ax.set_ylim(0, 1)
     ax.set_xlabel('Time', fontsize=fs)
-    ax.set_ylabel('Migrations', fontsize=fs)
-    ax.yaxis.set_visible(False)
+    ax.set_ylabel('', fontsize=fs)
+    ax.set_yticks([0.25, 0.75])
+    ax.set_yticklabels(['Target', 'Source'], fontsize=fs)
+    # ax.yaxis.set_visible(False)
     ax.tick_params(axis='x', labelsize=fs)
 
     # Add legend
-    handles = [plt.Line2D([0], [0], color=color, lw=4) for color in custom_colors.values()]
+    handles = [plt.Line2D([0], [0], color=color, lw=3) for color in custom_colors.values()]
     labels = custom_colors.keys()
     ax.legend(handles, labels, title='', title_fontsize=fs, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., frameon=False, fontsize=fs)
 
