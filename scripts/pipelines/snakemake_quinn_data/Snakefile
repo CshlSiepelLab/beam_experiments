@@ -17,8 +17,9 @@ for mouse in mouse_ids:
 
     # Filter 5k mouse to remove cps that are too large
     if mouse == "5k":
-        excluded_cps_5k = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "19", "20", "21", "22", "23", "24", "27", "28", "29", "30", "31", "32", "34", "36", "42", "43", "45", "53"]
-        mouse_cps = [cp for cp in mouse_cps if cp not in excluded_cps_5k]
+        excluded_cps_5k_by_original_paper = ["5", "16", "18", "25", "33", "38", "39", "41", "50", "53", "65", "69", "75", "81", "87", "88", "93"]
+        excluded_cps_5k_by_compute_requirements = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "19", "20", "21", "22", "23", "24", "27", "28", "29", "30", "31", "32", "34", "36", "42", "43", "45", "53"]
+        mouse_cps = [cp for cp in mouse_cps if cp not in excluded_cps_5k_by_original_paper and cp not in excluded_cps_5k_by_compute_requirements]
 
     cps_for_mouse[mouse] = mouse_cps
 
@@ -40,6 +41,10 @@ rule all:
         [expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         expand("{outdir}/asv_counts_per_cp.csv", outdir=outdir),
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined.log", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
 
 rule plotCountsPerCP:
     input:
@@ -314,98 +319,161 @@ rule runBeamGtr:
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
-# rule combineBeamChains:
+rule combineBeamChains:
+    input:
+        terminalLog = lambda wildcards: expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, cp=wildcards.cp, outdir=wildcards.outdir),
+        beamLogs = lambda wildcards: expand("{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, cp=wildcards.cp, outdir=wildcards.outdir),
+        beamResults = lambda wildcards: expand("{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.trees", num=range(1, config['numChains']+1), mouse=wildcards.mouse, cp=wildcards.cp, outdir=wildcards.outdir),
+    output:
+        combinedLog = "{outdir}/beam_gtr/{mouse}/{cp}/combined.log",
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees"
+    params:
+        logcombiner = config['logcombiner'],
+        essCutoff = config['essCutoff'],
+        treeannotator = config['treeannotator'],
+        threads = 1,
+        mem = '1G'
+    shell:
+        """
+        # find chains that have converged based on ess threshold specified
+        log_files=""
+        trees_files=""
+        ess_convergences=()
+        for file in {input.beamLogs}; do
+            terminal_log=$(echo $file | sed 's/chain_/terminal_/')
+            
+            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
+            if (( $(echo "$ess_convergence > {params.essCutoff}" | bc -l) )); then
+                log_files+="-log $file "
+                trees_file=$(echo $file | sed 's/\.log$/.trees/')
+                trees_files+="-log $trees_file "
+            else
+                echo "$file did not converge, so not including it in the final output"
+                rm $terminal_log
+            fi
+        done
+
+        # combine logs and trees that passed
+        if [ -n "$log_files" ]; then
+            {params.logcombiner} $log_files -o {output.combinedLog}
+            {params.logcombiner} $trees_files -o {output.combinedTrees}
+        else
+            echo "No chains passed the ESS threshold of {params.essCutoff}, so not combining any chains"
+        fi
+        """
+
+rule convertTreePosteriorToGraphPosterior:
+    input:
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees"
+    output:
+        graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outdir = "{outdir}/beam/{mouse}/{cp}",
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        if [ ! -s {input.combinedTrees} ]; then
+            echo "Combined trees file is empty. Exiting."
+            touch {output.graphPosterior}
+        else
+            python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
+        fi
+        """
+
+rule plotGraphPosterior:
+    input:
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
+        graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv"
+    output:
+        probabilityPlot = "{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf",
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
+        minThreshold = 0.4,
+        maxThreshold = 0.9,
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        if [ ! -s {input.combinedTrees} ] && [ ! -s {input.graphPosterior} ]; then
+            echo "Combined trees and graph posterior files are empty. Convergence likely not reached. Exiting."
+            # touch {output.probabilityPlot}
+        elif [ ! -s {input.graphPosterior} ]; then
+            echo "Graph posterior file is empty. Is there expected to be more than one tissue in the graph? Exiting."
+            touch {output.probabilityPlot}
+        else
+            # output a consensus plot for several thresholds from the specified min and max thresholds
+            for threshold in $(seq {params.minThreshold} 0.1 {params.maxThreshold}); do
+                python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} $threshold
+            done
+        fi
+        """
+
+rule sampleFromBeamPosteriorGraphs:
+    input:
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
+    output:
+        sampledGraphs = "{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        numGraphs = 10,
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.experimentTime} {params.numGraphs}
+        """
+
+rule mutualInformationBeam:
+    input:
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees"
+    output:
+        mutualInformation = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        threads = 6,
+        mem = '1G'
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/statistics/mutual_information_from_beast_posterior.py {input.combinedTrees} {params.primaryTissue} $(dirname {input.combinedTrees}) {params.threads}
+        """
+
+# rule collectMutualInformationAndPlot:
 #     input:
-#         terminalLog = lambda wildcards: expand("{outdir}/beam/{mouse}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-#         beamLogs = lambda wildcards: expand("{outdir}/beam/{mouse}/chain_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
-#         beamResults = lambda wildcards: expand("{outdir}/beam/{mouse}/chain_{num}.trees", num=range(1, config['numChains']+1), mouse=wildcards.mouse, outdir=wildcards.outdir),
+#         mutualInformation = expand("{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt", sim=sims, outdir='{outdir}')
 #     output:
-#         combinedLog = "{outdir}/beam/{mouse}/combined.log",
-#         combinedTrees = "{outdir}/beam/{mouse}/combined.trees",
+#         combinedResults = "{outdir}/gtr_beam_mutual_information.csv",
+#         plot = "{outdir}/gtr_beam_mutual_information.pdf"
 #     params:
-#         logcombiner = config['logcombiner'],
-#         essCutoff = config['essCutoff'],
-#         treeannotator = config['treeannotator'],
-#         threads = config['threads']
+#         scripts = config['scripts'],
+#         threads = 1,
+#         mem = '1G'
+#     conda:
+#         "../../envs/matplotlib.yaml"
 #     shell:
 #         """
-#         # find chains that have converged based on ess threshold specified
-#         log_files=""
-#         trees_files=""
-#         ess_convergences=()
-#         for file in {input.beamLogs}; do
-#             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
-
-#             # only use mcmc chains that have converged since many appear to get lost in the search space
-#             ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
-#             if (( $(echo "$ess_convergence > {params.essCutoff}" | bc -l) )); then
-#                 log_files+="-log $file "
-#                 trees_file=$(echo $file | sed 's/\.log$/.trees/')
-#                 trees_files+="-log $trees_file "
-#             else
-#                 echo "$file did not converge, so not including it in the final output"
-#             fi
+#         echo "simname,mutual_information_normalized" > {output.combinedResults}
+        
+#         for file in {input.mutualInformation}; do
+#             simname=$(basename $(dirname $file))
+#             mutual_information=$(head -n 1 $file | tr -d '[:space:]')
+#             echo "$simname,$mutual_information" >> {output.combinedResults}
 #         done
 
-#         # combine logs and trees that passed
-#         if [ -z "$log_files" ]; then
-#             echo "No chains have converged based on the ESS threshold."
-#             touch {output.combinedLog}
-#             touch {output.combinedTrees}
-#         else
-#             {params.logcombiner} $log_files -o {output.combinedLog}
-#             {params.logcombiner} $trees_files -o {output.combinedTrees}
-#         fi
-#         """
-    
-# rule convertTreePosteriorToGraphPosterior:
-#     input:
-#         combinedTrees = "{outdir}/beam/{mouse}/combined.trees"
-#     output:
-#         graphPosterior = "{outdir}/beam/{mouse}/posterior_prob_graph.csv"
-#     params:
-#         scripts = config['scripts'],
-#         primaryTissue = config['primaryTissue'],
-#         outdir = "{outdir}/beam/{mouse}",
-#         threads = 1
-#     conda:
-#         "../../envs/networkx.yaml"
-#     shell:
-#         """        
-#         if [ ! -s {input.combinedTrees} ]; then
-#             echo "Combined trees file is empty. Exiting."
-#             touch {output.graphPosterior}
-#         else
-#             python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
-#         fi
-#         """
-
-# rule plotGraphPosterior:
-#     input:
-#         combinedTrees = "{outdir}/beam/{mouse}/combined.trees",
-#         graphPosterior = "{outdir}/beam/{mouse}/posterior_prob_graph.csv"
-#     output:
-#         probabilityPlot = "{outdir}/beam/{mouse}/probability_migration_graph.pdf",
-#         thresholdPlot = "{outdir}/beam/{mouse}/threshold_migration_graph.pdf"
-#     params:
-#         scripts = config['scripts'],
-#         primaryTissue = config['primaryTissue'],
-#         outdir = "{outdir}/beam/{mouse}",
-#         threads = 1,
-#         threshold = 0.5
-#     conda:
-#         "../../envs/networkx.yaml"
-#     shell:
-#         """
-#         if [ ! -s {input.combinedTrees} ] && [ ! -s {input.graphPosterior} ]; then
-#             echo "Combined trees and graph posterior files are empty. Convergence likely not reached. Exiting."
-#             # touch {output.probabilityPlot}
-#             # touch {output.thresholdPlot}
-#         elif [ ! -s {input.graphPosterior} ]; then
-#             echo "Graph posterior file is empty. Is there expected to be more than one tissue in the graph? Exiting."
-#             touch {output.probabilityPlot}
-#             touch {output.thresholdPlot}
-#         else
-#             python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.threshold}
-#         fi
+#         python {params.scripts}/plotting/plot_mutual_information_normalized_histogram.py {output.combinedResults} {output.plot}
 #         """

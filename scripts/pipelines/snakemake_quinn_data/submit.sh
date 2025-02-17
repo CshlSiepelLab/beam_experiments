@@ -10,9 +10,9 @@ snakemake \
 --configfile $REPO_PATH/config/config.yaml \
 --printshellcmds \
 --keep-going \
---rerun-incomplete \
+--ignore-incomplete \
 --cores 1 \
 --jobs 1000 \
---latency-wait 300 \
+--latency-wait 30 \
 --cluster-config $REPO_PATH/config/cluster.yaml \
 --cluster 'qsub -cwd -pe threads {cluster.cores} -l m_mem_free={cluster.mem} -l h_rt={cluster.runtime} -o {cluster.logout} -e {cluster.logerror}'

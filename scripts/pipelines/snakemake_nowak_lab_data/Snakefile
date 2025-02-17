@@ -16,34 +16,34 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
 
 
 def get_elements_from_file(path):
-    # # to get all cps
-    # filename = f"{path}/cp_list.txt"
-    # with open(filename) as f:
-    #     cps = [line.strip() for line in f if set(list(line.strip().replace("CP", ""))) != set('0')]
+    # to get all cps
+    filename = f"{path}/cp_list.txt"
+    with open(filename) as f:
+        cps = [line.strip() for line in f if set(list(line.strip().replace("CP", ""))) != set('0')]
 
-    mouse = os.path.basename(path)
-    if mouse == "MMUS1874":
-        cps = ['CP01', 'CP09', 'CP04', 'CP06']
-    elif mouse == "MMUS1495":
-        cps = ['CP004', 'CP007', 'CP003', 'CP006', 'CP009', 'CP001']
-    elif mouse == "MMUS1492":
-        cps = ['CP05']
-    elif mouse == "MMUS1588":
-        cps = ['CP06', 'CP02', 'CP03', 'CP01']
-    elif mouse == "MMUS1457":
-        cps = ['CP11', 'CP13', 'CP05', 'CP12', 'CP07', 'CP08', 'CP04', 'CP02']
-    elif mouse == "MMUS1469":
-        cps = ['CP003', 'CP043', 'CP005', 'CP001', 'CP009', 'CP006', 'CP007', 'CP002']
-    elif mouse == "MMUS1875":
-        cps = ['CP05', 'CP06', 'CP09', 'CP02', 'CP08', 'CP03']
-    elif mouse == "MMUS1466":
-        cps = ['CP03']
-    elif mouse == "MMUS1467":
-        cps = ['CP07']
-    elif mouse == "MMUS1544":
-        cps = ['CP03', 'CP07', 'CP05', 'CP02']
-    else:
-        cps = []
+    # mouse = os.path.basename(path)
+    # if mouse == "MMUS1874":
+    #     cps = ['CP01', 'CP09', 'CP04', 'CP06']
+    # elif mouse == "MMUS1495":
+    #     cps = ['CP004', 'CP007', 'CP003', 'CP006', 'CP009', 'CP001']
+    # elif mouse == "MMUS1492":
+    #     cps = ['CP05']
+    # elif mouse == "MMUS1588":
+    #     cps = ['CP06', 'CP02', 'CP03', 'CP01']
+    # elif mouse == "MMUS1457":
+    #     cps = ['CP11', 'CP13', 'CP05', 'CP12', 'CP07', 'CP08', 'CP04', 'CP02']
+    # elif mouse == "MMUS1469":
+    #     cps = ['CP003', 'CP043', 'CP005', 'CP001', 'CP009', 'CP006', 'CP007', 'CP002']
+    # elif mouse == "MMUS1875":
+    #     cps = ['CP05', 'CP06', 'CP09', 'CP02', 'CP08', 'CP03']
+    # elif mouse == "MMUS1466":
+    #     cps = ['CP03']
+    # elif mouse == "MMUS1467":
+    #     cps = ['CP07']
+    # elif mouse == "MMUS1544":
+    #     cps = ['CP03', 'CP07', 'CP05', 'CP02']
+    # else:
+    #     cps = []
 
     return cps
 
@@ -58,14 +58,14 @@ rule all:
         #        cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
-        # [expand("{outdir}/beam/{mouse}/{cp}/combined.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/beam/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/beam/{mouse}/{cp}/combined_migration_graph_1.pdf", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/beam/{mouse}/{cp}/posterior_expected_over_parsimony/posterior_expected_migration_counts_over_parsimony.csv", outdir=config['outdir'],
         #             cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
@@ -77,10 +77,10 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/beam/{mouse}/{cp}/metastasis_timing.pdf", outdir=config['outdir'], 
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice]
-        [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
-        [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
+        # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
+        # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
                 
 
 rule runEvotracer:
@@ -284,7 +284,6 @@ rule prepBeamInputs:
         outdir = "{outdir}/beam/{mouse}/{cp}",
         scripts = config['scripts'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        modelDropouts = config['modelDropouts'],
         threads = 1,
     conda:
         "../../envs/networkx.yaml"
@@ -329,15 +328,10 @@ rule prepBeamInputs:
             echo "$proportion" >> $editRateProportions
         done
 
-        # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate, or 0 to not model dropouts and just consider them as unedited sites
-        if [ "{params.modelDropouts}" == "True" ] || [ "{params.modelDropouts}" == "true" ]; then
-            # to model dropouts, use the highest mutation int representation and add 1 since the dropout column is the last in the rate matrix
-            dropoutMutNum=$(( uniq_count + 1 ))
-            tail -n +2 $matrixFile | grep -v '^$' | sed "s/-1/$dropoutMutNum/g" | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > $fasta
-        else
-            # to not model dropouts
-            tail -n +2 $matrixFile | grep -v '^$' | sed 's/-1/0/g' | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > $fasta
-        fi     
+        # Format fasta with the option to replace site dropouts with the new int representation to be modeled by an independent silencing rate
+        # to model dropouts, use the highest mutation int representation and add 1 since the dropout column is the last in the rate matrix
+        dropoutMutNum=$(( uniq_count + 1 ))
+        tail -n +2 $matrixFile | grep -v '^$' | sed "s/-1/$dropoutMutNum/g" | awk '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? $i"\\n" : $i",")}}' > $fasta    
         """
 
 rule runCassiopeia:
@@ -473,7 +467,7 @@ rule runBeam:
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
-        -overwrite \
+        -resume \
         -working \
         -D inName={wildcards.cp} \
         -D fileDir={params.inFileDir} \
@@ -492,12 +486,12 @@ rule runBeam:
 
 rule combineBeamChains:
     input:
-        terminalLog = lambda wildcards: expand("{outdir}/beam/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
-        beamLogs = lambda wildcards: expand("{outdir}/beam/{mouse}/{cp}/chain_{num}.log", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
-        beamResults = lambda wildcards: expand("{outdir}/beam/{mouse}/{cp}/chain_{num}.trees", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
+        terminalLog = lambda wildcards: expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
+        beamLogs = lambda wildcards: expand("{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.log", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
+        beamResults = lambda wildcards: expand("{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.trees", num=range(1, config['numChains']+1), cp=wildcards.cp, mouse=wildcards.mouse, outdir=wildcards.outdir),
     output:
-        combinedLog = "{outdir}/beam/{mouse}/{cp}/combined.log",
-        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees",
+        combinedLog = "{outdir}/beam_gtr/{mouse}/{cp}/combined.log",
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
     params:
         logcombiner = config['logcombiner'],
         essCutoff = config['essCutoff'],
@@ -521,16 +515,21 @@ rule combineBeamChains:
                 echo "$file did not converge, so not including it in the final output"
             fi
         done
+
         # combine logs and trees that passed
-        {params.logcombiner} $log_files -o {output.combinedLog}
-        {params.logcombiner} $trees_files -o {output.combinedTrees}
+        if [ -n "$log_files" ]; then
+            {params.logcombiner} $log_files -o {output.combinedLog}
+            {params.logcombiner} $trees_files -o {output.combinedTrees}
+        else
+            echo "No chains passed the ESS threshold of {params.essCutoff}, so not combining any chains"
+        fi
         """
 
 rule convertTreePosteriorToGraphPosterior:
     input:
-        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees"
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees"
     output:
-        graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv"
+        graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv"
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
@@ -550,14 +549,14 @@ rule convertTreePosteriorToGraphPosterior:
 
 rule plotGraphPosterior:
     input:
-        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees",
-        graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv"
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
+        graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv"
     output:
-        probabilityPlot = "{outdir}/beam/{mouse}/{cp}/probability_migration_graph.pdf",
+        probabilityPlot = "{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf",
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        outdir = "{outdir}/beam/{mouse}/{cp}",
+        outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
         threads = 1,
         minThreshold = 0.4,
         maxThreshold = 0.9,
@@ -581,32 +580,33 @@ rule plotGraphPosterior:
 
 rule sampleFromBeamPosteriorGraphs:
     input:
-        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees",
-        graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv"
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
+        graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv"
     output:
-        sampledGraphs = "{outdir}/beam/{mouse}/{cp}/combined_migration_graph_1.pdf"
+        sampledGraphs = "{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         threads = 1,
         numGraphs = 10
     conda:
         "../../envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.numGraphs}
+        python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.experimentTime} {params.numGraphs}
         """
 
 rule sampleBeamMetastasisTiming:
     input:
-        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees",
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
     output:
-        metastasisTiming = "{outdir}/beam/{mouse}/{cp}/metastasis_timing.pkl"
+        metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl"
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        outdir = "{outdir}/beam/{mouse}/{cp}",
+        outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
         threads = 1
     conda:
         "../../envs/compare_trees.yaml"
@@ -617,15 +617,15 @@ rule sampleBeamMetastasisTiming:
 
 rule plotBeamMetastasisTiming:
     input:
-        metastasisTiming = "{outdir}/beam/{mouse}/{cp}/metastasis_timing.pkl",
-        graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv"
+        metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl",
+        graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv"
     output:
-        metastasisTimingPlot = "{outdir}/beam/{mouse}/{cp}/metastasis_timing.pdf"
+        metastasisTimingPlot = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        outdir = "{outdir}/beam/{mouse}/{cp}",
+        outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
         consensusThreshold = 0.5,
         threads = 1
     conda:

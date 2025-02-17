@@ -6,15 +6,15 @@ import os
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-from ete3 import Tree
+from ete3 import Tree, TreeStyle, NodeStyle, CircleFace, TextFace
 import pandas as pd
 import matplotlib
 import random
 import matplotlib.pyplot as plt
 from networkx.drawing.nx_pydot import to_pydot
 
-# default colors taken from metient method for consistency in visualizations
-DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
+
+DEFAULT_COLORS = ["#006400", "#FF0000", "#0000CD", "#FFA500", "#800080", "#808080", "#FFC0CB", "#ADD8E6", "#A52A2A", "#FFFF00"]*3
 
 def remove_bracket_content(match):
     global annotations
@@ -44,52 +44,68 @@ def label_nodes(newick):
     node_labeled_newick += parts[-1]
     return node_labeled_newick
 
-def tree_to_migration_graph(tree, primary_tissue, outfile):
+def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
     newick_str = tree.split(' ')[3]
     tree = Tree(newick_str, format=1)
     all_tissues = set()
     all_tissues.add(primary_tissue)
+
+    # Get tissue labels and assign node names
     i = 1
     for node in tree.traverse():
-        # split the actual name from the annotation read in from beast where the node.name has the form of 7[&location="TBL"] for a tip or [&location="TBL"] for a internal node without a name
         node.name, annotation = node.name.split("[")
         node.tissue = re.search(r'&location="([^"]+)"', annotation).group(1)
-
-        # Label internal nodes without a name
+        
         if node.name == "":
             if node.is_root():
                 node.name = "root"
             else:
                 node.name = f"node{i}"
                 i += 1
-
+        # # to use the original names (commented out here since it can cause plotting issues)
+        # else:
+        #     node.name = names_dict[node.name]
+                
         if node.tissue not in all_tissues:
             all_tissues.add(node.tissue)
+    
+    # Check that the tree is ultrametric
+    dists = set()
+    for node in tree.traverse():
+        if node.is_leaf():
+            dists.add(round(node.get_distance(tree), 5))
+    if len(dists) != 1:
+        print("WARNING: Tree sample is not ultrametric when it should be for BEAST2 output. Check the newick string to verify: ", newick_str)
 
+    # Add origin node above the root
+    tree_height = dists.pop()
+    origin = Tree(name="origin", dist=0)
+    origin.tissue = primary_tissue
+    root = tree.get_tree_root()
+    root.dist = total_time - tree_height
+    origin.add_child(root)
+
+    # traverse the tree for the migration graph
     migration_counts = {}
 
-    for node in tree.traverse():
-        if node.is_root() and node.tissue != primary_tissue:
-                migration = f"{primary_tissue}_{node.tissue}"
-                if migration in migration_counts:
-                    migration_counts[migration] += 1
-                else:
-                    migration_counts[migration] = 1
-        elif not node.is_root() and node.up.tissue != node.tissue:
-                migration = f"{node.up.tissue}_{node.tissue}"
-                if migration in migration_counts:
-                    migration_counts[migration] += 1
-                else:
-                    migration_counts[migration] = 1
+    for node in origin.traverse():
+        # root is now the origin so skip it here
+        if node.is_root():
+            continue
+        if node.up.tissue != node.tissue:
+            migration = f"{node.up.tissue}_{node.tissue}"
+            if migration in migration_counts:
+                migration_counts[migration] += 1
+            else:
+                migration_counts[migration] = 1
         
-    all_tissues = [primary_tissue] + sorted(list(all_tissues - {primary_tissue}))
-    num_nodes = len(all_tissues)
-
-    all_tissues = sorted(all_tissues)
-    custom_colors = DEFAULT_COLORS
-    custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:num_nodes]) if node != primary_tissue}
+    # get all tissue names and assign them colors
+    all_tissues = sorted(list(set(all_tissues) - {primary_tissue}))
+    custom_colors = {node: color for node, color in zip(all_tissues, DEFAULT_COLORS[0:len(all_tissues)]) if node != primary_tissue}
+    all_tissues = [primary_tissue] + all_tissues
     custom_colors[primary_tissue] = "black"
 
+    # Plot migration graph
     G = nx.MultiDiGraph()
 
     for node in all_tissues:
@@ -104,17 +120,94 @@ def tree_to_migration_graph(tree, primary_tissue, outfile):
         G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label=label, fontsize=24)
 
     dot = nx.nx_pydot.to_pydot(G)
+    outfile = outprefix + "_migration_graph_" + str(num) + ".pdf"
     dot.write_pdf(outfile)
+
+    # Plot tree
+    ts = TreeStyle()
+    ts.rotation = 90
+    ts.scale = 1
+    ts.show_leaf_name = True
+    ts.show_branch_length = False
+    ts.show_border = False
+    ts.show_scale = False
+    ts.mode = "r"
+
+    # Add legend for each color
+    for tissue in all_tissues:
+        ts.legend.add_face(CircleFace(10, custom_colors[tissue]), column=0)
+        ts.legend.add_face(TextFace(tissue, fsize=12), column=1)
+
+    # Setup node style
+    for node in origin.traverse():
+        nstyle = NodeStyle()
+        nstyle["shape"] = "circle"
+        nstyle["size"] = 10
+        nstyle["hz_line_color"] = custom_colors[node.tissue]
+        nstyle["vt_line_color"] = custom_colors[node.tissue]
+        nstyle["hz_line_width"] = 3
+        nstyle["vt_line_width"] = 3
+        nstyle["fgcolor"] = custom_colors[node.tissue]
+        node.set_style(nstyle)
+        
+    outfile = outprefix + "_tree_" + str(num) + ".pdf"
+    origin.render(outfile, tree_style=ts)
+
+    # Plot metastasis timing
+    metastasis_times = {}
+
+    for node in origin.traverse():
+        # root is now the origin so skip it here
+        if node.is_root():
+            continue
+        if node.up.tissue != node.tissue:
+            migration = f"{node.up.tissue}_{node.tissue}"
+            # time of metastasis is halfway on the branch to the node in a new site
+            time = node.up.get_distance(origin) + (node.dist / 2)
+            if migration in metastasis_times:
+                metastasis_times[migration].append(time)
+            else:
+                metastasis_times[migration] = [time]
+    
+    # Plot rectangle spike plot for migration counts
+    fig, ax = plt.subplots(figsize=(12, 2))
+
+    for migration, times in metastasis_times.items():
+        source, target = migration.split('_')
+        color = custom_colors[target]
+        for time in times:
+            ax.plot([time, time], [0, 1], color=color, linewidth=4)
+
+    fs = 18
+    ax.set_xlim(0, total_time)
+    ax.set_ylim(0, 1)
+    ax.set_xlabel('Time', fontsize=fs)
+    ax.set_ylabel('Migrations', fontsize=fs)
+    ax.yaxis.set_visible(False)
+    ax.tick_params(axis='x', labelsize=fs)
+
+    # Add legend
+    handles = [plt.Line2D([0], [0], color=color, lw=4) for color in custom_colors.values()]
+    labels = custom_colors.keys()
+    ax.legend(handles, labels, title='', title_fontsize=fs, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., frameon=False, fontsize=fs)
+
+    plt.tight_layout()
+    outfile = outprefix + "_migration_timing_" + str(num) + ".pdf"
+    plt.savefig(outfile)
+    plt.close()
+
 
 
 # inputs
 posterior_file = sys.argv[1]
 primary_tissue = sys.argv[2]
-n = int(sys.argv[3])
+total_time = int(sys.argv[3])
+n = int(sys.argv[4])
 
 # # testing
-# posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/asv50_ryan_prostate_cancer_data_9_5_24/metastabayes/MMUS1457/CP01/combined.trees"
-# primary_tissue = "PRL"
+# posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25/beam_gtr/5k/58/combined.trees"
+# primary_tissue = "LL"
+# total_time = 54
 # n = 10
 
 
@@ -134,9 +227,9 @@ with open(posterior_file, 'r') as file:
             value = key_value[1].replace(',', '')
             names_dict[key] = value
 
-# discard 10% of tree for burnin
-burnin = int(len(trees) * 0.1)
-trees = trees[burnin:]
+# # discard 10% of tree for burnin
+# burnin = int(len(trees) * 0.1)
+# trees = trees[burnin:]
 
 # get n number of trees randomly from the posterior
 mcc_top_n_trees = random.sample(trees, k=n) # a better approach would be to group the posterior by common features and then sample from those groups, but this is not yet implemented
@@ -144,6 +237,5 @@ mcc_top_n_trees = random.sample(trees, k=n) # a better approach would be to grou
 # sample trees, convert to migration graphs, and output as files
 i = 1
 for tree in mcc_top_n_trees:
-    outfile = posterior_file.split(".")[0] + "_migration_graph_" + str(i) + ".pdf"
-    tree_to_migration_graph(tree, primary_tissue, outfile)
+    plot_tree_and_graph(tree, primary_tissue, total_time, posterior_file.split(".")[0], i)
     i = i + 1

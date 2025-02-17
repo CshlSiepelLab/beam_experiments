@@ -3,10 +3,10 @@
 export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_performance
 
 snakemake \
---until collectMutualInformationAndPlot \
+--until plotGraphPosterior \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
---latency-wait 300 \
+--latency-wait 30 \
 --use-conda \
 --snakefile $REPO_PATH/Snakefile \
 --configfile $REPO_PATH/config/config.yaml \

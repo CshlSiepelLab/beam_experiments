@@ -18,7 +18,7 @@ rule all:
         expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
         expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir=outdir),
-        expand("{outdir}/beam_gtr/incomplete.txt", outdir=outdir),
+        # expand("{outdir}/beam_gtr/incomplete.txt", outdir=outdir),
         expand("{outdir}/gtr_beam_mutual_information.csv", outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
@@ -174,7 +174,7 @@ rule runBeam:
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
-        -overwrite \
+        -resume \
         -working \
         -D inName={wildcards.sim} \
         -D fileDir={params.inFileDir} \
@@ -220,7 +220,7 @@ rule combineBeamChains:
                 trees_file=$(echo $file | sed 's/\.log$/.trees/')
                 trees_files+="-log $trees_file "
             else
-                echo "$file did not converge, so not including it in the final output"
+                echo "$file did not converge, so not including it in the final output"z
             fi
         done
 
@@ -233,37 +233,37 @@ rule combineBeamChains:
         fi
         """
 
-rule checkCombinedBeamConvergence:
-    input:
-        combinedLog = expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir="{outdir}")
-    output:
-        complete = "{outdir}/beam_gtr/complete.txt",
-        incomplete = "{outdir}/beam_gtr/incomplete.txt"
-    params:
-        scripts = config['scripts'],
-        parameter = "posterior",
-        essCutoff = config['essCutoff'],
-        threads = 1,
-        mem = '1G'
-    conda:
-        "../../envs/matplotlib.yaml"
-    shell:
-        """
-        echo "name,ess" > {output.complete}
-        echo "name,ess" > {output.incomplete}
+# rule checkCombinedBeamConvergence:
+#     input:
+#         combinedLog = expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir="{outdir}")
+#     output:
+#         complete = "{outdir}/beam_gtr/complete.txt",
+#         incomplete = "{outdir}/beam_gtr/incomplete.txt"
+#     params:
+#         scripts = config['scripts'],
+#         parameter = "posterior",
+#         essCutoff = config['essCutoff'],
+#         threads = 1,
+#         mem = '1G'
+#     conda:
+#         "../../envs/matplotlib.yaml"
+#     shell:
+#         """
+#         echo "name,ess" > {output.complete}
+#         echo "name,ess" > {output.incomplete}
 
-        files="{input.combinedLog}"
-        for file in $files; do
-            ess_output=$(python {params.scripts}/statistics/ess_from_beast_log.py "$file" "{params.parameter}")
-            ess_value=$(echo "$ess_output" | cut -d' ' -f4)
-            name=$(basename $(dirname $file))
-            if (( $(echo "$ess_value < {params.essCutoff}" | bc -l) )); then
-                echo "$name,$ess_value" >> {output.incomplete}
-            else
-                echo "$name,$ess_value" >> {output.complete}
-            fi
-        done
-        """
+#         files="{input.combinedLog}"
+#         for file in $files; do
+#             ess_output=$(python {params.scripts}/statistics/ess_from_beast_log.py "$file" "{params.parameter}")
+#             ess_value=$(echo "$ess_output" | cut -d' ' -f4)
+#             name=$(basename $(dirname $file))
+#             if (( $(echo "$ess_value < {params.essCutoff}" | bc -l) )); then
+#                 echo "$name,$ess_value" >> {output.incomplete}
+#             else
+#                 echo "$name,$ess_value" >> {output.complete}
+#             fi
+#         done
+#         """
 
 rule mutualInformationBeam:
     input:
@@ -353,13 +353,14 @@ rule plotSampledPosteriorGraphs:
         numGraphs = 10,
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
+        generations = config['generations'],
         threads = 1,
         mem = '1G'
     conda:
         "../../envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.numGraphs}
+        python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.generations} {params.numGraphs}
         """
 
 rule runRandomAndConsensusTissueInference:

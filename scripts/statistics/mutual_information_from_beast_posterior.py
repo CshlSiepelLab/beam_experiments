@@ -50,10 +50,7 @@ def process_tree(tree, origin_tissue):
 
 def compute_migration_mutual_info(nexus_path, origin_tissue, threads):
     trees = dendropy.TreeList.get(path=nexus_path, schema='nexus')
-    burnin_percent = 0.1
-    num_beast_trees = len(trees)
-    num_discard = round(num_beast_trees * burnin_percent)
-    trees = trees[num_discard:]
+
     num_beast_trees = len(trees)
     
     tissue_types = set()

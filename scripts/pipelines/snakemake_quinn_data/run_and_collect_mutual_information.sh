@@ -1,13 +1,14 @@
 #!/bin/bash
 
-main_dir=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3
+main_dir=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25
 
 # Mutual information part
-threads=10
+threads=5
 
 files=$(find $main_dir/beam_gtr -type f -name "combined.trees")
-primary_tissue="PRL"
+primary_tissue="LL"
 
+i=0
 for file in $files; do
     dir=$(dirname $file)
 
@@ -15,8 +16,9 @@ for file in $files; do
     if [ -f $dir/posterior_trees_migration_mutual_information.txt ]; then
         continue
     fi
-
-    qsub -cwd -l m_mem_free=1G -pe threads $threads -b y "python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/statistics/mutual_information_from_beast_posterior.py $file $primary_tissue $dir $threads"    exit
+    
+    qsub -cwd -l m_mem_free=1G -pe threads $threads -N "run$i" -b y "python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/statistics/mutual_information_from_beast_posterior.py $file $primary_tissue $dir $threads"
+    i=$((i+1))
 done
 
 # Collect results
