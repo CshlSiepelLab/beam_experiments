@@ -14,15 +14,15 @@ consensus_graph_file = sys.argv[2]
 origin_time = int(sys.argv[3])  # given in days
 origin_tissue = sys.argv[4]
 min_prob_threshold = float(sys.argv[5])
-outfile = sys.argv[6]
+outprefix = sys.argv[6]
 
 # # testing
-# file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_6_25_asv_cutoff_50/beam/MMUS1544/CP01/metastasis_timing.pkl"
-# consensus_graph_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_6_25_asv_cutoff_50/beam/MMUS1544/CP01/posterior_prob_graph.csv"
-# origin_time = 224   # given in days
-# origin_tissue = "PRL"
+# file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25/beam_gtr/5k/58/metastasis_times.pkl"
+# consensus_graph_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25/beam_gtr/5k/58/posterior_prob_graph.csv"
+# origin_time = 54   # given in days
+# origin_tissue = "LL"
 # min_prob_threshold = 0.50
-# outfile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_6_25_asv_cutoff_50/beam/MMUS1544/CP01/metastasis_timing.pdf"
+# outprefix = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25/beam_gtr/5k/58/metastasis_times"
 
 with open(file_path, 'rb') as file:
     met_times = pkl.load(file)
@@ -35,6 +35,7 @@ with open(consensus_graph_file, 'r') as file:
             allowable_migrations.add(migration)
 
 migration_counts = defaultdict(lambda: np.zeros(origin_time + 1))
+migration_counts_mid_points = defaultdict(list)
 
 for graph in met_times.values():
     for migration, time in graph.items():
@@ -46,6 +47,7 @@ for graph in met_times.values():
         num_intervals = end_range - start_range + 1
         prob = 1/(len(met_times)*num_intervals)
         migration_counts[migration][start_range:end_range+1] += prob
+        migration_counts_mid_points[migration].append((start_range + end_range) / 2)
 
 
 df = pd.DataFrame(migration_counts, index=np.arange(0, origin_time + 1)).T
@@ -95,7 +97,7 @@ for i, source in enumerate(remaining_sources):
     ax.tick_params(axis='both', which='major', labelsize=fs)
     # ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
     if i == len(remaining_sources) - 1:
-        ax.set_xlabel('Time (days)', fontsize=fs)
+        ax.set_xlabel('Time', fontsize=fs)
 
 # Create a single legend for all axes
 handles = [plt.Line2D([0], [0], color=color, lw=2) for tissue, color in tissue_colors.items()]
@@ -105,5 +107,33 @@ fig.legend(handles, labels, bbox_to_anchor=(1.05, 0.75), title='Target Tissue', 
 fig.text(0.001, 0.5, 'Source tissue', va='center', ha='center', rotation='vertical', fontsize=fs)
 
 plt.tight_layout(rect=[0.02, 0, 0.88, 1])
-plt.savefig(outfile, bbox_inches='tight')
+plt.savefig(outprefix + "_prob.pdf", bbox_inches='tight')
+plt.close()
+
+
+# plot midpoints
+fig, axes = plt.subplots(len(remaining_sources), 1, figsize=(15, 3 * len(remaining_sources)), sharex=True, sharey=True)
+for i, source in enumerate(remaining_sources):
+    if len(remaining_sources) == 1:
+        ax = axes
+    else:
+        ax = axes[i]
+    for target in target_tissues:
+        migration = f"{source}_{target}"
+        if migration in migration_counts_mid_points:
+            if "_1" in target:
+                target_reformatted = target.split('_')[0]
+            else:
+                target_reformatted = target
+            ax.hist(migration_counts_mid_points[migration], bins=100, color=tissue_colors[target_reformatted], alpha=0.6, label=target_reformatted)
+    ax.set_ylabel(source, fontsize=fs)
+    ax.tick_params(axis='both', which='major', labelsize=fs)
+    if i == len(remaining_sources) - 1:
+        ax.set_xlabel('Time', fontsize=fs)
+
+fig.legend(handles, labels, bbox_to_anchor=(1.05, 0.75), title='Target Tissue', frameon=False, fontsize=fs, title_fontsize=fs)
+fig.text(0.001, 0.5, 'Source tissue', va='center', ha='center', rotation='vertical', fontsize=fs)
+
+plt.tight_layout(rect=[0.02, 0, 0.88, 1])
+plt.savefig(outprefix + "_midpoints.pdf", bbox_inches='tight')
 plt.close()
