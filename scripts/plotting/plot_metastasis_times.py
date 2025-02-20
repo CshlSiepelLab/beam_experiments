@@ -69,6 +69,7 @@ fig, axes = plt.subplots(len(remaining_sources), 1, figsize=(15, 3 * len(remaini
 fs = 22
 
 # Create a color palette for the tissues
+DEFAULT_COLORS = ["#006400", "#FF0000", "#0000CD", "#FFA500", "#800080", "#808080", "#FFC0CB", "#ADD8E6", "#A52A2A", "#FFFF00"]*3
 palette = sns.color_palette("colorblind", len(target_tissues))
 target_tissues_reformatted = [tissue.split('_')[0] if "_1" in tissue else tissue for tissue in target_tissues]
 tissue_colors = {tissue: palette[i] for i, tissue in enumerate(target_tissues_reformatted)}

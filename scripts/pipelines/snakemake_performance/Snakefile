@@ -24,7 +24,7 @@ rule all:
         expand("{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk", sim=sims, outdir=outdir),
-        # f"{outdir}/precision_recall_curve/precision_recall.pdf",
+        f"{outdir}/precision_recall_curve/precision_recall.pdf",
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
         # expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 11), outdir=outdir),
         # expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 11), outdir=outdir),
@@ -51,13 +51,15 @@ rule runCassiopeia:
 rule runLAML:
     input:
         sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
-        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk",
+        mutationPriors = config['mutationPriors']
     output:
         lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
         lamlTreeNoOrigin = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin.nwk",
         lamlAnnotations = "{outdir}/laml/{sim}/{sim}_laml_annotations.txt",
         lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.nwk"
     params:
+        scripts = config['scripts'],
         outputdir = "{outdir}/laml/{sim}",
         experimentTime = config['generations'],
         threads = 50,
@@ -67,11 +69,17 @@ rule runLAML:
     shell:
         """
         # copy sim matrix and replace -1 with ? for missing data
-        cp {input.sim_matrix} {outdir}/laml/{wildcards.sim}/sim_matrix.csv
-        sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.sim}/sim_matrix.csv
+        laml_sim_matrix={outdir}/laml/{wildcards.sim}/sim_matrix.csv
+        cp {input.sim_matrix} $laml_sim_matrix
+        sed -i 's/-1/?/g; s/\t/,/g' $laml_sim_matrix
+
+        # setup the Q matrix mutation priors for the mutations found in the sim matrix
+        # laml requires a site specific format, so this is just a reformatting step of the input priors
+        mutationPriors={params.outputdir}/mutation_priors.csv
+        python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_sim_matrix {input.mutationPriors} $mutationPriors
 
         # run laml
-        run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --parallel
+        run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --parallel
 
         # remove fake root from tree
         fixed_newick=$(sed "s/);//g" {output.lamlTreeOriginal})
@@ -334,14 +342,17 @@ rule plotGraphPosterior:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         outdir = "{outdir}/beam_gtr/{sim}",
-        consensusThreshold = config['consensusThreshold'],
+        minThreshold = 0.4,
+        maxThreshold = 0.9,
         threads = 1,
         mem = '1G'
     conda:
         "../../envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.consensusThreshold}
+        for threshold in $(seq {params.minThreshold} 0.1 {params.maxThreshold}); do
+            python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} $threshold
+        done
         """
 
 rule plotSampledPosteriorGraphs:
@@ -350,7 +361,7 @@ rule plotSampledPosteriorGraphs:
     output:
         sampledGraph = "{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf"
     params:
-        numGraphs = 10,
+        numGraphs = 5,
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         generations = config['generations'],
@@ -360,6 +371,7 @@ rule plotSampledPosteriorGraphs:
         "../../envs/networkx.yaml"
     shell:
         """
+        export QT_QPA_PLATFORM=offscreen;
         python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.generations} {params.numGraphs}
         """
 

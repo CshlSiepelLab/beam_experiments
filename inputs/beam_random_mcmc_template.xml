@@ -52,12 +52,13 @@
                 <taxonset id="taxonset" spec="TaxonSet" alignment="@alignment"/>
             </stateNode>
 
-            <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" lower="0.0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
+            <parameter id="editRate" spec="parameter.RealParameter" estimate="false" name="stateNode" lower="0.0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.001</parameter>
             <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">0.01</parameter>
 
             <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" lower="0.0" dimension="$(numTissueRates)" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate" spec="parameter.RealParameter" name="stateNode">0.01</parameter>
+            <parameter id="piPrimaryTissueFreq" spec="parameter.RealParameter" dimension="1" estimate="true" lower="0.0" upper="1.0" name="stateNode">0.50</parameter>
 
             <parameter id="birthRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.006</parameter>
             <parameter id="deathRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="5">0.0001</parameter>
@@ -75,12 +76,6 @@
                           samplingRate="0.0" >
                 </distribution>
 
-                <prior id="editRatePrior" name="distribution" x="@editRate">
-                    <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.1</parameter>
-                    </Exponential>
-                </prior>
-
                 <prior id="silencingRatePrior" name="distribution" x="@silencingRate">
                     <Exponential name="distr">
                         <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.1</parameter>
@@ -91,6 +86,10 @@
                     <Exponential name="distr">
                         <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.1</parameter>
                     </Exponential>
+                </prior>
+
+                <prior id="piPrimaryTissueFreqPrior" name="distribution" x="@piPrimaryTissueFreq">
+                    <Uniform name="distr" lower="0.0" upper="1.0"/>
                 </prior>
 
                 <prior id="birthRatePrior" name="distribution" x="@birthRate">
@@ -118,7 +117,7 @@
                 
                 <distribution id="traitLikelihood" spec="beam.likelihood.BeamBeagleAncestralTissueLikelihood" origin="$(generations).0001" tag="location" tree="@tree" data="@tissue">
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1" mutationRate="1.0">
-                        <substModel id="substModelMigration" spec="beam.substitutionmodel.BeamRandomTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue">
+                        <substModel id="substModelMigration" spec="beam.substitutionmodel.BeamRandomTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue" pi="@piPrimaryTissueFreq">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
                                 <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="$(numTissues)" name="frequencies">$(tissueRootFreqs)</parameter>
                             </frequencies>
@@ -138,10 +137,11 @@
     <operator  spec="Exchange" isNarrow="false" tree="@tree" weight="30.0"/>
 
     <!-- operators on phylogenetic parameters-->
-    <!-- operator on edit probabilities while keeping their sum fixed to 1 -->
-    <operator id="editRateScaler" spec="DeltaExchangeOperator" parameter="@editRate" weight="3.0"/>
     <operator id="clockRateScaler" spec="ScaleOperator" parameter="@clockRate.c" scaleFactor="0.8" weight="3.0"/>
     <operator id="silencingRateScaler" spec="ScaleOperator" parameter="@silencingRate" scaleFactor="0.8" weight="3.0"/>
+
+    <!-- operators on ancestral state model sparameters -->
+    <operator id="piPrimaryTissueFreqScaler" spec="ScaleOperator" parameter="@piPrimaryTissueFreq" scaleFactor="0.8" weight="3.0"/>
 
     <!-- Operators on phylodynamic parameters -->
     <operator id="birthRateScaler" spec="ScaleOperator" parameter="@birthRate" scaleFactor="0.8" weight="3.0"/>
@@ -159,7 +159,6 @@
             <log idref="likelihood"/>
             <log idref="prior"/>
             <log id="treeHeight" spec="beast.base.evolution.tree.TreeHeightLogger" tree="@tree"/>
-            <log idref="editRate"/>
             <log idref="silencingRate" />
             <log idref="clockRate.c"/>
             <log idref="relativeGeoRates.s:tissue"/>
@@ -169,6 +168,7 @@
             <log idref="traitLikelihood"/>
             <log idref="birthRate"/>
             <log idref="deathRate"/>
+            <log idref="piPrimaryTissueFreq"/>
         </logger>
 
         <logger id="screenlog" spec="Logger" logEvery="10000">

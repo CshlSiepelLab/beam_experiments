@@ -15,21 +15,20 @@ import pickle
 # tree_stats_path = sys.argv[2]
 
 # testing
-file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_6_25_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/precision_recall_vars.pkl"
-tree_stats_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_6_25_uniform_50cells_50sites_data_7_24_24/true_tree_stats.txt"
+file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_1_31_25_data_from_8_19_24/precision_recall_curve/precision_recall_vars.pkl"
+tree_stats_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_1_31_25_data_from_8_19_24/true_tree_stats.txt"
 
 outdir = os.path.dirname(file)
 
 # optionally to open from pickle file and avoid recalculations above
 with open(file, "rb") as file:
-    machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, all_thresh_df = pickle.load(file)
-    # machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, all_thresh_df, pathfinder_all_thresh_df = pickle.load(file)
+    machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, fitchcount_precisions, fitchcount_recalls, mach2_all_thresh_df, all_thresh_df = pickle.load(file)
 
 tree_stats_df = pd.read_csv(tree_stats_path)
 
 # Merge the dataframes on the 'sim_name' column
 df = all_thresh_df.merge(tree_stats_df, left_on='sim', right_on='sim_name')
-
+df2 = mach2_all_thresh_df.merge(tree_stats_df, left_on='sim', right_on='sim_name')
 
 sim_names = all_thresh_df['sim'].unique()
 
@@ -39,6 +38,8 @@ fs = 24
 for column in ['migration_count', 'comigration_count', 'num_multiedges']:
     df[f'{column}_bin'] = pd.cut(df[column], bins=5)
     df[f'{column}_bin'] = df[f'{column}_bin'].apply(lambda x: f'{int(x.left)}-{int(x.right)}' if pd.notnull(x) else 'NaN')
+    df2[f'{column}_bin'] = pd.cut(df2[column], bins=5)
+    df2[f'{column}_bin'] = df2[f'{column}_bin'].apply(lambda x: f'{int(x.left)}-{int(x.right)}' if pd.notnull(x) else 'NaN')
     
     unique_bins = df[f'{column}_bin'].unique()
     num_bins = len(unique_bins)
@@ -51,9 +52,12 @@ for column in ['migration_count', 'comigration_count', 'num_multiedges']:
     for i, bin_label in enumerate(sorted(unique_bins, key=lambda x: (int(x.split('-')[0]), int(x.split('-')[1])))):
         ax = axes[i]
         bin_df = df[df[f'{column}_bin'] == bin_label]
+        bin_df2 = df2[df2[f'{column}_bin'] == bin_label]
         bin_sims = bin_df['sim'].unique()
+        num_sims = len(bin_sims)
 
         avg_df = bin_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+        avg_df2 = bin_df2.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
         
         avg_machina_precision = np.nanmean([machina_precisions[sim_names.tolist().index(sim)] for sim in bin_sims])
         avg_machina_recall = np.nanmean([machina_recalls[sim_names.tolist().index(sim)] for sim in bin_sims])
@@ -65,9 +69,13 @@ for column in ['migration_count', 'comigration_count', 'num_multiedges']:
         avg_consensus_recall = np.nanmean([consensus_recalls[sim_names.tolist().index(sim)] for sim in bin_sims])
         avg_parsimony_precision = np.nanmean([parsimony_precisions[sim_names.tolist().index(sim)] for sim in bin_sims])
         avg_parsimony_recall = np.nanmean([parsimony_recalls[sim_names.tolist().index(sim)] for sim in bin_sims])
+        avg_fitchcount_precision = np.nanmean([fitchcount_precisions[sim_names.tolist().index(sim)] for sim in bin_sims])
+        avg_fitchcount_recall = np.nanmean([fitchcount_recalls[sim_names.tolist().index(sim)] for sim in bin_sims])
         
         if not avg_df.empty:
             ax.plot(avg_df['recall'], avg_df['precision'], color='grey', label='BEAM')
+        if not avg_df2.empty:
+            ax.plot(avg_df2['recall'], avg_df2['precision'], color='navy', label='MACH2')
         if not np.isnan(avg_machina_recall) and not np.isnan(avg_machina_precision):
             ax.scatter(avg_machina_recall, avg_machina_precision, color='red', label='MACHINA', s=size, marker="x")
         if not np.isnan(avg_metient_recall) and not np.isnan(avg_metient_precision):
@@ -78,12 +86,14 @@ for column in ['migration_count', 'comigration_count', 'num_multiedges']:
             ax.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker="x")
         if not np.isnan(avg_parsimony_recall) and not np.isnan(avg_parsimony_precision):
             ax.scatter(avg_parsimony_recall, avg_parsimony_precision, color='purple', label='Parsimony', s=size, marker="x")
+        if not np.isnan(avg_fitchcount_recall) and not np.isnan(avg_fitchcount_precision):
+            ax.scatter(avg_fitchcount_recall, avg_fitchcount_precision, color='orange', label='FitchCount', s=size, marker="x")
         
         ax.set_xlim(-0.05, 1.05)
         ax.set_ylim(-0.05, 1.05)
         ax.set_xlabel('Recall', fontsize=textsize)
         ax.set_ylabel('Precision', fontsize=textsize)
-        ax.set_title(f'{bin_label}', fontsize=textsize)
+        ax.set_title(f'{bin_label}\n(n={num_sims})', fontsize=textsize)
         ax.tick_params(axis='both', which='major', labelsize=textsize)
         if i == num_bins - 1:
             ax.legend(bbox_to_anchor=(1.05, 0.5), loc='upper left', fontsize=14, edgecolor='none')
@@ -116,9 +126,12 @@ for column in ['met_to_met', 'reseeding', 'clonality']:
     for i, value in enumerate(unique_values):
         ax = axes[i]
         value_df = df[df[column] == value]
+        value_df2 = df2[df2[column] == value]
         value_sims = value_df['sim'].unique()
+        num_sims = len(value_sims)
 
         avg_df = value_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+        avg_df2 = value_df2.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
         
         avg_machina_precision = np.nanmean([machina_precisions[sim_names.tolist().index(sim)] for sim in value_sims])
         avg_machina_recall = np.nanmean([machina_recalls[sim_names.tolist().index(sim)] for sim in value_sims])
@@ -130,9 +143,13 @@ for column in ['met_to_met', 'reseeding', 'clonality']:
         avg_consensus_recall = np.nanmean([consensus_recalls[sim_names.tolist().index(sim)] for sim in value_sims])
         avg_parsimony_precision = np.nanmean([parsimony_precisions[sim_names.tolist().index(sim)] for sim in value_sims])
         avg_parsimony_recall = np.nanmean([parsimony_recalls[sim_names.tolist().index(sim)] for sim in value_sims])
+        avg_fitchcount_precision = np.nanmean([fitchcount_precisions[sim_names.tolist().index(sim)] for sim in value_sims])
+        avg_fitchcount_recall = np.nanmean([fitchcount_recalls[sim_names.tolist().index(sim)] for sim in value_sims])
         
         if not avg_df.empty:
             ax.plot(avg_df['recall'], avg_df['precision'], color='grey', label='BEAM')
+        if not avg_df2.empty:
+            ax.plot(avg_df2['recall'], avg_df2['precision'], color='navy', label='MACH2')
         if not np.isnan(avg_machina_recall) and not np.isnan(avg_machina_precision):
             ax.scatter(avg_machina_recall, avg_machina_precision, color='red', label='MACHINA', s=size, marker="x")
         if not np.isnan(avg_metient_recall) and not np.isnan(avg_metient_precision):
@@ -143,12 +160,14 @@ for column in ['met_to_met', 'reseeding', 'clonality']:
             ax.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker="x")
         if not np.isnan(avg_parsimony_recall) and not np.isnan(avg_parsimony_precision):
             ax.scatter(avg_parsimony_recall, avg_parsimony_precision, color='purple', label='Parsimony', s=size, marker="x")
+        if not np.isnan(avg_fitchcount_recall) and not np.isnan(avg_fitchcount_precision):
+            ax.scatter(avg_fitchcount_recall, avg_fitchcount_precision, color='orange', label='FitchCount', s=size, marker="x")
         
         ax.set_xlim(-0.05, 1.05)
         ax.set_ylim(-0.05, 1.05)
         ax.set_xlabel('Recall', fontsize=textsize)
         ax.set_ylabel('Precision', fontsize=textsize)
-        ax.set_title(f'{value}', fontsize=textsize)
+        ax.set_title(f'{value}\n(n={num_sims})', fontsize=textsize)
         ax.tick_params(axis='both', which='major', labelsize=textsize)
         if i == num_values - 1:
             ax.legend(bbox_to_anchor=(1.05, 0.5), loc='upper left', fontsize=14, edgecolor='none')

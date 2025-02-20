@@ -3,7 +3,7 @@
 export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_nowak_lab_data
 
 snakemake \
---latency-wait 180 \
+--latency-wait 60 \
 --use-conda \
 --use-singularity \
 --singularity-args "--bind $HOME/" \

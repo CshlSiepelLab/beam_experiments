@@ -170,7 +170,7 @@ def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
                 metastasis_times[migration] = [time]
     
     # Plot rectangle spike plot for migration counts
-    fig, ax = plt.subplots(figsize=(12, 2))
+    fig, ax = plt.subplots(figsize=(12, 3))
 
     for migration, times in metastasis_times.items():
         source, target = migration.split('_')
@@ -193,7 +193,7 @@ def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
     # Add legend
     handles = [plt.Line2D([0], [0], color=color, lw=3) for color in custom_colors.values()]
     labels = custom_colors.keys()
-    ax.legend(handles, labels, title='', title_fontsize=fs, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., frameon=False, fontsize=fs)
+    ax.legend(handles, labels, title='', title_fontsize=fs, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., frameon=False, fontsize=14)
 
     plt.tight_layout()
     outfile = outprefix + "_migration_timing_" + str(num) + ".pdf"

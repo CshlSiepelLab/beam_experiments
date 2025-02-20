@@ -21,7 +21,7 @@ while IFS= read -r line; do
         id=$(echo $line | cut -d' ' -f2 | cut -d'_' -f2)
         working_dir_id=${working_dir}/${id}
         mkdir -p $working_dir_id
-        newick=$(echo $line | cut -d' ' -f5-)
+        newick=$(echo $line | cut -d' ' -f4-)
 
         # process beast tree and get migration count
         python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/formatting/beast_posterior_tree_to_newicks.py $newick $id $working_dir_id

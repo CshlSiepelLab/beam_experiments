@@ -3,7 +3,9 @@
 # need an environment with ete3 installed
 # mamba activate compare_trees
 
-posterior_files=$(find /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_6_25_uniform_50cells_50sites_data_7_24_24/beam -type f -name "combined.trees")
+main_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_20_25_uniform_50cells_50sites_data_7_24_24"
+
+posterior_files=$(find $main_dir/beam_gtr -type f -name "combined.trees")
 
 num_cpus=80
 
@@ -25,7 +27,7 @@ process_posterior_file() {
             id=$(echo $line | cut -d' ' -f2 | cut -d'_' -f2)
             working_dir_id=${working_dir}/${id}
             mkdir -p $working_dir_id
-            newick=$(echo $line | cut -d' ' -f5-)
+            newick=$(echo $line | cut -d' ' -f4-)
 
             # process beast tree and get migration count
             python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/formatting/beast_posterior_tree_to_newicks.py $newick $id $working_dir_id

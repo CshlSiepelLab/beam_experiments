@@ -433,6 +433,7 @@ rule sampleFromBeamPosteriorGraphs:
         "../../envs/networkx.yaml"
     shell:
         """
+        export QT_QPA_PLATFORM=offscreen;
         python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.experimentTime} {params.numGraphs}
         """
 

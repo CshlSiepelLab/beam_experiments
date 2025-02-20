@@ -56,7 +56,7 @@
                 <trait idref="dateTrait"/>
                 <taxonset idref="taxonset"/>
             </stateNode>
-            <parameter id="editRate" spec="parameter.RealParameter" estimate="true" name="stateNode" lower="0.0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
+            <parameter id="editRate" spec="parameter.RealParameter" estimate="false" name="stateNode" lower="0.0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.0001</parameter>
             <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">1.0</parameter>
             <parameter spec="parameter.RealParameter" estimate="false" id="mutationRate" name="stateNode">1.0</parameter>
@@ -84,12 +84,6 @@
                           birthRate="@birthRate" deathRate="@deathRate" rho="1.0"
                           samplingRate="0.0" >
                 </distribution>
-
-                <prior id="editRatePrior" name="distribution" x="@editRate">
-                    <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">0.01</parameter>
-                    </Exponential>
-                </prior>
 
                 <prior id="silencingRatePrior" name="distribution" x="@silencingRate">
                     <Exponential name="distr">
@@ -159,8 +153,6 @@
     <operator  spec="Exchange" isNarrow="false" tree="@tree" weight="30.0"/>
 
     <!-- operators on phylogenetic parameters-->
-    <!-- operator on edit probabilities while keeping their sum fixed to 1 -->
-    <operator id="editRateScaler" spec="DeltaExchangeOperator" parameter="@editRate" weight="3.0"/>
     <operator id="clockRateScaler" spec="ScaleOperator" parameter="@clockRate.c" scaleFactor="0.8" weight="3.0"/>
     <operator id="silencingRateScaler" spec="ScaleOperator" parameter="@silencingRate" scaleFactor="0.8" weight="3.0"/>
         
@@ -183,7 +175,6 @@
             <log idref="likelihood"/>
             <log idref="prior"/>
             <log id="treeHeight" spec="beast.base.evolution.tree.TreeHeightLogger" tree="@tree"/>
-            <log idref="editRate"/>
             <log idref="silencingRate" />
             <log idref="clockRate.c"/>
             <log idref="relativeGeoRates.s:tissue"/>

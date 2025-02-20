@@ -4,8 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 import networkx as nx
 
-# default colors taken from metient method for consistency in visualizations
-DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
+DEFAULT_COLORS = ["#006400", "#FF0000", "#0000CD", "#FFA500", "#800080", "#808080", "#FFC0CB", "#ADD8E6", "#A52A2A", "#FFFF00"]*3
 
 
 # inputs
@@ -53,7 +52,7 @@ for edge, probability in graph_dict.items():
         source, target, num = edge.split('_')
         G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, fontsize=24)
 dot = nx.nx_pydot.to_pydot(G)
-dot.write_pdf(f"{outdir}/threshold_migration_graph.pdf")
+dot.write_pdf(f"{outdir}/threshold_{consensus_probability_threshold}_migration_graph.pdf")
 
 # plot the thresholded graph with all edges above consensus_probability_threshold probability but collapse directed multiedges into one with a number label of the original number of those edges
 G = nx.MultiDiGraph()

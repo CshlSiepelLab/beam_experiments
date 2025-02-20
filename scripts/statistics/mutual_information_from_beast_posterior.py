@@ -21,11 +21,18 @@ def normalized_mutual_information(count_matrix):
                 MI += P[i,j] * np.log2(P[i,j] / (p_x[i] * p_y[j]))
 
     # Compute entropies
-    H_x = -np.sum(p_x[p_x > 0] * np.log2(p_x[p_x > 0]))
-    H_y = -np.sum(p_y[p_y > 0] * np.log2(p_y[p_y > 0]))
+    def calc_entropy(p):
+        H = 0
+        for i in p:
+            if i > 0:
+                H += i * np.log2(i)
+        return -H
     
-    # Normalize by minimum entropy
-    NMI = MI / min(H_x, H_y)
+    H_x = calc_entropy(p_x)
+    H_y = calc_entropy(p_y)
+    
+    # Normalize mutual information
+    NMI = (2 * MI) / sum([H_x, H_y])
     
     return NMI
 
