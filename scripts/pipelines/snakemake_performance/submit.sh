@@ -3,7 +3,7 @@
 export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_performance
 
 snakemake \
---until runLAML \
+-n \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
 --latency-wait 30 \

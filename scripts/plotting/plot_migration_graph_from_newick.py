@@ -14,8 +14,7 @@ import dendropy
 from copy import deepcopy
 import networkx as nx
 
-# default colors taken from metient method for consistency in visualizations
-DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
+DEFAULT_COLORS = ["#006400", "#FF0000", "#0000CD", "#FFA500", "#800080", "#808080", "#FFC0CB", "#ADD8E6", "#A52A2A", "#FFFF00"]*3
 
 def get_migration_counts(tree):
     tissues = []
@@ -59,9 +58,9 @@ outfile = sys.argv[3]
 migration_graph, all_tissues = process_tree(newick)
 
 # find all tissues to set the node colors
-all_tissues = sorted(all_tissues)
-custom_colors = DEFAULT_COLORS
-custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:len(all_tissues)]) if node != primary_tissue}
+all_tissues = sorted(list(set(all_tissues) - {primary_tissue}))
+custom_colors = {node: color for node, color in zip(all_tissues, DEFAULT_COLORS[0:len(all_tissues)]) if node != primary_tissue}
+all_tissues = [primary_tissue] + all_tissues
 custom_colors[primary_tissue] = "black"
 
 # plot the probability graph with edge thicknesses proportional to the probability
