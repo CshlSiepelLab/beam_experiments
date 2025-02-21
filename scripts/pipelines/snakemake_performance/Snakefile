@@ -15,9 +15,9 @@ rule all:
         expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
-        expand("{outdir}/mach2/{sim}/P-G-0.graph", outdir=outdir, sim=sims),
-        expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
-        # expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
+        # expand("{outdir}/mach2/{sim}/P-G-0.graph", outdir=outdir, sim=sims),
+        # expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
+        expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         # expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir=outdir),
         # # expand("{outdir}/beam_gtr/incomplete.txt", outdir=outdir),
         # expand("{outdir}/gtr_beam_mutual_information.csv", outdir=outdir),
@@ -52,7 +52,7 @@ rule runLAML:
     input:
         sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
         casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk",
-        mutationPriors = config['mutationPriors']
+        mutationPriors = config['mutationPriors'],
     output:
         lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
         lamlTreeNoOrigin = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin.nwk",
@@ -69,7 +69,7 @@ rule runLAML:
     shell:
         """
         # copy sim matrix, replace header, and replace -1 with ? for missing data
-        laml_sim_matrix={outdir}/laml/{wildcards.sim}/sim_matrix.csv
+        laml_sim_matrix={params.outputdir}/sim_matrix.csv
         num_sites=$(head -n 1 {input.sim_matrix} | awk -F'\t' '{{print NF}}')
         laml_header="cell"
         for i in $(seq 1 $num_sites); do
@@ -105,10 +105,13 @@ rule prepBeamInputs:
     input:
         sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
         leafTissues = lambda wildcards: glob.glob(os.path.join(config['inputpath'], wildcards.sim,"cell_tree_*[0-9].labeling")),
+        mutationPriors = config['mutationPriors'],
     output:
         fasta = "{outdir}/beam/{sim}/{sim}.fasta",
         tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
-        editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
+        sequentialMutationReorderingMap = "{outdir}/beam/{sim}/{sim}_original_mut_to_edit_model_mut.csv",
+        obervedEditRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
+        editRates = "{outdir}/beam/{sim}/{sim}_fixed_edit_rates.txt",
     params:
         scripts = config['scripts'],
         generations = config['generations'],
@@ -124,13 +127,16 @@ rule prepBeamInputs:
 
         # format fasta, re-label mutations sequentially, and get edit rate proportions for new mutation entries
         {params.scripts}/formatting/format_beam_input_files.py {input.sim_matrix} {params.outputdir}
+
+        # get fixed edit rates based on the input edit rate priors filtered for the observed states
+        python {params.scripts}/formatting/get_fixed_edit_rates_for_beam_sim_matrix.py {input.mutationPriors} {output.sequentialMutationReorderingMap} {output.editRates}
         """
 
 rule runBeam:
     input:
         fasta = "{outdir}/beam/{sim}/{sim}.fasta",
         tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
-        editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
+        editRates = "{outdir}/beam/{sim}/{sim}_fixed_edit_rates.txt",
         lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
     output:
         terminalLog = "{outdir}/beam_gtr/{sim}/terminal_{num}.log",
@@ -151,7 +157,7 @@ rule runBeam:
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {input.editRateProportions} | tr '\\n' ' ')
+        initialEditRates=$(cat {input.editRates} | tr '\\n' ' ')
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))
@@ -188,7 +194,7 @@ rule runBeam:
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
-        -resume \
+        -overwrite \
         -working \
         -D inName={wildcards.sim} \
         -D fileDir={params.inFileDir} \
@@ -703,7 +709,7 @@ rule runBeamGtrNs:
     input:
         fasta = "{outdir}/beam/{sim}/{sim}.fasta",
         tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
-        editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
+        editRates = "{outdir}/beam/{sim}/{sim}_fixed_edit_rates.txt",
         lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
     output:
         terminalLog = "{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log",
@@ -724,7 +730,7 @@ rule runBeamGtrNs:
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {input.editRateProportions} | tr '\\n' ' ')
+        initialEditRates=$(cat {input.editRates} | tr '\\n' ' ')
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))
@@ -788,7 +794,7 @@ rule runBeamRandomNs:
     input:
         fasta = "{outdir}/beam/{sim}/{sim}.fasta",
         tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
-        editRateProportions = "{outdir}/beam/{sim}/{sim}_edit_rate_proportions.txt",
+        editRates = "{outdir}/beam/{sim}/{sim}_fixed_edit_rates.txt",
         lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
     output:
         terminalLog = "{outdir}/beam_random_ns/{sim}/terminal_{num}.log",
@@ -809,7 +815,7 @@ rule runBeamRandomNs:
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {input.editRateProportions} | tr '\\n' ' ')
+        initialEditRates=$(cat {input.editRates} | tr '\\n' ' ')
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))

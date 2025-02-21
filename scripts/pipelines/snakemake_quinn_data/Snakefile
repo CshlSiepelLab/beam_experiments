@@ -33,11 +33,11 @@ outdir = config['outdir']
 
 rule all:
     input:
-        [expand("{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}.fasta", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}.fasta", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         expand("{outdir}/asv_counts_per_cp.csv", outdir=outdir),
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
@@ -82,7 +82,7 @@ rule formatTissues:
         matrix = config['inputpath'] + "/character_matrices/m{mouse}_lg{cp}_character_matrix.alleleThresh.txt",
         metafile = config['inputpath'] + "/GSM4905335_meta.{mouse}.tsv"
     output:
-        tissues = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
+        tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
     params:
         scripts = config['scripts'],
         threads = 10,
@@ -97,7 +97,8 @@ rule convertMatrixToSuccessive:
     input:
         alleleTable = config['inputpath'] + "/GSM4905334_alleleTable.{mouse}.txt"
     output:
-        matrix = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv"
+        matrix = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv",
+        mutationPriors = "{outdir}/successive_raw_data/{mouse}/{cp}_mutation_priors.txt"
     params:
         outputdir = "{outdir}/successive_raw_data/{mouse}/",
         scripts = config['scripts'],
@@ -113,7 +114,7 @@ rule convertMatrixToSuccessive:
 rule plotCharacterMatrix:
     input:
         matrix = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv",
-        tissues = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
+        tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
     output:
         charMatrixPlot = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.pdf",
         reformattedTissues = temp("{outdir}/successive_raw_data/{mouse}/{cp}_reformatted_tissues.tsv")
@@ -155,12 +156,14 @@ rule runCassiopeia:
 rule runLAML:
     input:
         matrix = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv",
-        casTree = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
+        casTree = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk",
+        mutationPriors = "{outdir}/successive_raw_data/{mouse}/{cp}_mutation_priors.txt"
     output:
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
         lamlAnnotations = "{outdir}/laml/{mouse}/{cp}/laml_annotations.txt",
         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk"
     params:
+        scripts = config['scripts'],
         outputdir = "{outdir}/laml/{mouse}/{cp}",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         threads = 25,
@@ -170,11 +173,23 @@ rule runLAML:
     shell:
         """
         # copy matrix and replace -1 with ? for missing data
-        cp {input.matrix} {params.outputdir}/matrix.csv
-        sed -i 's/\t/,/g; s/,-1/,?/g' {params.outputdir}/matrix.csv
+        laml_matrix={params.outputdir}/matrix.csv
+        num_sites=$(head -n 1 {input.matrix} | awk -F'\t' '{{print NF}}')
+        laml_header="cell"
+        for i in $(seq 1 $num_sites); do
+                laml_header+=",r$i"
+            done
+        echo $laml_header > $laml_matrix
+        tail -n +2 {input.matrix} >> $laml_matrix
+        sed -i 's/\t/,/g; s/,-1/,?/g' $laml_matrix
+
+        # setup the Q matrix mutation priors for the mutations found in the sim matrix
+        # laml requires a site specific format, so this is just a reformatting step of the input priors
+        mutationPriors={params.outputdir}/mutation_priors.csv
+        python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_matrix {input.mutationPriors} $mutationPriors
 
         # run laml
-        run_laml -c {params.outputdir}/matrix.csv -t {input.casTree} -o {params.outputdir}/laml --timescale {params.experimentTime} --parallel
+        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --parallel
 
         # obtain newick without branch lengths
         sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
@@ -184,9 +199,12 @@ rule runLAML:
 rule prepBeamInputs:
     input:
         matrix = "{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv",
+        mutationPriors = "{outdir}/successive_raw_data/{mouse}/{cp}_mutation_priors.txt"
     output:
-        fasta = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}.fasta",
-        editRateProportions = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_edit_rate_proportions.txt"
+        fasta = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}.fasta",
+        sequentialMutationReorderingMap = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_original_mut_to_edit_model_mut.csv",
+        editRateProportions = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_edit_rate_proportions.txt",
+        editRates = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_fixed_edit_rates.txt",
     params:
         scripts = config['scripts'],
         threads = 1,
@@ -214,13 +232,16 @@ rule prepBeamInputs:
         # format fasta, making -1 into a unique character at the next available int
         dropoutMutNum=$(( uniq_count + 1 ))
         tail -n +2 {input.matrix} | grep -v '^$' | awk -v dropoutMutNum="$dropoutMutNum" '{{printf ">"$1"\\n"; for (i=2; i<=NF; i++) printf (i==NF ? ($i == -1 ? dropoutMutNum : $i)"\\n" : ($i == -1 ? dropoutMutNum : $i) ",")}}' > {output.fasta}
+        
+        # format edit rates from mutation priors, assuming they are already ordered ascending by mutation code, as required by beam to match the data codes
+        tail -n +2 {input.mutationPriors} | cut -d',' -f2 > {output.editRates}
         """
 
 rule runBeamGtr:
     input:
-        fasta = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}.fasta",
-        tissues = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv",
-        editRateProportions = "{outdir}/beam_prep/{mouse}/{cp}/{mouse}_{cp}_edit_rate_proportions.txt",
+        fasta = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}.fasta",
+        tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv",
+        editRates = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_fixed_edit_rates.txt",
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
     output:
         terminalLog = "{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log",
@@ -228,7 +249,7 @@ rule runBeamGtr:
         beamResult = "{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.trees"
     params:
         xml = config['gtrXml'],
-        inFileDir = "{outdir}/beam_prep/{mouse}/{cp}",
+        inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_gtr/{mouse}/{cp}",
         beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
@@ -241,7 +262,7 @@ rule runBeamGtr:
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
+        initialEditRates=$(cat {input.editRates} | tr '\n' ' ')
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))

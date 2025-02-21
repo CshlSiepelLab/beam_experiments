@@ -119,7 +119,7 @@
                 
                 <distribution id="treeLikelihood" spec="beam.likelihood.BeamBeagleTreeLikelihood" origin="$(generations).0001" data="@alignment" tree="@tree">
                     <siteModel spec="SiteModel" id="siteModel" mutationRate="1.0" gammaCategoryCount="1">
-                        <substModel id="substModel" spec="beam.substitutionmodel.BeamMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate" editHeight="$(generations)" editDuration="$(generations)">
+                        <substModel id="substModel" spec="beam.substitutionmodel.BeamMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate">
                             <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
                         </substModel>
                     </siteModel>

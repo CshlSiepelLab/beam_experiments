@@ -21,7 +21,7 @@ with open(reordering_dict_file) as f:
     # skip the header
     f.readline()
     for line in f:
-        new_code, old_code = line.strip().split()
+        new_code, old_code = line.strip().split(",")
         # we dont need to map missing data code to a rate since beam only takes in fixed rates for mutation outcomes, not silenced sites
         if str(new_code) != "-1":
             new_rates[new_code] = original_rates[old_code]

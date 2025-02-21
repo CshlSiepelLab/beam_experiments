@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 import cassiopeia as cas
 
-def convert_matrix_to_successive(character_matrix, mutation_dict):
+def convert_matrix_to_successive(character_matrix, mut_dict, indel_priors):
     # Convert character matrix to successive character matrix
     successive_char_matrix = character_matrix.copy()
     successive_mut_dict = {}
@@ -26,8 +26,13 @@ def convert_matrix_to_successive(character_matrix, mutation_dict):
             else:
                 new_mut_value = successive_mut_dict[mut_str]
             successive_char_matrix.loc[clone, site] = new_mut_value
+    
+    # Compute edit rates for the successive matrix values
+    successive_edit_rates = {}
+    for mut_str, mut_int in successive_mut_dict.items():
+        successive_edit_rates[mut_int] = indel_priors.loc[mut_str]['freq']
 
-    return successive_char_matrix, successive_mut_dict
+    return successive_char_matrix, successive_mut_dict, successive_edit_rates
 
 infile = sys.argv[1]
 lineage = int(sys.argv[2])
@@ -47,7 +52,14 @@ indel_priors = cas.pp.compute_empirical_indel_priors(allele_table, grouping_vari
 group = allele_table[allele_table['LineageGroup'] == lineage]
 
 char_matrix_df, priors, mut_dict = cas.pp.convert_alleletable_to_character_matrix(group, missing_data_state='-1', allele_rep_thresh=0.95, mutation_priors = indel_priors)
-successive_matrix, new_mut_dict = convert_matrix_to_successive(char_matrix_df, mut_dict)
+successive_matrix, new_mut_dict, successive_edit_rates = convert_matrix_to_successive(char_matrix_df, mut_dict, indel_priors)
+
+# write successive edit rates to a file
+successive_edit_rates = dict(sorted(successive_edit_rates.items()))
+with open(f"{outdir}/{lineage}_mutation_priors.txt", 'w') as f:
+    f.write(f"mutation_code,rate\n")
+    for key, value in successive_edit_rates.items():
+        f.write(f"{key},{value}\n")
 
 # write each lineage group's successive matrix to its own file
 char_matrix_df.to_csv(f"{outdir}/{lineage}_original_character_matrix.tsv", sep='\t', index=True, header=True)
