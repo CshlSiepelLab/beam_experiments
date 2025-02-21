@@ -8,7 +8,8 @@ outfile = sys.argv[3]
 
 priors = {}
 with open(mutation_priors, "r") as f:
-    header = f.readline() # skip the header line
+    # skip the header line
+    header = f.readline()
     for line in f.readlines():
         code, rate = line.strip().split(",")
         priors[code] = rate
@@ -16,13 +17,20 @@ with open(mutation_priors, "r") as f:
 
 laml_priors = {}
 with open(sim_matrix, "r") as f:
-    site_numbers = f.readline().strip().split(",")[1:] # the first value is empty at the top left corner of the input sim matrix, above the index cell names
+    # the first value is empty at the top left corner of the input sim matrix, above the index cell names
+    site_numbers = f.readline().strip().split(",")[1:]
     for line in f.readlines():
-        site_codes = line.strip().split(",")[1:] # the first value in the matrix is the cell name, not a mutation
+        # the first value in the matrix is the cell name, not a mutation
+        site_codes = line.strip().split(",")[1:]
         for i, code in enumerate(site_codes):
-            if not code.isdigit() or int(code) <= 0:    # skip missing data as "-" or "?" or "-1" and the unedited 0 state
+            site_name = i
+            # skip missing data as "-" or "?" or "-1" and the unedited 0 state
+            if not code.isdigit() or int(code) <= 0:
+                # laml still expects the site to be in the output file, even if the code is 0 for all cells
+                if site_name not in laml_priors:
+                    laml_priors[site_name] = {}
                 continue
-            site_name = i   # laml wants just int site names for the input priors
+            # laml wants just int site names for the input priors
             if site_name not in laml_priors:
                 laml_priors[site_name] = {}
             if code not in laml_priors:
@@ -36,8 +44,13 @@ laml_priors = {k: v for k, v in sorted(laml_priors.items(), key=lambda item: int
 
 with open(outfile, "w") as f:
     for site, code_dict in laml_priors.items():
-        for code, rate in code_dict.items():
-            f.write(f"{site},{code},{rate}\n")
+        if code_dict:
+            for code, rate in code_dict.items():
+                f.write(f"{site},{code},{rate}\n")
+        # this is again just to satisfy laml requiring all sites to be in the priors even if the site has no mutations
+        # alternatively, these sites can be removed from the mutation matrix since they are uninformative
+        else:
+            f.write(f"{site},1,1\n")
 
 
 
