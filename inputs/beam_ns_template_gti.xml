@@ -119,7 +119,7 @@
             
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 
-                <distribution id="treeLikelihood" spec="beam.likelihood.BeamBeagleTreeLikelihood" origin="$(generations).001" data="@alignment" tree="@tree" siteModel="@siteModel">
+                <distribution id="treeLikelihood" spec="beam.likelihood.BeamIrreversibleTreeLikelihood" origin="$(generations).001" data="@alignment" tree="@tree" siteModel="@siteModel">
                     <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c"/>
                 </distribution>
                 

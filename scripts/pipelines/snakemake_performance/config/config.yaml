@@ -7,7 +7,7 @@ inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/d
 outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_2_20_25_uniform_50cells_50sites_data_7_24_24"
 # outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_20_25_data_from_8_19_24"
 
-# mutation priors for being fixed in LAML and BEAM Q matrix
+# mutation priors for being fixed in Q matrix
 mutationPriors: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/uniform_50cells_50sites_data_7_24_24/mutation_priors.csv
 
 # set path to the beam model xml template files

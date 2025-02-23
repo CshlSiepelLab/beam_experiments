@@ -29,6 +29,10 @@ with open(reordering_dict_file) as f:
 # order the new_rates by the new codes in ascending order
 ordered_rates = [rate for code, rate in sorted(new_rates.items(), key=lambda item: int(item[0]))]
 
+# normalize the rates in case they are not already since beam requires the rates to sum to 1.0
+total_rates = sum([float(rate) for rate in ordered_rates])
+ordered_rates = [str(float(rate) / total_rates) for rate in ordered_rates]
+
 with open(outfile, "w") as f:
     for rate in ordered_rates:
         f.write(f"{rate}\n")

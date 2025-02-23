@@ -42,6 +42,12 @@ with open(sim_matrix, "r") as f:
 
 laml_priors = {k: v for k, v in sorted(laml_priors.items(), key=lambda item: int(item[0]))}
 
+# normalize for each site since this is how laml example priors are formatted
+for site, code_dict in laml_priors.items():
+    total_rate = sum([float(rate) for rate in code_dict.values()])
+    for code, rate in code_dict.items():
+        laml_priors[site][code] = float(rate) / total_rate
+
 with open(outfile, "w") as f:
     for site, code_dict in laml_priors.items():
         if code_dict:
@@ -50,7 +56,7 @@ with open(outfile, "w") as f:
         # this is again just to satisfy laml requiring all sites to be in the priors even if the site has no mutations
         # alternatively, these sites can be removed from the mutation matrix since they are uninformative
         else:
-            f.write(f"{site},1,1\n")
+            f.write(f"{site},0,0\n")
 
 
 

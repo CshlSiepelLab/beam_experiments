@@ -42,7 +42,7 @@ rule all:
         expand("{outdir}/asv_counts_per_cp.csv", outdir=outdir),
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined.log", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        # [expand("{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
 
@@ -202,7 +202,6 @@ rule prepBeamInputs:
         mutationPriors = "{outdir}/successive_raw_data/{mouse}/{cp}_mutation_priors.txt"
     output:
         fasta = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}.fasta",
-        sequentialMutationReorderingMap = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_original_mut_to_edit_model_mut.csv",
         editRateProportions = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_edit_rate_proportions.txt",
         editRates = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_fixed_edit_rates.txt",
     params:
@@ -325,7 +324,7 @@ rule runBeamGtr:
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
-        -resume \
+        -overwrite \
         -working \
         -D inName={wildcards.mouse}_{wildcards.cp} \
         -D fileDir={params.inFileDir} \
@@ -370,7 +369,6 @@ rule combineBeamChains:
                 trees_files+="-log $trees_file "
             else
                 echo "$file did not converge, so not including it in the final output"
-                rm $terminal_log
             fi
         done
 

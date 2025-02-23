@@ -27,10 +27,14 @@ def convert_matrix_to_successive(character_matrix, mut_dict, indel_priors):
                 new_mut_value = successive_mut_dict[mut_str]
             successive_char_matrix.loc[clone, site] = new_mut_value
     
-    # Compute edit rates for the successive matrix values
+    # Compute normalized edit rates for the successive matrix values
     successive_edit_rates = {}
     for mut_str, mut_int in successive_mut_dict.items():
-        successive_edit_rates[mut_int] = indel_priors.loc[mut_str]['freq']
+        successive_edit_rates[mut_int] = indel_priors.loc[mut_str]['count']
+
+    total_count = sum(successive_edit_rates.values())
+    for mut_int in successive_edit_rates:
+        successive_edit_rates[mut_int] = successive_edit_rates[mut_int] / total_count
 
     return successive_char_matrix, successive_mut_dict, successive_edit_rates
 
@@ -46,10 +50,10 @@ outdir = sys.argv[3]
 # read in the proivded allele table
 allele_table = pd.read_csv(infile, sep='\t', usecols = ['cellBC', 'intBC', 'r1', 'r2', 'r3', 'allele', 'LineageGroup', 'sampleID', 'readCount', 'UMI'])
 
-# get indel priors as per Cassiopeis docs
-indel_priors = cas.pp.compute_empirical_indel_priors(allele_table, grouping_variables=['intBC', 'LineageGroup'])
-
 group = allele_table[allele_table['LineageGroup'] == lineage]
+
+# get indel priors as per Cassiopeis docs
+indel_priors = cas.pp.compute_empirical_indel_priors(group)
 
 char_matrix_df, priors, mut_dict = cas.pp.convert_alleletable_to_character_matrix(group, missing_data_state='-1', allele_rep_thresh=0.95, mutation_priors = indel_priors)
 successive_matrix, new_mut_dict, successive_edit_rates = convert_matrix_to_successive(char_matrix_df, mut_dict, indel_priors)
