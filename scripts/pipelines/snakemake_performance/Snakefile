@@ -15,12 +15,12 @@ rule all:
         expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
-        # expand("{outdir}/mach2/{sim}/P-G-0.graph", outdir=outdir, sim=sims),
         # expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
         expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir=outdir),
         # expand("{outdir}/beam_gtr/incomplete.txt", outdir=outdir),
-        # expand("{outdir}/gtr_beam_mutual_information.csv", outdir=outdir),
+        expand("{outdir}/beam_gtr/{sim}/metastasis_timing_prob.pdf", sim=sims, outdir=outdir),
+        expand("{outdir}/gtr_beam_mutual_information.csv", outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
@@ -194,7 +194,7 @@ rule runBeam:
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
-        -overwrite \
+        -resume \
         -working \
         -D inName={wildcards.sim} \
         -D fileDir={params.inFileDir} \
@@ -240,7 +240,7 @@ rule combineBeamChains:
                 trees_file=$(echo $file | sed 's/\.log$/.trees/')
                 trees_files+="-log $trees_file "
             else
-                echo "$file did not converge, so not including it in the final output"z
+                echo "$file did not converge, so not including it in the final output"
             fi
         done
 
@@ -251,6 +251,46 @@ rule combineBeamChains:
         else
             echo "No chains passed the ESS threshold of {params.essCutoff}, so not combining any chains"
         fi
+        """
+
+rule sampleBeamMetastasisTiming:
+    input:
+        combinedTrees = "{outdir}/beam_gtr/{sim}/combined.trees"
+    output:
+        metastasisTiming = "{outdir}/beam_gtr/{sim}/metastasis_timing.pkl"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        experimentTime = config['generations'],
+        outdir = "{outdir}/beam_gtr/{sim}",
+        threads = 1,
+        mem = "1G"
+    conda:
+        "../../envs/compare_trees.yaml"
+    shell:
+        """
+        python {params.scripts}/formatting/sample_metastasis_times_from_posterior.py {input.combinedTrees} {params.experimentTime} {params.primaryTissue} {output.metastasisTiming}
+        """
+
+rule plotBeamMetastasisTiming:
+    input:
+        metastasisTiming = "{outdir}/beam_gtr/{sim}/metastasis_timing.pkl",
+        graphPosterior = "{outdir}/beam_gtr/{sim}/posterior_prob_graph.csv"
+    output:
+        metastasisTimingPlot = "{outdir}/beam_gtr/{sim}/metastasis_timing_prob.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        experimentTime = config['generations'],
+        outdir = "{outdir}/beam_gtr/{sim}",
+        consensusThreshold = 0.5,
+        threads = 1,
+        mem = "1G"
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_metastasis_times.py {input.metastasisTiming} {input.graphPosterior} {params.experimentTime} {params.primaryTissue} {params.consensusThreshold} {params.outdir}/metastasis_timing
         """
 
 # rule checkCombinedBeamConvergence:

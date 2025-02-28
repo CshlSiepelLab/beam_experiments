@@ -62,6 +62,7 @@ rule all:
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined.log", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        expand("{outdir}/gtr_beam_mutual_information.pdf", outdir=config['outdir']),
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf", outdir=config['outdir'],
@@ -75,8 +76,8 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice],
         # [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues_random.pdf", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/beam/{mouse}/{cp}/metastasis_timing.pdf", outdir=config['outdir'], 
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice]
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf", outdir=config['outdir'], 
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice]
         # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
         # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
@@ -356,12 +357,14 @@ rule runLAML:
     input:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt",
         expandedClonesMatrix = "{outdir}/beam/{mouse}/{cp}/expanded_clones_matrix.tsv",
+        editRateProportions = "{outdir}/beam/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
         casTree = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
     output:
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
         lamlAnnotations = "{outdir}/laml/{mouse}/{cp}/laml_annotations.txt",
         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk"
     params:
+        scripts = config['scripts'],
         outputdir = "{outdir}/laml/{mouse}/{cp}",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         threads = 25
@@ -370,11 +373,24 @@ rule runLAML:
     shell:
         """
         # copy matrix and replace -1 with ? for missing data
-        cp {input.expandedClonesMatrix} {params.outputdir}/matrix.csv
-        sed -i 's/-1/?/g; s/\t/,/g' {params.outputdir}/matrix.csv
+        laml_matrix={params.outputdir}/matrix.csv
+        cp {input.expandedClonesMatrix} $laml_matrix
+        sed -i 's/-1/?/g; s/\t/,/g' $laml_matrix
+
+        # format mutation priors
+        reformattedObservedEditRates={params.outputdir}/reformatted_edit_rate_proportions.csv
+        echo "mutation_code,rate" > $reformattedObservedEditRates
+        numEditRates=$(wc -l < {input.editRateProportions})
+        for i in $(seq 1 $numEditRates); do
+            rate=$(sed -n "${{i}}p" {input.editRateProportions})
+            echo "$i,$rate" >> $reformattedObservedEditRates
+        done
+
+        mutationPriors={params.outputdir}/mutation_priors.csv
+        python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_matrix $reformattedObservedEditRates $mutationPriors
 
         # run laml
-        run_laml -c {params.outputdir}/matrix.csv -t {input.casTree} -o {params.outputdir}/laml --timescale {params.experimentTime} --parallel
+        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --parallel
 
         # obtain newick without branch lengths
         sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
@@ -598,6 +614,48 @@ rule sampleFromBeamPosteriorGraphs:
         python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.experimentTime} {params.numGraphs}
         """
 
+rule mutualInformationBeam:
+    input:
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
+    output:
+        mutualInformation = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = 6,
+        mem = '1G'
+    conda:
+        "../../envs/networkx.yaml"
+    shell:
+        """
+        python {params.scripts}/statistics/mutual_information_from_beast_posterior.py {input.combinedTrees} {params.primaryTissue} $(dirname {input.combinedTrees}) {params.threads}
+        """
+
+rule collectMutualInformationAndPlot:
+    input:
+        mutualInformation = [expand("{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt", outdir="{outdir}", cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+    output:
+        combinedResults = "{outdir}/gtr_beam_mutual_information.csv",
+        plot = "{outdir}/gtr_beam_mutual_information.pdf"
+    params:
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        echo "simname,mutual_information_normalized" > {output.combinedResults}
+        
+        for file in {input.mutualInformation}; do
+            simname=$(basename $(dirname $file))
+            mutual_information=$(head -n 1 $file | tr -d '[:space:]')
+            echo "$simname,$mutual_information" >> {output.combinedResults}
+        done
+
+        python {params.scripts}/plotting/plot_mutual_information_normalized_histogram.py {output.combinedResults} {output.plot}
+        """
+
 rule sampleBeamMetastasisTiming:
     input:
         combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
@@ -621,7 +679,7 @@ rule plotBeamMetastasisTiming:
         metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl",
         graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv"
     output:
-        metastasisTimingPlot = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pdf"
+        metastasisTimingPlot = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
@@ -633,7 +691,7 @@ rule plotBeamMetastasisTiming:
         "../../envs/matplotlib.yaml"
     shell:
         """
-        python {params.scripts}/plotting/plot_metastasis_times.py {input.metastasisTiming} {input.graphPosterior} {params.experimentTime} {params.primaryTissue} {params.consensusThreshold} {output.metastasisTimingPlot}
+        python {params.scripts}/plotting/plot_metastasis_times.py {input.metastasisTiming} {input.graphPosterior} {params.experimentTime} {params.primaryTissue} {params.consensusThreshold} {params.outdir}/metastasis_timing
         """
 
 rule prepMachina:

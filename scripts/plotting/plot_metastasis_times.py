@@ -8,21 +8,21 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from collections import defaultdict
 
-# user input
-file_path = sys.argv[1]
-consensus_graph_file = sys.argv[2]
-origin_time = int(sys.argv[3])  # given in days
-origin_tissue = sys.argv[4]
-min_prob_threshold = float(sys.argv[5])
-outprefix = sys.argv[6]
+# # user input
+# file_path = sys.argv[1]
+# consensus_graph_file = sys.argv[2]
+# origin_time = int(sys.argv[3])  # given in days
+# origin_tissue = sys.argv[4]
+# min_prob_threshold = float(sys.argv[5])
+# outprefix = sys.argv[6]
 
-# # testing
-# file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25/beam_gtr/5k/58/metastasis_times.pkl"
-# consensus_graph_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25/beam_gtr/5k/58/posterior_prob_graph.csv"
-# origin_time = 54   # given in days
-# origin_tissue = "LL"
-# min_prob_threshold = 0.50
-# outprefix = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25/beam_gtr/5k/58/metastasis_times"
+# testing
+file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/58/metastasis_timing.pkl"
+consensus_graph_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/58/posterior_prob_graph.csv"
+origin_time = 54   # given in days
+origin_tissue = "LL"
+min_prob_threshold = 0.50
+outprefix = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/58/metastasis_timing"
 
 with open(file_path, 'rb') as file:
     met_times = pkl.load(file)
@@ -70,9 +70,11 @@ fs = 22
 
 # Create a color palette for the tissues
 DEFAULT_COLORS = ["#006400", "#FF0000", "#0000CD", "#FFA500", "#800080", "#808080", "#FFC0CB", "#ADD8E6", "#A52A2A", "#FFFF00"]*3
-palette = sns.color_palette("colorblind", len(target_tissues))
-target_tissues_reformatted = [tissue.split('_')[0] if "_1" in tissue else tissue for tissue in target_tissues]
-tissue_colors = {tissue: palette[i] for i, tissue in enumerate(target_tissues_reformatted)}
+
+all_tissues = sorted(list(set(tissues) - {origin_tissue}))
+custom_colors = DEFAULT_COLORS
+custom_colors = {node: color for node, color in zip(all_tissues, custom_colors[0:len(all_tissues)])}
+custom_colors[origin_tissue] = "black"
 
 for i, source in enumerate(remaining_sources):
     if len(remaining_sources) == 1:
@@ -87,13 +89,10 @@ for i, source in enumerate(remaining_sources):
                 target_reformatted = target.split('_')[0]
             else:
                 target_reformatted = target
-            sns.lineplot(x=df.columns, y=df.loc[(source, target)], ax=ax, color=tissue_colors[target_reformatted])
-            ax.fill_between(df.columns, df.loc[(source, target)], alpha=0.3, color=tissue_colors[target_reformatted])
-            # non_zero_indices = np.nonzero(df.loc[(source, target)])[0]
-            # if len(non_zero_indices) > 0:
-            #     start = non_zero_indices[0]
-            #     end = non_zero_indices[-1]
-            #     ax.hlines(y=y, xmin=df.columns[start], xmax=df.columns[end], color=tissue_colors[target_reformatted], linewidth=5)
+            target_name = target.split('_')[0]
+            sns.lineplot(x=df.columns, y=df.loc[(source, target)], ax=ax, color=custom_colors[target_name])
+            ax.fill_between(df.columns, df.loc[(source, target)], alpha=0.3, color=custom_colors[target_name])
+
     ax.set_ylabel(source, fontsize=fs)
     ax.tick_params(axis='both', which='major', labelsize=fs)
     # ax.tick_params(axis='y', which='both', left=False, right=False, labelleft=False)
@@ -101,8 +100,8 @@ for i, source in enumerate(remaining_sources):
         ax.set_xlabel('Time', fontsize=fs)
 
 # Create a single legend for all axes
-handles = [plt.Line2D([0], [0], color=color, lw=2) for tissue, color in tissue_colors.items()]
-labels = list(tissue_colors.keys())
+handles = [plt.Line2D([0], [0], color=color, lw=2) for tissue, color in custom_colors.items()]
+labels = list(custom_colors.keys())
 fig.legend(handles, labels, bbox_to_anchor=(1.05, 0.75), title='Target Tissue', frameon=False, fontsize=fs, title_fontsize=fs)
 
 fig.text(0.001, 0.5, 'Source tissue', va='center', ha='center', rotation='vertical', fontsize=fs)
@@ -126,7 +125,8 @@ for i, source in enumerate(remaining_sources):
                 target_reformatted = target.split('_')[0]
             else:
                 target_reformatted = target
-            ax.hist(migration_counts_mid_points[migration], bins=100, color=tissue_colors[target_reformatted], alpha=0.6, label=target_reformatted)
+            target_name = target.split('_')[0]
+            ax.hist(migration_counts_mid_points[migration], bins=100, color=custom_colors[target_name], alpha=0.6, label=target_reformatted)
     ax.set_ylabel(source, fontsize=fs)
     ax.tick_params(axis='both', which='major', labelsize=fs)
     if i == len(remaining_sources) - 1:

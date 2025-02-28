@@ -98,8 +98,10 @@ def main(barcode_file, tissue_file, primary_tissue, outfile):
 
     # Update y-axis labels for the matrix
     plt.yticks(np.arange(len(barcode_df.index)) + 0.5, barcode_df.index, rotation=0)
-    plt.xlabel("Barcode sites / Tissues")
-    plt.ylabel("Cells")
+    num_cells = barcode_df.shape[0]
+    num_sites = (barcode_df.shape[1] - 1) - num_tissues
+    plt.xlabel(f"{num_sites} barcode sites and {num_tissues} tissues")
+    plt.ylabel(f"{num_cells} cells")
     plt.title("")
 
     # Set font size for x and y axis tick labels and titles
@@ -110,8 +112,13 @@ def main(barcode_file, tissue_file, primary_tissue, outfile):
     ax.set_xlabel(ax.get_xlabel(), fontsize=fs)
     ax.set_ylabel(ax.get_ylabel(), fontsize=fs)
 
-    # turn off y tick labels
+    # turn off tick labels
     ax.set_yticklabels([])
+    # Set x-axis labels only for the tissues at the end
+    xticks = ax.get_xticks()
+    xticklabels = [''] * (num_sites + 1) + unique_tissues
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels)
 
     # Show the plot
     plt.tight_layout()

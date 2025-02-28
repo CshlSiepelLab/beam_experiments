@@ -37,6 +37,7 @@ rule all:
         [expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/laml/{mouse}/{cp}/laml_tree_with_tissues.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}.fasta", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         expand("{outdir}/asv_counts_per_cp.csv", outdir=outdir),
@@ -45,6 +46,12 @@ rule all:
         # [expand("{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        expand("{outdir}/gtr_beam_mutual_information.pdf", outdir=outdir),
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        expand("{outdir}/beam_gtr/{mouse}/all_consensus_classifications.csv", outdir=outdir, mouse=mouse_ids),
+        expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge.pdf", outdir=outdir, mouse=mouse_ids),
+        expand("{outdir}/beam_gtr/{mouse}/all_consensus_classifications.pdf", outdir=outdir, mouse=mouse_ids),
+        # [expand("{outdir}/mach2/{mouse}/{cp}/consensus_graph.txt", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
 
 rule plotCountsPerCP:
     input:
@@ -166,7 +173,7 @@ rule runLAML:
         scripts = config['scripts'],
         outputdir = "{outdir}/laml/{mouse}/{cp}",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        threads = 25,
+        threads = 50,
         mem = "1G"
     conda:
         "../../envs/laml.yaml"
@@ -193,6 +200,31 @@ rule runLAML:
 
         # obtain newick without branch lengths
         sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
+        """
+
+rule plotLamlTreeWithTissues:
+    input:
+        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
+        tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
+    output:
+        lamlTreeNoOrigin = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_origin.nwk",
+        lamlTreePlot = "{outdir}/laml/{mouse}/{cp}/laml_tree_with_tissues.pdf"
+    params:
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        primaryTissue = config['primaryTissue'],
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTree} | sed 's/^.//' | sed 's/..$//')
+        echo "${{newick}};" > {output.lamlTreeNoOrigin}
+
+        export QT_QPA_PLATFORM=offscreen;
+        python {params.scripts}/plotting/plot_tree_with_tissues.py {output.lamlTreeNoOrigin} {input.tissues} {params.primaryTissue} {params.experimentTime} {output.lamlTreePlot}
         """
 
 
@@ -324,7 +356,7 @@ rule runBeamGtr:
 
         java -Xmx10g -jar {params.beamJar} \
         -threads {params.threads} \
-        -overwrite \
+        -resume \
         -working \
         -D inName={wildcards.mouse}_{wildcards.cp} \
         -D fileDir={params.inFileDir} \
@@ -473,27 +505,260 @@ rule mutualInformationBeam:
         python {params.scripts}/statistics/mutual_information_from_beast_posterior.py {input.combinedTrees} {params.primaryTissue} $(dirname {input.combinedTrees}) {params.threads}
         """
 
-# rule collectMutualInformationAndPlot:
-#     input:
-#         mutualInformation = expand("{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt", sim=sims, outdir='{outdir}')
-#     output:
-#         combinedResults = "{outdir}/gtr_beam_mutual_information.csv",
-#         plot = "{outdir}/gtr_beam_mutual_information.pdf"
-#     params:
-#         scripts = config['scripts'],
-#         threads = 1,
-#         mem = '1G'
-#     conda:
-#         "../../envs/matplotlib.yaml"
-#     shell:
-#         """
-#         echo "simname,mutual_information_normalized" > {output.combinedResults}
+rule collectMutualInformationAndPlot:
+    input:
+        mutualInformation = [expand("{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt", mouse=m, cp=cps_for_mouse[m], outdir="{outdir}") for m in mouse_ids],
+    output:
+        combinedResults = "{outdir}/gtr_beam_mutual_information.csv",
+        plot = "{outdir}/gtr_beam_mutual_information.pdf"
+    params:
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        echo "simname,mutual_information_normalized" > {output.combinedResults}
         
-#         for file in {input.mutualInformation}; do
-#             simname=$(basename $(dirname $file))
-#             mutual_information=$(head -n 1 $file | tr -d '[:space:]')
-#             echo "$simname,$mutual_information" >> {output.combinedResults}
-#         done
+        for file in {input.mutualInformation}; do
+            simname=$(basename $(dirname $file))
+            mutual_information=$(head -n 1 $file | tr -d '[:space:]')
+            echo "$simname,$mutual_information" >> {output.combinedResults}
+        done
 
-#         python {params.scripts}/plotting/plot_mutual_information_normalized_histogram.py {output.combinedResults} {output.plot}
-#         """
+        python {params.scripts}/plotting/plot_mutual_information_normalized_histogram.py {output.combinedResults} {output.plot}
+        """
+
+rule sampleBeamMetastasisTiming:
+    input:
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
+    output:
+        metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
+        threads = 1,
+        mem = "1G"
+    conda:
+        "../../envs/compare_trees.yaml"
+    shell:
+        """
+        python {params.scripts}/formatting/sample_metastasis_times_from_posterior.py {input.combinedTrees} {params.experimentTime} {params.primaryTissue} {output.metastasisTiming}
+        """
+
+rule plotBeamMetastasisTiming:
+    input:
+        metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl",
+        graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv"
+    output:
+        metastasisTimingPlot = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf"
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
+        consensusThreshold = 0.5,
+        threads = 1,
+        mem = "1G"
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_metastasis_times.py {input.metastasisTiming} {input.graphPosterior} {params.experimentTime} {params.primaryTissue} {params.consensusThreshold} {params.outdir}/metastasis_timing
+        """
+
+rule getExpectedClassificationsAndTimes:
+    input:
+        metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl",
+    output:
+        classifications = "{outdir}/beam_gtr/{mouse}/{cp}/{mouse}_{cp}_consensus_classifications.csv",
+        times = "{outdir}/beam_gtr/{mouse}/{cp}/{mouse}_{cp}_expected_migration_times_no_multiedge.csv",
+    params:
+        primaryTissue = config['primaryTissue'],
+        consensusThreshold = 0.5,
+        outprefix = "{outdir}/beam_gtr/{mouse}/{cp}/{mouse}_{cp}",
+        scripts = config['scripts'],
+        threads = 1,
+        mem = "1G"
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        python {params.scripts}/formatting/get_consensus_times_and_classifications.py {input.metastasisTiming} {params.primaryTissue} {params.consensusThreshold} {params.outprefix}
+        """
+
+rule collectExpectedClassificationsAndTimes:
+    input:
+        classifications = [expand("{outdir}/beam_gtr/{mouse}/{cp}/{mouse}_{cp}_consensus_classifications.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        times = [expand("{outdir}/beam_gtr/{mouse}/{cp}/{mouse}_{cp}_expected_migration_times_no_multiedge.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+    output:
+        allClassifications = "{outdir}/beam_gtr/{mouse}/all_consensus_classifications.csv",
+        allTimes = "{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge.csv",
+    params:
+        threads = 1,
+        mem = "1G"
+    shell:
+        """
+        echo "name,primary_to_met,met_to_met,met_to_primary" > {output.allClassifications}
+
+        for file in {input.classifications}; do
+            tail -n +2 $file >> {output.allClassifications}
+            echo >> {output.allClassifications}
+        done
+
+
+        echo "name,source_recipient,mid_time" > {output.allTimes}
+
+        for file in {input.times}; do
+            tail -n +2 $file >> {output.allTimes}
+        done
+        """
+
+
+rule plotExpectedTimes:
+    input:
+        allTimes = "{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge.csv"
+    output:
+        allTimePlot = "{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge.pdf"
+    params:
+        primaryTissue = config['primaryTissue'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_all_metastasis_times.py {input} {params.experimentTime} {params.primaryTissue} {output}
+        """
+
+rule plotClassifications:
+    input:
+        allClassifications = "{outdir}/beam_gtr/{mouse}/all_consensus_classifications.csv"
+    output:
+        allClassificationsPlot = "{outdir}/beam_gtr/{mouse}/all_consensus_classifications.pdf"
+    params:
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_all_classifications.py {input.allClassifications} {output.allClassificationsPlot}
+        """
+
+rule prepMachina:
+    input:
+        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
+        tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
+    output:
+        tissuesTsv = "{outdir}/mach2/{mouse}/{cp}/leaf_tissues.tsv",
+        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
+        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt",
+        tree = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
+    params:
+        primaryTissue = config['primaryTissue'],
+        scripts = config['scripts'],
+        outputdir = "{outdir}/mach2/{mouse}/{cp}",
+        threads = 1
+    singularity:
+        '../../envs/simulate.sif'
+    shell:
+        """
+        # convert csv to tsv for leaf labels
+        sed 's/,/\\t/g' {input.tissues} > {output.tissuesTsv}
+
+        # prep inputs
+        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {output.tissuesTsv}
+
+        # for the labeling and colors file, make sure the names do not have . or - characters
+        sed -i 's/\./_/g; s/-/_/g' {output.labeling}
+        sed -i 's/\./_/g; s/-/_/g' {output.tree}
+        """
+
+
+rule runMach2:
+    input:
+        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
+        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt",
+        tree = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
+    output:
+        mach2tree = "{outdir}/mach2/{mouse}/{cp}/LL-T-0.tree",
+        mach2labeling = "{outdir}/mach2/{mouse}/{cp}/LL-T-0.labeling",
+        mach2graph = "{outdir}/mach2/{mouse}/{cp}/LL-G-0.graph",
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/mach2/{mouse}/{cp}",
+        primaryTissue = config['primaryTissue'],
+        threads = 25,
+        mem = '5G'
+    conda:
+        "../../envs/mach2.yaml"
+    shell:
+        """
+        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
+        module load EBModules
+        module load Gurobi
+
+        unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
+        num_unique_tissues=$(echo "$unique_tissues" | wc -l)
+
+        mach2 {input.tree} {input.labeling} --colormap {input.colors} -p {params.primaryTissue} --log -o {params.outputdir} -t {params.threads}
+
+        if [ "$num_unique_tissues" -gt 1 ]; then
+            # check if primary tissue is in the labeling file
+            if grep -q "{params.primaryTissue}" {input.labeling}; then
+                mach2 {input.tree} {input.labeling} --colormap {input.colors} -p {params.primaryTissue} --log -o {params.outputdir} -t {params.threads}
+
+                # Need to touch output files to satisfy output, only if output with a different name exists
+                if [ $(ls {params.outputdir}/*.graph | wc -l) -gt 0 ] && [ ! -f {output.mach2graph} ]; then
+                    touch {output}
+                fi
+            else
+                most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
+                echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
+                mach2 {input.tree} {input.labeling} --colormap {input.colors} -p $most_common_tissue --log -o {params.outputdir} -t {params.threads}
+
+                # Need to touch output files to satisfy output, only if output with a different name exists
+                if [ $(ls {params.outputdir}/*.graph | wc -l) -gt 0 ] && [ ! -f {output.mach2graph} ]; then
+                    touch {output}
+                fi
+            fi
+        else
+            echo "Only one unique tissue found in the labeling file, so not enough to run Machina. Exiting."
+        fi
+        """
+
+rule gatherMach2Results:
+    input:
+        mach2graph = "{outdir}/mach2/{mouse}/{cp}/LL-G-0.graph"
+    output:
+        mach2Combined = "{outdir}/mach2/{mouse}/{cp}/graph_results_combined.txt",
+        mach2Consensus = "{outdir}/mach2/{mouse}/{cp}/consensus_graph.txt",
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/mach2/{mouse}/{cp}",
+        threads = 1,
+        mem = '1G'
+    shell:
+        """
+        # get all graph files
+        results=$(find $(dirname {input.mach2graph}) -name "*.graph")
+
+        # combine all results
+        echo "result_num,source,target,count" > {output.mach2Combined}
+        for file in $results; do
+            result_num=$(basename $file | cut -d'-' -f3 | cut -d'.' -f1)
+            while IFS= read -r line; do
+                echo "$result_num,$(echo $line | tr ' ' ',')" >> {output.mach2Combined}
+            done < "$file"
+        done
+
+        # get the probability weighted edge consensus graph
+        python {params.scripts}/formatting/convert_mach2_results_to_consensus_graph.py {output.mach2Combined} {output.mach2Consensus}
+        """

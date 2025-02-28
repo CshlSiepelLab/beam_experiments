@@ -56,7 +56,7 @@ with open(outfile, "w") as f:
         # this is again just to satisfy laml requiring all sites to be in the priors even if the site has no mutations
         # alternatively, these sites can be removed from the mutation matrix since they are uninformative
         else:
-            f.write(f"{site},0,0\n")
+            f.write(f"{site},0,1\n")
 
 
 

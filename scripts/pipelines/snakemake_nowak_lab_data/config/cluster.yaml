@@ -32,4 +32,8 @@ plotMachina:
 runMetient:
   mem: '2G'
 
+collectMutualInformationAndPlot:
+  logout: '{wildcards.outdir}/job_logs/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{rule}.err'
+
   
