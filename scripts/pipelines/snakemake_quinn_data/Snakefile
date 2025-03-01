@@ -51,7 +51,8 @@ rule all:
         expand("{outdir}/beam_gtr/{mouse}/all_consensus_classifications.csv", outdir=outdir, mouse=mouse_ids),
         expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge.pdf", outdir=outdir, mouse=mouse_ids),
         expand("{outdir}/beam_gtr/{mouse}/all_consensus_classifications.pdf", outdir=outdir, mouse=mouse_ids),
-        # [expand("{outdir}/mach2/{mouse}/{cp}/consensus_graph.txt", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv", outdir=outdir, mouse=m, cp=cps_for_mouse[m]) for m in mouse_ids],
+        expand("{outdir}/mach2/{mouse}/all_consensus_classifications.csv", outdir=outdir, mouse=mouse_ids),
 
 rule plotCountsPerCP:
     input:
@@ -219,7 +220,7 @@ rule plotLamlTreeWithTissues:
         "../../envs/matplotlib.yaml"
     shell:
         """
-        # remove node names from newick and the origin node
+        # remove the origin node
         newick=$(cat {input.lamlTree} | sed 's/^.//' | sed 's/..$//')
         echo "${{newick}};" > {output.lamlTreeNoOrigin}
 
@@ -602,7 +603,7 @@ rule collectExpectedClassificationsAndTimes:
         mem = "1G"
     shell:
         """
-        echo "name,primary_to_met,met_to_met,met_to_primary" > {output.allClassifications}
+        echo "name,met_to_met,met_to_primary" > {output.allClassifications}
 
         for file in {input.classifications}; do
             tail -n +2 $file >> {output.allClassifications}
@@ -636,36 +637,22 @@ rule plotExpectedTimes:
         python {params.scripts}/plotting/plot_all_metastasis_times.py {input} {params.experimentTime} {params.primaryTissue} {output}
         """
 
-rule plotClassifications:
-    input:
-        allClassifications = "{outdir}/beam_gtr/{mouse}/all_consensus_classifications.csv"
-    output:
-        allClassificationsPlot = "{outdir}/beam_gtr/{mouse}/all_consensus_classifications.pdf"
-    params:
-        scripts = config['scripts'],
-        threads = 1,
-        mem = '1G'
-    conda:
-        "../../envs/matplotlib.yaml"
-    shell:
-        """
-        python {params.scripts}/plotting/plot_all_classifications.py {input.allClassifications} {output.allClassificationsPlot}
-        """
-
 rule prepMachina:
     input:
         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
         tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
     output:
+        lamlTreeNoBranchLengthsNoOrigin = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.nwk",
         tissuesTsv = "{outdir}/mach2/{mouse}/{cp}/leaf_tissues.tsv",
-        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
-        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt",
-        tree = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
+        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.labeling",
+        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin_colors.txt",
+        tree = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.tree",
     params:
         primaryTissue = config['primaryTissue'],
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{mouse}/{cp}",
-        threads = 1
+        threads = 1,
+        mem = '1G'
     singularity:
         '../../envs/simulate.sif'
     shell:
@@ -673,8 +660,12 @@ rule prepMachina:
         # convert csv to tsv for leaf labels
         sed 's/,/\\t/g' {input.tissues} > {output.tissuesTsv}
 
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTreeNoBranchLengths} | sed 's/^.//' | sed 's/..$//')
+        echo "${{newick}};" > {output.lamlTreeNoBranchLengthsNoOrigin}
+
         # prep inputs
-        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {output.tissuesTsv}
+        python {params.scripts}/machina/prep_machina.py {output.lamlTreeNoBranchLengthsNoOrigin} {params.outputdir} {params.primaryTissue} {output.tissuesTsv}
 
         # for the labeling and colors file, make sure the names do not have . or - characters
         sed -i 's/\./_/g; s/-/_/g' {output.labeling}
@@ -684,9 +675,9 @@ rule prepMachina:
 
 rule runMach2:
     input:
-        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
-        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt",
-        tree = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
+        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.labeling",
+        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin_colors.txt",
+        tree = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.tree",
     output:
         mach2tree = "{outdir}/mach2/{mouse}/{cp}/LL-T-0.tree",
         mach2labeling = "{outdir}/mach2/{mouse}/{cp}/LL-T-0.labeling",
@@ -696,19 +687,19 @@ rule runMach2:
         outputdir = "{outdir}/mach2/{mouse}/{cp}",
         primaryTissue = config['primaryTissue'],
         threads = 25,
-        mem = '5G'
-    conda:
-        "../../envs/mach2.yaml"
+        mem = '5G',
     shell:
         """
+        # work around for now due to bad mach2 installation
+        source ~/miniconda3/etc/profile.d/conda.sh 
+        conda activate mach2
+
         # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
         module load EBModules
         module load Gurobi
 
         unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
         num_unique_tissues=$(echo "$unique_tissues" | wc -l)
-
-        mach2 {input.tree} {input.labeling} --colormap {input.colors} -p {params.primaryTissue} --log -o {params.outputdir} -t {params.threads}
 
         if [ "$num_unique_tissues" -gt 1 ]; then
             # check if primary tissue is in the labeling file
@@ -731,6 +722,7 @@ rule runMach2:
             fi
         else
             echo "Only one unique tissue found in the labeling file, so not enough to run Machina. Exiting."
+            touch {output}
         fi
         """
 
@@ -744,7 +736,7 @@ rule gatherMach2Results:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{mouse}/{cp}",
         threads = 1,
-        mem = '1G'
+        mem = '1G',
     shell:
         """
         # get all graph files
@@ -761,4 +753,85 @@ rule gatherMach2Results:
 
         # get the probability weighted edge consensus graph
         python {params.scripts}/formatting/convert_mach2_results_to_consensus_graph.py {output.mach2Combined} {output.mach2Consensus}
+        """
+
+rule getMach2Classifications:
+    input:
+        mach2Consensus = "{outdir}/mach2/{mouse}/{cp}/consensus_graph.txt",
+    output:
+        mach2Classifications = "{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv",
+    params:
+        primaryTissue = config['primaryTissue'],
+        consensusThreshold = 0.5,
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G',
+    shell:
+        """
+        echo "name,met_to_met,met_to_primary" > {output.mach2Classifications}
+
+        met_to_primary=False
+        met_to_met=False
+
+        if [ ! -s {input.mach2Consensus} ]; then
+            echo "Must be false classifications since the consensus graph is empty, indicating mach2 did not run due to only one tissue in labeling input."
+        else
+            while IFS= read -r line; do
+                if [ "$met_to_met" = "True" ] && [ "$met_to_primary" = "True" ]; then
+                    continue
+                fi
+
+                migration=$(echo $line | cut -d',' -f1)
+                freq=$(echo $line | cut -d',' -f2)
+
+                if (( $(echo "$freq > {params.consensusThreshold}" | bc -l) )); then
+                    source=$(echo $migration | cut -d'_' -f1)
+                    target=$(echo $migration | cut -d'_' -f2)
+
+                    if [ "$target" = "{params.primaryTissue}" ]; then
+                        met_to_primary=True
+                    fi
+
+                    if [ "$source" != "{params.primaryTissue}" ] && [ "$target" != "{params.primaryTissue}" ]; then
+                        met_to_met=True
+                    fi
+                fi
+            done < {input.mach2Consensus}
+        fi
+
+        echo "{wildcards.mouse}_{wildcards.cp},$met_to_met,$met_to_primary" >> {output.mach2Classifications}
+        """
+
+rule collectMach2Classifications:
+    input:
+        classifications = [expand("{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+    output:
+        allClassifications = "{outdir}/mach2/{mouse}/all_consensus_classifications.csv",
+    params:
+        threads = 1,
+        mem = "1G"
+    shell:
+        """
+        echo "name,met_to_met,met_to_primary" > {output.allClassifications}
+
+        for file in {input.classifications}; do
+            tail -n +2 $file >> {output.allClassifications}
+        done
+        """
+
+rule plotClassifications:
+    input:
+        allClassifications = "{outdir}/beam_gtr/{mouse}/all_consensus_classifications.csv",
+        allClassificationsMach2 = "{outdir}/mach2/{mouse}/all_consensus_classifications.csv",
+    output:
+        allClassificationsPlot = "{outdir}/beam_gtr/{mouse}/all_consensus_classifications.pdf"
+    params:
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        python {params.scripts}/plotting/plot_all_classifications.py {input.allClassifications} {input.allClassificationsMach2} {output.allClassificationsPlot}
         """
