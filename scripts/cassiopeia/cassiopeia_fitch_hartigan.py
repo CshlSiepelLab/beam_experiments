@@ -7,6 +7,7 @@ import cassiopeia as cas
 import pandas as pd
 import networkx as nx
 
+
 def to_newick(tree: nx.DiGraph, record_branch_lengths: bool = False) -> str:
     """Converts a networkx graph to a newick string.
 
@@ -33,9 +34,7 @@ def to_newick(tree: nx.DiGraph, record_branch_lengths: bool = False) -> str:
             if is_leaf
             else (
                 "("
-                + ",".join(
-                    _to_newick_str(g, child) for child in g.successors(node)
-                )
+                + ",".join(_to_newick_str(g, child) for child in g.successors(node))
                 + ")"
                 + _name
                 + weight_string
@@ -44,6 +43,7 @@ def to_newick(tree: nx.DiGraph, record_branch_lengths: bool = False) -> str:
 
     root = [node for node in tree if tree.in_degree(node) == 0][0]
     return _to_newick_str(tree, root) + ";"
+
 
 newick_file = sys.argv[1]
 tissues_file = sys.argv[2]
@@ -59,14 +59,16 @@ ete_tree = Tree(newick_file, format=3)
 ete_tree.name = "root"
 
 # load the tissues to dictionary
-tissues_df = pd.read_csv(tissues_file, header=None, index_col=0, names=["cell", "tissue"], dtype=str)
+tissues_df = pd.read_csv(
+    tissues_file, header=None, index_col=0, names=["cell", "tissue"], dtype=str
+)
 tissues_df.index = tissues_df.index.astype(str)
 
 # load the tree to cassiopeia object
-tree = cas.data.CassiopeiaTree(tree=ete_tree, cell_meta = tissues_df)
+tree = cas.data.CassiopeiaTree(tree=ete_tree, cell_meta=tissues_df)
 
 # run fitch-hartigan to get a randomly selected parsimonious tissue labeling on the tree
-fh_tree = cas.tl.fitch_hartigan(cassiopeia_tree = tree, meta_item = "tissue", copy=True)
+fh_tree = cas.tl.fitch_hartigan(cassiopeia_tree=tree, meta_item="tissue", copy=True)
 
 # show and save results (keep in mind that only the origin is known above the root, which the parsimony here does not consider but it should not matter)
 name_map = {}
@@ -83,5 +85,5 @@ with open(f"{outdir}/cassiopeia_fitch_hartigan_result.nwk", "w") as f:
 
 
 # Optional: run fitch-count to get a transition matrix of tissue change frequencies across all parsimonious labelings
-fc_matrix = cas.tl.fitch_count(cassiopeia_tree = tree, meta_item = "tissue")
+fc_matrix = cas.tl.fitch_count(cassiopeia_tree=tree, meta_item="tissue")
 fc_matrix.to_csv(f"{outdir}/cassiopeia_fitch_count_result.csv")

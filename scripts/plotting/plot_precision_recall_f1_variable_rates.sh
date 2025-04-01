@@ -1,6 +1,6 @@
 #!/bin/bash
 
-indir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_1_31_25_data_from_8_19_24/raw_data"
+indir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24/raw_data"
 
 # get all files
 files=$(find $indir -type f -name "*issue_labeled_tree.nwk")

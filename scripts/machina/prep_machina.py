@@ -25,7 +25,7 @@ tree = ete3.Tree(leaf_labeled_tree, format=8)
 # Remove tissue labels for internal node names, if they exist
 for node in tree.traverse():
     if node.is_root():
-        node.name = 'root'
+        node.name = "root"
     elif not node.is_leaf():
         current_name = node.name
         new_name = current_name.split("_")[0]
@@ -38,8 +38,8 @@ for node in tree.traverse():
         for child in node.children:
             edges.append((node.name, child.name))
 
-leaf_label = pd.read_csv(leaf_labels_tsv, sep="\s+", names=['leaf', 'tissue'])
-tissues = leaf_label['tissue'].unique().tolist()
+leaf_label = pd.read_csv(leaf_labels_tsv, sep="\s+", names=["leaf", "tissue"])
+tissues = leaf_label["tissue"].unique().tolist()
 
 # Fix when primary tissue is not a leaf label, but required in coloring scheme for MACHINA to run
 if primary_tissue not in tissues:
@@ -54,12 +54,10 @@ for tissue in tissues:
 # output files
 with open(output_file_edges, "w") as file:
     for edge in edges:
-        file.write(f'{edge[0]}\t{edge[1]}\n')
+        file.write(f"{edge[0]}\t{edge[1]}\n")
 
 leaf_label.to_csv(output_file_leaf, sep="\t", index=False, header=False)
 
 with open(output_file_colors, "w") as file:
     for key, value in color_map.items():
-        file.write(f'{key}\t{value}\n')
-
-
+        file.write(f"{key}\t{value}\n")

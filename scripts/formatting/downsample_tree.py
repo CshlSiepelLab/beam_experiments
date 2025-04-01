@@ -34,22 +34,34 @@ plot = True
 
 # read in tissue data
 # Read the first line of the file to check for headers
-with open(tissue_labels_file, 'r') as file:
+with open(tissue_labels_file, "r") as file:
     first_line = file.readline().strip()
 
 # Check if the first line contains the headers
-if 'group_name' in first_line and 'tissues' in first_line:
-    tissue_labels_original = pd.read_csv(tissue_labels_file, sep=r'\s+', index_col=None, dtype=str)
+if "group_name" in first_line and "tissues" in first_line:
+    tissue_labels_original = pd.read_csv(
+        tissue_labels_file, sep=r"\s+", index_col=None, dtype=str
+    )
 else:
-    tissue_labels_original = pd.read_csv(tissue_labels_file, sep=r'\s+', index_col=None, names=['group_name', 'tissues'], dtype=str)
-tissue_group_names_original = [str(l) for l in tissue_labels_original['group_name'].to_list()]
+    tissue_labels_original = pd.read_csv(
+        tissue_labels_file,
+        sep=r"\s+",
+        index_col=None,
+        names=["group_name", "tissues"],
+        dtype=str,
+    )
+tissue_group_names_original = [
+    str(l) for l in tissue_labels_original["group_name"].to_list()
+]
 
 # only keep clones with one tissue label
-tissue_labels = tissue_labels_original[tissue_labels_original['tissues'].str.contains(',', na=False) == False]
-tissue_group_names = [str(l) for l in tissue_labels['group_name'].to_list()]
+tissue_labels = tissue_labels_original[
+    tissue_labels_original["tissues"].str.contains(",", na=False) == False
+]
+tissue_group_names = [str(l) for l in tissue_labels["group_name"].to_list()]
 
 # read in character matrix
-char_matrix = pd.read_csv(char_matrix_file, sep='\t', index_col=0)
+char_matrix = pd.read_csv(char_matrix_file, sep="\t", index_col=0)
 char_matrix.index = char_matrix.index.astype(str)
 
 # read in tree
@@ -72,11 +84,16 @@ for node in tree.traverse():
 tree_leaves = [node.name for node in tree_leaf_nodes]
 
 # run basic checks
-assert set(tree_leaves) == set(tissue_group_names_original), "The tree leaves from the newick file input do not match the tissue group names input."
+assert set(tree_leaves) == set(
+    tissue_group_names_original
+), "The tree leaves from the newick file input do not match the tissue group names input."
 
 num_clones = len(tree_leaves)
 print("Initial number of clones: ", num_clones)
-print("Number of clones with more than one tissue label: ", len(tissue_group_names_original) - len(tissue_group_names))
+print(
+    "Number of clones with more than one tissue label: ",
+    len(tissue_group_names_original) - len(tissue_group_names),
+)
 print("Number of clones with one tissue label: ", len(tissue_group_names))
 
 # downsample the tree tips by considering pairwise distances between candidate tips with one tissue label while leaving tips with more than one tissue label untouched
@@ -84,18 +101,32 @@ candidates = [node for node in tree_leaf_nodes if str(node.name) in tissue_group
 
 nodes_to_remove = set()
 distance_values = []
-for tissue in tissue_labels['tissues'].unique():
-    nodes_in_tissue = [node for node in candidates if tissue_labels.loc[tissue_labels['group_name'] == str(node.name), 'tissues'].values[0] == str(tissue)]
-    distances=[[node1, node2, node1.get_distance(str(node2.name))] for node1, node2 in combinations(nodes_in_tissue, 2)]
+for tissue in tissue_labels["tissues"].unique():
+    nodes_in_tissue = [
+        node
+        for node in candidates
+        if tissue_labels.loc[
+            tissue_labels["group_name"] == str(node.name), "tissues"
+        ].values[0]
+        == str(tissue)
+    ]
+    distances = [
+        [node1, node2, node1.get_distance(str(node2.name))]
+        for node1, node2 in combinations(nodes_in_tissue, 2)
+    ]
     distance_values.extend(distances)
     for node1, node2, distance in distances:
         if distance < threshold:
             if node1 not in nodes_to_remove and node2 not in nodes_to_remove:
                 char_matrix_node1 = char_matrix.loc[node1.name]
                 char_matrix_node2 = char_matrix.loc[node2.name]
-                set1 = set(char_matrix_node1[char_matrix_node1 != 0][char_matrix_node1 != -1])
-                set2 = set(char_matrix_node2[char_matrix_node2 != 0][char_matrix_node2 != -1])
-                
+                set1 = set(
+                    char_matrix_node1[char_matrix_node1 != 0][char_matrix_node1 != -1]
+                )
+                set2 = set(
+                    char_matrix_node2[char_matrix_node2 != 0][char_matrix_node2 != -1]
+                )
+
                 # if they have the same number of unique mutations, choose the one with the least missing data
                 if len(set1) == len(set2):
                     node1_missing = (char_matrix_node1 == -1).sum()
@@ -112,7 +143,7 @@ for tissue in tissue_labels['tissues'].unique():
                     nodes_to_remove.add(node2)
                 else:
                     nodes_to_remove.add(node1)
-                
+
 # # Plot histogram of values and threshold
 # if plot:
 #     plt.hist([distance for _, _, distance in distance_values], bins=100, edgecolor='black', color='grey')
@@ -131,16 +162,30 @@ keep_names = [name for name in tree_leaves if name not in remove_names]
 tree_copy.prune(keep_names, preserve_branch_length=True)
 
 # filter tissue labels
-tissue_labels_filtered = tissue_labels_original[~tissue_labels_original['group_name'].isin(remove_names)]
+tissue_labels_filtered = tissue_labels_original[
+    ~tissue_labels_original["group_name"].isin(remove_names)
+]
 
 # filter char matrix
 char_matrix_filtered = char_matrix.drop(remove_names)
 
 # assign colors to the tip names based on the tissue labels
-DEFAULT_COLORS = ["black", "red", "green", "purple", "blue", "orange", "brown", "pink", "grey", "yellow", "cyan"]
+DEFAULT_COLORS = [
+    "black",
+    "red",
+    "green",
+    "purple",
+    "blue",
+    "orange",
+    "brown",
+    "pink",
+    "grey",
+    "yellow",
+    "cyan",
+]
 tissue_colors = {}
-i=0
-for tissue in tissue_labels['tissues'].unique():
+i = 0
+for tissue in tissue_labels["tissues"].unique():
     tissue_colors[tissue] = DEFAULT_COLORS[i]
     i += 1
 
@@ -148,7 +193,11 @@ color_dict = {}
 for node in tree.traverse():
     if node.is_leaf():
         if str(node.name) in tissue_group_names:
-            color_dict[str(node.name)] = tissue_colors[tissue_labels.loc[tissue_labels['group_name'] == str(node.name), 'tissues'].values[0]]
+            color_dict[str(node.name)] = tissue_colors[
+                tissue_labels.loc[
+                    tissue_labels["group_name"] == str(node.name), "tissues"
+                ].values[0]
+            ]
 
 # plot the trees side by side
 if plot:
@@ -159,48 +208,82 @@ if plot:
     ax.set_ylim(9, 21)
     ypos_val = 10
 
-    results_left = plot_phylo.plot_phylo(tree.write(), ax=ax, xpos=5, ypos=ypos_val, width=35,
-                                      show_axis=False, show_support=False,
-                                      font_size=10, col_dict=color_dict,
-                                      rev_align_tips=False)
-    results_right = plot_phylo.plot_phylo(tree_copy.write(), ax=ax, xpos=82, ypos=10, width=35,
-                                       show_axis=False, show_support=False,
-                                       reverse=True,
-                                       font_size=10, col_dict=color_dict,
-                                       rev_align_tips=False) 
-    
+    results_left = plot_phylo.plot_phylo(
+        tree.write(),
+        ax=ax,
+        xpos=5,
+        ypos=ypos_val,
+        width=35,
+        show_axis=False,
+        show_support=False,
+        font_size=10,
+        col_dict=color_dict,
+        rev_align_tips=False,
+    )
+    results_right = plot_phylo.plot_phylo(
+        tree_copy.write(),
+        ax=ax,
+        xpos=82,
+        ypos=10,
+        width=35,
+        show_axis=False,
+        show_support=False,
+        reverse=True,
+        font_size=10,
+        col_dict=color_dict,
+        rev_align_tips=False,
+    )
+
     # Connect labels between the trees
     links = []
     for r1 in results_right:
-        ind1 = results_left[r1]['index']
-        ind2 = results_right[r1]['index']
+        ind1 = results_left[r1]["index"]
+        ind2 = results_right[r1]["index"]
         links.append(r1)
 
     for link in links:
         # Retrieve the positions of the non-matched labels
         left_box = results_left[link]
         right_box = results_right[link]
-        
+
         # Get the position of the labels in each tree
-        left_x = left_box['xmax']
-        left_y = left_box['ymid']
-        
-        right_x = right_box['xmin']
-        right_y = right_box['ymid']
+        left_x = left_box["xmax"]
+        left_y = left_box["ymid"]
+
+        right_x = right_box["xmin"]
+        right_y = right_box["ymid"]
 
         # Plot the points on the left tree
         ax.scatter(left_x, left_y, color=color_dict[link], s=5)
-        
+
         # Plot the points on the right tree
         ax.scatter(right_x, right_y, color=color_dict[link], s=5)
-        
-        # Connect the two points
-        ax.plot([left_x, right_x], [left_y, right_y], color=color_dict[link], linewidth=0.5)
 
-    ax.text(22.5, 21.5, f"Original Tree: {num_clones} tips", ha='center', va='center', fontsize=16, color='black')
-    ax.text(99.5, 21.5, f"Downsampled Tree: {len(keep_names)} tips", ha='center', va='center', fontsize=16, color='black')
-    ax.axvline(x=(5 + (35 * (1-thresh))), color='r', linestyle='dashed', linewidth=1)
-    ax.axvline(x=(82 + (35 * thresh)), color='r', linestyle='dashed', linewidth=1)
+        # Connect the two points
+        ax.plot(
+            [left_x, right_x], [left_y, right_y], color=color_dict[link], linewidth=0.5
+        )
+
+    ax.text(
+        22.5,
+        21.5,
+        f"Original Tree: {num_clones} tips",
+        ha="center",
+        va="center",
+        fontsize=16,
+        color="black",
+    )
+    ax.text(
+        99.5,
+        21.5,
+        f"Downsampled Tree: {len(keep_names)} tips",
+        ha="center",
+        va="center",
+        fontsize=16,
+        color="black",
+    )
+    ax.axvline(x=(5 + (35 * (1 - thresh))), color="r", linestyle="dashed", linewidth=1)
+    ax.axvline(x=(82 + (35 * thresh)), color="r", linestyle="dashed", linewidth=1)
     f.suptitle(f"Threshold at {thresh*100}% of tree height", fontsize=16)
     plt.tight_layout()
     plt.savefig(outprefix + "_downsampled_tree_comparison.pdf")
@@ -210,7 +293,9 @@ if plot:
 tree_copy.write(outfile=f"{outprefix}_downsampled_tree.nwk", format=5)
 
 # tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep=',', header=False, index=False)  # for sim data
-tissue_labels_filtered.to_csv(outprefix + "_tissue_labels.tsv", sep='\t', header=True, index=False) # for yang data
+tissue_labels_filtered.to_csv(
+    outprefix + "_tissue_labels.tsv", sep="\t", header=True, index=False
+)  # for yang data
 
 # output downsampled character matrix
-char_matrix_filtered.to_csv(outprefix + "_char_matrix.tsv", sep='\t')
+char_matrix_filtered.to_csv(outprefix + "_char_matrix.tsv", sep="\t")

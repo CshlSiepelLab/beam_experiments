@@ -13,11 +13,11 @@ outfile = sys.argv[3]
 metient_loss_graphs = {}
 with open(metient, "r") as f:
     next(f)  # Skip the first line header
-    i=1
+    i = 1
     for line in f.readlines():
         loss, graph = line.strip().split("\t")
         metient_loss_graphs[i] = graph
-        i+=1
+        i += 1
 
 reseeding_counts = []
 

@@ -36,4 +36,28 @@ collectMutualInformationAndPlot:
   logout: '{wildcards.outdir}/job_logs/{rule}.out'
   logerror: '{wildcards.outdir}/job_logs/{rule}.err'
 
+collectRfDistances:
+  logout: '{wildcards.outdir}/job_logs/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{rule}.err'
+
+plotRfDistances:
+  logout: '{wildcards.outdir}/job_logs/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{rule}.err'
+
+collectOverallClassificationsAndTimes:
+  logout: '{wildcards.outdir}/job_logs/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{rule}.err'
+
+plotClassifications:
+  logout: '{wildcards.outdir}/job_logs/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{rule}.err'
+
+collectMouseLevelTimes:
+  logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
+plotExpectedTimes:
+  logout: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
   

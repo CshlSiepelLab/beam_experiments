@@ -32,9 +32,21 @@ overall_all_thresh_df = pd.DataFrame()
 # Process each file and append data to overall variables
 for f in fs:
     with open(f, "rb") as file:
-        machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, all_thresh_df = pickle.load(file)
+        (
+            machina_precisions,
+            machina_recalls,
+            metient_precisions,
+            metient_recalls,
+            random_precisions,
+            random_recalls,
+            consensus_precisions,
+            consensus_recalls,
+            parsimony_precisions,
+            parsimony_recalls,
+            all_thresh_df,
+        ) = pickle.load(file)
         # machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, all_thresh_df, pathfinder_all_thresh_df = pickle.load(file)
-        
+
         overall_machina_precisions.extend(machina_precisions)
         overall_machina_recalls.extend(machina_recalls)
         overall_metient_precisions.extend(metient_precisions)
@@ -45,11 +57,27 @@ for f in fs:
         overall_consensus_recalls.extend(consensus_recalls)
         overall_parsimony_precisions.extend(parsimony_precisions)
         overall_parsimony_recalls.extend(parsimony_recalls)
-        overall_all_thresh_df = pd.concat([overall_all_thresh_df, all_thresh_df], ignore_index=True)
+        overall_all_thresh_df = pd.concat(
+            [overall_all_thresh_df, all_thresh_df], ignore_index=True
+        )
         # overall_pathfinder_all_thresh_df = pd.concat([overall_pathfinder_all_thresh_df, pathfinder_all_thresh_df], ignore_index=True)
 
 # Save the overall variables to the outfile
 with open(outfile, "wb") as out_file:
     # pickle.dump((overall_machina_precisions, overall_machina_recalls, overall_metient_precisions, overall_metient_recalls, overall_random_precisions, overall_random_recalls, overall_consensus_precisions, overall_consensus_recalls, overall_parsimony_precisions, overall_parsimony_recalls, overall_all_thresh_df, overall_pathfinder_all_thresh_df), out_file)
-    pickle.dump((overall_machina_precisions, overall_machina_recalls, overall_metient_precisions, overall_metient_recalls, overall_random_precisions, overall_random_recalls, overall_consensus_precisions, overall_consensus_recalls, overall_parsimony_precisions, overall_parsimony_recalls, overall_all_thresh_df), out_file)
-
+    pickle.dump(
+        (
+            overall_machina_precisions,
+            overall_machina_recalls,
+            overall_metient_precisions,
+            overall_metient_recalls,
+            overall_random_precisions,
+            overall_random_recalls,
+            overall_consensus_precisions,
+            overall_consensus_recalls,
+            overall_parsimony_precisions,
+            overall_parsimony_recalls,
+            overall_all_thresh_df,
+        ),
+        out_file,
+    )

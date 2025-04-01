@@ -22,8 +22,8 @@ for node in tree_beast_annotation.traverse():
     if name.startswith("[&location="):
         name = f"node{i}{name}"
         i += 1
-    name = name.replace("[&location=\"", "_")
-    name = name.replace("\"]", "")
+    name = name.replace('[&location="', "_")
+    name = name.replace('"]', "")
     node.name = name
 
 # remove annotations

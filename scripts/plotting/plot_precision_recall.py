@@ -12,6 +12,7 @@ from copy import deepcopy
 import ast
 import pickle
 
+
 def get_migration_counts(tree):
     migration_counts = {}
     for node in tree.traverse():
@@ -29,6 +30,7 @@ def get_migration_counts(tree):
                 migration_counts[migration] += 1
     return migration_counts
 
+
 def optionally_add_origin_migration(tree, counts, primary):
     counts_copy = counts
     root_node_location = tree.get_tree_root().name.split("_")[-1]
@@ -40,21 +42,23 @@ def optionally_add_origin_migration(tree, counts, primary):
             counts_copy[migration] += 1
     return counts_copy
 
+
 def process_tree(filepath):
     # set primary tissue
-    primary_tissue="P"
+    primary_tissue = "P"
     # read in tree files to ete3 tree
     tree = Tree(filepath, format=8)
     # set tree root to primary
-    tree.get_tree_root().name = f'0_{primary_tissue}'
+    tree.get_tree_root().name = f"0_{primary_tissue}"
     # get counts of migration events in a dict with source_recipient tissue key and count integer value
-    counts=get_migration_counts(tree)
+    counts = get_migration_counts(tree)
     return counts
+
 
 def process_csv(filepath):
     # read in csv file to dict
     counts = {}
-    with open(filepath, 'r') as f:
+    with open(filepath, "r") as f:
         for line in f:
             # skip header line that typically is "source,recipient"
             if "source" in line:
@@ -67,6 +71,7 @@ def process_csv(filepath):
                 counts[migration] += 1
     return counts
 
+
 def remove_zero_length_nodes(tree):
     for node in tree.internal_nodes():
         if node.edge_length == 0:
@@ -77,20 +82,22 @@ def remove_zero_length_nodes(tree):
                 for child in children:
                     parent.add_child(child)
 
+
 def dendropy_beast_to_ete_newick_with_strict_locations(tree):
     # Note: this method does not convert the branch lengths properly since they are not used
     tree_copy = deepcopy(tree)
     i = 0
     for node in tree_copy.preorder_node_iter():
         try:
-            prediction = node.taxon.label + "_" + node.annotations.get_value('location')
+            prediction = node.taxon.label + "_" + node.annotations.get_value("location")
             node.taxon.label = prediction
         except Exception as e:
-            prediction = f"node{i}" + "_" + node.annotations.get_value('location')
+            prediction = f"node{i}" + "_" + node.annotations.get_value("location")
             i += 1
         node.label = prediction
-    ete_tree = Tree(tree_copy.as_string(schema="newick").replace("\'", ""), format=3)
+    ete_tree = Tree(tree_copy.as_string(schema="newick").replace("'", ""), format=3)
     return ete_tree
+
 
 def calculate_metrics(true_counts, inferred_counts):
     TP = 0
@@ -114,11 +121,11 @@ def calculate_metrics(true_counts, inferred_counts):
             FN += true_counts[key]
     # compute precision as TP/(TP + FP) and recall as TP/(TP + FN)
     if (TP + FP) != 0:
-        precision = TP/(TP + FP)
+        precision = TP / (TP + FP)
     else:
         precision = 0
     if (TP + FN) != 0:
-        recall = TP/(TP + FN)
+        recall = TP / (TP + FN)
     else:
         recall = 0
     # calculate F1 score (2((precision * recall)/(precision + recall)))
@@ -128,13 +135,16 @@ def calculate_metrics(true_counts, inferred_counts):
         f1 = 2 * ((precision * recall) / (precision + recall))
     return f1, recall, precision
 
-def posterior_threshold_metrics(posterior_prob_graph, true_counts, i, t = 0.50):
+
+def posterior_threshold_metrics(posterior_prob_graph, true_counts, i, t=0.50):
     max_threshold = max(map(float, posterior_prob_graph.values()))
     thresholds = [j for j in np.arange(0, max_threshold, 0.01)]
     rows = []
     for thresh in thresholds:
-        thresh_counts = {key: value for key, value in posterior_prob_graph.items() if value > thresh}
-        edges = ['_'.join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
+        thresh_counts = {
+            key: value for key, value in posterior_prob_graph.items() if value > thresh
+        }
+        edges = ["_".join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
         thresh_counts = {}
         for edge in edges:
             if edge not in thresh_counts:
@@ -142,29 +152,41 @@ def posterior_threshold_metrics(posterior_prob_graph, true_counts, i, t = 0.50):
             else:
                 thresh_counts[edge] += 1
         f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
-        rows.append({'Threshold': thresh, 'precision': precision, 'recall': recall, 'sim': i, 'thresh_counts': thresh_counts})
+        rows.append(
+            {
+                "Threshold": thresh,
+                "precision": precision,
+                "recall": recall,
+                "sim": i,
+                "thresh_counts": thresh_counts,
+            }
+        )
     thresh_prec_rec = pd.DataFrame(rows)
 
     # check that the max for the data is not below the threshold for the consensus graph
     if max_threshold < t:
         t = np.floor(max_threshold * 100) / 100
-    threshold_df = thresh_prec_rec[np.isclose(thresh_prec_rec['Threshold'], t)]
-    post_prob_precision = threshold_df['precision'].values[0]
-    post_prob_recall = threshold_df['recall'].values[0]
-    post_prob_f1 = 2 * ((post_prob_precision * post_prob_recall) / (post_prob_precision + post_prob_recall))
+    threshold_df = thresh_prec_rec[np.isclose(thresh_prec_rec["Threshold"], t)]
+    post_prob_precision = threshold_df["precision"].values[0]
+    post_prob_recall = threshold_df["recall"].values[0]
+    post_prob_f1 = 2 * (
+        (post_prob_precision * post_prob_recall)
+        / (post_prob_precision + post_prob_recall)
+    )
 
     return thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision
 
+
 # user inputs
 dirs = (sys.argv[1]).split(",")
-primary_tissue=sys.argv[2]
+primary_tissue = sys.argv[2]
 outdir = sys.argv[3]
 plot_independent_plots = False
 
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header="sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Parsimony_f1,Parsimony_recall,Parsimony_precision,FitchCount_f1,FitchCount_recall,FitchCount_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,MACH2_f1,MACH2_recall,MACH2_precision,Metient_f1,Metient_recall,Metient_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
+    header = "sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Parsimony_f1,Parsimony_recall,Parsimony_precision,FitchCount_f1,FitchCount_recall,FitchCount_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,MACH2_f1,MACH2_recall,MACH2_precision,Metient_f1,Metient_recall,Metient_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
     file.write(header)
 
 machina_precisions = np.zeros(len(dirs))
@@ -192,16 +214,24 @@ for true_tree_file in dirs:
     # get working dir from outdir based on snakemake input
     dir = os.path.dirname(os.path.dirname(os.path.dirname(true_tree_file)))
     sim = os.path.basename(os.path.dirname(true_tree_file))
-    
+
     # get other files to compare
     machina_file = f"{dir}/machina/{sim}/machina_tree_all_tissue_labels.nwk"
     mach2_file = f"{dir}/mach2/{sim}/consensus_graph.txt"
     metient_file = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_migration_graphs.txt"
     beast_posterior_file = f"{dir}/beam_gtr/{sim}/posterior_prob_graph.csv"
-    consensus_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk"
-    random_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk"
-    parsimony_file = f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk"
-    fitchcount_file =f"{dir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk"
+    consensus_file = (
+        f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk"
+    )
+    random_file = (
+        f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk"
+    )
+    parsimony_file = (
+        f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk"
+    )
+    fitchcount_file = (
+        f"{dir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk"
+    )
     outfile = f"{outdir}/{sim}/precision_recall.pdf"
 
     # process true input file to get migration count dict
@@ -224,98 +254,113 @@ for true_tree_file in dirs:
             file.write(f"{key},{value}\n")
 
     # process machina result to get precision and recall
-    machina_f1 = float('nan')
-    machina_recall = float('nan')
-    machina_precision = float('nan')
+    machina_f1 = float("nan")
+    machina_recall = float("nan")
+    machina_precision = float("nan")
     if os.path.exists(machina_file):
         machina_counts = process_tree(machina_file)
-        machina_f1, machina_recall, machina_precision = calculate_metrics(true_counts, machina_counts)
+        machina_f1, machina_recall, machina_precision = calculate_metrics(
+            true_counts, machina_counts
+        )
         machina_precisions[i] = machina_precision
         machina_recalls[i] = machina_recall
 
     # process metient result to get precision and recall
-    metient_f1 = float('nan')
-    metient_recall = float('nan')
-    metient_precision = float('nan')
+    metient_f1 = float("nan")
+    metient_recall = float("nan")
+    metient_precision = float("nan")
     if os.path.exists(metient_file):
-        with open(metient_file, 'r') as file:
+        with open(metient_file, "r") as file:
             lines = file.readlines()
-        top_loss_metient = lines[1].strip().split('\t')
+        top_loss_metient = lines[1].strip().split("\t")
         metient_counts_input = ast.literal_eval(top_loss_metient[1])
         metient_counts = {}
         for outer_key, inner_dict in metient_counts_input.items():
             for inner_key, value in inner_dict.items():
                 if value != 0.0:
                     metient_counts[f"{outer_key}_{inner_key}"] = value
-        metient_f1, metient_recall, metient_precision = calculate_metrics(true_counts, metient_counts)
+        metient_f1, metient_recall, metient_precision = calculate_metrics(
+            true_counts, metient_counts
+        )
         metient_precisions[i] = metient_precision
         metient_recalls[i] = metient_recall
 
     # process random result to get precision and recall
-    random_f1 = float('nan')
-    random_recall = float('nan')
-    random_precision = float('nan')
+    random_f1 = float("nan")
+    random_recall = float("nan")
+    random_precision = float("nan")
     if os.path.exists(random_file):
         random_counts = process_tree(random_file)
-        random_f1, random_recall, random_precision = calculate_metrics(true_counts, random_counts)
+        random_f1, random_recall, random_precision = calculate_metrics(
+            true_counts, random_counts
+        )
         random_precisions[i] = random_precision
         random_recalls[i] = random_recall
 
-
     # process consensus result to get precision and recall
-    consensus_f1 = float('nan')
-    consensus_recall = float('nan')
-    consensus_precision = float('nan')
+    consensus_f1 = float("nan")
+    consensus_recall = float("nan")
+    consensus_precision = float("nan")
     if os.path.exists(consensus_file):
         consensus_counts = process_tree(consensus_file)
-        consensus_f1, consensus_recall, consensus_precision = calculate_metrics(true_counts, consensus_counts)
+        consensus_f1, consensus_recall, consensus_precision = calculate_metrics(
+            true_counts, consensus_counts
+        )
         consensus_precisions[i] = consensus_precision
         consensus_recalls[i] = consensus_recall
-    
+
     # process greedy fitch parsimony result to get precision and recall
-    parsimony_f1 = float('nan')
-    parsimony_recall = float('nan')
-    parsimony_precision = float('nan')
+    parsimony_f1 = float("nan")
+    parsimony_recall = float("nan")
+    parsimony_precision = float("nan")
     if os.path.exists(parsimony_file):
         parsimony_counts = process_tree(parsimony_file)
-        parsimony_f1, parsimony_recall, parsimony_precision = calculate_metrics(true_counts, parsimony_counts)
+        parsimony_f1, parsimony_recall, parsimony_precision = calculate_metrics(
+            true_counts, parsimony_counts
+        )
         parsimony_precisions[i] = parsimony_precision
         parsimony_recalls[i] = parsimony_recall
-    
+
     # process fitchcount result in the same was as parsimony
-    fitchcount_f1 = float('nan')
-    fitchcount_recall = float('nan')
-    fitchcount_precision = float('nan')
+    fitchcount_f1 = float("nan")
+    fitchcount_recall = float("nan")
+    fitchcount_precision = float("nan")
     if os.path.exists(fitchcount_file):
         fitchcount_counts = process_tree(fitchcount_file)
-        fitchcount_f1, fitchcount_recall, fitchcount_precision = calculate_metrics(true_counts, fitchcount_counts)
+        fitchcount_f1, fitchcount_recall, fitchcount_precision = calculate_metrics(
+            true_counts, fitchcount_counts
+        )
         fitchcount_precisions[i] = fitchcount_precision
         fitchcount_recalls[i] = fitchcount_recall
-    
+
     # process mach2 result
-    mach2_f1 = float('nan')
-    mach2_recall = float('nan')
-    mach2_precision = float('nan')
+    mach2_f1 = float("nan")
+    mach2_recall = float("nan")
+    mach2_precision = float("nan")
     if os.path.exists(mach2_file):
         mach2_prob_graph = {}
-        with open(mach2_file, 'r') as file:
+        with open(mach2_file, "r") as file:
             for line in file.readlines():
-                line = line.strip().split(',')
+                line = line.strip().split(",")
                 mach2_prob_graph[line[0]] = float(line[1])
-        mach2_thresh_prec_rec, mach2_rows, mach2_f1, mach2_recall, mach2_precision = posterior_threshold_metrics(mach2_prob_graph, true_counts, sim)
+        mach2_thresh_prec_rec, mach2_rows, mach2_f1, mach2_recall, mach2_precision = (
+            posterior_threshold_metrics(mach2_prob_graph, true_counts, sim)
+        )
         mach2_all_thresh_rows.extend(mach2_rows)
 
     # process beast posterior
-    post_prob_f1 = float('nan')
-    post_prob_recall = float('nan')
-    post_prob_precision = float('nan')
+    post_prob_f1 = float("nan")
+    post_prob_recall = float("nan")
+    post_prob_precision = float("nan")
     if os.path.exists(beast_posterior_file):
         posterior_prob_graph = {}
-        with open(beast_posterior_file, 'r') as file:
+        with open(beast_posterior_file, "r") as file:
             for line in file.readlines():
-                line = line.strip().split(',')
+                line = line.strip().split(",")
                 posterior_prob_graph[line[0]] = float(line[1])
-        thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision = posterior_threshold_metrics(posterior_prob_graph, true_counts, sim)
+        thresh_prec_rec, rows, post_prob_f1, post_prob_recall, post_prob_precision = (
+            posterior_threshold_metrics(posterior_prob_graph, true_counts, sim)
+        )
         all_thresh_rows.extend(rows)
 
     # write metrics used for the plot to a file
@@ -325,33 +370,87 @@ for true_tree_file in dirs:
 
     if plot_independent_plots:
         size = 75
-        textsize=18
+        textsize = 18
         plt.figure()
         if os.path.exists(beast_posterior_file):
             # plt.scatter(thresh_prec_rec['recall'], thresh_prec_rec['precision'], c=thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
-            plt.plot(thresh_prec_rec['recall'], thresh_prec_rec['precision'], color = "grey", label='Beast')
+            plt.plot(
+                thresh_prec_rec["recall"],
+                thresh_prec_rec["precision"],
+                color="grey",
+                label="Beast",
+            )
         if os.path.exists(mach2_file):
             # plt.scatter(mach2_thresh_prec_rec['recall'], mach2_thresh_prec_rec['precision'], c=mach2_thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
-            plt.plot(mach2_thresh_prec_rec['recall'], mach2_thresh_prec_rec['precision'], color = "navy", label='Mach2')
+            plt.plot(
+                mach2_thresh_prec_rec["recall"],
+                mach2_thresh_prec_rec["precision"],
+                color="navy",
+                label="Mach2",
+            )
         if os.path.exists(machina_file):
-            plt.scatter(machina_recall, machina_precision, color='red', label='Machina', s=size, marker = "x")
+            plt.scatter(
+                machina_recall,
+                machina_precision,
+                color="red",
+                label="Machina",
+                s=size,
+                marker="x",
+            )
         if os.path.exists(metient_file):
-            plt.scatter(metient_recall, metient_precision, color='green', label='Metient', s=size, marker = "x")
+            plt.scatter(
+                metient_recall,
+                metient_precision,
+                color="green",
+                label="Metient",
+                s=size,
+                marker="x",
+            )
         if os.path.exists(consensus_file):
-            plt.scatter(consensus_recall, consensus_precision, color='blue', label='Consensus', s=size, marker = "x")
+            plt.scatter(
+                consensus_recall,
+                consensus_precision,
+                color="blue",
+                label="Consensus",
+                s=size,
+                marker="x",
+            )
         if os.path.exists(random_file):
-            plt.scatter(random_recall, random_precision, color='black', label='Random', s=size, marker = "x")
+            plt.scatter(
+                random_recall,
+                random_precision,
+                color="black",
+                label="Random",
+                s=size,
+                marker="x",
+            )
         if os.path.exists(parsimony_file):
-            plt.scatter(parsimony_recall, parsimony_precision, color='Purple', label='Parsimony', s=size, marker = "x")
+            plt.scatter(
+                parsimony_recall,
+                parsimony_precision,
+                color="Purple",
+                label="Parsimony",
+                s=size,
+                marker="x",
+            )
         if os.path.exists(fitchcount_file):
-            plt.scatter(fitchcount_recall, fitchcount_precision, color='orange', label='FitchCount', s=size, marker = "x")
-        plt.xlim(-0.05,1.05)
-        plt.ylim(-0.05,1.05)
-        plt.xlabel('Recall', fontsize=textsize)
-        plt.ylabel('Precision', fontsize=textsize)
+            plt.scatter(
+                fitchcount_recall,
+                fitchcount_precision,
+                color="orange",
+                label="FitchCount",
+                s=size,
+                marker="x",
+            )
+        plt.xlim(-0.05, 1.05)
+        plt.ylim(-0.05, 1.05)
+        plt.xlabel("Recall", fontsize=textsize)
+        plt.ylabel("Precision", fontsize=textsize)
         plt.xticks(fontsize=textsize)
         plt.yticks(fontsize=textsize)
-        plt.legend(bbox_to_anchor=(1.05, 0.4), loc='upper left', fontsize=14, edgecolor='none')
+        plt.legend(
+            bbox_to_anchor=(1.05, 0.4), loc="upper left", fontsize=14, edgecolor="none"
+        )
         # cbar = plt.colorbar(shrink=0.4, orientation="vertical", drawedges=False, anchor=(1.05, 0.80))
         # cbar.ax.tick_params(labelsize=14)
         # cbar.ax.set_ylabel('Posterior threshold', fontsize=14, rotation=90)
@@ -359,14 +458,32 @@ for true_tree_file in dirs:
         plt.savefig(outfile)
         plt.close()
 
-    i+=1
+    i += 1
 
 mach2_all_thresh_df = pd.DataFrame(mach2_all_thresh_rows)
 all_thresh_df = pd.DataFrame(all_thresh_rows)
 
 # save intermediate variables to a file for later re-plotting
 with open(f"{outdir}/precision_recall_vars.pkl", "wb") as file:
-    pickle.dump([machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, fitchcount_precisions, fitchcount_recalls, mach2_all_thresh_df, all_thresh_df], file)
+    pickle.dump(
+        [
+            machina_precisions,
+            machina_recalls,
+            metient_precisions,
+            metient_recalls,
+            random_precisions,
+            random_recalls,
+            consensus_precisions,
+            consensus_recalls,
+            parsimony_precisions,
+            parsimony_recalls,
+            fitchcount_precisions,
+            fitchcount_recalls,
+            mach2_all_thresh_df,
+            all_thresh_df,
+        ],
+        file,
+    )
 
 # # optionally to open from pickle file and avoid recalculations above
 # with open(f"{outdir}/precision_recall_vars.pkl", "rb") as file:
@@ -374,18 +491,18 @@ with open(f"{outdir}/precision_recall_vars.pkl", "wb") as file:
 
 # make an overall averaged precision/recall curve
 outfile = f"{outdir}/precision_recall.pdf"
-avg_machina_precision = float('nan')
-avg_machina_recall = float('nan')
-avg_metient_precision = float('nan')
-avg_metient_recall = float('nan')
-avg_random_precision = float('nan')
-avg_random_recall = float('nan')
-avg_consensus_precision = float('nan')
-avg_consensus_recall = float('nan')
-avg_parsimony_precision = float('nan')
-avg_parsimony_recall = float('nan')
-avg_fitchcount_precision = float('nan')
-avg_fitchcount_recall = float('nan')
+avg_machina_precision = float("nan")
+avg_machina_recall = float("nan")
+avg_metient_precision = float("nan")
+avg_metient_recall = float("nan")
+avg_random_precision = float("nan")
+avg_random_recall = float("nan")
+avg_consensus_precision = float("nan")
+avg_consensus_recall = float("nan")
+avg_parsimony_precision = float("nan")
+avg_parsimony_recall = float("nan")
+avg_fitchcount_precision = float("nan")
+avg_fitchcount_recall = float("nan")
 
 
 if np.any(machina_precisions):
@@ -414,11 +531,17 @@ if np.any(fitchcount_recalls):
     avg_fitchcount_recall = sum(fitchcount_recalls) / len(fitchcount_recalls)
 
 if not all_thresh_df.empty:
-    avg_df = all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+    avg_df = (
+        all_thresh_df.groupby("Threshold")[["precision", "recall"]].mean().reset_index()
+    )
     all_thresh_df.to_csv(f"{outdir}/beam_all_threshold_stats.csv", index=False)
 
 if not mach2_all_thresh_df.empty:
-    avg_mach2_df = mach2_all_thresh_df.groupby('Threshold')[['precision', 'recall']].mean().reset_index()
+    avg_mach2_df = (
+        mach2_all_thresh_df.groupby("Threshold")[["precision", "recall"]]
+        .mean()
+        .reset_index()
+    )
     mach2_all_thresh_df.to_csv(f"{outdir}/mach2_all_threshold_stats.csv", index=False)
 
 size = 100
@@ -426,31 +549,75 @@ textsize = 20
 plt.figure()
 if not avg_df.empty:
     # plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
-    plt.plot(avg_df['recall'], avg_df['precision'], color='grey', label='BEAM')
+    plt.plot(avg_df["recall"], avg_df["precision"], color="grey", label="BEAM")
 if not avg_mach2_df.empty:
     # plt.scatter(avg_mach2_df['recall'], avg_mach2_df['precision'], c=avg_mach2_df['Threshold'], cmap='viridis', s=25, marker='x')
-    plt.plot(avg_mach2_df['recall'], avg_mach2_df['precision'], color='navy', label='MACH2')
+    plt.plot(
+        avg_mach2_df["recall"], avg_mach2_df["precision"], color="navy", label="MACH2"
+    )
 if not np.isnan(avg_machina_recall) and not np.isnan(avg_machina_precision):
-    plt.scatter(avg_machina_recall, avg_machina_precision, color='red', label='MACHINA', s=size, marker="x")
+    plt.scatter(
+        avg_machina_recall,
+        avg_machina_precision,
+        color="red",
+        label="MACHINA",
+        s=size,
+        marker="x",
+    )
 if not np.isnan(avg_metient_recall) and not np.isnan(avg_metient_precision):
-    plt.scatter(avg_metient_recall, avg_metient_precision, color='green', label='Metient', s=size, marker="x")
+    plt.scatter(
+        avg_metient_recall,
+        avg_metient_precision,
+        color="green",
+        label="Metient",
+        s=size,
+        marker="x",
+    )
 if not np.isnan(avg_consensus_recall) and not np.isnan(avg_consensus_precision):
-    plt.scatter(avg_consensus_recall, avg_consensus_precision, color='blue', label='Consensus', s=size, marker="x")
+    plt.scatter(
+        avg_consensus_recall,
+        avg_consensus_precision,
+        color="blue",
+        label="Consensus",
+        s=size,
+        marker="x",
+    )
 if not np.isnan(avg_random_recall) and not np.isnan(avg_random_precision):
-    plt.scatter(avg_random_recall, avg_random_precision, color='black', label='Random', s=size, marker="x")
+    plt.scatter(
+        avg_random_recall,
+        avg_random_precision,
+        color="black",
+        label="Random",
+        s=size,
+        marker="x",
+    )
 if not np.isnan(avg_parsimony_recall) and not np.isnan(avg_parsimony_precision):
-    plt.scatter(avg_parsimony_recall, avg_parsimony_precision, color='purple', label='Parsimony', s=size, marker="x")
+    plt.scatter(
+        avg_parsimony_recall,
+        avg_parsimony_precision,
+        color="purple",
+        label="Parsimony",
+        s=size,
+        marker="x",
+    )
 if not np.isnan(avg_fitchcount_recall) and not np.isnan(avg_fitchcount_precision):
-    plt.scatter(avg_fitchcount_recall, avg_fitchcount_precision, color='orange', label='FitchCount', s=size, marker="x")
-plt.xlim(-0.05,1.05)
+    plt.scatter(
+        avg_fitchcount_recall,
+        avg_fitchcount_precision,
+        color="orange",
+        label="FitchCount",
+        s=size,
+        marker="x",
+    )
+plt.xlim(-0.05, 1.05)
 # plt.xlim(0.4, 1.01)
 # plt.xticks(np.arange(0.4, 1.01, 0.2))
-plt.ylim(-0.05,1.05)
-plt.xlabel('Recall', fontsize=textsize)
-plt.ylabel('Precision', fontsize=textsize)
+plt.ylim(-0.05, 1.05)
+plt.xlabel("Recall", fontsize=textsize)
+plt.ylabel("Precision", fontsize=textsize)
 plt.xticks(fontsize=textsize)
 plt.yticks(fontsize=textsize)
-plt.legend(bbox_to_anchor=(1.05, 0.5), loc='upper left', fontsize=14, edgecolor='none')
+plt.legend(bbox_to_anchor=(1.05, 0.5), loc="upper left", fontsize=14, edgecolor="none")
 # cbar = plt.colorbar(shrink=0.4, orientation="vertical", drawedges=False, anchor=(1.05, 0.80))
 # cbar.ax.tick_params(labelsize=14)
 # cbar.ax.set_ylabel('Posterior threshold', fontsize=14, rotation=90)

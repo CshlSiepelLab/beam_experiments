@@ -24,9 +24,11 @@ for node in tree.traverse():
         name, tissue = node.name.split("_")
         for child in node.get_children():
             child_name, child_tissue = child.name.split("_")
-            if tissue != child_tissue and f"{name}_{child_name}" not in connections_done:
+            if (
+                tissue != child_tissue
+                and f"{name}_{child_name}" not in connections_done
+            ):
                 connections_done.append(f"{name}_{child_name}")
                 connections += 1
 
 print(f"{connections}")
-

@@ -20,30 +20,20 @@ def get_elements_from_file(path):
     filename = f"{path}/cp_list.txt"
     with open(filename) as f:
         cps = [line.strip() for line in f if set(list(line.strip().replace("CP", ""))) != set('0')]
+    mouse = os.path.basename(path)
+    if mouse == "MMUS1875" or mouse == "MMUS1466":
+        cps = [cp for cp in cps if cp != "CP01"]    # exclude these CPs due to computational burden with Beam analysis
 
-    # mouse = os.path.basename(path)
-    # if mouse == "MMUS1874":
-    #     cps = ['CP01', 'CP09', 'CP04', 'CP06']
-    # elif mouse == "MMUS1495":
-    #     cps = ['CP004', 'CP007', 'CP003', 'CP006', 'CP009', 'CP001']
-    # elif mouse == "MMUS1492":
-    #     cps = ['CP05']
-    # elif mouse == "MMUS1588":
-    #     cps = ['CP06', 'CP02', 'CP03', 'CP01']
-    # elif mouse == "MMUS1457":
-    #     cps = ['CP11', 'CP13', 'CP05', 'CP12', 'CP07', 'CP08', 'CP04', 'CP02']
-    # elif mouse == "MMUS1469":
-    #     cps = ['CP003', 'CP043', 'CP005', 'CP001', 'CP009', 'CP006', 'CP007', 'CP002']
-    # elif mouse == "MMUS1875":
-    #     cps = ['CP05', 'CP06', 'CP09', 'CP02', 'CP08', 'CP03']
-    # elif mouse == "MMUS1466":
-    #     cps = ['CP03']
-    # elif mouse == "MMUS1467":
-    #     cps = ['CP07']
-    # elif mouse == "MMUS1544":
-    #     cps = ['CP03', 'CP07', 'CP05', 'CP02']
-    # else:
-    #     cps = []
+
+    # Overwrite CPs for mice to not run them all for more particles
+    included_combinations = {
+        "MMUS1469": ["CP006"],
+    }
+
+    if mouse in included_combinations:
+        cps = included_combinations[mouse]
+    else:
+        cps = []
 
     return cps
 
@@ -77,11 +67,16 @@ rule all:
         # [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues_random.pdf", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf", outdir=config['outdir'], 
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice]
-        # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
-        # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 201), mouse=m) for m in mice],
+        [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 201), mouse=m) for m in mice],
+        expand("{outdir}/beam_gtr/combined_rf_distances.pdf", outdir=config['outdir']),
+        [expand("{outdir}/beam_gtr/{mouse}/{cp}/all_consensus_classifications.csv", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        expand("{outdir}/beam_gtr/all_consensus_classifications.pdf", outdir=config['outdir']),
+        [expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.pdf", outdir=config['outdir'], mouse=m) for m in mice],
                 
 
 rule runEvotracer:
@@ -440,8 +435,8 @@ rule runBeam:
             mcmclength=50000000
         fi
 
-        # # fix mcmc length to the specified number instead of dynamically calculating it based on the number of tips
-        # mcmclength={params.mcmclength}
+        # fix mcmc length to the specified number instead of dynamically calculating it based on the number of tips
+        mcmclength={params.mcmclength}
 
         # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
         if [[ $numTissues -eq 1 ]]; then
@@ -638,6 +633,7 @@ rule collectMutualInformationAndPlot:
         combinedResults = "{outdir}/gtr_beam_mutual_information.csv",
         plot = "{outdir}/gtr_beam_mutual_information.pdf"
     params:
+        inDir = "{outdir}/beam_gtr",
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
@@ -645,12 +641,15 @@ rule collectMutualInformationAndPlot:
         "../../envs/matplotlib.yaml"
     shell:
         """
-        echo "simname,mutual_information_normalized" > {output.combinedResults}
+        files=$(find {params.inDir} -type f -name "posterior_trees_migration_mutual_information.txt")
+
+        echo "mouse_cp,mutual_information_normalized" > {output.combinedResults}
         
-        for file in {input.mutualInformation}; do
-            simname=$(basename $(dirname $file))
+        for file in $files; do
+            mouse=$(basename $(dirname $(dirname $file)))
+            cp=$(basename $(dirname $file))
             mutual_information=$(head -n 1 $file | tr -d '[:space:]')
-            echo "$simname,$mutual_information" >> {output.combinedResults}
+            echo "${{mouse}}_${{cp}},$mutual_information" >> {output.combinedResults}
         done
 
         python {params.scripts}/plotting/plot_mutual_information_normalized_histogram.py {output.combinedResults} {output.plot}
@@ -694,372 +693,166 @@ rule plotBeamMetastasisTiming:
         python {params.scripts}/plotting/plot_metastasis_times.py {input.metastasisTiming} {input.graphPosterior} {params.experimentTime} {params.primaryTissue} {params.consensusThreshold} {params.outdir}/metastasis_timing
         """
 
-rule prepMachina:
-    input:
-        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
-        tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv"
-    output:
-        tissuesTsv = "{outdir}/machina/{mouse}/{cp}/leaf_tissues.tsv",
-        labeling = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
-        colors = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt",
-        tree = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
-    params:
-        scripts = config['scripts'],
-        outputdir = "{outdir}/machina/{mouse}/{cp}",
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 1
-    singularity:
-        '../../envs/simulate.sif'
-    shell:
-        """
-        # convert csv to tsv for leaf labels
-        sed 's/,/\\t/g' {input.tissues} > {output.tissuesTsv}
 
-        # prep machina inputs
-        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {output.tissuesTsv}
-        """
-
-rule runMachina:
+rule getExpectedClassificationsAndTimes:
     input:
-        tissuesTsv = "{outdir}/machina/{mouse}/{cp}/leaf_tissues.tsv",
-        labeling = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
-        colors = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt",
-        tree = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
+        metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl",
     output:
-        machinaResults = "{outdir}/machina/{mouse}/{cp}/machina_results.txt",
-        dotFile = "{outdir}/machina/{mouse}/{cp}/" + f"{config['primaryTissue'][mouse]}-G-{config['primaryTissue'][mouse]}-R.dot",
-        machinaEdgeFile = "{outdir}/machina/{mouse}/{cp}/" + f"{config['primaryTissue'][mouse]}-G-{config['primaryTissue'][mouse]}-R.tree"
+        allClassifications = "{outdir}/beam_gtr/{mouse}/{cp}/all_consensus_classifications.csv",
+        allTimes = "{outdir}/beam_gtr/{mouse}/{cp}/all_expected_migration_times_no_multiedge_combined.csv",
     params:
-        scripts = config['scripts'],
-        outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 25
+        thresholds = config['thresholds'],
+        outprefix = "{outdir}/beam_gtr/{mouse}/{cp}/{mouse}_{cp}",
+        scripts = config['scripts'],
+        threads = 1,
+        mem = "1G"
     conda:
-        "../../envs/machina.yaml"
+        "../../envs/matplotlib.yaml"
     shell:
         """
-        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
-        module load EBModules
-        module load Gurobi
-        
-        unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
-        num_unique_tissues=$(echo "$unique_tissues" | wc -l)
+        echo "name,met_to_met,met_to_primary,threshold" > {output.allClassifications}
+        echo "name,source,target,time,threshold" > {output.allTimes}
 
-        if [ "$num_unique_tissues" -gt 1 ]; then
+        for threshold in {params.thresholds}; do
+            python {params.scripts}/formatting/get_consensus_times_and_classifications.py {input.metastasisTiming} {params.primaryTissue} $threshold {params.outprefix}
 
-            # check if primary tissue is in the labeling file
-            if grep -q "{params.primaryTissue}" {input.labeling}; then
-                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue {params.primaryTissue} --outdir {params.outputdir}
-                
-                # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label might be different
-                cp {params.outputdir}/{params.primaryTissue}-G-{params.primaryTissue}-R.dot {output.dotFile}
-                cp {params.outputdir}/{params.primaryTissue}-G-{params.primaryTissue}-R.tree {output.machinaEdgeFile}
-            else
-                most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
-                echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
-                {params.scripts}/machina/run_machina_tr.sh --threads {params.threads} --edges {input.tree} --labels {input.labeling} --colors {input.colors} --primary-tissue $most_common_tissue --outdir {params.outputdir}
+            formatted_threshold=$(echo "$threshold * 100" | bc | awk '{{printf "%.0f", $0}}')
+            tail -n +2 {params.outprefix}_consensus_classifications_$formatted_threshold.csv | awk -v t=$threshold '{{print $0","t}}' >> {output.allClassifications}
+            tail -n +2 {params.outprefix}_expected_migration_times_no_multiedge_$formatted_threshold.csv | awk -v t=$threshold '{{print $0","t}}' >> {output.allTimes}
 
-                # move the dot and edge file to the primary tissue output to satisfy the snakemake since the file label will be different due to the different primary tissue
-                cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.dot {output.dotFile}
-                cp {params.outputdir}/$most_common_tissue-G-$most_common_tissue-R.tree {output.machinaEdgeFile}
-            fi
-        else
-            echo "Only one unique tissue found in the labeling file, so not enough to run Machina. Exiting."
-            touch {output.machinaEdgeFile}
-            touch {output.dotFile}
-            touch {output.machinaResults}
-        fi
+            # clean up
+            rm {params.outprefix}_consensus_classifications_$formatted_threshold.csv
+            rm {params.outprefix}_expected_migration_times_no_multiedge_$formatted_threshold.csv
+            rm {params.outprefix}_expected_migration_times_all_$formatted_threshold.csv
+        done
         """
 
-rule summarizeMachina:
+rule collectOverallClassifications:
     input:
-        # comment out below to not wait for all machina results to be generated before running this rule, which is the default behavior
-        machinaResults = lambda wildcards: ["{outdir}/machina/{mouse}/{cp}/machina_results.txt".format(outdir=config['outdir'], mouse=wildcards.mouse, cp=cp) for cp in get_elements_from_file(f"{config['outdir']}/beam/{wildcards.mouse}")],
-        asv_stat = "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv",
-        cp_list = "{outdir}/beam/{mouse}/cp_list.txt"
+        allClassifications = (expand("{outdir}/beam_gtr/{mouse}/{cp}/all_consensus_classifications.csv", outdir=config['outdir'], cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice),
     output:
-        resultsMachina = "{outdir}/machina/{mouse}/all_results.txt",
-        extendedMachina = "{outdir}/machina/{mouse}/all_results_extended.txt",
-        migrationMachina = "{outdir}/machina/{mouse}/migration.txt",
-        seedingMachina = "{outdir}/machina/{mouse}/seeding_topology.txt"
+        combinedClassifications = "{outdir}/beam_gtr/all_consensus_classifications.csv",
     params:
         threads = 1,
+        mem = "1G"
+    shell:
+        """
+        echo "name,met_to_met,met_to_primary,threshold" > {output.combinedClassifications}
+        for file in {input.allClassifications}; do
+            tail -n +2 $file >> {output.combinedClassifications}
+        done
+        """
+
+rule plotClassifications:
+    input:
+        allClassifications = "{outdir}/beam_gtr/all_consensus_classifications.csv",
+    output:
+        allClassificationsPlot = "{outdir}/beam_gtr/all_consensus_classifications.pdf",
+    params:
         scripts = config['scripts'],
-        outdir = "{outdir}/machina/{mouse}",
-        primary_tissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = 1,
+        mem = '1G'
     conda:
-        "../../envs/machina.yaml"
+        "../../envs/matplotlib.yaml"
     shell:
         """
-        while read CP; do 
-            cp_dir="{params.outdir}/${{CP}}"
-
-            # Check if machina converged for this CP
-            if [ ! -f "${{cp_dir}}/{params.primary_tissue}-G-{params.primary_tissue}-R.dot" ] || [ ! -f "${{cp_dir}}/machina_results.txt" ] || [ ! -s "${{cp_dir}}/machina_results.txt" ]; then
-                continue
-            fi
-
-            # Consider when the primary tissue is not an option for the CP, so machina uses the most common tissue in the CP tip labels
-            cp_primary_tissue=$(find "${{cp_dir}}" -type f -name "*R.txt" | rev | cut -d'/' -f1 | rev | cut -d'-' -f1)
-
-            cat ${{cp_dir}}/laml_trees_no_branch_lengths_colors.txt| tr '\\t' ' ' | sed "s/^/${{CP}} color /"
-            best=`grep "PS" "${{cp_dir}}/machina_results.txt" | tail -1|cut -f6| sed 's/[a-z]//g'`
-            best_full=`grep "PS" "${{cp_dir}}/machina_results.txt" | tail -1|cut -f6`
-
-            echo "${{CP}} model ${{best_full}} NA"
-            cat ${{cp_dir}}/${{cp_primary_tissue}}-G-${{cp_primary_tissue}}-R.tree | sed "s/^/${{CP}} migration /" | tr '\\t' ' '
-            grep label ${{cp_dir}}/${{cp_primary_tissue}}-T-${{cp_primary_tissue}}-R.dot | sed 's/.*color=//' | sed 's/,label="/ /' | sed 's/".*//' | cut -d'\\' -f1 | sed "s/^/${{CP}} label /" | tr '\\t' ' ' | awk 'NF==4'
-            
-            tail -n +2 ${{cp_dir}}/${{cp_primary_tissue}}-T-${{cp_primary_tissue}}-R.tree | awk '{{$1=$1; print}}' | awk '{{if (NF==1) $0="0 "$0}}1' > ${{cp_dir}}/modified_tree.txt
-            cat ${{cp_dir}}/modified_tree.txt | sed "s/^/${{CP}} tree /" | tr '\\t' ' '
-            rm ${{cp_dir}}/modified_tree.txt
-        done < {input.cp_list} | tr '\\t' ' ' >> {output.resultsMachina}
-
-        sed -i 's/\\t/ /g' {output.resultsMachina}
-
-        python {params.scripts}/machina/print_seeding_topology.py {output.resultsMachina} {params.primary_tissue} > {output.seedingMachina}
-
-        python {params.scripts}/machina/count_migrations.py {output.resultsMachina} > {output.migrationMachina}
-
-        python {params.scripts}/machina/add_freq_prob_to_results.py {output.migrationMachina} {input.asv_stat} {output.resultsMachina} > {output.extendedMachina}
+        python {params.scripts}/plotting/plot_all_classifications.py {input.allClassifications} {output.allClassificationsPlot}
         """
 
-rule plotMachina:
+
+rule collectMouseLevelTimes:
     input:
-        extendedMachina = "{outdir}/machina/{mouse}/all_results_extended.txt",
-        migrationMachina = "{outdir}/machina/{mouse}/migration.txt",
-        seedingMachina = "{outdir}/machina/{mouse}/seeding_topology.txt"
+        allTimes = lambda wildcards: expand("{outdir}/beam_gtr/{mouse}/{cp}/all_expected_migration_times_no_multiedge_combined.csv", outdir=wildcards.outdir, cp=get_elements_from_file(f"{wildcards.outdir}/beam/{wildcards.mouse}"), mouse=wildcards.mouse),
     output:
-        machinaRateMatrix = "{outdir}/machina/{mouse}/plots/machina_migration_plots/trans_mx_all.pdf",
-        machinaSeedingTopology = "{outdir}/machina/{mouse}/plots/machina_seeding_topology/seed_topology_pie_per_cp_all.pdf",
+        combinedTimes = "{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.csv",
     params:
-        outdir = "{outdir}/machina/{mouse}/plots",
-        scripts = config['scripts'],
-        threads = 1
-    singularity:
-        "../../envs/evotracer_plotting.sif"
+        threads = 1,
+        mem = "1G"
     shell:
         """
-        Rscript {params.scripts}/plotting_nowak_lab/5_machina_analysis/02_machina_tree_v1.R {input.extendedMachina} {params.outdir};
-
-        Rscript {params.scripts}/plotting_nowak_lab/5_machina_analysis/03_machina_migration_v1.R {input.migrationMachina} {params.outdir};
-
-        Rscript {params.scripts}/plotting_nowak_lab/5_machina_analysis/04_machina_seeding_topology_v1.R {input.seedingMachina} {params.outdir};
+        echo "name,source_target,time,threshold" > {output.combinedTimes}
+        for file in {input.allTimes}; do
+            tail -n +2 $file >> {output.combinedTimes}
+        done
         """
 
-
-rule plotMachinaMigrationGraphs:
+rule plotExpectedTimes:
     input:
-        dotFile = "{outdir}/machina/{mouse}/{cp}/" + f"{config['primaryTissue'][mouse]}-G-{config['primaryTissue'][mouse]}-R.dot"
+        allTimes = "{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.csv",
     output:
-        migrationGraph = "{outdir}/machina/{mouse}/{cp}/migration_graph.pdf"
+        allTimePlot = "{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.pdf",
     params:
-        outputdir = "{outdir}/machina/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         scripts = config['scripts'],
-        threads = 1
+        threads = 1,
+        mem = '1G'
     conda:
-        "../../envs/networkx.yaml"
+        "../../envs/matplotlib.yaml"
     shell:
         """
-        # if machina did not run due to no primary tissue, then create an empty file to satisfy snakemake
-        if [ ! -s {input.dotFile} ]; then
-            touch {output.migrationGraph}
-        else
-            python {params.scripts}/plotting/plot_migration_graph_from_dot.py {input.dotFile} {params.outputdir}/migration_graph.pdf
-        fi
+        python {params.scripts}/plotting/plot_all_metastasis_times.py {input} {params.experimentTime} {params.primaryTissue} {output}
         """
 
-rule prepMetient:
+rule getExpectedRfDistanceBeamLaml:
     input:
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
-        tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv"
     output:
-        lamlTreeNoOrigin = "{outdir}/metient/{mouse}/{cp}/laml_tree_no_origin.txt",
-        metientTree = "{outdir}/metient/{mouse}/{cp}/tree.txt",
-        metientTsv = "{outdir}/metient/{mouse}/{cp}/metadata.tsv"
+        lamlTreeNoOrigin = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_origin.nwk",
+        rfDistance = "{outdir}/beam_gtr/{mouse}/{cp}/expected_rf_distance_beam_laml.txt"
     params:
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         scripts = config['scripts'],
-        outputdir = "{outdir}/metient/{mouse}/{cp}",
-        threads = 1
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/compare_trees.yaml"
     shell:
         """
-        # remove fake root from tree
-        fixed_newick=$(sed "s/);//g" {input.lamlTree})
-        fixed_newick="${{fixed_newick:1}});"
-        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
-        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
-        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
-        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
-        echo "$modified_newick" > {output.lamlTreeNoOrigin}
+        newick=$(cat {input.lamlTree} | sed 's/^.//' | sed 's/..$//')
+        echo "${{newick}};" > {output.lamlTreeNoOrigin}
 
-        # format tsv file and edge list
-        python {params.scripts}/metient/format_metient.py {output.lamlTreeNoOrigin} {input.tissues} {params.primaryTissue} {params.outputdir}
+        python {params.scripts}/statistics/compare_beam_laml_rf_distance.py {output.lamlTreeNoOrigin} {input.combinedTrees} {output.rfDistance}
         """
 
-rule runMetient:
+rule collectRfDistances:
     input:
-        metientTree = "{outdir}/metient/{mouse}/{cp}/tree.txt",
-        metientTsv = "{outdir}/metient/{mouse}/{cp}/metadata.tsv"
+        expand("{outdir}/beam_gtr/{mouse}/{cp}/expected_rf_distance_beam_laml.txt", outdir=config['outdir'], cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice
     output:
-        metientResults = "{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt",
+        combinedRfDistances = "{outdir}/beam_gtr/combined_rf_distances.csv",
     params:
-        scripts = config['scripts'],
-        outputdir = "{outdir}/metient/{mouse}/{cp}",
-        threads = 80
-    singularity:
-        "../../envs/metient.sif"
-    shell:
-        """
-        # check to make sure there is atleast one metastasis site in the CP
-        sites=$(tail -n +2 {input.metientTsv} | cut -f6 | sort | uniq | tr '\\n' ' ')
-        if echo "$sites" | grep -qw "metastasis"; then
-            python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.mouse}_{wildcards.cp} {wildcards.primaryTissue} {params.outputdir}
-        else
-            echo "No metastasis site, so not running metient"
-            touch {output.metientResults}
-        fi
-        """
-
-rule runParsimony:
-    input:
-        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
-        leafTissues = "{outdir}/machina/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling"
-    output:
-        parsimonyResult = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues_random.nwk"
-    params:
-        scripts = config['scripts'],
-        outputdir = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}",
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        indir = "{outdir}/beam_gtr",
         threads = 1,
-        maxSolutions = 100
-    conda:
-        "../../envs/compare_trees.yaml"
+        mem = "1G"
     shell:
         """
-        python {params.scripts}/consensus_random/parsimony_only.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir} {params.primaryTissue} {params.maxSolutions}
+        files=$(find {params.indir} -type f -name "expected_rf_distance_beam_laml.txt")
+
+        echo "mouse,cp,expected_rf_distance" > {output.combinedRfDistances}
+        for file in $files; do
+            mouse=$(basename $(dirname $(dirname $file)))
+            cp=$(basename $(dirname $file))
+            rf_distance=$(cat $file | tr -d '[:space:]')
+            echo "$mouse,$cp,$rf_distance" >> {output.combinedRfDistances}
+        done
         """
 
-rule plotParsimony:
+rule plotRfDistances:
     input:
-        parsimonyResult = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues_random.nwk"
+        combinedRfDistances = "{outdir}/beam_gtr/combined_rf_distances.csv",
     output:
-        parsimonyPlot = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues_random.pdf"
-    params:
-        scripts = config['scripts'],
-        outputdir = "{outdir}/parsimony_tissue_inference/{mouse}/{cp}",
-        threads = 1,
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-    conda:
-        "../../envs/networkx.yaml"
-    shell:
-        """
-        python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.parsimonyResult} {params.primaryTissue} {output.parsimonyPlot}
-
-        files=$(find {params.outputdir} -type f -name "parsimony_tissues_all_solutions*")
-        if [ ! -z "$files" ]; then
-            for file in $files; do
-                python {params.scripts}/plotting/plot_migration_graph_from_newick.py $file {params.primaryTissue} {params.outputdir}/$(basename $file .nwk).pdf
-            done
-        fi
-        """
-
-rule calculatePosteriorExcessOverParsimony:
-    input:
-        combinedTrees = "{outdir}/beam/{mouse}/{cp}/combined.trees",
-    output:
-        posteriorExcess = "{outdir}/beam/{mouse}/{cp}/posterior_expected_over_parsimony/posterior_expected_migration_counts_over_parsimony.csv"
+        rfDistancePlot = "{outdir}/beam_gtr/combined_rf_distances.pdf",
     params:
         scripts = config['scripts'],
         threads = 1,
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse]
+        mem = '1G'
     conda:
-        "../../envs/compare_trees.yaml"
+        "../../envs/matplotlib.yaml"
     shell:
         """
-        # this bash script depends on local hard paths, so not the best way to do this, but okay for now
-        {params.scripts}/statistics/bayesian_excess_over_parsimony_serio.sh {input.combinedTrees} {params.primaryTissue}
+        python {params.scripts}/plotting/plot_expected_rf_distances_distribution.py {input.combinedRfDistances} {output.rfDistancePlot}
         """
-
-# rule callMigrationComigrationCounts:
-#     input:
-#         graphPosterior = "{outdir}/beam/{mouse}/{cp}/posterior_prob_graph.csv",
-#         machinaEdgeFile = "{outdir}/machina/{mouse}/{cp}/" + f"{config['primaryTissue'][mouse]}-G-{config['primaryTissue'][mouse]}-R.tree",
-#         metientResults = "{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt"
-#     output:
-#         migrationCountCsv = "{outdir}/compare_migration_counts/{mouse}_{cp}_migration_counts.csv",
-#         migrationTopologyCsv = "{outdir}/compare_migration_counts/{mouse}_{cp}_topology_classifications.csv"
-#     params:
-#         outdir = "{outdir}/compare_migration_counts",
-#         name = "{mouse}_{cp}",
-#         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-#     conda:
-#         "../../envs/compare_trees.yaml"
-#     shell:
-#         """
-#         python {config['scripts']}/formatting/call_migration_counts_machina_metient_beam.py {input.machinaEdgeFile} {input.metientResults} {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.name}
-#         """
-
-# rule aggregateMigrationCounts:
-#     input:
-#         migrationCountCsvs = [expand("{outdir}/compare_migration_counts/{mouse}_{cp}_migration_counts.csv", mouse=m, cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), outdir=config['outdir']) for m in mice]
-#     output:
-#         aggregatedMigrationCounts = "{outdir}/compare_migration_counts/migration_counts_all.csv",
-#     shell:
-#         """
-#         # write header to output file
-#         echo "name,machina_migrations,machina_comigrations,metient_migrations,metient_comigrations,beam_migrations,beam_comigrations" > {output.aggregatedMigrationCounts}
-
-#         # Loop through each input file and append the second line to the output file
-#         for file in {input.migrationCountCsvs}; do
-#             sed -n '2p' $file >> {output.aggregatedMigrationCounts}
-#             echo "" >> {output.aggregatedMigrationCounts}
-#         done
-#         """
-
-# rule plotMigrationCounts:
-#     input:
-#         aggregatedMigrationCounts = "{outdir}/compare_migration_counts/migration_counts_all.csv"
-#     output:
-#         migrationCountPlot = "{outdir}/compare_migration_counts/migration_counts_all.pdf"
-#     conda:
-#         "../../envs/matplotlib.yaml"
-#     shell:
-#         """
-#         python {config['scripts']}/plotting/plot_migrations_comigrations_boxplot.py {input.aggregatedMigrationCounts}
-#         """
-
-# rule aggregateTopologyClassifications:
-#     input:
-#         migrationTopologyCsvs = expand("{outdir}/compare_migration_counts/{mouse}_{cp}_topology_classifications.csv", mouse=mice, cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), outdir=config['outdir'])
-#     output:
-#         aggregatedTopologyClassifications = "{outdir}/compare_migration_counts/topology_classifications_all.csv",
-#     shell:
-#         """
-#         # write header to output file
-#         echo "name,machina_met_to_met,machina_reseeding,metient_met_to_met,metient_reseeding,beam_met_to_met,beam_reseeding" > {output.aggregatedMigrationCounts}
-
-#         # Loop through each input file and append the second line to the output file
-#         for file in {input.migrationTopologyCsvs}; do
-#             sed -n '2p' $file >> {output.aggregatedTopologyClassifications}
-#             echo "" >> {output.aggregatedTopologyClassifications}
-#         done
-#         """
-
-# rule plotTopologyClassifications:
-#     input:
-#         aggregatedTopologyClassifications = "{outdir}/compare_migration_counts/topology_classifications_all.csv"
-#     output:
-#         topologyClassificationsPlot = "{outdir}/compare_migration_counts/topology_classifications_all.pdf"
-#     conda:
-#         "../../envs/matplotlib.yaml"
-#     shell:
-#         """
-#         python {config['scripts']}/plotting/plot_topology_classifications.py {input.aggregatedTopologyClassifications}
-#         """
 
 
 rule runBeamGtrNS:

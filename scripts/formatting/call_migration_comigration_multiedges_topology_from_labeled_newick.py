@@ -35,23 +35,34 @@ def getMigrationComigrationCountsFromNewick(newick):
         if parent_tissue != child_tissue:
             migration_count += 1
             edge = f"{parent_tissue}_{child_tissue}"
-            if edge not in edges: # All unique edges are considered a co-migration
+            if edge not in edges:  # All unique edges are considered a co-migration
                 comigration_count += 1
             if edge in edges and edge not in multiedges_already_checked:
                 num_multiedges += 1
                 multiedges_already_checked.append(edge)
-            if not met_to_met and parent_tissue != primaryTissue and child_tissue != primaryTissue:
+            if (
+                not met_to_met
+                and parent_tissue != primaryTissue
+                and child_tissue != primaryTissue
+            ):
                 met_to_met = True
             if not reseeding and child_tissue == primaryTissue:
                 reseeding = True
             edges.append(edge)
-    
+
     if num_multiedges != 0:
         clonality = "Polyclonal"
     else:
         clonality = "Monoclonal"
 
-    return migration_count, comigration_count, num_multiedges, met_to_met, reseeding, clonality
+    return (
+        migration_count,
+        comigration_count,
+        num_multiedges,
+        met_to_met,
+        reseeding,
+        clonality,
+    )
 
 
 sim_name = sys.argv[1]
@@ -59,8 +70,11 @@ newick = sys.argv[2]
 primaryTissue = sys.argv[3]
 outfile = sys.argv[4]
 
-migration_count, comigration_count, num_multiedges, met_to_met, reseeding, clonality = getMigrationComigrationCountsFromNewick(newick)
+migration_count, comigration_count, num_multiedges, met_to_met, reseeding, clonality = (
+    getMigrationComigrationCountsFromNewick(newick)
+)
 
 with open(outfile, "a") as f:
-    f.write(f"{sim_name},{migration_count},{comigration_count},{num_multiedges},{met_to_met},{reseeding},{clonality}\n")
-
+    f.write(
+        f"{sim_name},{migration_count},{comigration_count},{num_multiedges},{met_to_met},{reseeding},{clonality}\n"
+    )

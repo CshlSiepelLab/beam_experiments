@@ -128,7 +128,7 @@
                 
                 <distribution id="traitLikelihood" spec="beam.likelihood.BeamBeagleAncestralTissueLikelihood" origin="$(generations).0001" tag="location" tree="@tree" data="@tissue">
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1" mutationRate="1.0">
-                        <substModel id="substModelMigration" spec="beam.substitutionmodel.BeamGtrTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue" pi="@piPrimaryTissueFreq">
+                        <substModel id="substModelMigration" spec="beam.substitutionmodel.BeamNoDirectSeedingSpecifiedTissueGTRTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue" pi="@piPrimaryTissueFreq" specifiedTissueIndex="$(specifiedIndex)">
                             <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
                                 <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="$(numTissues)" name="frequencies">$(tissueRootFreqs)</parameter>
                             </frequencies>

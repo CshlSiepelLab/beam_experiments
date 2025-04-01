@@ -5,16 +5,16 @@ import pandas as pd
 import cassiopeia as cas
 
 # USER INPUTS
- # The raw paired FASTQs from a single sample
+# The raw paired FASTQs from a single sample
 # input_files = [
-#     "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/raw_fastqs/SRR17885786_1.fastq.gz", 
+#     "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/raw_fastqs/SRR17885786_1.fastq.gz",
 #     "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/raw_fastqs/SRR17885786_2.fastq.gz"
 # ]
-input_files = sys.argv[1].split(',')
+input_files = sys.argv[1].split(",")
 output_dir = sys.argv[2]
 
 # The sample name, used for naming output files
-name = os.path.basename(input_files[0]).split('_')[0]
+name = os.path.basename(input_files[0]).split("_")[0]
 
 # Path to the target site reference sequence in FASTA format
 reference_filepath = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/inputs/PCT48.ref.fasta"
@@ -33,10 +33,10 @@ allow_allele_conflicts = False
 verbose = True
 
 # Specify the version of 10x chemistry used
-chem = '10xv2'
+chem = "10xv2"
 
 # Take from the cellranger default list for the 10x chemistry used
-cellbc_whitelist = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/inputs/737K-august-2016.txt'
+cellbc_whitelist = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/inputs/737K-august-2016.txt"
 
 # intbc_whitelist = ''
 
@@ -49,7 +49,7 @@ bam_fp = cas.pp.convert_fastqs_to_unmapped_bam(
     chemistry=chem,
     output_directory=output_dir,
     name=name,
-    n_threads=n_threads
+    n_threads=n_threads,
 )
 print("Done converting fastqs to unmapped bam")
 
@@ -74,7 +74,7 @@ umi_table = cas.pp.collapse_umis(
     output_directory=output_dir,
     max_hq_mismatches=3,
     max_indels=2,
-    method='likelihood',
+    method="likelihood",
     n_threads=n_threads,
 )
 print("Done collapsing UMIs")

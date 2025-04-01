@@ -3,6 +3,7 @@
 import os, sys
 from ete3 import Tree
 
+
 def main():
     nwk_file = sys.argv[1]
     tissues_file = sys.argv[2]
@@ -15,11 +16,11 @@ def main():
         for line in file:
             fields = line.strip().split(" ")
             tissues[fields[0]] = fields[1]
-    
+
     for node in tree.traverse():
-        name = node.name 
+        name = node.name
         node.name = name + "_" + tissues[name]
-    
+
     tree.write(outfile=out_file, format=8)
 
 

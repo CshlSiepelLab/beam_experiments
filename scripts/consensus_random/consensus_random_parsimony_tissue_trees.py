@@ -8,21 +8,30 @@ import pandas as pd
 from collections import Counter
 import random
 
+
 def label_tissues_consensus(tree, tissues_df):
     copy_tree = tree.copy()
     for node in copy_tree.traverse():
         # leaves are assumed to be known labels
         if node.is_leaf():
-            tissue = tissues_df.loc[tissues_df['cell'] == str(node.name), 'tissue'].values[0]
+            tissue = tissues_df.loc[
+                tissues_df["cell"] == str(node.name), "tissue"
+            ].values[0]
             node.name = f"{node.name}_{tissue}"
         # internal nodes are chosen by consensus of leaf tissues
         else:
             node_name = node.name
-            children = [tissues_df.loc[tissues_df['cell'] == str(leaf.name), 'tissue'].values[0] for leaf in node.get_leaves()]
+            children = [
+                tissues_df.loc[tissues_df["cell"] == str(leaf.name), "tissue"].values[0]
+                for leaf in node.get_leaves()
+            ]
             counts = Counter(children)
             most_common_elements = counts.most_common(2)
             # if there is a clear winner, choose that tissue
-            if len(most_common_elements) == 1 or most_common_elements[0][1] != most_common_elements[1][1]:
+            if (
+                len(most_common_elements) == 1
+                or most_common_elements[0][1] != most_common_elements[1][1]
+            ):
                 consensus_tissue = most_common_elements[0][0]
             else:
                 # tie breaker goes to primary
@@ -36,13 +45,16 @@ def label_tissues_consensus(tree, tissues_df):
             node.name = f"{node_name}_{consensus_tissue}"
     return copy_tree
 
+
 def label_tissues_random(tree, tissues_df):
     copy_tree = tree.copy()
-    tissues = tissues_df['tissue'].unique().tolist()
+    tissues = tissues_df["tissue"].unique().tolist()
     for node in copy_tree.traverse():
         # leaves are assumed to be known labels
         if node.is_leaf():
-            tissue = tissues_df.loc[tissues_df['cell'] == str(node.name), 'tissue'].values[0]
+            tissue = tissues_df.loc[
+                tissues_df["cell"] == str(node.name), "tissue"
+            ].values[0]
             node.name = f"{node.name}_{tissue}"
         # internal nodes are chosen randomly
         else:
@@ -50,20 +62,24 @@ def label_tissues_random(tree, tissues_df):
             node.name = f"{node.name}_{random_tissue}"
     return copy_tree
 
+
 def label_tissues_parsimony(tree, tissues_df):
-    '''
+    """
     Fitch parsimony algorithm to infer ancestral states of internal nodes for a tree
-    '''
+    """
+
     def postorder(node):
         if node.is_leaf():
             # Assign known tissue type from the tissues_df to the leaf node
-            node.final_tissue = tissues_df.loc[tissues_df['cell'] == str(node.name), 'tissue'].values[0]
+            node.final_tissue = tissues_df.loc[
+                tissues_df["cell"] == str(node.name), "tissue"
+            ].values[0]
             node.tissue_set = {node.final_tissue}
             node.name = f"{node.name}_{node.final_tissue}"
         else:
             # Process all children
             children_tissue_sets = [postorder(child) for child in node.children]
-            
+
             # Compute the possible tissues for internal nodes based on the children's tissue sets
             intersection = set.intersection(*children_tissue_sets)
             if intersection:
@@ -71,7 +87,7 @@ def label_tissues_parsimony(tree, tissues_df):
             else:
                 node.tissue_set = set.union(*children_tissue_sets)
         return node.tissue_set
-    
+
     def preorder(node, parent_tissue=None):
         # Leaf tissues are already known so skip them for tissue assignment
         if not node.is_leaf():
@@ -112,12 +128,13 @@ def label_tissues_parsimony(tree, tissues_df):
 
     return copy_tree
 
+
 # User inputs
 tree_file = sys.argv[1]
 leaf_tissues_tsv = sys.argv[2]
 outdir = sys.argv[3]
 
-primary_tissue = 'P'
+primary_tissue = "P"
 
 # tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees_no_branch_lengths.nwk"
 # leaf_tissues_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
@@ -125,7 +142,13 @@ primary_tissue = 'P'
 
 
 tree = ete3.Tree(tree_file, format=8)
-tissue_map = pd.read_csv(leaf_tissues_tsv, sep=r'\s+', header=None, names=['cell', 'tissue'], dtype={'cell': str, 'tissue': str})
+tissue_map = pd.read_csv(
+    leaf_tissues_tsv,
+    sep=r"\s+",
+    header=None,
+    names=["cell", "tissue"],
+    dtype={"cell": str, "tissue": str},
+)
 
 # get results
 random_tree = label_tissues_random(tree, tissue_map)
@@ -134,11 +157,10 @@ parsimony_tree = label_tissues_parsimony(tree, tissue_map)
 
 # output trees to newick files
 random_output = outdir + "/random_tissues.nwk"
-random_tree.write(outfile = random_output, format=8, format_root_node=True)
+random_tree.write(outfile=random_output, format=8, format_root_node=True)
 
 consensus_output = outdir + "/consensus_tissues.nwk"
-consensus_tree.write(outfile = consensus_output, format=8, format_root_node=True)
+consensus_tree.write(outfile=consensus_output, format=8, format_root_node=True)
 
 parsimony_output = outdir + "/parsimony_tissues.nwk"
-parsimony_tree.write(outfile = parsimony_output, format=8, format_root_node=True)
-        
+parsimony_tree.write(outfile=parsimony_output, format=8, format_root_node=True)

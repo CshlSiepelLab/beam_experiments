@@ -21,15 +21,20 @@ for node in tree.traverse():
         new_name = current_name.split("_")[0]
         node.name = new_name
 
-tree.get_tree_root().name = '0'
-machina_df = pd.read_csv(machina_labels, delim_whitespace = True, names = ['node', 'tissue'], dtype={'node':str,'tissue':str})
+tree.get_tree_root().name = "0"
+machina_df = pd.read_csv(
+    machina_labels,
+    delim_whitespace=True,
+    names=["node", "tissue"],
+    dtype={"node": str, "tissue": str},
+)
 
 for node in tree.traverse():
     if node.is_leaf() == False and node.is_root() == False:
         node_name = node.name
-        row = machina_df.loc[machina_df['node'] == node_name]
-        tissue = row['tissue'].values[0]
+        row = machina_df.loc[machina_df["node"] == node_name]
+        tissue = row["tissue"].values[0]
         new_name = str(node_name) + "_" + tissue
         node.name = new_name
 
-tree.write(format=8, outfile = f'{machina_dir}/machina_tree_all_tissue_labels.nwk')
+tree.write(format=8, outfile=f"{machina_dir}/machina_tree_all_tissue_labels.nwk")

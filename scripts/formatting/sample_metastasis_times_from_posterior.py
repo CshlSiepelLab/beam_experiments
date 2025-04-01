@@ -6,28 +6,32 @@ from copy import deepcopy
 import dendropy
 import pickle as pkl
 
+
 def rename_tree(tree):
     tree_copy = deepcopy(tree)
     i = 0
     for node in tree_copy.preorder_node_iter():
         try:
-            prediction = node.taxon.label + "_" + node.annotations.get_value('location')
+            prediction = node.taxon.label + "_" + node.annotations.get_value("location")
             node.taxon.label = prediction
         except Exception as e:
-            prediction = f"node{i}" + "_" + node.annotations.get_value('location')
+            prediction = f"node{i}" + "_" + node.annotations.get_value("location")
             i += 1
         node.label = prediction
-    
-    newick = tree_copy.as_string(schema='newick', suppress_edge_lengths=False, node_label_element_separator=',')
+
+    newick = tree_copy.as_string(
+        schema="newick", suppress_edge_lengths=False, node_label_element_separator=","
+    )
 
     # remove quoted node names that is default in dendropy
-    newick = newick.replace("\'", "")
+    newick = newick.replace("'", "")
 
     # the transition to ete3 tree here is just by preference
     # likely all the same subsequent analysis can be done with dendropy
     ete_tree = Tree(newick, format=3)
 
     return ete_tree
+
 
 def level_order_traversal_met_events(tree, origin_to_root_height):
 
@@ -37,8 +41,8 @@ def level_order_traversal_met_events(tree, origin_to_root_height):
     for node in tree.traverse("levelorder"):
         if node.is_root():
             parent_tissue = origin_tissue
-            parent_time = 0 # origin is at the start of the experiment so time is 0
-            node_time = origin_to_root_height # time from the start ofthe experiment to the root of the tree, so origin - total tree height
+            parent_time = 0  # origin is at the start of the experiment so time is 0
+            node_time = origin_to_root_height  # time from the start ofthe experiment to the root of the tree, so origin - total tree height
         else:
             parent_node = node.up
             parent_tissue = parent_node.name.split("_")[-1]
@@ -56,13 +60,14 @@ def level_order_traversal_met_events(tree, origin_to_root_height):
                 migration = migration + "_1"
                 met_times[migration] = migration_time
             else:
-                existing_migrations = [key for key in met_times.keys() if migration in key]
+                existing_migrations = [
+                    key for key in met_times.keys() if migration in key
+                ]
                 i = max([int(key.split("_")[-1]) for key in existing_migrations]) + 1
                 migration = migration + "_" + str(i)
                 met_times[migration] = migration_time
-    
-    return met_times
 
+    return met_times
 
 
 def is_ultrametric(tree):
@@ -71,7 +76,7 @@ def is_ultrametric(tree):
     for leaf in tree.iter_leaves():
         leaf_distances.add(round(root.get_distance(leaf.name), 3))
     return len(leaf_distances) == 1
-        
+
 
 # user inputs
 posterior_file = str(sys.argv[1])
@@ -87,7 +92,7 @@ outfile = str(sys.argv[4])
 
 # process beast posterior
 burnin_percent = 0.1
-beast_tree_list= dendropy.TreeList.get(path=posterior_file, schema="nexus")
+beast_tree_list = dendropy.TreeList.get(path=posterior_file, schema="nexus")
 num_beast_trees = len(beast_tree_list)
 num_discard = round(num_beast_trees * burnin_percent)
 beast_tree_list = beast_tree_list[num_discard:]
@@ -111,14 +116,12 @@ for tree in beast_tree_list:
     origin_to_root_height = origin_time - tree_height
 
     # traverse the tree to get the times of all metastatic envents in the migration graph implied by the tree
-    timed_met_events = level_order_traversal_met_events(named_tree, origin_to_root_height)
+    timed_met_events = level_order_traversal_met_events(
+        named_tree, origin_to_root_height
+    )
 
     # record met events with the sample number in the posterior
     all_met_events[tree.label.split(" ")[1]] = timed_met_events
 
 with open(outfile, "wb") as f:
     pkl.dump(all_met_events, f)
-
-
-
-

@@ -3,11 +3,11 @@
 # need an environment with ete3 installed
 # mamba activate compare_trees
 
-main_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_20_25_uniform_50cells_50sites_data_7_24_24"
+main_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24"
 
 posterior_files=$(find $main_dir/beam_gtr -type f -name "combined.trees")
 
-num_cpus=80
+num_cpus=100
 
 process_posterior_file() {
     posterior_file=$1
@@ -22,8 +22,8 @@ process_posterior_file() {
     count=0
 
     while IFS= read -r line; do
-        # take 1/10 samples
-        if (( count % 10 == 0 )); then
+        # take 1/100 samples
+        if (( count % 100 == 0 )); then
             id=$(echo $line | cut -d' ' -f2 | cut -d'_' -f2)
             working_dir_id=${working_dir}/${id}
             mkdir -p $working_dir_id

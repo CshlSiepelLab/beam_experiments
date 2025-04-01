@@ -17,7 +17,15 @@ outdir = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/res
 fs = files.split(",")
 
 
-df = pd.DataFrame(columns=["mmus", "cp", "primary_seeding_avg_prob", "met_to_met_avg_prob", "primary_reseeding_avg_prob"])
+df = pd.DataFrame(
+    columns=[
+        "mmus",
+        "cp",
+        "primary_seeding_avg_prob",
+        "met_to_met_avg_prob",
+        "primary_reseeding_avg_prob",
+    ]
+)
 
 # read in each file line by line
 for f in fs:
@@ -31,7 +39,7 @@ for f in fs:
     ps_values = []
     mm_values = []
     pr_values = []
-    
+
     with open(f, "r") as file:
         lines = file.readlines()
 
@@ -48,19 +56,39 @@ for f in fs:
                 ps_values.append(prob)
             elif target == primary_tissue:
                 pr_values.append(prob)
-            else:    
+            else:
                 mm_values.append(prob)
 
     # some files are for mmus/cp pairs that only have one tissue, so no migration graph edges
     if not ps_values and not mm_values and not pr_values:
         continue
 
-    df = pd.concat([df, pd.DataFrame([{
-        "mmus": mmus,
-        "cp": cp,
-        "primary_seeding_avg_prob": sum(ps_values) / len(ps_values) if ps_values else np.nan,
-        "met_to_met_avg_prob": sum(mm_values) / len(mm_values) if mm_values else np.nan,
-        "primary_reseeding_avg_prob": sum(pr_values) / len(pr_values) if pr_values else np.nan
-    }])], ignore_index=True)
+    df = pd.concat(
+        [
+            df,
+            pd.DataFrame(
+                [
+                    {
+                        "mmus": mmus,
+                        "cp": cp,
+                        "primary_seeding_avg_prob": (
+                            sum(ps_values) / len(ps_values) if ps_values else np.nan
+                        ),
+                        "met_to_met_avg_prob": (
+                            sum(mm_values) / len(mm_values) if mm_values else np.nan
+                        ),
+                        "primary_reseeding_avg_prob": (
+                            sum(pr_values) / len(pr_values) if pr_values else np.nan
+                        ),
+                    }
+                ]
+            ),
+        ],
+        ignore_index=True,
+    )
 
-df.to_csv(f"{outdir}/consensus_graph_probabilities_by_edge_topology.csv", index=False, na_rep='NaN')
+df.to_csv(
+    f"{outdir}/consensus_graph_probabilities_by_edge_topology.csv",
+    index=False,
+    na_rep="NaN",
+)

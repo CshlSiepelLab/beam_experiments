@@ -8,6 +8,9 @@ outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/resu
 # set the asv count threshold for filtering in evotracer
 asvThreshold: 3
 
+# thresholds for consensus classifications and times
+thresholds: [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
+
 # threshold for downsampling
 downsampleTipNumThreshold: 10000000 # any CP with more ASVs than this will be downsampled
 downsampleDistanceThreshold: 0.0 # for CPs being downsampled, this threshold will be used. 0.0 will always bypass downsampling

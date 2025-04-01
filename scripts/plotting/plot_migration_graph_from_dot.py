@@ -13,5 +13,3 @@ outfile = sys.argv[2]
 
 # Write the graph to a PDF file
 graph.write_pdf(outfile)
-
-

@@ -3,59 +3,87 @@
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
+import numpy as np
+
 
 def load_data(file_path):
-    return pd.read_csv(file_path, index_col=0)
+    return pd.read_csv(file_path)
 
-def calculate_percentages(data, method_name):
-    percentages = data.mean().reset_index()
-    percentages.columns = ['Seeding topology', 'Value']
-    percentages['Value'] *= 100
-    percentages['method'] = method_name
-    return percentages
 
-def plot_percentages(percentages, outfile):
-    # Rename the seeding topologies
-    percentages['Seeding topology'] = percentages['Seeding topology'].replace({
-        'met_to_met': 'Met to Met',
-        'met_to_primary': 'Primary\nReseeding'
-    })
+def preprocess_data(data):
+    # Group by threshold and calculate the percentage of True values for each category
+    grouped = (
+        data.groupby("threshold")
+        .agg(
+            met_to_met=("met_to_met", lambda x: (x.sum() / len(x)) * 100),
+            met_to_primary=("met_to_primary", lambda x: (x.sum() / len(x)) * 100),
+        )
+        .reset_index()
+    )
 
-    # Order the data to have the bars with MACH2 first and then BEAM
-    percentages['method'] = pd.Categorical(percentages['method'], categories=['MACH2', 'BEAM'], ordered=True)
+    # Sort data by threshold in ascending order
+    grouped = grouped.sort_values(by="threshold", ascending=True)
+    return grouped
 
-    # Create a bar plot
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x='Seeding topology', y='Value', hue='method', data=percentages, palette=["Blue", "Green"])
 
-    plt.ylim(0, 100)
-    plt.ylabel('Percent of data', fontsize=22)
-    plt.xlabel('')
-    plt.xticks(rotation=0, fontsize=22)
-    plt.yticks(fontsize=22)
-    plt.legend(title='Method', fontsize=18, title_fontsize=20, bbox_to_anchor=(1.05, 0.5), loc='upper left', borderaxespad=0., frameon=False)
+def plot_data(data, outfile):
+    # Plot the data
+    fig, ax = plt.subplots(figsize=(12, 6))
+    fs = 22
 
-    # Save the plot to a file
-    plt.tight_layout()
-    plt.savefig(outfile)
+    # Define the width of the bars
+    bar_width = 0.35
+
+    # Define the positions of the bars
+    index = np.arange(len(data))
+
+    # Plot the bars
+    bar1 = ax.bar(
+        index,
+        data["met_to_met"],
+        bar_width,
+        label="Met to Met",
+        color="#4c72b0",
+        alpha=1.0,
+    )
+    bar2 = ax.bar(
+        index + bar_width,
+        data["met_to_primary"],
+        bar_width,
+        label="Primary Reseeding",
+        color="#dd8452",
+        alpha=1.0,
+    )
+
+    # Set y-axis limits
+    ax.set_ylim(0, 100)
+
+    # Add labels and title
+    ax.set_xlabel("Consensus Graph Threshold", fontsize=fs, labelpad=10)
+    ax.set_ylabel("Percentage of All Data (%)", fontsize=fs, labelpad=10)
+    ax.set_xticks(index + bar_width / 2)
+    ax.set_xticklabels(data["threshold"].astype(str), fontsize=fs)
+    ax.tick_params(axis="y", labelsize=fs)
+
+    # Add legend with improved placement
+    ax.legend(loc="upper left", bbox_to_anchor=(1.02, 0.75), frameon=False, fontsize=16)
+
+    # Improve layout for publication
+    plt.tight_layout(pad=2.0)
+    plt.savefig(
+        outfile, bbox_inches="tight", dpi=300
+    )  # Higher DPI for publication quality
     plt.close()
 
+
 def main():
-    file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/all_consensus_classifications.csv"
-    file_path2 = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/mach2/5k/all_consensus_classifications.csv"
-    outfile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/all_consensus_classifications.pdf"
+    file_path = sys.argv[1]
+    outfile = sys.argv[2]
 
     data = load_data(file_path)
-    data2 = load_data(file_path2)
+    data = preprocess_data(data)
+    plot_data(data, outfile)
 
-    percentages1 = calculate_percentages(data, 'BEAM')
-    percentages2 = calculate_percentages(data2, 'MACH2')
-
-    # Combine the percentages dataframes
-    percentages = pd.concat([percentages1, percentages2])
-
-    plot_percentages(percentages, outfile)
 
 if __name__ == "__main__":
     main()

@@ -5,9 +5,14 @@ from ete3 import Tree
 
 edge_list_file = sys.argv[1]
 
-outfile = os.path.dirname(edge_list_file) + "/" + os.path.basename(edge_list_file).split(".")[0] + ".nwk"
+outfile = (
+    os.path.dirname(edge_list_file)
+    + "/"
+    + os.path.basename(edge_list_file).split(".")[0]
+    + ".nwk"
+)
 
-edges=[]
+edges = []
 with open(edge_list_file, "r") as file:
     for line in file:
         fields = line.strip().split()

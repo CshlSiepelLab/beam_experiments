@@ -1,4 +1,3 @@
-
 # set path to data dirs
 inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/quinn_2021_real_data/GSE161363"
 
@@ -12,6 +11,11 @@ primaryTissue: LL
 gtrXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
 randomXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_random_mcmc_template.xml
 
+gtrXmlNoRLDirectSeeding: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_noSpecifiedTissuedirectSeeding_mcmc_template.xml
+
+# thresholds for consensus classifications and times
+thresholds: [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
+
 # set the length of the experiment
 # for Quinn et al. 2021 data, the experiment lengths vary by mouse and are found in the supplementary figures caption by searching "days post-implantation"
 experimentTime:
@@ -21,7 +25,7 @@ experimentTime:
   30k: 80
 
 # set the desired mcmc chain length and number of chains to run in parallel
-mcmcLength: 50000000
+mcmcLength: 1000000000
 numChains: 3
 
 # set the minimum ess to include a chain in the combined output across chains (default: 200)

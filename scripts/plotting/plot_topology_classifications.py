@@ -16,51 +16,77 @@ data = pd.read_csv(infile)
 
 # Calculate the percentage of True values for each category and group
 summary = {
-    'group': ['machina', 'machina', 'metient', 'metient', 'beam', 'beam'],
-    'category': ['met_to_met', 'reseeding', 'met_to_met', 'reseeding', 'met_to_met', 'reseeding'],
-    'percentage': [
-        data['machina_met_to_met'].mean(skipna=True) * 100,
-        data['machina_reseeding'].mean(skipna=True) * 100,
-        data['metient_met_to_met'].mean(skipna=True) * 100,
-        data['metient_reseeding'].mean(skipna=True) * 100,
-        data['beam_met_to_met'].mean(skipna=True) * 100,
-        data['beam_reseeding'].mean(skipna=True) * 100
-    ]
+    "group": ["machina", "machina", "metient", "metient", "beam", "beam"],
+    "category": [
+        "met_to_met",
+        "reseeding",
+        "met_to_met",
+        "reseeding",
+        "met_to_met",
+        "reseeding",
+    ],
+    "percentage": [
+        data["machina_met_to_met"].mean(skipna=True) * 100,
+        data["machina_reseeding"].mean(skipna=True) * 100,
+        data["metient_met_to_met"].mean(skipna=True) * 100,
+        data["metient_reseeding"].mean(skipna=True) * 100,
+        data["beam_met_to_met"].mean(skipna=True) * 100,
+        data["beam_reseeding"].mean(skipna=True) * 100,
+    ],
 }
 
 summary_df = pd.DataFrame(summary)
 
 # Rename the categories
-summary_df['category'] = summary_df['category'].replace({
-    'met_to_met': 'Met to Met',
-    'reseeding': 'Primary Reseeding'
-})
+summary_df["category"] = summary_df["category"].replace(
+    {"met_to_met": "Met to Met", "reseeding": "Primary Reseeding"}
+)
 
-summary_df['group'] = summary_df['group'].replace({
-    'machina': 'Machina',
-    'metient': 'Metient',
-    'beam': 'Beam'
-})
+summary_df["group"] = summary_df["group"].replace(
+    {"machina": "Machina", "metient": "Metient", "beam": "Beam"}
+)
 
-DEFAULT_COLORS = ["#6aa84f", "#be5742e1", "#6fa8dc", "#e69138", "#9e9e9e", "#c27ba0","brown", "black", "darkgreen", "purple", "blue"]*3
+DEFAULT_COLORS = [
+    "#6aa84f",
+    "#be5742e1",
+    "#6fa8dc",
+    "#e69138",
+    "#9e9e9e",
+    "#c27ba0",
+    "brown",
+    "black",
+    "darkgreen",
+    "purple",
+    "blue",
+] * 3
 
 # Create the bar plot
 plt.figure(figsize=(10, 6))
-sns.barplot(x='percentage', y='group', hue='category', data=summary_df, width = 0.75, palette=DEFAULT_COLORS[2:], orient='h')
+sns.barplot(
+    x="percentage",
+    y="group",
+    hue="category",
+    data=summary_df,
+    width=0.75,
+    palette=DEFAULT_COLORS[2:],
+    orient="h",
+)
 
 plt.xlim(0, 100)
 
 # Set the labels and title
-plt.xlabel('Percent of topology across all CPs', fontsize=24)
-plt.ylabel('', fontsize=24)
+plt.xlabel("Percent of topology across all CPs", fontsize=24)
+plt.ylabel("", fontsize=24)
 plt.xticks(fontsize=24)
 plt.yticks(fontsize=24)
 
 # Show the plot
-plt.legend(title='', bbox_to_anchor=(1.0, 0.6), loc='upper left', frameon=False, fontsize=20)
+plt.legend(
+    title="", bbox_to_anchor=(1.0, 0.6), loc="upper left", frameon=False, fontsize=20
+)
 plt.tight_layout()
 
-plt.savefig(infile.replace('.csv', '.pdf'))
+plt.savefig(infile.replace(".csv", ".pdf"))
 
 plt.close()
 
@@ -74,11 +100,11 @@ plt.close()
 # for i, (method, method_name) in enumerate(zip(methods, method_names)):
 #     met_to_met = data[f'{method}_met_to_met']
 #     reseeding = data[f'{method}_reseeding']
-    
+
 #     # Calculate the sets for Venn diagram
 #     set_met_to_met = set(data.index[met_to_met])
 #     set_reseeding = set(data.index[reseeding])
-    
+
 #     plt.sca(axes[i])
 #     venn2([set_met_to_met, set_reseeding], ('Met to Met', 'Reseeding'), set_colors=(DEFAULT_COLORS[2], DEFAULT_COLORS[3]))
 #     for patch in axes[i].patches:

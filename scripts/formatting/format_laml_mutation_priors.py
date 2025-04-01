@@ -40,7 +40,9 @@ with open(sim_matrix, "r") as f:
                     sys.stderr.write(f"Error: Code {code} not found in priors.\n")
                     sys.exit(1)
 
-laml_priors = {k: v for k, v in sorted(laml_priors.items(), key=lambda item: int(item[0]))}
+laml_priors = {
+    k: v for k, v in sorted(laml_priors.items(), key=lambda item: int(item[0]))
+}
 
 # normalize for each site since this is how laml example priors are formatted
 for site, code_dict in laml_priors.items():
@@ -57,6 +59,3 @@ with open(outfile, "w") as f:
         # alternatively, these sites can be removed from the mutation matrix since they are uninformative
         else:
             f.write(f"{site},0,1\n")
-
-
-

@@ -16,7 +16,7 @@ output_file = sys.argv[3]
 tree = Tree(newick_file, format=5)
 
 # Parse the CSV string of tips to keep
-tips_to_keep = tips_to_keep_csv.split(',')
+tips_to_keep = tips_to_keep_csv.split(",")
 
 # Prune tree to only keep the desired tips
 tree.prune(tips_to_keep)

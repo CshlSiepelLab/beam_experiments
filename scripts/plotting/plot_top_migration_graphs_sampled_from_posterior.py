@@ -14,17 +14,31 @@ import matplotlib.pyplot as plt
 from networkx.drawing.nx_pydot import to_pydot
 
 
-DEFAULT_COLORS = ["#006400", "#FF0000", "#0000CD", "#FFA500", "#800080", "#808080", "#FFC0CB", "#ADD8E6", "#A52A2A", "#FFFF00"]*3
+DEFAULT_COLORS = [
+    "#006400",
+    "#FF0000",
+    "#0000CD",
+    "#FFA500",
+    "#800080",
+    "#808080",
+    "#FFC0CB",
+    "#ADD8E6",
+    "#A52A2A",
+    "#FFFF00",
+] * 3
+
 
 def remove_bracket_content(match):
     global annotations
     annotations.append(match.group()[1:-1])
-    return ''
+    return ""
+
 
 def get_labels(newick):
-    label_pattern = re.compile(r'([A-Za-z0-9_]+):')
+    label_pattern = re.compile(r"([A-Za-z0-9_]+):")
     leaf_labels = label_pattern.findall(newick)
     return leaf_labels
+
 
 def label_nodes(newick):
     leaf_labels = get_labels(newick)
@@ -44,8 +58,9 @@ def label_nodes(newick):
     node_labeled_newick += parts[-1]
     return node_labeled_newick
 
+
 def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
-    newick_str = tree.split(' ')[3]
+    newick_str = tree.split(" ")[3]
     tree = Tree(newick_str, format=1)
     all_tissues = set()
     all_tissues.add(primary_tissue)
@@ -55,7 +70,7 @@ def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
     for node in tree.traverse():
         node.name, annotation = node.name.split("[")
         node.tissue = re.search(r'&location="([^"]+)"', annotation).group(1)
-        
+
         if node.name == "":
             if node.is_root():
                 node.name = "root"
@@ -65,17 +80,20 @@ def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
         # # to use the original names (commented out here since it can cause plotting issues)
         # else:
         #     node.name = names_dict[node.name]
-                
+
         if node.tissue not in all_tissues:
             all_tissues.add(node.tissue)
-    
+
     # Check that the tree is ultrametric
     dists = set()
     for node in tree.traverse():
         if node.is_leaf():
             dists.add(round(node.get_distance(tree), 5))
     if len(dists) != 1:
-        print("WARNING: Tree sample is not ultrametric when it should be for BEAST2 output. Check the newick string to verify: ", newick_str)
+        print(
+            "WARNING: Tree sample is not ultrametric when it should be for BEAST2 output. Check the newick string to verify: ",
+            newick_str,
+        )
 
     # Add origin node above the root
     tree_height = dists.pop()
@@ -98,10 +116,14 @@ def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
                 migration_counts[migration] += 1
             else:
                 migration_counts[migration] = 1
-        
+
     # get all tissue names and assign them colors
     all_tissues = sorted(list(set(all_tissues) - {primary_tissue}))
-    custom_colors = {node: color for node, color in zip(all_tissues, DEFAULT_COLORS[0:len(all_tissues)]) if node != primary_tissue}
+    custom_colors = {
+        node: color
+        for node, color in zip(all_tissues, DEFAULT_COLORS[0 : len(all_tissues)])
+        if node != primary_tissue
+    }
     all_tissues = [primary_tissue] + all_tissues
     custom_colors[primary_tissue] = "black"
 
@@ -109,15 +131,29 @@ def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
     G = nx.MultiDiGraph()
 
     for node in all_tissues:
-        G.add_node(node, color=custom_colors[node], shape="box", fillcolor="white", penwidth=3.0, fontsize=32)
+        G.add_node(
+            node,
+            color=custom_colors[node],
+            shape="box",
+            fillcolor="white",
+            penwidth=3.0,
+            fontsize=32,
+        )
 
     for edge, count in migration_counts.items():
         if count == 1:
             label = ""
         else:
             label = str(count)
-        source, target = edge.split('_')
-        G.add_edge(source, target, color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"', penwidth=3, label=label, fontsize=24)
+        source, target = edge.split("_")
+        G.add_edge(
+            source,
+            target,
+            color=f'"{custom_colors[source]};0.5:{custom_colors[target]}"',
+            penwidth=3,
+            label=label,
+            fontsize=24,
+        )
 
     dot = nx.nx_pydot.to_pydot(G)
     outfile = outprefix + "_migration_graph_" + str(num) + ".pdf"
@@ -149,7 +185,7 @@ def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
         nstyle["vt_line_width"] = 3
         nstyle["fgcolor"] = custom_colors[node.tissue]
         node.set_style(nstyle)
-        
+
     outfile = outprefix + "_tree_" + str(num) + ".pdf"
     origin.render(outfile, tree_style=ts)
 
@@ -168,12 +204,12 @@ def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
                 metastasis_times[migration].append(time)
             else:
                 metastasis_times[migration] = [time]
-    
+
     # Plot rectangle spike plot for migration counts
     fig, ax = plt.subplots(figsize=(12, 3))
 
     for migration, times in metastasis_times.items():
-        source, target = migration.split('_')
+        source, target = migration.split("_")
         source_color = custom_colors[source]
         target_color = custom_colors[target]
         for time in times:
@@ -183,23 +219,34 @@ def plot_tree_and_graph(tree, primary_tissue, total_time, outprefix, num):
     fs = 18
     ax.set_xlim(0, total_time)
     ax.set_ylim(0, 1)
-    ax.set_xlabel('Time', fontsize=fs)
-    ax.set_ylabel('', fontsize=fs)
+    ax.set_xlabel("Time", fontsize=fs)
+    ax.set_ylabel("", fontsize=fs)
     ax.set_yticks([0.25, 0.75])
-    ax.set_yticklabels(['Target', 'Source'], fontsize=fs)
+    ax.set_yticklabels(["Target", "Source"], fontsize=fs)
     # ax.yaxis.set_visible(False)
-    ax.tick_params(axis='x', labelsize=fs)
+    ax.tick_params(axis="x", labelsize=fs)
 
     # Add legend
-    handles = [plt.Line2D([0], [0], color=color, lw=3) for color in custom_colors.values()]
+    handles = [
+        plt.Line2D([0], [0], color=color, lw=3) for color in custom_colors.values()
+    ]
     labels = custom_colors.keys()
-    ax.legend(handles, labels, title='', title_fontsize=fs, bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., frameon=False, fontsize=14)
+    ax.legend(
+        handles,
+        labels,
+        title="",
+        title_fontsize=fs,
+        bbox_to_anchor=(1.05, 1),
+        loc="upper left",
+        borderaxespad=0.0,
+        frameon=False,
+        fontsize=14,
+    )
 
     plt.tight_layout()
     outfile = outprefix + "_migration_timing_" + str(num) + ".pdf"
     plt.savefig(outfile)
     plt.close()
-
 
 
 # inputs
@@ -218,17 +265,17 @@ n = int(sys.argv[4])
 names_dict = {}
 trees = []
 
-with open(posterior_file, 'r') as file:
+with open(posterior_file, "r") as file:
     for line in file:
         line = line.strip()
-        if line.startswith('tree'):
+        if line.startswith("tree"):
             trees.append(line)
         # lines that begin with a number and have two fields are translate lines
-        elif line and line[0].isdigit() and len(line.split(' ')) > 1:
-            key_value = line.split(' ')
+        elif line and line[0].isdigit() and len(line.split(" ")) > 1:
+            key_value = line.split(" ")
             key = key_value[0]
             # remove trailing comma for translate values
-            value = key_value[1].replace(',', '')
+            value = key_value[1].replace(",", "")
             names_dict[key] = value
 
 # discard 10% of trees for burnin
@@ -236,10 +283,14 @@ burnin = int(len(trees) * 0.1)
 trees = trees[burnin:]
 
 # get n number of trees randomly from the posterior
-mcc_top_n_trees = random.sample(trees, k=n) # a better approach would be to group the posterior by common features and then sample from those groups, but this is not yet implemented
+mcc_top_n_trees = random.sample(
+    trees, k=n
+)  # a better approach would be to group the posterior by common features and then sample from those groups, but this is not yet implemented
 
 # sample trees, convert to migration graphs, and output as files
 i = 1
 for tree in mcc_top_n_trees:
-    plot_tree_and_graph(tree, primary_tissue, total_time, posterior_file.split(".")[0], i)
+    plot_tree_and_graph(
+        tree, primary_tissue, total_time, posterior_file.split(".")[0], i
+    )
     i = i + 1

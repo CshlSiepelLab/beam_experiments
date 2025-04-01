@@ -27,7 +27,9 @@ with open(reordering_dict_file) as f:
             new_rates[new_code] = original_rates[old_code]
 
 # order the new_rates by the new codes in ascending order
-ordered_rates = [rate for code, rate in sorted(new_rates.items(), key=lambda item: int(item[0]))]
+ordered_rates = [
+    rate for code, rate in sorted(new_rates.items(), key=lambda item: int(item[0]))
+]
 
 # normalize the rates in case they are not already since beam requires the rates to sum to 1.0
 total_rates = sum([float(rate) for rate in ordered_rates])

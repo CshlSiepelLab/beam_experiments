@@ -20,4 +20,20 @@ collectMach2Classifications:
 plotClassifications:
     logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
     logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
+collectMouseLevelClassificationsAndTimes:
+    logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+    logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
+plotExpectedTimes:
+    logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+    logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
+collectMutualInformationAndPlot:
+    logout: '{outdir}/job_logs/{rule}.out'
+    logerror: '{outdir}/job_logs/{rule}.err'
+
+collectRfDistances:
+    logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+    logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
   
