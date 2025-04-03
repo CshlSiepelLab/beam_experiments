@@ -8,16 +8,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # File paths
-file1 = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25/gtr_beam_mutual_information.csv"
-file2 = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25/marginal_likelihoods.csv"
-outfile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25/correlation_mutual_info_bayes_factor.pdf"
+file1 = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/mi.csv"
+file2 = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/bf.csv"
+outfile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/correlation_mutual_info_bayes_factor.pdf"
 
 # Read data
 df1 = pd.read_csv(file1)
 df2 = pd.read_csv(file2)
 
 # Prepare and merge dataframes
-df1["name"] = df1["mouse_cp"]
+df1["name"] = df1["mouse_cp"].str.replace("/", "_")
 df2["name"] = df2["name"].str.replace("/", "_")
 
 df1 = df1[["name", "mutual_information_normalized"]]
@@ -27,8 +27,8 @@ df2 = df2[["name", "bf(gtr-random)"]]
 merged_df = pd.merge(df1, df2, on="name")
 
 # Extract relevant columns
-mutual_info = merged_df["mutual_information_normalized"]
-bayes_factor = merged_df["bf(gtr-random)"]
+mutual_info = merged_df["mutual_information_normalized"].astype(float)
+bayes_factor = merged_df["bf(gtr-random)"].astype(float)
 
 # Plotting
 fs = 18

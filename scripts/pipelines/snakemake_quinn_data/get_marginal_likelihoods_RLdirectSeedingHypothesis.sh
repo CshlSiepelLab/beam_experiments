@@ -17,7 +17,7 @@ process_dir() {
 
 export -f process_dir
 
-num_threads=30
+num_threads=50
 
 # gtr
 dirs=$(find $main_dir/beam_gtr_ns -maxdepth 2 -mindepth 2 -type d )
@@ -76,3 +76,6 @@ done
 # sort results by Bayes factor from high to low
 (head -n1 $outfile &&  tail -n +2 $outfile | sort -t, -k6,6nr)  > $outfile.tmp
 mv $outfile.tmp $outfile
+
+# find which need more particles
+awk -F',' 'NR > 1 { if (sqrt((5 - $6)^2) < $7) print $1 }' $outfile

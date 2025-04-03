@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=5):
+def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=0):
     # Read the data
     df = pd.read_csv(file_path)
 
     # Get the Bayes factor column
-    bf_column = "bf(gtr-random)"
-    # bf_column = 'bf(gtr-gtrNoRLdirectSeeding)'
+    # bf_column = "bf(gtr-random)"
+    bf_column = 'bf(gtr-gtrNoRLdirectSeeding)'
 
     # Create the figure with specific size
     plt.figure(figsize=(12, 6))
@@ -52,11 +52,8 @@ def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=5):
         xticks = np.sort(np.append(xticks, 0))
     plt.xticks(xticks, rotation=0, fontsize=fs)
     plt.yticks(fontsize=fs)
-    plt.xlabel(
-        "ln(Bayes factor)\nfrom ln(Marginal likelihood GTR) - ln(Marginal likelihood Random)",
-        fontsize=fs,
-    )
-    # plt.xlabel('ln(Bayes factor)\nfrom ln(Marginal likelihood GTR) - ln(Marginal likelihood no RL Direct Seeding)', fontsize=fs)
+    # plt.xlabel("ln(Bayes factor)\nfrom ln(Marginal likelihood GTR) - ln(Marginal likelihood Random)", fontsize=fs,)
+    plt.xlabel('ln(Bayes factor)\nfrom ln(Marginal likelihood GTR) - ln(Marginal likelihood no RL Direct Seeding)', fontsize=fs)
     plt.ylabel("Count", fontsize=fs)
 
     # Adjust layout to prevent label cutoff
