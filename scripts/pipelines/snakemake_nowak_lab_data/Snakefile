@@ -25,15 +25,15 @@ def get_elements_from_file(path):
         cps = [cp for cp in cps if cp != "CP01"]    # exclude these CPs due to computational burden with Beam analysis
 
 
-    # Overwrite CPs for mice to not run them all for more particles
-    included_combinations = {
-        "MMUS1469": ["CP006"],
-    }
+    # # Overwrite CPs for mice to not run them all for more particles
+    # included_combinations = {
+    #     "MMUS1469": ["CP006"],
+    # }
 
-    if mouse in included_combinations:
-        cps = included_combinations[mouse]
-    else:
-        cps = []
+    # if mouse in included_combinations:
+    #     cps = included_combinations[mouse]
+    # else:
+    #     cps = []
 
     return cps
 
@@ -68,15 +68,19 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf", outdir=config['outdir'], 
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 201), mouse=m) for m in mice],
-        [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 201), mouse=m) for m in mice],
-        expand("{outdir}/beam_gtr/combined_rf_distances.pdf", outdir=config['outdir']),
+        # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 201), mouse=m) for m in mice],
+        # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 201), mouse=m) for m in mice],
+        # expand("{outdir}/beam_gtr/combined_rf_distances.pdf", outdir=config['outdir']),
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/all_consensus_classifications.csv", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         expand("{outdir}/beam_gtr/all_consensus_classifications.pdf", outdir=config['outdir']),
         [expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.pdf", outdir=config['outdir'], mouse=m) for m in mice],
+        [expand("{outdir}/beam_no_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 11), mouse=m) for m in mice],
+        [expand("{outdir}/beam_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 11), mouse=m) for m in mice],
                 
 
 rule runEvotracer:
@@ -1043,3 +1047,188 @@ rule runBeamRandomNS:
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
+rule runBeamNoReseedingNS:
+    input:
+        cpList = "{outdir}/beam/{mouse}/cp_list.txt",
+        fasta = "{outdir}/beam/{mouse}/{cp}/{cp}.fasta",
+        tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
+        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
+    output:
+        terminalLog = "{outdir}/beam_no_reseeding_ns/{mouse}/{cp}/terminal_{num}.log",
+    params:
+        xml = config['noReseedingNS'],
+        inFileDir = "{outdir}/beam/{mouse}/{cp}",
+        fileDir = "{outdir}/beam_no_reseeding_ns/{mouse}/{cp}",
+        beamJar = config['beamJar'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = 5,
+    shell:
+        """
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
+
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+
+        # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
+        if [[ $numTissues -eq 1 ]]; then
+            # if the primary already exists then add a dummy
+            if echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
+                unique_tissues="$unique_tissues dummy"
+            # if not, then add the primary as the dummy
+            else
+                unique_tissues="{params.primaryTissue} $unique_tissues"
+            fi
+            numTissues=$(( numTissues + 1 ))
+        fi
+
+        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
+        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
+            numTissues=$(( numTissues + 1 ))
+        fi
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
+        # fixed for no reseeding model
+        numTissueRates=2
+
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
+
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+
+        # use LAML starting tree
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+        # Replace mcmc specs with nested sampling specs
+        mcmc_specs='<run id="mcmc" spec="MCMC" chainLength="\$(mcmclength)">'
+        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
+        sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
+
+        java -Xmx10g -jar {params.beamJar} \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.cp} \
+        -D fileDir={params.inFileDir} \
+        -D newick=\"$newick\" \
+        -D generations={params.experimentTime} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D outname=chain_{wildcards.num} \
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
+
+rule runBeamReseedingNS:
+    input:
+        cpList = "{outdir}/beam/{mouse}/cp_list.txt",
+        fasta = "{outdir}/beam/{mouse}/{cp}/{cp}.fasta",
+        tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam/{mouse}/{cp}/{cp}_edit_rate_proportions.txt",
+        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
+    output:
+        terminalLog = "{outdir}/beam_reseeding_ns/{mouse}/{cp}/terminal_{num}.log",
+    params:
+        xml = config['reseedingNS'],
+        inFileDir = "{outdir}/beam/{mouse}/{cp}",
+        fileDir = "{outdir}/beam_reseeding_ns/{mouse}/{cp}",
+        beamJar = config['beamJar'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = 5,
+    shell:
+        """
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+
+        # calculate necessary inputs for the editing model
+        initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
+        array=($initialEditRates)
+        numEditRates=${{#array[@]}}
+        numEditRatesPlusTwo=$(( numEditRates + 2 ))
+
+        # format tissue information
+        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+
+        # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
+        if [[ $numTissues -eq 1 ]]; then
+            # if the primary already exists then add a dummy
+            if echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
+                unique_tissues="$unique_tissues dummy"
+            # if not, then add the primary as the dummy
+            else
+                unique_tissues="{params.primaryTissue} $unique_tissues"
+            fi
+            numTissues=$(( numTissues + 1 ))
+        fi
+
+        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
+        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
+            numTissues=$(( numTissues + 1 ))
+        fi
+        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
+        # fixed for reseeding model
+        numTissueRates=3
+
+        tissueCodeMap=""
+        trailingCodeMap="? = "
+        i=0
+        for tissue in $sorted_unique_tissues; do
+            tissueCodeMap+="$tissue=$i,"
+            trailingCodeMap+="$i "
+            i=$((i+1))
+        done
+        tissueCodeMap+="${{trailingCodeMap}}"
+
+        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+
+        # use LAML starting tree
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+        # Replace mcmc specs with nested sampling specs
+        mcmc_specs='<run id="mcmc" spec="MCMC" chainLength="\$(mcmclength)">'
+        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
+        sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
+
+        java -Xmx10g -jar {params.beamJar} \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.cp} \
+        -D fileDir={params.inFileDir} \
+        -D newick=\"$newick\" \
+        -D generations={params.experimentTime} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D initialEditRates=\"$initialEditRates\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D tissueRootFreqs=\"$tissueRootFreqs\" \
+        -D outname=chain_{wildcards.num} \
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
+        """

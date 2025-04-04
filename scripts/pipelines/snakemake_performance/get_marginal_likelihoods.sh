@@ -17,12 +17,8 @@ export -f process_dir
 
 num_threads=25
 
-# gtr
-dirs=$(find $main_dir/beam_gtr_ns -maxdepth 1 -mindepth 1 -type d )
-echo "$dirs" | parallel -j $num_threads process_dir
-
-# random
-dirs=$(find $main_dir/beam_random_ns -maxdepth 1 -mindepth 1 -type d )
+# process all chains in one
+dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -maxdepth 1 -mindepth 1 -type d )
 echo "$dirs" | parallel -j $num_threads process_dir
 
 

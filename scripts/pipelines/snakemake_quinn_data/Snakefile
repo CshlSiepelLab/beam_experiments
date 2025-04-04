@@ -55,7 +55,7 @@ rule all:
         # expand("{outdir}/mach2/{mouse}/all_consensus_classifications.csv", outdir=outdir, mouse=mouse_ids),
         # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 31), outdir=outdir) for m in mouse_ids],
         # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 31), outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/beam_gtr_noRLdirectSeeding_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 21), outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam_gtr_noRLdirectSeeding_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 31), outdir=outdir) for m in mouse_ids],
 
 
 rule plotCountsPerCP:

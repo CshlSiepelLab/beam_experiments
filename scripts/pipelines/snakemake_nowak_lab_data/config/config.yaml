@@ -38,6 +38,9 @@ beamJar: /grid/siepel/home_norepl/staklins/beam/beam.jar
 gtrXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
 randomXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_random_mcmc_template.xml
 
+noReseedingNS: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_no_reseeding_ns.xml
+reseedingNS: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_reseeding_ns.xml
+
 # Length of experiment for Ryan's published cancer discovery prostate cancer data
 experimentTime: 
   MMUS1457: 344
@@ -59,8 +62,3 @@ numChains: 3
 
 # set the minimum ess to include a chain in the combined output across chains (default: 200)
 essCutoff: 0
-
-# Nested sampling parameters
-xmlNS: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_ns_template_gti.xml
-numRunsNs: 1
-numNsParticles: 1

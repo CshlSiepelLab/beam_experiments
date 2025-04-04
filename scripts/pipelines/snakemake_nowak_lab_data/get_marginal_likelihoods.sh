@@ -17,12 +17,8 @@ export -f process_dir
 
 num_threads=50
 
-# gtr
-dirs=$(find $main_dir/beam_gtr_ns -maxdepth 2 -mindepth 2 -type d ! -exec test -f "{}/combined_terminal.log" \; -print)
-echo "$dirs" | parallel -j $num_threads process_dir
-
-# random
-dirs=$(find $main_dir/beam_random_ns -maxdepth 2 -mindepth 2 -type d ! -exec test -f "{}/combined_terminal.log" \; -print)
+# process all chains in one
+dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -maxdepth 2 -mindepth 2)
 echo "$dirs" | parallel -j $num_threads process_dir
 
 
@@ -81,3 +77,6 @@ echo "$files" | parallel -j $num_threads process_file
 # sort results by Bayes factor from high to low
 (head -n1 $outfile &&  tail -n +2 $outfile | sort -t, -k6,6nr)  > $outfile.tmp
 mv $outfile.tmp $outfile
+
+# find which need more particles
+awk -F',' 'NR > 1 { if (sqrt((5 - $6)^2) < $7 || sqrt((5 - $10)^2) < $11) print $1 }' $outfile
