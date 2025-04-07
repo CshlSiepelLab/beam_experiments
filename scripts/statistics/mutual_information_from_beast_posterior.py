@@ -1,121 +1,24 @@
 #!/usr/bin/env python3
 
-import dendropy
-from collections import defaultdict
-import numpy as np
-import csv
-import os
 import sys
-from concurrent.futures import ThreadPoolExecutor
+from beam_visualization import BeamResults
 
 
-def normalized_mutual_information(count_matrix):
-    P = count_matrix / np.sum(count_matrix)
-    p_x = np.sum(P, axis=1)
-    p_y = np.sum(P, axis=0)
-
-    # Compute mutual information
-    MI = 0
-    for i in range(P.shape[0]):
-        for j in range(P.shape[1]):
-            if P[i, j] > 0:
-                MI += P[i, j] * np.log2(P[i, j] / (p_x[i] * p_y[j]))
-
-    # Compute entropies
-    def calc_entropy(p):
-        H = 0
-        for i in p:
-            if i > 0:
-                H += i * np.log2(i)
-        return -H
-
-    H_x = calc_entropy(p_x)
-    H_y = calc_entropy(p_y)
-
-    # Normalize mutual information
-    NMI = (2 * MI) / sum([H_x, H_y])
-
-    return NMI
+beam_trees = sys.argv[1]
+beam_log = sys.argv[2]
+primary_tissue = sys.argv[3]
+output_file_matrix = sys.argv[4]
+output_file_information = sys.argv[5]
+threads = int(sys.argv[6])
 
 
-def process_tree(tree, origin_tissue):
-    tissue_types = set()
-    migration_counts = defaultdict(lambda: defaultdict(int))
+# Load in data to BeamResults object
+results = BeamResults(beam_trees, beam_log, primary_tissue)
 
-    for node in tree.preorder_node_iter():
-        if node.parent_node:
-            source = node.parent_node.annotations.get_value("location")
-            target = node.annotations.get_value("location")
-            tissue_types.add(source)
-            tissue_types.add(target)
-            migration_counts[source][target] += 1
-        else:
-            target = node.annotations.get_value("location")
-            tissue_types.add(origin_tissue)
-            tissue_types.add(target)
-            migration_counts[origin_tissue][target] += 1
-
-    return tissue_types, migration_counts
-
-
-def compute_migration_mutual_info(nexus_path, origin_tissue, threads):
-    trees = dendropy.TreeList.get(path=nexus_path, schema="nexus")
-
-    num_beast_trees = len(trees)
-
-    tissue_types = set()
-    migration_counts = defaultdict(lambda: defaultdict(int))
-
-    with ThreadPoolExecutor(max_workers=threads) as executor:
-        results = executor.map(process_tree, trees, [origin_tissue] * len(trees))
-
-    for t_types, m_counts in results:
-        tissue_types.update(t_types)
-        for source, targets in m_counts.items():
-            for target, count in targets.items():
-                migration_counts[source][target] += count
-
-    tissue_list = sorted(tissue_types - {origin_tissue})
-    tissue_list.insert(0, origin_tissue)
-    n = len(tissue_list)
-    count_matrix = np.zeros((n, n))
-    for i, source in enumerate(tissue_list):
-        for j, target in enumerate(tissue_list):
-            count_matrix[i, j] = migration_counts[source][target]
-
-    mutual_info = normalized_mutual_information(count_matrix)
-
-    return mutual_info, count_matrix, tissue_list
-
-
-posterior_file = sys.argv[1]
-origin_tissue = sys.argv[2]
-outdir = sys.argv[3]
-threads = int(sys.argv[4])
-
-# # testing
-# posterior_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3/beam_gtr/MMUS1544/CP04/chain_1.trees"
-# origin_tissue = "PRL"
-# outdir = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_1_20_25_asv_cutoff_3/beam_gtr/MMUS1544/CP04"
-# threads = 50
-
-mi, counts, tissues = compute_migration_mutual_info(
-    posterior_file, origin_tissue, threads
+# Get migration count matrix and mutual information
+results.compute_posterior_mutual_info(
+    output_file_matrix = output_file_matrix,
+    output_file_information = output_file_information,
+    threads = threads
 )
 
-with open(
-    os.path.join(
-        outdir, "posterior_trees_migration_count_matrix_for_mutual_information.csv"
-    ),
-    mode="w",
-    newline="",
-) as file:
-    writer = csv.writer(file)
-    writer.writerow([""] + tissues)
-    for i, row in enumerate(counts):
-        writer.writerow([tissues[i]] + [int(value) for value in row])
-
-with open(
-    os.path.join(outdir, "posterior_trees_migration_mutual_information.txt"), mode="w"
-) as file:
-    file.write(str(mi))

@@ -326,19 +326,23 @@ rule plotBeamMetastasisTiming:
 
 rule mutualInformationBeam:
     input:
-        combinedTrees = "{outdir}/beam_gtr/{sim}/combined.trees"
+        combinedTrees = "{outdir}/beam_gtr/{sim}/combined.trees",
+        combinedLog = "{outdir}/beam_gtr/{sim}/combined.log"
     output:
+        migrationCountMatrix = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_count_matrix.csv",
         mutualInformation = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         threads = 5,
         mem = '1G'
-    conda:
-        "../../envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/statistics/mutual_information_from_beast_posterior.py {input.combinedTrees} {params.primaryTissue} $(dirname {input.combinedTrees}) {params.threads}
+        # work around until beam visualization is pip installable
+        source ~/miniconda3/etc/profile.d/conda.sh 
+        conda activate beam_visualization
+        
+        python {params.scripts}/statistics/mutual_information_from_beast_posterior.py {input.combinedTrees} {input.combinedLog} {params.primaryTissue} {output.migrationCountMatrix} {output.mutualInformation} {params.threads}
         """
 
 rule collectMutualInformationAndPlot:
