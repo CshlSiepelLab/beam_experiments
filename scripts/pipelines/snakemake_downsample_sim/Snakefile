@@ -1,4 +1,3 @@
-
 import os
 import sys
 import glob
@@ -302,19 +301,21 @@ rule combineBeamChains:
 
 rule convertTreePosteriorToGraphPosterior:
     input:
-        combinedTrees = "{outdir}/beam/{sim}_{threshold}/combined.trees"
+        combinedTrees = "{outdir}/beam/{sim}_{threshold}/combined.trees",
+        combinedLog = "{outdir}/beam/{sim}_{threshold}/combined.log"
     output:
         graphPosterior = "{outdir}/beam/{sim}_{threshold}/posterior_prob_graph.csv"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/beam/{sim}_{threshold}",
         threads = config['threads']
-    conda:
-        "../../envs/networkx.yaml"
     shell:
         """
-        python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
+        # work around until beam visualization is pip installable
+        source ~/miniconda3/etc/profile.d/conda.sh 
+        conda activate beam_visualization
+
+        python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {input.combinedLog} {params.primaryTissue} {output.graphPosterior} {params.threads}
         """
 
 rule plotGraphPosterior:

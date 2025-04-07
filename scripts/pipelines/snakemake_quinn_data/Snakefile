@@ -428,24 +428,26 @@ rule combineBeamChains:
 
 rule convertTreePosteriorToGraphPosterior:
     input:
-        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees"
+        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
+        combinedLog = "{outdir}/beam_gtr/{mouse}/{cp}/combined.log",
     output:
         graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/beam/{mouse}/{cp}",
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/networkx.yaml"
     shell:
         """
+        # work around until beam visualization is pip installable
+        source ~/miniconda3/etc/profile.d/conda.sh 
+        conda activate beam_visualization
+
         if [ ! -s {input.combinedTrees} ]; then
             echo "Combined trees file is empty. Exiting."
             touch {output.graphPosterior}
         else
-            python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {params.primaryTissue} {output.graphPosterior} {params.threads}
+            python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {input.combinedLog} {params.primaryTissue} {output.graphPosterior} {params.threads}
         fi
         """
 
