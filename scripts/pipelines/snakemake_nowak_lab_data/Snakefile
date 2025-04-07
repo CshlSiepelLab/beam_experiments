@@ -1,4 +1,3 @@
-
 import os
 import sys
 import glob
@@ -24,6 +23,9 @@ def get_elements_from_file(path):
     if mouse == "MMUS1875" or mouse == "MMUS1466":
         cps = [cp for cp in cps if cp != "CP01"]    # exclude these CPs due to computational burden with Beam analysis
 
+    # # temp exclusions
+    # exclude = ["CP01", "CP02", "CP1", "CP2", "CP001", "CP002"]
+    # cps = [cp for cp in cps if cp not in exclude]
 
     # # Overwrite CPs for mice to not run them all for more particles
     # included_combinations = {
@@ -78,9 +80,9 @@ rule all:
         expand("{outdir}/beam_gtr/all_consensus_classifications.pdf", outdir=config['outdir']),
         [expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.pdf", outdir=config['outdir'], mouse=m) for m in mice],
         [expand("{outdir}/beam_no_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 11), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
         [expand("{outdir}/beam_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 11), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 21), mouse=m) for m in mice],
                 
 
 rule runEvotracer:
@@ -95,7 +97,8 @@ rule runEvotracer:
         evoOutDir = "{outdir}/evotracer/{mouse}",
         scripts = config['scripts'],
         threads = 10,
-        asvThreshold = config['asvThreshold']
+        asvThreshold = config['asvThreshold'],
+        mem = '5G'
     singularity:
         '../../envs/evotracer.sif'
     shell:
@@ -125,6 +128,7 @@ rule plotEvotracerResults:
         evoPlotsOutDir = "{outdir}/evotracer/{mouse}/plots",
         scripts = config['scripts'],
         threads = 1,
+        mem = '5G'
     singularity:
         "../../envs/evotracer_plotting.sif"
     shell:
@@ -152,7 +156,8 @@ rule splitCPs:
     params:
         outdir = "{outdir}/beam/{mouse}",
         scripts = config['scripts'],
-        threads = 1
+        threads = 1,
+        mem = '5G'
     shell:
         """
         # prep mutation dictionary for the mouse overall
@@ -195,6 +200,7 @@ rule plotCpNumAsvs:
         scripts = config['scripts'],
         threads = 1,
         max_tips = config['downsampleTipNumThreshold'],
+        mem = '5G'
     conda:
         "../../envs/matplotlib.yaml"
     shell:
@@ -231,7 +237,8 @@ rule downsampleInputsTree:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         max_tips = config['downsampleTipNumThreshold'], # downsampling only occurs if the number of tips is greater than this
         threshold = config['downsampleDistanceThreshold'], # height of the tree for which downsampling occurs below it
-        threads = 25
+        threads = 25,
+        mem = '5G'
     conda:
         "../../envs/laml.yaml"
     shell:
@@ -285,6 +292,7 @@ rule prepBeamInputs:
         scripts = config['scripts'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         threads = 1,
+        mem = '5G'
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -343,7 +351,8 @@ rule runCassiopeia:
     params:
         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
         outputdir = "{outdir}/cassiopeia_greedy/{mouse}/{cp}",
-        threads = 5
+        threads = 5,
+        mem = '5G'
     singularity:
         "../../envs/simulate.sif"
     shell:
@@ -366,7 +375,8 @@ rule runLAML:
         scripts = config['scripts'],
         outputdir = "{outdir}/laml/{mouse}/{cp}",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        threads = 25
+        threads = 25,
+        mem = '5G'
     conda:
         "../../envs/laml.yaml"
     shell:
@@ -414,6 +424,7 @@ rule runBeam:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
+        mem = '5G',
         mcmclength = config['mcmcLength']
     shell:
         """
@@ -510,7 +521,8 @@ rule combineBeamChains:
     params:
         logcombiner = config['logcombiner'],
         essCutoff = config['essCutoff'],
-        threads = 1
+        threads = 1,
+        mem = '5G'
     shell:
         """
         # find chains that have converged based on ess threshold specified
@@ -549,7 +561,8 @@ rule convertTreePosteriorToGraphPosterior:
         scripts = config['scripts'],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         outdir = "{outdir}/beam/{mouse}/{cp}",
-        threads = 1
+        threads = 1,
+        mem = '5G'
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -573,6 +586,7 @@ rule plotGraphPosterior:
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
         threads = 1,
+        mem = '5G',
         minThreshold = 0.4,
         maxThreshold = 0.9,
     conda:
@@ -604,6 +618,7 @@ rule sampleFromBeamPosteriorGraphs:
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         threads = 1,
+        mem = '5G',
         numGraphs = 10
     conda:
         "../../envs/networkx.yaml"
@@ -669,7 +684,8 @@ rule sampleBeamMetastasisTiming:
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
-        threads = 1
+        threads = 1,
+        mem = '5G'
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -689,7 +705,8 @@ rule plotBeamMetastasisTiming:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
         consensusThreshold = 0.5,
-        threads = 1
+        threads = 1,
+        mem = '5G'
     conda:
         "../../envs/matplotlib.yaml"
     shell:
@@ -878,6 +895,7 @@ rule runBeamGtrNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
+        mem = '5G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -972,6 +990,7 @@ rule runBeamRandomNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
+        mem = '5G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -1064,6 +1083,7 @@ rule runBeamNoReseedingNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
+        mem = '80G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -1157,6 +1177,7 @@ rule runBeamReseedingNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
+        mem = '80G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml

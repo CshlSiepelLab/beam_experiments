@@ -91,4 +91,9 @@ done
 mv $outfile.tmp $outfile
 
 # find which need more particles
-awk -F',' 'NR > 1 { if (sqrt((5 - $6)^2) < $7 || sqrt((5 - $10)^2) < $11) print $1 }' $outfile
+bf_field=6
+diff_field=7
+threshold=0
+awk -F',' -v bf=$bf_field -v diff=$diff_field 'NR > 1 { if (sqrt(($threshold - $bf)^2) < $diff) print $1 }' $outfile
+
+
