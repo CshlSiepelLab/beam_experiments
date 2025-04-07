@@ -304,34 +304,25 @@ rule convertTreePosteriorToGraphPosterior:
         combinedTrees = "{outdir}/beam/{sim}_{threshold}/combined.trees",
         combinedLog = "{outdir}/beam/{sim}_{threshold}/combined.log"
     output:
-        graphPosterior = "{outdir}/beam/{sim}_{threshold}/posterior_prob_graph.csv"
+        graphPosterior = "{outdir}/beam/{sim}_{threshold}/posterior_prob_graph.csv",
+        probabilityPlot = "{outdir}/beam/{sim}_{threshold}/probability_migration_graph.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        threads = config['threads']
+        outprefix_thresholded = "{outdir}/beam/{sim}_{threshold}/thresholded_migration_graph_",
+        threads = 5,
+        mem = "1G"
     shell:
         """
         # work around until beam visualization is pip installable
         source ~/miniconda3/etc/profile.d/conda.sh 
         conda activate beam_visualization
 
-        python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {input.combinedLog} {params.primaryTissue} {output.graphPosterior} {params.threads}
-        """
-
-rule plotGraphPosterior:
-    input:
-        graphPosterior = "{outdir}/beam/{sim}_{threshold}/posterior_prob_graph.csv"
-    output:
-        probabilityPlot = "{outdir}/beam/{sim}_{threshold}/probability_migration_graph.pdf",
-        thresholdPlot = "{outdir}/beam/{sim}_{threshold}/threshold_migration_graph.pdf"
-    params:
-        scripts = config['scripts'],
-        primaryTissue = config['primaryTissue'],
-        outdir = "{outdir}/beam/{sim}_{threshold}",
-        consensusThreshold = 0.4
-    conda:
-        "../../envs/networkx.yaml"
-    shell:
-        """
-        python {params.scripts}/plotting/plot_consensus_prob_migration_graph.py {input.graphPosterior} {params.primaryTissue} {params.outdir} {params.consensusThreshold}
+        if [ ! -s {input.combinedTrees} ]; then
+            echo "Combined trees file is empty. Exiting."
+            touch {output.graphPosterior}
+        else
+            thresholds="0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99"
+            python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {input.combinedLog} {params.primaryTissue} {output.graphPosterior} {params.threads} {output.probabilityPlot} $thresholds {params.outprefix_thresholded}
+        fi
         """
