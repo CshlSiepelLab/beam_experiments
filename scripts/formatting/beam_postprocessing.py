@@ -16,7 +16,8 @@ outprefix_thresholded = sys.argv[8]
 outprefix_samples = sys.argv[9]
 num_samples = int(sys.argv[10])
 origin_time = int(sys.argv[11])
-
+output_file_matrix = sys.argv[12]
+output_file_information = sys.argv[13]
 
 # load in data
 results = BeamResults(
@@ -47,4 +48,11 @@ results.sample_and_plot_trees(
     n=num_samples,
     total_time=origin_time,
     output_prefix=outprefix_samples
+)
+
+# Get migration count matrix and mutual information
+results.compute_posterior_mutual_info(
+    output_file_matrix = output_file_matrix,
+    output_file_information = output_file_information,
+    threads = cores
 )

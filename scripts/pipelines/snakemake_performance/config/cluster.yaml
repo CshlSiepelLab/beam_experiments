@@ -9,10 +9,6 @@ plotPrecisionRecall:
   logout: '{outdir}/job_logs/{rule}.out'
   logerror: '{outdir}/job_logs/{rule}.err'
 
-checkCombinedBeamConvergence:
-  logout: '{outdir}/job_logs/{rule}.out'
-  logerror: '{outdir}/job_logs/{rule}.err'
-
 collectMutualInformationAndPlot:
   logout: '{outdir}/job_logs/{rule}.out'
   logerror: '{outdir}/job_logs/{rule}.err'

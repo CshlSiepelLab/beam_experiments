@@ -292,60 +292,16 @@ rule plotBeamMetastasisTiming:
         python {params.scripts}/plotting/plot_metastasis_times.py {input.metastasisTiming} {input.graphPosterior} {params.experimentTime} {params.primaryTissue} {params.consensusThreshold} {params.outdir}/metastasis_timing
         """
 
-rule mutualInformationBeam:
-    input:
-        combinedTrees = "{outdir}/beam_gtr/{sim}/combined.trees",
-        combinedLog = "{outdir}/beam_gtr/{sim}/combined.log"
-    output:
-        migrationCountMatrix = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_count_matrix.csv",
-        mutualInformation = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt"
-    params:
-        scripts = config['scripts'],
-        primaryTissue = config['primaryTissue'],
-        threads = 5,
-        mem = '1G'
-    shell:
-        """
-        # work around until beam visualization is pip installable
-        source ~/miniconda3/etc/profile.d/conda.sh 
-        conda activate beam_visualization
-        
-        python {params.scripts}/statistics/mutual_information_from_beast_posterior.py {input.combinedTrees} {input.combinedLog} {params.primaryTissue} {output.migrationCountMatrix} {output.mutualInformation} {params.threads}
-        """
-
-rule collectMutualInformationAndPlot:
-    input:
-        mutualInformation = expand("{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt", sim=sims, outdir='{outdir}')
-    output:
-        combinedResults = "{outdir}/gtr_beam_mutual_information.csv",
-        plot = "{outdir}/gtr_beam_mutual_information.pdf"
-    params:
-        scripts = config['scripts'],
-        threads = 1,
-        mem = '1G'
-    conda:
-        "../../envs/matplotlib.yaml"
-    shell:
-        """
-        echo "simname,mutual_information_normalized" > {output.combinedResults}
-        
-        for file in {input.mutualInformation}; do
-            simname=$(basename $(dirname $file))
-            mutual_information=$(head -n 1 $file | tr -d '[:space:]')
-            echo "$simname,$mutual_information" >> {output.combinedResults}
-        done
-
-        python {params.scripts}/plotting/plot_mutual_information_normalized_histogram.py {output.combinedResults} {output.plot}
-        """
-
-rule convertTreePosteriorToGraphPosterior:
+rule beamPostprocessing:
     input:
         combinedTrees = "{outdir}/beam_gtr/{sim}/combined.trees",
         combinedLog = "{outdir}/beam_gtr/{sim}/combined.log"
     output:
         graphPosterior = "{outdir}/beam_gtr/{sim}/posterior_prob_graph.csv",
         probabilityPlot = "{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf",
-        samples = "{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf"
+        samples = "{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf",
+        migrationCountMatrix = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_count_matrix.csv",
+        mutualInformation = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
@@ -378,8 +334,35 @@ rule convertTreePosteriorToGraphPosterior:
                 {params.outprefix_thresholded} \
                 {params.outprefix_samples} \
                 {params.numSamples} \
-                {params.experimentTime}
+                {params.experimentTime} \
+                {output.migrationCountMatrix} \
+                {output.mutualInformation}
         fi
+        """
+
+rule collectMutualInformationAndPlot:
+    input:
+        mutualInformation = expand("{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt", sim=sims, outdir='{outdir}')
+    output:
+        combinedResults = "{outdir}/gtr_beam_mutual_information.csv",
+        plot = "{outdir}/gtr_beam_mutual_information.pdf"
+    params:
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        echo "simname,mutual_information_normalized" > {output.combinedResults}
+        
+        for file in {input.mutualInformation}; do
+            simname=$(basename $(dirname $file))
+            mutual_information=$(head -n 1 $file | tr -d '[:space:]')
+            echo "$simname,$mutual_information" >> {output.combinedResults}
+        done
+
+        python {params.scripts}/plotting/plot_mutual_information_normalized_histogram.py {output.combinedResults} {output.plot}
         """
 
 rule runRandomAndConsensusTissueInference:

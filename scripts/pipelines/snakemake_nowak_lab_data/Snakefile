@@ -558,14 +558,16 @@ rule combineBeamChains:
         fi
         """
 
-rule convertTreePosteriorToGraphPosterior:
+rule beamPostprocessing:
     input:
         combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
         combinedLog = "{outdir}/beam_gtr/{mouse}/{cp}/combined.log"
     output:
         graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv",
         probabilityPlot = "{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf",
-        samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf"
+        samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf",
+        migrationCountMatrix = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_count_matrix.csv",
+        mutualInformation = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
@@ -598,29 +600,10 @@ rule convertTreePosteriorToGraphPosterior:
                 {params.outprefix_thresholded} \
                 {params.outprefix_samples} \
                 {params.numSamples} \
-                {params.experimentTime}
+                {params.experimentTime} \
+                {output.migrationCountMatrix} \
+                {output.mutualInformation}
         fi
-        """
-
-rule mutualInformationBeam:
-    input:
-        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
-        combinedLog = "{outdir}/beam_gtr/{mouse}/{cp}/combined.log"
-    output:
-        migrationCountMatrix = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_count_matrix.csv",
-        mutualInformation = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt"
-    params:
-        scripts = config['scripts'],
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 5,
-        mem = '1G'
-    shell:
-        """
-        # work around until beam visualization is pip installable
-        source ~/miniconda3/etc/profile.d/conda.sh 
-        conda activate beam_visualization
-
-        python {params.scripts}/statistics/mutual_information_from_beast_posterior.py {input.combinedTrees} {input.combinedLog} {params.primaryTissue} {output.migrationCountMatrix} {output.mutualInformation} {params.threads}
         """
 
 rule collectMutualInformationAndPlot:
