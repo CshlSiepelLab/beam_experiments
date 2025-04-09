@@ -26,16 +26,16 @@ def get_elements_from_file(path):
 
     # Overwrite CPs for mice to not run them all for more particles
     included_combinations = {
-        "MMUS1469": ["CP006", "CP002", "CP049", "CP074", "CP119", "CP115", "CP106", "CP122", "CP116", "CP078", "CP100", "CP103", "CP104"],
-        "MMUS1495": ["CP011", "CP004", "CP017", "CP028", "CP047", "CP073", "CP010", "CP032", "CP106", "CP093", "CP113", "CP091", "CP108", "CP115", "CP083", "CP089", "CP105", "CP050", "CP052", "CP063", "CP053", "CP029", "CP042", "CP013", "CP114"],
-        "MMUS1466": ["CP02", "CP12", "CP24", "CP21", "CP14", "CP06", "CP19", "CP04", "CP16"],
-        "MMUS1544": ["CP06", "CP08", "CP24", "CP22", "CP81", "CP40", "CP05", "CP15", "CP09", "CP51", "CP43", "CP14", "CP78", "CP72", "CP84", "CP76", "CP29", "CP64", "CP16", "CP61", "CP45", "CP69", "CP13", "CP41", "CP17", "CP75", "CP42", "CP77", "CP38", "CP28", "CP32", "CP27", "CP03", "CP10", "CP07", "CP26", "CP20"],
-        "MMUS1457": ["CP01", "CP37", "CP17", "CP14", "CP33", "CP36", "CP39", "CP19", "CP22", "CP28", "CP07", "CP43", "CP38", "CP15", "CP13", "CP41", "CP12", "CP02", "CP40"],
-        "MMUS1875": ["CP06"],
-        "MMUS1467": ["CP23", "CP13", "CP17", "CP26", "CP15", "CP34"],
-        "MMUS1874": ["CP24", "CP26"],
-        "MMUS1492": ["CP09"],
-        "MMUS1588": ["CP20", "CP11", "CP21", "CP22", "CP12"]
+        "MMUS1467": ["CP05", "CP15", "CP16", "CP07", "CP03", "CP26", "CP04", "CP23", "CP32", "CP21", "CP35", "CP13", "CP25", "CP24", "CP27", "CP20", "CP34", "CP29", "CP28", "CP30", "CP06", "CP22", "CP10", "CP08", "CP12", "CP02"],
+        "MMUS1544": ["CP19", "CP09", "CP18", "CP68", "CP06", "CP51", "CP75", "CP15", "CP36", "CP35", "CP38", "CP40", "CP10", "CP22", "CP34", "CP62", "CP16", "CP47", "CP33", "CP82", "CP57", "CP55", "CP52", "CP69", "CP20", "CP42", "CP39", "CP74", "CP54", "CP79", "CP24", "CP27", "CP64", "CP78", "CP16", "CP47", "CP72", "CP58", "CP65", "CP86", "CP66", "CP32", "CP46", "CP26", "CP13", "CP21", "CP31", "CP84", "CP80", "CP77", "CP71", "CP56", "CP50", "CP03", "CP17", "CP85", "CP44", "CP14", "CP28", "CP02", "CP05", "CP12", "CP04", "CP01"],
+        "MMUS1495": ["CP032", "CP050", "CP060", "CP023", "CP043", "CP099", "CP069", "CP020", "CP036", "CP037", "CP053", "CP033", "CP028", "CP041", "CP030", "CP089", "CP029", "CP104", "CP015", "CP108", "CP070", "CP054", "CP019", "CP031", "CP017", "CP039", "CP049", "CP079", "CP086", "CP088", "CP082", "CP073", "CP027", "CP105", "CP022", "CP010", "CP115", "CP084", "CP081", "CP021", "CP083", "CP040", "CP044", "CP098", "CP055", "CP091", "CP112", "CP065", "CP063", "CP093", "CP068", "CP016", "CP004", "CP034", "CP064", "CP046", "CP026", "CP106", "CP078", "CP045", "CP009", "CP097", "CP087", "CP072", "CP100", "CP085", "CP052", "CP077", "CP018", "CP008", "CP005", "CP007", "CP011", "CP013", "CP003", "CP006", "CP012", "CP002"],
+        "MMUS1457": ["CP21", "CP34", "CP42", "CP31", "CP14", "CP09", "CP08", "CP15", "CP29", "CP20", "CP38", "CP07", "CP10", "CP32", "CP25", "CP26", "CP23", "CP24", "CP12", "CP35", "CP13", "CP37", "CP11", "CP04", "CP22", "CP30", "CP03", "CP33", "CP39", "CP17", "CP43", "CP41", "CP40", "CP16", "CP36", "CP05"],
+        "MMUS1469": ["CP057", "CP033", "CP054", "CP035", "CP059", "CP041", "CP100", "CP034", "CP031", "CP069", "CP116", "CP029", "CP023", "CP065", "CP071", "CP078", "CP096", "CP039", "CP075", "CP028", "CP063", "CP076", "CP086", "CP123", "CP045", "CP093", "CP091", "CP056", "CP103", "CP016", "CP064", "CP115", "CP066", "CP084", "CP087", "CP113", "CP119", "CP111", "CP105", "CP030", "CP051", "CP118", "CP024", "CP032", "CP009", "CP047", "CP094", "CP037", "CP083", "CP106", "CP085", "CP088", "CP067", "CP062", "CP005", "CP020", "CP027", "CP007", "CP017", "CP070", "CP048", "CP022", "CP090", "CP055", "CP060", "CP014", "CP098", "CP117", "CP067", "CP062", "CP005", "CP020", "CP027", "CP007", "CP017", "CP070", "CP048", "CP022", "CP090", "CP055", "CP060", "CP014", "CP098", "CP117", "CP120", "CP018", "CP122", "CP044", "CP053", "CP038", "CP011", "CP010", "CP004", "CP019", "CP021", "CP008", "CP013", "CP015", "CP012", "CP002"],
+        "MMUS1466": ["CP18", "CP08", "CP19", "CP16", "CP24", "CP17", "CP06", "CP23", "CP14", "CP15", "CP27", "CP04", "CP21", "CP11", "CP20", "CP13", "CP09", "CP10", "CP12", "CP07", "CP02", "CP03"],
+        "MMUS1875": ["CP07", "CP12", "CP20", "CP10", "CP06", "CP21", "CP22", "CP15", "CP18", "CP19", "CP13", "CP08", "CP02", "CP04", "CP03"],
+        "MMUS1874": ["CP27", "CP17", "CP25", "CP19", "CP24", "CP34", "CP22", "CP15", "CP28", "CP16", "CP09", "CP07", "CP14", "CP31", "CP33", "CP08", "CP30", "CP29", "CP12", "CP13", "CP01"],
+        "MMUS1492": ["CP07", "CP12", "CP05", "CP09", "CP14", "CP13", "CP11", "CP04", "CP06", "CP01", "CP08", "CP10", "CP03", "CP02"],
+        "MMUS1588": ["CP13", "CP10", "CP03", "CP12", "CP21", "CP16", "CP23", "CP15", "CP11", "CP22", "CP19", "CP08", "CP06", "CP05", "CP20", "CP09", "CP01", "CP02"]
     }
 
     if mouse in included_combinations:
@@ -76,19 +76,19 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf", outdir=config['outdir'], 
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 201), mouse=m) for m in mice],
-        # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 201), mouse=m) for m in mice],
+        [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 101), mouse=m) for m in mice],
+        [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 101), mouse=m) for m in mice],
         # expand("{outdir}/beam_gtr/combined_rf_distances.pdf", outdir=config['outdir']),
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/all_consensus_classifications.csv", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         expand("{outdir}/beam_gtr/all_consensus_classifications.pdf", outdir=config['outdir']),
         [expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.pdf", outdir=config['outdir'], mouse=m) for m in mice],
-        [expand("{outdir}/beam_no_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 61), mouse=m) for m in mice],
-        [expand("{outdir}/beam_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 61), mouse=m) for m in mice],
+        # [expand("{outdir}/beam_no_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 101), mouse=m) for m in mice],
+        # [expand("{outdir}/beam_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 101), mouse=m) for m in mice],
                 
 
 rule runEvotracer:
@@ -856,7 +856,7 @@ rule runBeamGtrNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
-        mem = '5G'
+        mem = '80G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -883,7 +883,7 @@ rule runBeamGtrNS:
             numTissues=$(( numTissues + 1 ))
         fi
 
-        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
+        # force the known primary tissue at the origin for root frequencies in the likelihood calculation
         sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
         if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
             numTissues=$(( numTissues + 1 ))
@@ -951,7 +951,7 @@ rule runBeamRandomNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
-        mem = '5G'
+        mem = '80G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml

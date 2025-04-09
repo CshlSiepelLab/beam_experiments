@@ -101,7 +101,7 @@ echo "$files" | parallel -j $num_threads process_file
 
 
 # sort results by Bayes factor from high to low
-bf_field=12
+bf_field=6
 (head -n1 $outfile &&  tail -n +2 $outfile | sort -t, -k${bf_field},${bf_field}nr)  > $outfile.tmp
 mv $outfile.tmp $outfile
 
