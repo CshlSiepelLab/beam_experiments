@@ -13,6 +13,9 @@ cores = int(sys.argv[5])
 output_file_probability_plot = sys.argv[6]
 thresholds = str(sys.argv[7]).split(",")
 outprefix_thresholded = sys.argv[8]
+outprefix_samples = sys.argv[9]
+num_samples = int(sys.argv[10])
+origin_time = int(sys.argv[11])
 
 
 # load in data
@@ -37,4 +40,11 @@ results.plot_probability_graph(
 results.plot_thresholded_graph(
     thresholds=thresholds,
     output_file_prefix=outprefix_thresholded,
+)
+
+# sample trees from the posterior and plot
+results.sample_and_plot_trees(
+    n=num_samples,
+    total_time=origin_time,
+    output_prefix=outprefix_samples
 )

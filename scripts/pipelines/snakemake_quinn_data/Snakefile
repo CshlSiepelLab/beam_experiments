@@ -433,10 +433,14 @@ rule convertTreePosteriorToGraphPosterior:
     output:
         graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv",
         probabilityPlot = "{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf",
+        samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         outprefix_thresholded = "{outdir}/beam_gtr/{mouse}/{cp}/thresholded_migration_graph_",
+        outprefix_samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined_",
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
+        numSamples = 10,
         threads = 1,
         mem = '1G'
     shell:
@@ -450,28 +454,21 @@ rule convertTreePosteriorToGraphPosterior:
             touch {output.graphPosterior}
         else
             thresholds="0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99"
-            python {params.scripts}/formatting/convert_tree_posterior_to_consensus_posterior_prob_graph.py {input.combinedTrees} {input.combinedLog} {params.primaryTissue} {output.graphPosterior} {params.threads} {output.probabilityPlot} $thresholds {params.outprefix_thresholded}
-        fi
-        """
 
-rule sampleFromBeamPosteriorGraphs:
-    input:
-        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
-    output:
-        sampledGraphs = "{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf"
-    params:
-        scripts = config['scripts'],
-        primaryTissue = config['primaryTissue'],
-        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        numGraphs = 10,
-        threads = 1,
-        mem = '1G'
-    conda:
-        "../../envs/networkx.yaml"
-    shell:
-        """
-        export QT_QPA_PLATFORM=offscreen;
-        python {params.scripts}/plotting/plot_top_migration_graphs_sampled_from_posterior.py {input.combinedTrees} {params.primaryTissue} {params.experimentTime} {params.numGraphs}
+            python {params.scripts}/formatting/beam_postprocessing.py \
+                {input.combinedTrees} \
+                {input.combinedLog} \
+                {params.primaryTissue} \
+                {output.graphPosterior} \
+                {params.threads} \
+                {output.probabilityPlot} \
+                $thresholds \
+                {params.outprefix_thresholded} \
+                {params.outprefix_samples} \
+                {params.numSamples} \
+                {params.experimentTime}
+        
+        fi
         """
 
 rule mutualInformationBeam:
