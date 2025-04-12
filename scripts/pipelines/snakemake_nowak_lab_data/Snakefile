@@ -854,7 +854,7 @@ rule runBeamGtrNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
-        mem = '80G'
+        mem = '2G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -948,7 +948,7 @@ rule runBeamRandomNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
-        mem = '80G'
+        mem = '2G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -1040,7 +1040,7 @@ rule runBeamNoReseedingNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
-        mem = '80G'
+        mem = '2G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -1133,7 +1133,7 @@ rule runBeamReseedingNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
-        mem = '80G'
+        mem = '2G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
