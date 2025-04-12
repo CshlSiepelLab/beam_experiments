@@ -1,4 +1,3 @@
-
 import os
 import sys
 import glob
@@ -209,6 +208,8 @@ rule runBeamNoReseeding:
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.outDir}/{wildcards.num}.xml
+        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.outDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.outDir}/{wildcards.num}.xml
 
         beast \
         -threads {params.threads} \
@@ -220,11 +221,9 @@ rule runBeamNoReseeding:
         -D generations={params.generations} \
         -D numEditRates=\"$numEditRates\" \
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-        -D initialEditRates=\"$initialEditRates\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
         -D equalTissueFreqs=\"$equalTissueFreqs\" \
-        -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D numParticles={params.numParticles} \
         -D outname={wildcards.num} \
         {params.outDir}/{wildcards.num}.xml > {output.terminalLog}
@@ -290,6 +289,8 @@ rule runBeamOneRateReseeding:
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.outDir}/{wildcards.num}.xml
+        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.outDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.outDir}/{wildcards.num}.xml
 
         beast \
         -threads {params.threads} \
@@ -301,11 +302,9 @@ rule runBeamOneRateReseeding:
         -D generations={params.generations} \
         -D numEditRates=\"$numEditRates\" \
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-        -D initialEditRates=\"$initialEditRates\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
         -D equalTissueFreqs=\"$equalTissueFreqs\" \
-        -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D numParticles={params.numParticles} \
         -D outname={wildcards.num} \
         {params.outDir}/{wildcards.num}.xml > {output.terminalLog}

@@ -238,6 +238,8 @@ rule runBeam:
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
 
         # use LAML starting tree from downsampled output
         newick=$(cat {input.lamlTreeDownsampledNoOrigin} )
@@ -252,11 +254,9 @@ rule runBeam:
         -D generations={params.generations} \
         -D numEditRates=\"$numEditRates\" \
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-        -D initialEditRates=\"$initialEditRates\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
         -D equalTissueFreqs=\"$equalTissueFreqs\" \
-        -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D mcmclength={params.mcmclength} \
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}

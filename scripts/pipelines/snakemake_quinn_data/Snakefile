@@ -347,9 +347,8 @@ rule runBeamGtr:
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
-
-        # initial edit rates are often too long to be taken in at a java command line argument for this data, so replace it here
         sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
 
         # use LAML starting tree
         # remove node names from newick and the origin node
@@ -377,7 +376,6 @@ rule runBeamGtr:
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
-        -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D mcmclength={params.mcmclength} \
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
@@ -914,9 +912,8 @@ rule runBeamGtrNs:
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
-
-        # initial edit rates are often too long to be taken in at a java command line argument for this data, so replace it here
         sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
 
         # use LAML starting tree
         # remove node names from newick and the origin node
@@ -949,7 +946,6 @@ rule runBeamGtrNs:
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
-        -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
@@ -1019,9 +1015,8 @@ rule runBeamRandomNs:
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
-
-        # initial edit rates are often too long to be taken in at a java command line argument for this data, so replace it here
         sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
 
         # use LAML starting tree
         # remove node names from newick and the origin node
@@ -1054,7 +1049,6 @@ rule runBeamRandomNs:
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
-        -D tissueRootFreqs=\"$tissueRootFreqs\" \
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
@@ -1114,9 +1108,8 @@ rule runBeamGtrNoRLDirectSeeding:
 
             # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
             sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
-
-            # initial edit rates are often too long to be taken in at a java command line argument for this data, so replace it here
             sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
+            sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
 
             # use LAML starting tree
             # remove node names from newick and the origin node
@@ -1154,7 +1147,6 @@ rule runBeamGtrNoRLDirectSeeding:
             -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
             -D numTissueRates=\"$numTissueRates\" \
             -D numTissues=\"$numTissues\" \
-            -D tissueRootFreqs=\"$tissueRootFreqs\" \
             -D specifiedIndex=\"$specifiedIndex\" \
             -D outname=chain_{wildcards.num} \
             {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
