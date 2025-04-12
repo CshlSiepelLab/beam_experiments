@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_quinn_data
+export REPO_PATH=/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_quinn_data
 
 snakemake \
 --use-conda \
@@ -12,7 +12,7 @@ snakemake \
 --keep-going \
 --ignore-incomplete \
 --cores 1 \
---jobs 100000 \
+--jobs 20000 \
 --latency-wait 30 \
 --cluster-config $REPO_PATH/config/cluster.yaml \
 --cluster 'qsub -cwd -pe threads {cluster.cores} -l m_mem_free={cluster.mem} -l h_rt={cluster.runtime} -o {cluster.logout} -e {cluster.logerror}'

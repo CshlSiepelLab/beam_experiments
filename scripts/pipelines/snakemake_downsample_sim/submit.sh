@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export REPO_PATH=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_downsample_sim
+export REPO_PATH=/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_downsample_sim
 
 snakemake \
 --until runBeam \

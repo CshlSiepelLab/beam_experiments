@@ -145,7 +145,6 @@ rule runBeam:
         xml = config['gtrXml'],
         inFileDir = "{outdir}/beam/{sim}",
         fileDir = "{outdir}/beam_gtr/{sim}",
-        beamJar = config['beamJar'],
         generations = config['generations'],
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
@@ -191,7 +190,7 @@ rule runBeam:
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -resume \
         -working \
@@ -697,7 +696,6 @@ rule runBeamGtrNs:
         xml = config['gtrXml'],
         inFileDir = "{outdir}/beam/{sim}",
         fileDir = "{outdir}/beam_gtr_ns/{sim}",
-        beamJar = config['beamJar'],
         generations = config['generations'],
         primaryTissue = config['primaryTissue'],
         threads = 5,
@@ -748,7 +746,7 @@ rule runBeamGtrNs:
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -780,7 +778,6 @@ rule runBeamRandomNs:
         xml = config['randomXml'],
         inFileDir = "{outdir}/beam/{sim}",
         fileDir = "{outdir}/beam_random_ns/{sim}",
-        beamJar = config['beamJar'],
         generations = config['generations'],
         primaryTissue = config['primaryTissue'],
         threads = 5,
@@ -831,7 +828,7 @@ rule runBeamRandomNs:
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \

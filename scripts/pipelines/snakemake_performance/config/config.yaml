@@ -1,18 +1,18 @@
 
 # set path to data dirs
-inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/uniform_50cells_50sites_data_7_24_24"
-# inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/variable_migration_and_mutation_rates_8_19_24"
+inputpath: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/uniform_50cells_50sites_data_7_24_24"
+# inputpath: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/variable_migration_and_mutation_rates_8_19_24"
 
 # set where output should go
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_2_20_25_uniform_50cells_50sites_data_7_24_24"
-# outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24"
+outdir: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_2_20_25_uniform_50cells_50sites_data_7_24_24"
+# outdir: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24"
 
 # mutation priors for being fixed in Q matrix
-mutationPriors: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/uniform_50cells_50sites_data_7_24_24/mutation_priors.csv
+mutationPriors: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/uniform_50cells_50sites_data_7_24_24/mutation_priors.csv
 
 # set path to the beam model xml template files
-gtrXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
-randomXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_random_mcmc_template.xml
+gtrXml: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
+randomXml: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_random_mcmc_template.xml
 
 # primary tissue name
 primaryTissue: P
@@ -31,7 +31,6 @@ essCutoff: 200
 consensusThreshold: 0.5
 
 # set path to scripts and executables
-scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
-treeannotator: /grid/siepel/home_norepl/staklins/bin/beast/bin/treeannotator
-logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
-beamJar: /grid/siepel/home_norepl/staklins/beam/beam.jar
+scripts: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts
+treeannotator: /grid/siepel/home/staklins/bin/beast/bin/treeannotator
+logcombiner: /grid/siepel/home/staklins/bin/beast/bin/logcombiner

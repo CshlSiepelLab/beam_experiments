@@ -295,7 +295,6 @@ rule runBeamGtr:
         xml = config['gtrXml'],
         inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_gtr/{mouse}/{cp}",
-        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
@@ -367,7 +366,7 @@ rule runBeamGtr:
         # Remove the remaining placeholder
         sed -i "s/\$(newick)//" {params.fileDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -resume \
         -working \
@@ -864,7 +863,6 @@ rule runBeamGtrNs:
         xml = config['gtrXml'],
         inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_gtr_ns/{mouse}/{cp}",
-        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = config['primaryTissue'],
         threads = 5,
@@ -940,7 +938,7 @@ rule runBeamGtrNs:
         ns_specs="<run id=\\"mcmc\\" spec=\\"beast.gss.NS\\" chainLength=\\"100000000\\" particleCount=\\"1\\" subChainLength=\\"10000\\" epsilon=\\"1e-10\\">"
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -970,7 +968,6 @@ rule runBeamRandomNs:
         xml = config['randomXml'],
         inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_random_ns/{mouse}/{cp}",
-        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = config['primaryTissue'],
         threads = 5,
@@ -1046,7 +1043,7 @@ rule runBeamRandomNs:
         ns_specs="<run id=\\"mcmc\\" spec=\\"beast.gss.NS\\" chainLength=\\"100000000\\" particleCount=\\"1\\" subChainLength=\\"10000\\" epsilon=\\"1e-10\\">"
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -1074,7 +1071,6 @@ rule runBeamGtrNoRLDirectSeeding:
         xml = config['gtrXmlNoRLDirectSeeding'],
         inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_gtr_noRLdirectSeeding_ns/{mouse}/{cp}",
-        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = config['primaryTissue'],
         threads = 5,
@@ -1147,7 +1143,7 @@ rule runBeamGtrNoRLDirectSeeding:
 
             echo "RL tissue found at index $specifiedIndex, so index $specifiedIndex will have a rate fixed to 0."
 
-            java -Xmx10g -jar {params.beamJar} \
+            beast \
             -threads {params.threads} \
             -overwrite \
             -working \

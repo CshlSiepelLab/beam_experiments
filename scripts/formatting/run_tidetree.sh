@@ -80,18 +80,18 @@ mkdir -p $outdir
 
 cp $tidetree_xml_template $outdir/tidetree.xml
 
-java -Xmx10g -jar /grid/siepel/home_norepl/staklins/beam/beam.jar \
-    -threads 5 \
-    -overwrite \
-    -working \
-    -D inName=mS_854 \
-    -D fileDir=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_12_31_24_uniform_50cells_50sites_data_7_24_24/beam/mS_854 \
-    -D newick="$newick" \
-    -D generations=250 \
-    -D numEditRates="$numEditRates" \
-    -D numEditRatesPlusTwo="$numEditRatesPlusTwo" \
-    -D initialEditRates="$initialEditRates" \
-    -D mcmclength="$mcmclength" \
-    -D outname=test_tidetree \
-    $outdir/tidetree.xml \
-    > $outdir/tidetree.log 2>&1
+beast \
+-threads 5 \
+-overwrite \
+-working \
+-D inName=mS_854 \
+-D fileDir=/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_12_31_24_uniform_50cells_50sites_data_7_24_24/beam/mS_854 \
+-D newick="$newick" \
+-D generations=250 \
+-D numEditRates="$numEditRates" \
+-D numEditRatesPlusTwo="$numEditRatesPlusTwo" \
+-D initialEditRates="$initialEditRates" \
+-D mcmclength="$mcmclength" \
+-D outname=test_tidetree \
+$outdir/tidetree.xml \
+> $outdir/tidetree.log 2>&1

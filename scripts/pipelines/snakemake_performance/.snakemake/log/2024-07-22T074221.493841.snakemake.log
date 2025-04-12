@@ -1,3 +1,0 @@
-KeyError in line 8 of /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_performance/Snakefile:
-'outdir'
-  File "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_performance/Snakefile", line 8, in <module>

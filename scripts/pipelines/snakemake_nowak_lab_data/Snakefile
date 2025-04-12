@@ -77,9 +77,9 @@ rule all:
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf", outdir=config['outdir'], 
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 101), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 51), mouse=m) for m in mice],
         [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 101), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 51), mouse=m) for m in mice],
         # expand("{outdir}/beam_gtr/combined_rf_distances.pdf", outdir=config['outdir']),
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/all_consensus_classifications.csv", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
@@ -426,7 +426,6 @@ rule runBeam:
         xml = config['gtrXml'],
         inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_gtr/{mouse}/{cp}",
-        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
@@ -497,7 +496,7 @@ rule runBeam:
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -resume \
         -working \
@@ -852,7 +851,6 @@ rule runBeamGtrNS:
         xml = config['gtrXml'],
         inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_gtr_ns/{mouse}/{cp}",
-        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
@@ -914,7 +912,7 @@ rule runBeamGtrNS:
         ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -947,7 +945,6 @@ rule runBeamRandomNS:
         xml = config['randomXml'],
         inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_random_ns/{mouse}/{cp}",
-        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
@@ -1009,7 +1006,7 @@ rule runBeamRandomNS:
         ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -1040,7 +1037,6 @@ rule runBeamNoReseedingNS:
         xml = config['noReseedingNS'],
         inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_no_reseeding_ns/{mouse}/{cp}",
-        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
@@ -1103,7 +1099,7 @@ rule runBeamNoReseedingNS:
         ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -1134,7 +1130,6 @@ rule runBeamReseedingNS:
         xml = config['reseedingNS'],
         inFileDir = "{outdir}/beam/{mouse}/{cp}",
         fileDir = "{outdir}/beam_reseeding_ns/{mouse}/{cp}",
-        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
@@ -1197,7 +1192,7 @@ rule runBeamReseedingNS:
         ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \

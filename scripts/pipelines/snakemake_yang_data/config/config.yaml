@@ -1,9 +1,9 @@
 
 # set path to data dirs
-inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/processed_metadata"
+inputpath: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/yang_2022_real_data/processed_metadata"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_lung_cancer_data_1_6_25"
+outdir: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/yang_2022_lung_cancer_data_1_6_25"
 
 # set the number of threads (make sure it matched the cluster.yaml specifications for the rules using threads as command line input)
 threads: 5
@@ -30,17 +30,14 @@ modelDropouts: true
 primaryTissue: T
 
 # set path to scripts
-scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
+scripts: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts
 
 # set necessary paths to beast dependencies
-treeannotator: /grid/siepel/home_norepl/staklins/bin/beast/bin/treeannotator
-logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
-
-# set path to beam custom BEAST2 package runnable jar file
-beamJar: /grid/siepel/home_norepl/staklins/beam/beam.jar
+treeannotator: /grid/siepel/home/staklins/bin/beast/bin/treeannotator
+logcombiner: /grid/siepel/home/staklins/bin/beast/bin/logcombiner
 
 # set path to the beam model xml template file
-xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_mcmc_template.xml
+xml: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_mcmc_template.xml
 
 # set the length of the experiment
 # for Yang et al. 2022 data, the experiment lengths vary by mouse and are found in their trcr_master.txt metadata file

@@ -13,7 +13,6 @@ generations: 250
 
 # set path to scripts
 scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
-beamJar: /grid/siepel/home_norepl/staklins/beam/beam.jar
 applauncher: /grid/siepel/home_norepl/staklins/bin/beast/bin/applauncher
 
 # no reseeding template xml

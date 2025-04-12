@@ -1,9 +1,9 @@
 
 # set path to data dirs
-inputpath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/downsampling_test_100_tips_9_12_24"
+inputpath: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/downsampling_test_100_tips_9_12_24"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/downsampling_tree_test_100_tips_12_31_24"
+outdir: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/downsampling_tree_test_100_tips_12_31_24"
 
 # downsampling thresholds
 thresholds:
@@ -22,18 +22,15 @@ threads: 10
 primaryTissue: P
 
 # set path to scripts
-scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
+scripts: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts
 
 # set necessary paths to beast dependencies
-treeannotator: /grid/siepel/home_norepl/staklins/bin/beast/bin/treeannotator
-logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
-
-# set path to beam custom BEAST2 package runnable jar file
-beamJar: /grid/siepel/home_norepl/staklins/beam/beam.jar
+treeannotator: /grid/siepel/home/staklins/bin/beast/bin/treeannotator
+logcombiner: /grid/siepel/home/staklins/bin/beast/bin/logcombiner
 
 # set path to the beam model xml template file
-# xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_mcmc_template.xml
-xml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_mcmc_template.xml
+# xml: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_mcmc_template.xml
+xml: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_mcmc_template.xml
 
 # set the length of the simulation datasets in number of cell divisions
 generations: 250

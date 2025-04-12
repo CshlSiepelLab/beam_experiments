@@ -197,7 +197,6 @@ rule runBeam:
     params:
         xml = config['xml'],
         fileDir = "{outdir}/beam/{sim}_{threshold}",
-        beamJar = config['beamJar'],
         generations = config['generations'],
         mcmclength = lambda wildcards: config['mcmcLength'][wildcards.threshold],
         primaryTissue = config['primaryTissue'],
@@ -243,7 +242,7 @@ rule runBeam:
         # use LAML starting tree from downsampled output
         newick=$(cat {input.lamlTreeDownsampledNoOrigin} )
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \

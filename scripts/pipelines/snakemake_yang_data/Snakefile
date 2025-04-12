@@ -223,7 +223,6 @@ rule runBeam:
     params:
         xml = config['xml'],
         fileDir = "{outdir}/beam/{mouse}",
-        beamJar = config['beamJar'],
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
@@ -281,7 +280,7 @@ rule runBeam:
         # echo "mcmclength: {params.mcmclength}"
         # echo "newick: $newick"
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \

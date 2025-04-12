@@ -1,9 +1,9 @@
 
 # set path to data dirs
-fastqPath: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/ryan_prostate_cancer_data_cancer_discovery_7_3_24/fastq_files"
+fastqPath: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/ryan_prostate_cancer_data_cancer_discovery_7_3_24/fastq_files"
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25"
+outdir: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25"
 
 # set the asv count threshold for filtering in evotracer
 asvThreshold: 3
@@ -29,17 +29,16 @@ primaryTissue:
   MMUS1875: PRL
 
 # set path to scripts and executables
-scripts: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts
-treeannotator: /grid/siepel/home_norepl/staklins/bin/beast/bin/treeannotator
-logcombiner: /grid/siepel/home_norepl/staklins/bin/beast/bin/logcombiner
-beamJar: /grid/siepel/home_norepl/staklins/beam/beam.jar
+scripts: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts
+treeannotator: /grid/siepel/home/staklins/bin/beast/bin/treeannotator
+logcombiner: /grid/siepel/home/staklins/bin/beast/bin/logcombiner
 
 # set path to the beam model xml template file
-gtrXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
-randomXml: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_random_mcmc_template.xml
+gtrXml: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
+randomXml: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_random_mcmc_template.xml
 
-noReseedingNS: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_no_reseeding_ns.xml
-reseedingNS: /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/inputs/beam_reseeding_ns.xml
+noReseedingNS: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_no_reseeding_ns.xml
+reseedingNS: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_reseeding_ns.xml
 
 # Length of experiment for Ryan's published cancer discovery prostate cancer data
 experimentTime: 

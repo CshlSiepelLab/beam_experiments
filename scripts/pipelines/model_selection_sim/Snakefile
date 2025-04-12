@@ -161,7 +161,6 @@ rule runBeamNoReseeding:
         xml = config['noReseedingTemplate'],
         fileDir = "{outdir}/beam_prep/{sim}",
         outDir = "{outdir}/beam_no_reseeding/{sim}/{num}",
-        beamJar = config['beamJar'],
         generations = config['generations'],
         primaryTissue = config['primaryTissue'],
         numParticles = config['numParticles'],
@@ -211,7 +210,7 @@ rule runBeamNoReseeding:
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.outDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -243,7 +242,6 @@ rule runBeamOneRateReseeding:
         xml = config['oneRateReseedingTemplate'],
         fileDir = "{outdir}/beam_prep/{sim}",
         outDir = "{outdir}/beam_one_rate_reseeding/{sim}/{num}",
-        beamJar = config['beamJar'],
         generations = config['generations'],
         primaryTissue = config['primaryTissue'],
         numParticles = config['numParticles'],
@@ -293,7 +291,7 @@ rule runBeamOneRateReseeding:
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
         sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.outDir}/{wildcards.num}.xml
 
-        java -Xmx10g -jar {params.beamJar} \
+        beast \
         -threads {params.threads} \
         -overwrite \
         -working \
@@ -320,7 +318,7 @@ rule runBeamOneRateReseeding:
 #         log = "{outdir}/beam_no_reseeding/{sim}/combined.log",
 #         terminal = "{outdir}/beam_no_reseeding/{sim}/combined_terminal.log"
 #     params:
-#         beamJar = config['beamJar'],
+#      
 #         applauncher = config['applauncher'],
 #         numParticles = config['numParticles']
 #     shell:
@@ -335,7 +333,7 @@ rule runBeamOneRateReseeding:
 #         log = "{outdir}/beam_one_rate_reseeding/{sim}/combined.log",
 #         terminal = "{outdir}/beam_one_rate_reseeding/{sim}/combined_terminal.log"
 #     params:
-#         beamJar = config['beamJar'],
+#      
 #         applauncher = config['applauncher'],
 #         numParticles = config['numParticles']
 #     shell:
