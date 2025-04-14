@@ -300,14 +300,17 @@ rule beamPostprocessing:
         probabilityPlot = "{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf",
         samples = "{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf",
         migrationCountMatrix = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_count_matrix.csv",
-        mutualInformation = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt"
+        mutualInformation = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt",
+        metastasisTimingPlot = "{outdir}/beam_gtr/{sim}/metastasis_timing_prob.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         outprefix_thresholded = "{outdir}/beam_gtr/{sim}/thresholded_migration_graph_",
         outprefix_samples = "{outdir}/beam_gtr/{sim}/combined_",
+        outprefix_metastasis_timing = "{outdir}/beam_gtr/{sim}/metastasis_timing",
         experimentTime = config['generations'],
         numSamples = 10,
+        consensusTimingThreshold = 0.5,
         threads = 5,
         mem = "1G"
     shell:
@@ -335,7 +338,9 @@ rule beamPostprocessing:
                 {params.numSamples} \
                 {params.experimentTime} \
                 {output.migrationCountMatrix} \
-                {output.mutualInformation}
+                {output.mutualInformation} \
+                {params.outprefix_metastasis_timing} \
+                {params.consensusTimingThreshold}
         fi
         """
 

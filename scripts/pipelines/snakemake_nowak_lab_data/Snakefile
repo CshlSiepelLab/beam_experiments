@@ -28,9 +28,9 @@ def get_elements_from_file(path):
     included_combinations = {
         "MMUS1467": ["CP05", "CP15", "CP16", "CP07", "CP03", "CP26", "CP04", "CP23", "CP32", "CP21", "CP35", "CP13", "CP25", "CP24", "CP27", "CP20", "CP34", "CP29", "CP28", "CP30", "CP06", "CP22", "CP10", "CP08", "CP12", "CP02"],
         "MMUS1544": ["CP19", "CP09", "CP18", "CP68", "CP06", "CP51", "CP75", "CP15", "CP36", "CP35", "CP38", "CP40", "CP10", "CP22", "CP34", "CP62", "CP16", "CP47", "CP33", "CP82", "CP57", "CP55", "CP52", "CP69", "CP20", "CP42", "CP39", "CP74", "CP54", "CP79", "CP24", "CP27", "CP64", "CP78", "CP16", "CP47", "CP72", "CP58", "CP65", "CP86", "CP66", "CP32", "CP46", "CP26", "CP13", "CP21", "CP31", "CP84", "CP80", "CP77", "CP71", "CP56", "CP50", "CP03", "CP17", "CP85", "CP44", "CP14", "CP28", "CP02", "CP05", "CP12", "CP04", "CP01"],
-        "MMUS1495": ["CP032", "CP050", "CP060", "CP023", "CP043", "CP099", "CP069", "CP020", "CP036", "CP037", "CP053", "CP033", "CP028", "CP041", "CP030", "CP089", "CP029", "CP104", "CP015", "CP108", "CP070", "CP054", "CP019", "CP031", "CP017", "CP039", "CP049", "CP079", "CP086", "CP088", "CP082", "CP073", "CP027", "CP105", "CP022", "CP010", "CP115", "CP084", "CP081", "CP021", "CP083", "CP040", "CP044", "CP098", "CP055", "CP091", "CP112", "CP065", "CP063", "CP093", "CP068", "CP016", "CP004", "CP034", "CP064", "CP046", "CP026", "CP106", "CP078", "CP045", "CP009", "CP097", "CP087", "CP072", "CP100", "CP085", "CP052", "CP077", "CP018", "CP008", "CP005", "CP007", "CP011", "CP013", "CP003", "CP006", "CP012", "CP002"],
+        "MMUS1495": ["CP032", "CP050", "CP060", "CP023", "CP043", "CP069", "CP020", "CP036", "CP037", "CP053", "CP033", "CP028", "CP041", "CP030", "CP029", "CP015", "CP070", "CP054", "CP019", "CP031", "CP017", "CP039", "CP049", "CP079", "CP086", "CP088", "CP082", "CP073", "CP027", "CP105", "CP022", "CP010", "CP084", "CP081", "CP021", "CP083", "CP040", "CP044", "CP098", "CP055", "CP091", "CP112", "CP065", "CP063", "CP093", "CP068", "CP016", "CP004", "CP034", "CP064", "CP046", "CP026", "CP106", "CP078", "CP045", "CP009", "CP087", "CP072", "CP100", "CP085", "CP052", "CP077", "CP018", "CP008", "CP005", "CP007", "CP011", "CP013", "CP003", "CP006", "CP012", "CP002"],
         "MMUS1457": ["CP21", "CP34", "CP42", "CP31", "CP14", "CP09", "CP08", "CP15", "CP29", "CP20", "CP38", "CP07", "CP10", "CP32", "CP25", "CP26", "CP23", "CP24", "CP12", "CP35", "CP13", "CP37", "CP11", "CP04", "CP22", "CP30", "CP03", "CP33", "CP39", "CP17", "CP43", "CP41", "CP40", "CP16", "CP36", "CP05"],
-        "MMUS1469": ["CP057", "CP033", "CP054", "CP035", "CP059", "CP041", "CP100", "CP034", "CP031", "CP069", "CP116", "CP029", "CP023", "CP065", "CP071", "CP078", "CP096", "CP039", "CP075", "CP028", "CP063", "CP076", "CP086", "CP123", "CP045", "CP093", "CP091", "CP056", "CP103", "CP016", "CP064", "CP115", "CP066", "CP084", "CP087", "CP113", "CP119", "CP111", "CP105", "CP030", "CP051", "CP118", "CP024", "CP032", "CP009", "CP047", "CP094", "CP037", "CP083", "CP106", "CP085", "CP088", "CP067", "CP062", "CP005", "CP020", "CP027", "CP007", "CP017", "CP070", "CP048", "CP022", "CP090", "CP055", "CP060", "CP014", "CP098", "CP117", "CP067", "CP062", "CP005", "CP020", "CP027", "CP007", "CP017", "CP070", "CP048", "CP022", "CP090", "CP055", "CP060", "CP014", "CP098", "CP117", "CP120", "CP018", "CP122", "CP044", "CP053", "CP038", "CP011", "CP010", "CP004", "CP019", "CP021", "CP008", "CP013", "CP015", "CP012", "CP002"],
+        "MMUS1469": ["CP057", "CP033", "CP054", "CP035", "CP059", "CP041", "CP034", "CP031", "CP069", "CP029", "CP023", "CP065", "CP071", "CP078", "CP096", "CP039", "CP075", "CP028", "CP063", "CP076", "CP086", "CP045", "CP093", "CP091", "CP056", "CP016", "CP064", "CP066", "CP084", "CP087", "CP113", "CP111", "CP105", "CP030", "CP051", "CP118", "CP024", "CP032", "CP009", "CP047", "CP094", "CP037", "CP083", "CP085", "CP088", "CP067", "CP062", "CP005", "CP020", "CP027", "CP007", "CP017", "CP070", "CP048", "CP022", "CP090", "CP055", "CP060", "CP014", "CP098", "CP117", "CP067", "CP062", "CP005", "CP020", "CP027", "CP007", "CP017", "CP070", "CP048", "CP022", "CP090", "CP055", "CP060", "CP014", "CP098", "CP117", "CP120", "CP018", "CP122", "CP044", "CP053", "CP038", "CP011", "CP010", "CP004", "CP019", "CP021", "CP008", "CP013", "CP015", "CP012", "CP002"],
         "MMUS1466": ["CP18", "CP08", "CP19", "CP16", "CP24", "CP17", "CP06", "CP23", "CP14", "CP15", "CP27", "CP04", "CP21", "CP11", "CP20", "CP13", "CP09", "CP10", "CP12", "CP07", "CP02", "CP03"],
         "MMUS1875": ["CP07", "CP12", "CP20", "CP10", "CP06", "CP21", "CP22", "CP15", "CP18", "CP19", "CP13", "CP08", "CP02", "CP04", "CP03"],
         "MMUS1874": ["CP27", "CP17", "CP25", "CP19", "CP24", "CP34", "CP22", "CP15", "CP28", "CP16", "CP09", "CP07", "CP14", "CP31", "CP33", "CP08", "CP30", "CP29", "CP12", "CP13", "CP01"],
@@ -566,14 +566,17 @@ rule beamPostprocessing:
         probabilityPlot = "{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf",
         samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf",
         migrationCountMatrix = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_count_matrix.csv",
-        mutualInformation = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt"
+        mutualInformation = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt",
+        metastasisTimingPlot = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         outprefix_thresholded = "{outdir}/beam_gtr/{mouse}/{cp}/thresholded_migration_graph_",
         outprefix_samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined_",
+        outprefix_metastasis_timing = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         numSamples = 10,
+        consensusTimingThreshold = 0.5,
         threads = 5,
         mem = "1G"
     shell:
@@ -601,7 +604,9 @@ rule beamPostprocessing:
                 {params.numSamples} \
                 {params.experimentTime} \
                 {output.migrationCountMatrix} \
-                {output.mutualInformation}
+                {output.mutualInformation} \
+                {params.outprefix_metastasis_timing} \
+                {params.consensusTimingThreshold}
         fi
         """
 
@@ -632,46 +637,6 @@ rule collectMutualInformationAndPlot:
         done
 
         python {params.scripts}/plotting/plot_mutual_information_normalized_histogram.py {output.combinedResults} {output.plot}
-        """
-
-rule sampleBeamMetastasisTiming:
-    input:
-        combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
-    output:
-        metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl"
-    params:
-        scripts = config['scripts'],
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
-        threads = 1,
-        mem = '5G'
-    conda:
-        "../../envs/compare_trees.yaml"
-    shell:
-        """
-        python {params.scripts}/formatting/sample_metastasis_times_from_posterior.py {input.combinedTrees} {params.experimentTime} {params.primaryTissue} {output.metastasisTiming}
-        """
-
-rule plotBeamMetastasisTiming:
-    input:
-        metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl",
-        graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv"
-    output:
-        metastasisTimingPlot = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf"
-    params:
-        scripts = config['scripts'],
-        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        outdir = "{outdir}/beam_gtr/{mouse}/{cp}",
-        consensusThreshold = 0.5,
-        threads = 1,
-        mem = '5G'
-    conda:
-        "../../envs/matplotlib.yaml"
-    shell:
-        """
-        python {params.scripts}/plotting/plot_metastasis_times.py {input.metastasisTiming} {input.graphPosterior} {params.experimentTime} {params.primaryTissue} {params.consensusThreshold} {params.outdir}/metastasis_timing
         """
 
 

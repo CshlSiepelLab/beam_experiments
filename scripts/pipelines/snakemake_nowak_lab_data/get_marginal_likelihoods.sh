@@ -1,6 +1,6 @@
 #!/bin/bash
 
-main_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25"
+main_dir="/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25"
 
 
 ### Combining particles
@@ -24,7 +24,7 @@ process_dir() {
 
 export -f process_dir
 
-num_threads=150
+num_threads=50
 
 # process all chains in one
 dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns $main_dir/beam_reseeding_ns $main_dir/beam_no_reseeding_ns -maxdepth 2 -mindepth 2)
