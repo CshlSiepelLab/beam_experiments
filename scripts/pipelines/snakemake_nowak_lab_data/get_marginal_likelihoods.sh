@@ -24,7 +24,7 @@ process_dir() {
 
 export -f process_dir
 
-num_threads=50
+num_threads=150
 
 # process all chains in one
 dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns $main_dir/beam_reseeding_ns $main_dir/beam_no_reseeding_ns -maxdepth 2 -mindepth 2)
@@ -107,6 +107,6 @@ mv $outfile.tmp $outfile
 
 # find which need more particles
 diff_field=$(( bf_field + 1 ))
-threshold=0
+threshold=1.1
 awk -F',' -v bf=$bf_field -v diff=$diff_field 'NR > 1 { if (sqrt(($threshold - $bf)^2) < $diff) print $1 }' $outfile
 
