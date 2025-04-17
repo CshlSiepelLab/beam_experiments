@@ -27,16 +27,19 @@ export -f process_dir
 num_threads=150
 
 # process all chains in one
-dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns $main_dir/beam_reseeding_ns $main_dir/beam_no_reseeding_ns -maxdepth 2 -mindepth 2)
+# dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns $main_dir/beam_reseeding_ns $main_dir/beam_no_reseeding_ns -maxdepth 2 -mindepth 2)
+dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -maxdepth 2 -mindepth 2)
 echo "$dirs" | parallel -j $num_threads process_dir
+
 
 
 ### Calculating Bayes factors
 gtr_dir=$main_dir/beam_gtr_ns
 
-outfile=$main_dir/marginal_likelihoods.csv
+outfile=$main_dir/marginal_likelihoods_gtr_random.csv
 
-echo "name,gtr_ml,gtr_sd,random_ml,random_sd,bf(gtr-random),diff_threshold,reseeding_ml,reseeding_sd,no_reseeding_ml,no_reseeding_sd,bf(reseeding-no_reseeding),diff_threshold_reseeding" > $outfile
+# echo "name,gtr_ml,gtr_sd,random_ml,random_sd,bf(gtr-random),diff_threshold,reseeding_ml,reseeding_sd,no_reseeding_ml,no_reseeding_sd,bf(reseeding-no_reseeding),diff_threshold_reseeding" > $outfile
+echo "name,gtr_ml,gtr_sd,random_ml,random_sd,bf(gtr-random),diff_threshold" > $outfile
 
 files=$(find $gtr_dir -type f -name "combined_terminal*")
 
@@ -73,24 +76,28 @@ process_file() {
         fi
     fi
 
-    # Reseeding vs No Reseeding comparison
-    if [[ -f $reseeding_file && -f $no_reseeding_file ]]; then
-        reseeding_ml=$(grep "Marginal likelihood" $reseeding_file | cut -d' ' -f3)
-        reseeding_sd=$(grep "Marginal likelihood" $reseeding_file | cut -d' ' -f4 | cut -d'(' -f4 | sed 's/)//g')
+    # # Reseeding vs No Reseeding comparison
+    # if [[ -f $reseeding_file && -f $no_reseeding_file ]]; then
+    #     reseeding_ml=$(grep "Marginal likelihood" $reseeding_file | cut -d' ' -f3)
+    #     reseeding_sd=$(grep "Marginal likelihood" $reseeding_file | cut -d' ' -f4 | cut -d'(' -f4 | sed 's/)//g')
 
-        no_reseeding_ml=$(grep "Marginal likelihood" $no_reseeding_file | cut -d' ' -f3)
-        no_reseeding_sd=$(grep "Marginal likelihood" $no_reseeding_file | cut -d' ' -f4 | cut -d'(' -f4 | sed 's/)//g')
+    #     no_reseeding_ml=$(grep "Marginal likelihood" $no_reseeding_file | cut -d' ' -f3)
+    #     no_reseeding_sd=$(grep "Marginal likelihood" $no_reseeding_file | cut -d' ' -f4 | cut -d'(' -f4 | sed 's/)//g')
 
-        if [[ -n $reseeding_ml && -n $no_reseeding_ml ]]; then
-            reseeding_bf=$(echo "scale=10; $reseeding_ml - $no_reseeding_ml" | bc -l)
-        fi
+    #     if [[ -n $reseeding_ml && -n $no_reseeding_ml ]]; then
+    #         reseeding_bf=$(echo "scale=10; $reseeding_ml - $no_reseeding_ml" | bc -l)
+    #     fi
 
-        if [[ -n $reseeding_sd && -n $no_reseeding_sd ]]; then
-            diff_threshold_reseeding=$(echo "scale=10; 2 * sqrt(($reseeding_sd^2) + ($no_reseeding_sd^2))" | bc -l)
-        fi
-    fi
+    #     if [[ -n $reseeding_sd && -n $no_reseeding_sd ]]; then
+    #         diff_threshold_reseeding=$(echo "scale=10; 2 * sqrt(($reseeding_sd^2) + ($no_reseeding_sd^2))" | bc -l)
+    #     fi
+    # fi
 
-    while ! echo -e "$name,$gtr_ml,$gtr_sd,$random_ml,$random_sd,$beam_bf,$diff_threshold,$reseeding_ml,$reseeding_sd,$no_reseeding_ml,$no_reseeding_sd,$reseeding_bf,$diff_threshold_reseeding" >> $outfile; do
+    # while ! echo -e "$name,$gtr_ml,$gtr_sd,$random_ml,$random_sd,$beam_bf,$diff_threshold,$reseeding_ml,$reseeding_sd,$no_reseeding_ml,$no_reseeding_sd,$reseeding_bf,$diff_threshold_reseeding" >> $outfile; do
+    #     sleep 1
+    # done
+
+    while ! echo -e "$name,$gtr_ml,$gtr_sd,$random_ml,$random_sd,$beam_bf,$diff_threshold" >> $outfile; do
         sleep 1
     done
 }
@@ -108,5 +115,29 @@ mv $outfile.tmp $outfile
 # find which need more particles
 diff_field=$(( bf_field + 1 ))
 threshold=1.1
-awk -F',' -v bf=$bf_field -v diff=$diff_field 'NR > 1 { if (sqrt(($threshold - $bf)^2) < $diff) print $1 }' $outfile
+awk -F',' -v bf=$bf_field -v diff=$diff_field -v thresh=$threshold 'NR > 1 { d = $thresh - $bf; if (d < 0) d = -d; if (d < $diff) print $1 }' $outfile
+
+
+# # to clean files with bad x11 connection or empty files
+# files=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -type f -name "combined_terminal.log")
+
+# for file in $files; do
+#     if ! grep -q "Done!" "$file"; then
+#         rm "$file"
+#     fi
+# done
+
+
+# # to remove all combined terminal logs for gtr and random
+# find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -type f -name "combined_terminal.log" -delete
+
+
+# # to remove terminal files with more than 250,000 lines due to infinite ML calculations
+# files=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -type f -name "terminal*")
+
+# for file in $files; do
+#     if [ $(wc -l < "$file") -gt 250000 ]; then
+#         rm "$file"
+#     fi
+# done
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-main_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25" 
+main_dir="/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25" 
 
 
 ### Combining particles
@@ -91,9 +91,15 @@ done
 mv $outfile.tmp $outfile
 
 # find which need more particles
-bf_field=6
-diff_field=7
-threshold=0
-awk -F',' -v bf=$bf_field -v diff=$diff_field 'NR > 1 { if (sqrt(($threshold - $bf)^2) < $diff) print $1 }' $outfile
+# sort results by Bayes factor from high to low
+bf_field=10
+(head -n1 $outfile &&  tail -n +2 $outfile | sort -t, -k${bf_field},${bf_field}nr)  > $outfile.tmp
+mv $outfile.tmp $outfile
+
+# find which need more particles
+diff_field=$(( bf_field + 1 ))
+threshold=1.1
+awk -F',' -v bf=$bf_field -v diff=$diff_field -v thresh=$threshold 'NR > 1 { d = $thresh - $bf; if (d < 0) d = -d; if (d < $diff) print $1 }' $outfile
+
 
 

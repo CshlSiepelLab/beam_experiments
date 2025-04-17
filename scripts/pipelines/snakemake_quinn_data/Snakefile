@@ -20,7 +20,11 @@ for mouse in mouse_ids:
         excluded_cps_5k_by_compute_requirements = ["1", "2", "3", "4", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "17", "19", "20", "21", "22", "23", "27", "31"]
         mouse_cps = [cp for cp in mouse_cps if cp not in excluded_cps_5k_by_original_paper and cp not in excluded_cps_5k_by_compute_requirements]
 
-        # mouse_cps = ["45", "52", "82", "90", "97", "89", "73", "92", "100", "77", "76", "94", "95", "85", "91", "78", "36", "46", "48", "49", "29"]
+        # # gtr and random
+        # mouse_cps = ["52", "89", "90", "73", "92", "100", "76", "77", "94", "95", "91", "85", "46", "78", "48", "49", "29"]
+
+        # no RL direct seeding
+        mouse_cps = ["57", "37", "34", "30", "47", "67", "62", "52", "40", "66", "54", "71", "70", "45", "74", "43", "60", "86", "84", "63", "91", "95", "82", "98", "55", "32", "90", "83", "92", "76", "59", "99", "72", "44", "61", "26", "28", "58", "42", "51", "56", "64", "35"]
 
     cps_for_mouse[mouse] = mouse_cps
 
@@ -28,7 +32,7 @@ for mouse in mouse_ids:
 tissue_labeling_files = glob.glob(os.path.join(config['inputpath'], f"*_meta*"))
 
 # Not clear what this file is for, but not one of the 4 mice in the study with character matrices
-tissue_labeling_files.remove("/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/quinn_2021_real_data/GSE161363/GSM4905342_meta.LM0.tsv")
+tissue_labeling_files.remove("/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/quinn_2021_real_data/GSE161363/GSM4905342_meta.LM0.tsv")
 
 outdir = config['outdir']
 
@@ -53,9 +57,9 @@ rule all:
         expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.pdf", outdir=outdir, mouse=mouse_ids),
         expand("{outdir}/beam_gtr/{mouse}/combined_rf_distances.pdf", outdir=outdir, mouse=mouse_ids),
         # expand("{outdir}/mach2/{mouse}/all_consensus_classifications.csv", outdir=outdir, mouse=mouse_ids),
-        # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 31), outdir=outdir) for m in mouse_ids],
-        # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 31), outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/beam_gtr_noRLdirectSeeding_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 41), outdir=outdir) for m in mouse_ids],
+        # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 41), outdir=outdir) for m in mouse_ids],
+        # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 41), outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam_gtr_noRLdirectSeeding_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 31), outdir=outdir) for m in mouse_ids],
 
 
 rule plotCountsPerCP:

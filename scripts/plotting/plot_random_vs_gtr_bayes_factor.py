@@ -6,13 +6,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=0):
+def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=1.1):
     # Read the data
     df = pd.read_csv(file_path)
 
     # Get the Bayes factor column
     # bf_column = "bf(gtr-random)"
-    bf_column = 'bf(gtr-gtrNoRLdirectSeeding)'
+    # bf_column = 'bf(gtr-gtrNoRLdirectSeeding)'
+    bf_column = 'bf(reseeding-no_reseeding)'
 
     # Create the figure with specific size
     plt.figure(figsize=(12, 6))
@@ -37,12 +38,12 @@ def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=0):
         fontsize=fs,
     )
 
-    min_val = -20
-    max_val = 100
-    plt.xlim(min_val, max_val)
+    # min_val = -20
+    # max_val = 100
+    # plt.xlim(min_val, max_val)
 
     # Customize x-axis ticks
-    increment = 20
+    increment = 10
     xticks = np.arange(
         np.floor(min_val / increment) * increment,
         np.ceil(max_val / increment) * increment + increment,
@@ -53,7 +54,8 @@ def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=0):
     plt.xticks(xticks, rotation=0, fontsize=fs)
     plt.yticks(fontsize=fs)
     # plt.xlabel("ln(Bayes factor)\nfrom ln(Marginal likelihood GTR) - ln(Marginal likelihood Random)", fontsize=fs,)
-    plt.xlabel('ln(Bayes factor)\nfrom ln(Marginal likelihood GTR) - ln(Marginal likelihood no RL Direct Seeding)', fontsize=fs)
+    # plt.xlabel('ln(Bayes factor)\nfrom ln(Marginal likelihood GTR) - ln(Marginal likelihood no RL Direct Seeding)', fontsize=fs)
+    plt.xlabel('ln(Bayes factor)\nfrom ln(Marginal likelihood Reseeding) - ln(Marginal likelihood No Reseeding)', fontsize=fs)
     plt.ylabel("Count", fontsize=fs)
 
     # Adjust layout to prevent label cutoff
