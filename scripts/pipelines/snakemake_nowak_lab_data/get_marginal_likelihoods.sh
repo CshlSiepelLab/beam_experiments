@@ -16,19 +16,44 @@ process_dir() {
     fi
 
     files=$(find "$dir" -type f -regex '.*/chain_[0-9]+\.log')
+
+    # # Filter out files with the infinite ML calculation due to bad seed
+    # count=0
+    # for file in $files; do
+    #     starting_ml=$(grep -v "#" $file | sed -n '2p' | awk '{print $2}')
+    #     if [ $(echo "$starting_ml > -2" | bc -l) -eq 1 ]; then
+    #         echo $file
+
+    #         dir=$(dirname $file)
+
+    #         num=$(echo $file | rev | cut -d'/' -f1 | rev | cut -d'_' -f2 | cut -d'.' -f1)
+
+    #         rm -f "$dir/chain_${num}.log"
+    #         rm -f "$dir/chain_${num}.posterior.log"
+    #         rm -f "$dir/chain_${num}.trees"
+    #         rm -f "$dir/chain_${num}.posterior.trees"
+    #         rm -f "$dir/terminal_${num}.log"
+    #     fi
+    #     count=$((count + 1))
+    #     echo $count
+    # done
+
+    # files=$(find "$dir" -type f -regex '.*/chain_[0-9]+\.log')
     
     if [ -n "$files" ]; then
+        echo $dir
         applauncher NSLogAnalyser -N 1 -noposterior $files -out "$dir/combined.log" > "$dir/combined_terminal.log" 2>&1
     fi
 }
 
 export -f process_dir
 
-num_threads=150
+num_threads=50
 
 # process all chains in one
 # dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns $main_dir/beam_reseeding_ns $main_dir/beam_no_reseeding_ns -maxdepth 2 -mindepth 2)
-dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -maxdepth 2 -mindepth 2)
+dirs=$(find $main_dir/beam_random_ns $main_dir/beam_gtr_ns -maxdepth 2 -mindepth 2)
+# dirs=$(find $main_dir/beam_reseeding_ns $main_dir/beam_no_reseeding_ns -maxdepth 2 -mindepth 2)
 echo "$dirs" | parallel -j $num_threads process_dir
 
 
@@ -37,9 +62,12 @@ echo "$dirs" | parallel -j $num_threads process_dir
 gtr_dir=$main_dir/beam_gtr_ns
 
 outfile=$main_dir/marginal_likelihoods_gtr_random.csv
+# outfile=$main_dir/marginal_likelihoods_reseeding_no_reseeding.csv
 
 # echo "name,gtr_ml,gtr_sd,random_ml,random_sd,bf(gtr-random),diff_threshold,reseeding_ml,reseeding_sd,no_reseeding_ml,no_reseeding_sd,bf(reseeding-no_reseeding),diff_threshold_reseeding" > $outfile
 echo "name,gtr_ml,gtr_sd,random_ml,random_sd,bf(gtr-random),diff_threshold" > $outfile
+# echo "name,reseeding_ml,reseeding_sd,no_reseeding_ml,no_reseeding_sd,bf(reseeding-no_reseeding),diff_threshold_reseeding" > $outfile
+
 
 files=$(find $gtr_dir -type f -name "combined_terminal*")
 
@@ -100,6 +128,10 @@ process_file() {
     while ! echo -e "$name,$gtr_ml,$gtr_sd,$random_ml,$random_sd,$beam_bf,$diff_threshold" >> $outfile; do
         sleep 1
     done
+
+    # while ! echo -e "$name,$reseeding_ml,$reseeding_sd,$no_reseeding_ml,$no_reseeding_sd,$reseeding_bf,$diff_threshold_reseeding" >> $outfile; do
+    #     sleep 1
+    # done
 }
 
 export -f process_file
@@ -115,14 +147,18 @@ mv $outfile.tmp $outfile
 # find which need more particles
 diff_field=$(( bf_field + 1 ))
 threshold=1.1
-awk -F',' -v bf=$bf_field -v diff=$diff_field -v thresh=$threshold 'NR > 1 { d = $thresh - $bf; if (d < 0) d = -d; if (d < $diff) print $1 }' $outfile
+awk -F',' -v bf=$bf_field -v diff=$diff_field -v thresh=$threshold 'NR > 1 { 
+    if ($bf < 0 && ($bf + $diff) > thresh) print $1;
+    else if ($bf > 0 && ($bf - $diff) < thresh) print $1;
+}' $outfile
 
 
 # # to clean files with bad x11 connection or empty files
-# files=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -type f -name "combined_terminal.log")
+# files=$(find $main_dir/beam_random_ns $main_dir/beam_gtr_ns -type f -name "combined_terminal.log")
 
 # for file in $files; do
 #     if ! grep -q "Done!" "$file"; then
+#         echo $file
 #         rm "$file"
 #     fi
 # done
@@ -131,13 +167,4 @@ awk -F',' -v bf=$bf_field -v diff=$diff_field -v thresh=$threshold 'NR > 1 { d =
 # # to remove all combined terminal logs for gtr and random
 # find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -type f -name "combined_terminal.log" -delete
 
-
-# # to remove terminal files with more than 250,000 lines due to infinite ML calculations
-# files=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -type f -name "terminal*")
-
-# for file in $files; do
-#     if [ $(wc -l < "$file") -gt 250000 ]; then
-#         rm "$file"
-#     fi
-# done
 

@@ -9,15 +9,22 @@ export main_dir
 
 process_dir() {
     dir=$1
+
+    # Check if combined log file already exists
+    if [ -f "$dir/combined_terminal.log" ]; then
+        return
+    fi
+
     files=$(find "$dir" -type f -regex '.*/chain_[0-9]+\.log')
     if [[ -n $files ]]; then
+        echo $dir
         applauncher NSLogAnalyser -N 1 -noposterior $files -out "$dir/combined.log" > "$dir/combined_terminal.log" 2>&1
     fi
 }
 
 export -f process_dir
 
-num_threads=150
+num_threads=50
 
 # process all chains in one
 dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns $main_dir/beam_gtr_noRLdirectSeeding_ns -maxdepth 2 -mindepth 2 -type d)
@@ -86,20 +93,18 @@ for file in $files; do
     echo -e "$name,$gtr_ml,$gtr_sd,$random_ml,$random_sd,$beam_bf_random,$diff_threshold_random,$noRL_ml,$noRL_sd,$beam_bf_RL,$diff_threshold_RL" >> $outfile
 done
 
-# sort results by Bayes factor from high to low
-(head -n1 $outfile &&  tail -n +2 $outfile | sort -t, -k6,6nr)  > $outfile.tmp
-mv $outfile.tmp $outfile
-
 # find which need more particles
 # sort results by Bayes factor from high to low
-bf_field=10
+bf_field=6
 (head -n1 $outfile &&  tail -n +2 $outfile | sort -t, -k${bf_field},${bf_field}nr)  > $outfile.tmp
 mv $outfile.tmp $outfile
 
 # find which need more particles
 diff_field=$(( bf_field + 1 ))
 threshold=1.1
-awk -F',' -v bf=$bf_field -v diff=$diff_field -v thresh=$threshold 'NR > 1 { d = $thresh - $bf; if (d < 0) d = -d; if (d < $diff) print $1 }' $outfile
-
+awk -F',' -v bf=$bf_field -v diff=$diff_field -v thresh=$threshold 'NR > 1 { 
+    if ($bf < 0 && ($bf + $diff) > thresh) print $1;
+    else if ($bf > 0 && ($bf - $diff) < thresh) print $1;
+}' $outfile
 
 

@@ -26,16 +26,16 @@ def get_elements_from_file(path):
 
     # Overwrite CPs for mice to not run them all for more particles
     included_combinations = {
-        "MMUS1457": ["CP12", "CP13", "CP15", "CP16", "CP19", "CP20", "CP21", "CP22", "CP25", "CP26", "CP30", "CP32", "CP35", "CP37", "CP39", "CP40", "CP42"],
-        "MMUS1466": ["CP11", "CP12", "CP13", "CP14", "CP21", "CP23"],
-        "MMUS1467": ["CP12", "CP15", "CP20", "CP24", "CP25", "CP28"],
-        "MMUS1469": ["CP010", "CP011", "CP012", "CP013", "CP014", "CP015", "CP016", "CP017", "CP018", "CP020", "CP021", "CP023", "CP024", "CP026", "CP027", "CP028", "CP030", "CP031", "CP032", "CP033", "CP034", "CP035", "CP037", "CP039", "CP040", "CP041", "CP042", "CP044", "CP045", "CP046", "CP048", "CP049", "CP050", "CP051", "CP052", "CP053", "CP054", "CP055", "CP057", "CP058", "CP059", "CP060", "CP061", "CP063", "CP064", "CP065", "CP069", "CP070", "CP071", "CP072", "CP073", "CP075", "CP077", "CP078", "CP080", "CP082", "CP084", "CP087", "CP088", "CP091", "CP092", "CP093", "CP095", "CP098", "CP099", "CP105", "CP107", "CP108", "CP109", "CP110", "CP114", "CP117", "CP118", "CP120", "CP121", "CP122"],
-        "MMUS1492": ["CP12", "CP14"],
-        "MMUS1495": ["CP011", "CP012", "CP013", "CP015", "CP016", "CP017", "CP018", "CP019", "CP020", "CP021", "CP022", "CP023", "CP024", "CP025", "CP026", "CP027", "CP028", "CP029", "CP030", "CP031", "CP032", "CP033", "CP036", "CP037", "CP038", "CP039", "CP040", "CP041", "CP042", "CP043", "CP044", "CP045", "CP046", "CP047", "CP048", "CP049", "CP050", "CP052", "CP053", "CP054", "CP055", "CP056", "CP057", "CP059", "CP060", "CP061", "CP064", "CP065", "CP067", "CP068", "CP069", "CP070", "CP071", "CP072", "CP073", "CP074", "CP077", "CP078", "CP080", "CP082", "CP083", "CP084", "CP085", "CP086", "CP088", "CP090", "CP091", "CP092", "CP093", "CP095", "CP096", "CP100", "CP102", "CP103", "CP105", "CP106", "CP107", "CP109", "CP111", "CP113"],
-        "MMUS1544": ["CP10", "CP11", "CP12", "CP13", "CP14", "CP15", "CP16", "CP17", "CP18", "CP20", "CP23", "CP24", "CP26", "CP31", "CP32", "CP35", "CP36", "CP38", "CP46", "CP47", "CP48", "CP49", "CP56", "CP61", "CP66", "CP69", "CP75", "CP77", "CP83"],
-        "MMUS1588": ["CP12", "CP13", "CP15", "CP16", "CP18", "CP20", "CP22", "CP23"],
-        "MMUS1874": ["CP12", "CP13", "CP14", "CP16", "CP17", "CP19", "CP30", "CP31"],
-        "MMUS1875": ["CP14", "CP19", "CP20"]
+        "MMUS1457": ["CP10", "CP11", "CP12", "CP13", "CP15", "CP16", "CP17", "CP18", "CP19", "CP20", "CP23", "CP25", "CP27", "CP28", "CP29", "CP30", "CP33", "CP34", "CP36", "CP37", "CP39", "CP41"],
+        "MMUS1466": ["CP06", "CP07", "CP08", "CP11", "CP12", "CP13", "CP14", "CP16", "CP17", "CP18", "CP19", "CP20", "CP21", "CP22", "CP23", "CP24", "CP26", "CP27"],
+        "MMUS1467": ["CP06", "CP08", "CP09", "CP12", "CP13", "CP15", "CP16", "CP17", "CP18", "CP21", "CP23", "CP26", "CP29", "CP32", "CP34", "CP35"],
+        # "MMUS1469": ["CP009", "CP013", "CP014", "CP016", "CP017", "CP018", "CP020", "CP021", "CP022", "CP023", "CP025", "CP026", "CP028", "CP029", "CP030", "CP031", "CP033", "CP034", "CP035", "CP037", "CP038", "CP039", "CP040", "CP041", "CP042", "CP045", "CP046", "CP047", "CP048", "CP051", "CP052", "CP054", "CP055", "CP060", "CP062", "CP063", "CP064", "CP065", "CP066", "CP067", "CP069", "CP070", "CP073", "CP074", "CP075", "CP076", "CP077", "CP079", "CP083", "CP084", "CP085", "CP086", "CP091", "CP093", "CP094", "CP096", "CP100", "CP106", "CP108", "CP113", "CP115", "CP117", "CP118", "CP119"],
+        "MMUS1492": ["CP06", "CP07", "CP08", "CP09", "CP13"],
+        # "MMUS1495": ["CP006", "CP007", "CP008", "CP010", "CP011", "CP012", "CP013", "CP015", "CP016", "CP018", "CP019", "CP020", "CP021", "CP022", "CP023", "CP024", "CP027", "CP028", "CP029", "CP030", "CP031", "CP032", "CP033", "CP037", "CP038", "CP039", "CP040", "CP041", "CP042", "CP045", "CP050", "CP051", "CP053", "CP055", "CP058", "CP061", "CP063", "CP065", "CP070", "CP072", "CP073", "CP074", "CP077", "CP081", "CP082", "CP084", "CP086", "CP090", "CP092", "CP093", "CP099", "CP100", "CP104", "CP108"],
+        "MMUS1544": ["CP06", "CP08", "CP09", "CP10", "CP11", "CP12", "CP13", "CP16", "CP17", "CP18", "CP19", "CP20", "CP24", "CP26", "CP27", "CP28", "CP29", "CP30", "CP31", "CP34", "CP36", "CP37", "CP38", "CP40", "CP47", "CP48", "CP49", "CP53", "CP54", "CP58", "CP62", "CP64", "CP66", "CP68", "CP69", "CP78", "CP79", "CP80", "CP82", "CP83", "CP85", "CP86"],
+        "MMUS1588": ["CP10", "CP11", "CP12", "CP13", "CP22"],
+        "MMUS1874": ["CP08", "CP12", "CP13", "CP15", "CP17", "CP18", "CP19", "CP20", "CP24", "CP26", "CP27", "CP28", "CP31", "CP32", "CP33", "CP34"],
+        "MMUS1875": ["CP06", "CP07", "CP08", "CP09", "CP11", "CP12", "CP14", "CP17", "CP20", "CP21"]
     }
 
     if mouse in included_combinations:
@@ -86,9 +86,9 @@ rule all:
         expand("{outdir}/beam_gtr/all_consensus_classifications.pdf", outdir=config['outdir']),
         [expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.pdf", outdir=config['outdir'], mouse=m) for m in mice],
         # [expand("{outdir}/beam_no_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 301), mouse=m) for m in mice],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 1001), mouse=m) for m in mice],
         # [expand("{outdir}/beam_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 301), mouse=m) for m in mice],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 1001), mouse=m) for m in mice],
                 
 
 rule runEvotracer:
@@ -819,7 +819,7 @@ rule runBeamGtrNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
-        mem = '2G'
+        mem = '80G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -876,7 +876,7 @@ rule runBeamGtrNS:
 
         # Replace mcmc specs with nested sampling specs
         mcmc_specs='<run id="mcmc" spec="MCMC" chainLength="\$(mcmclength)">'
-        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
+        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-6">'
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
         beast \
@@ -913,7 +913,7 @@ rule runBeamRandomNS:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
         threads = 5,
-        mem = '2G'
+        mem = '80G'
     shell:
         """
         cp {params.xml} {params.fileDir}/{wildcards.num}.xml
@@ -970,7 +970,7 @@ rule runBeamRandomNS:
 
         # Replace mcmc specs with nested sampling specs
         mcmc_specs='<run id="mcmc" spec="MCMC" chainLength="\$(mcmclength)">'
-        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
+        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-6">'
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
         beast \
@@ -1063,7 +1063,7 @@ rule runBeamNoReseedingNS:
 
         # Replace mcmc specs with nested sampling specs
         mcmc_specs='<run id="mcmc" spec="MCMC" chainLength="\$(mcmclength)">'
-        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
+        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-6">'
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
         beast \
@@ -1156,7 +1156,7 @@ rule runBeamReseedingNS:
 
         # Replace mcmc specs with nested sampling specs
         mcmc_specs='<run id="mcmc" spec="MCMC" chainLength="\$(mcmclength)">'
-        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">'
+        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-6">'
         sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
         beast \
