@@ -1,0 +1,61 @@
+import os
+import sys
+import glob
+
+# get sample ids and fastq files from input fastq dir
+samples = []
+sample_fastqs = {}
+for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
+    sample = os.path.basename(file).split("_")[0]
+    if sample not in samples:
+        samples.append(sample)
+    if sample not in sample_fastqs:
+        sample_fastqs[sample] = []
+    sample_fastqs[sample].append(file)
+
+
+print("Samples:", samples)
+print("\nSample Fastqs:")
+for sample, fastqs in sample_fastqs.items():
+    print(f"{sample}:")
+    for fastq in fastqs:
+        print(f"    {fastq}")
+
+
+rule all:
+    input:
+        expand("{outdir}/evotracer/{sample}/asv_analysis/character_matrix.csv", outdir=config['outdir'], sample=samples),
+                
+
+rule runEvotracer:
+    input:
+        fastqFiles = lambda wildcards: sample_fastqs[wildcards.sample]
+    output:
+        char_matrix = "{outdir}/evotracer/{sample}/asv_analysis/character_matrix.csv",
+        asv_stat = "{outdir}/evotracer/{sample}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv",
+        mut_dict = "{outdir}/evotracer/{sample}/asv_analysis/mutation_profile_map.csv",
+        evotracerCassiopeiaTree= "{outdir}/evotracer/{sample}/phylogeny_analysis/phylogeny_del_ins/tree_all_clones.newick",
+    params:
+        evoOutDir = "{outdir}/evotracer/{sample}",
+        scripts = config['scripts'],
+        asvThreshold = config['asvThreshold'],
+        barcode_version = "BC10v2",
+        threads = 10,
+        mem = '40G',
+    singularity:
+        '../../envs/evotracer.sif'
+    shell:
+        """
+        # make sample specific temp dir with fastqs
+        tempDir={wildcards.outdir}/{wildcards.sample}_fastq_temp
+        mkdir -p $tempDir
+        cp {input.fastqFiles} $tempDir/
+
+        # evotracer needs fastqs to be unzipped
+        gunzip $tempDir/*
+
+        Rscript {params.scripts}/evotracer/evotracer.R $tempDir {params.evoOutDir} {params.asvThreshold} {params.barcode_version} {params.threads}
+
+        # remove temp dir
+        rm -r $tempDir
+        """

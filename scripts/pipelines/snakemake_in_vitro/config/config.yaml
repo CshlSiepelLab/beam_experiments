@@ -1,0 +1,27 @@
+
+# input fastq files
+fastqPath: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/lise_in_vitro_migration_graph_4_23_25/30-1170152204/30-1170152204/00_fastq"
+
+# output directory
+outdir: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/in_vitro_data_4_24_25"
+
+# set the asv count threshold for filtering in evotracer
+asvThreshold: 3
+
+# set the path to the scripts
+scripts: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts
+
+# set the path to the gtr xml template file
+gtrXml: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
+
+# Length of experiment
+experimentTime: 24
+
+# set the desired maximum mcmc chain length
+mcmcLength: 1000000000
+
+# set the desired number of parallel mcmc chains to run
+numChains: 3
+
+# set the minimum ess to include a chain in the combined output across chains (default: 200)
+essCutoff: 0

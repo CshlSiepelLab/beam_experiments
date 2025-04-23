@@ -103,6 +103,7 @@ rule runEvotracer:
         evoOutDir = "{outdir}/evotracer/{mouse}",
         scripts = config['scripts'],
         threads = 10,
+        barcode_version = "BC10v0",
         asvThreshold = config['asvThreshold'],
         mem = '5G'
     singularity:
@@ -117,7 +118,7 @@ rule runEvotracer:
         # evotracer needs fastqs to be unzipped
         gunzip $tempDir/*
 
-        Rscript {params.scripts}/evotracer/evotracer.R $tempDir {params.evoOutDir} {params.asvThreshold}
+        Rscript {params.scripts}/evotracer/evotracer.R $tempDir {params.evoOutDir} {params.asvThreshold} {params.barcode_version} {params.threads}
 
         # remove temp dir
         rm -r $tempDir
