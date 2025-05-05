@@ -24,24 +24,24 @@ def get_elements_from_file(path):
         cps = [cp for cp in cps if cp != "CP01"]    # exclude these CPs due to computational burden with Beam analysis
 
 
-    # Overwrite CPs for mice to not run them all for more particles
-    included_combinations = {
-        "MMUS1457": ["CP10", "CP11", "CP12", "CP13", "CP15", "CP16", "CP17", "CP18", "CP19", "CP20", "CP23", "CP25", "CP27", "CP28", "CP29", "CP30", "CP33", "CP34", "CP36", "CP37", "CP39", "CP41"],
-        "MMUS1466": ["CP06", "CP07", "CP08", "CP11", "CP12", "CP13", "CP14", "CP16", "CP17", "CP18", "CP19", "CP20", "CP21", "CP22", "CP23", "CP24", "CP26", "CP27"],
-        "MMUS1467": ["CP06", "CP08", "CP09", "CP12", "CP13", "CP15", "CP16", "CP17", "CP18", "CP21", "CP23", "CP26", "CP29", "CP32", "CP34", "CP35"],
-        # "MMUS1469": ["CP009", "CP013", "CP014", "CP016", "CP017", "CP018", "CP020", "CP021", "CP022", "CP023", "CP025", "CP026", "CP028", "CP029", "CP030", "CP031", "CP033", "CP034", "CP035", "CP037", "CP038", "CP039", "CP040", "CP041", "CP042", "CP045", "CP046", "CP047", "CP048", "CP051", "CP052", "CP054", "CP055", "CP060", "CP062", "CP063", "CP064", "CP065", "CP066", "CP067", "CP069", "CP070", "CP073", "CP074", "CP075", "CP076", "CP077", "CP079", "CP083", "CP084", "CP085", "CP086", "CP091", "CP093", "CP094", "CP096", "CP100", "CP106", "CP108", "CP113", "CP115", "CP117", "CP118", "CP119"],
-        "MMUS1492": ["CP06", "CP07", "CP08", "CP09", "CP13"],
-        # "MMUS1495": ["CP006", "CP007", "CP008", "CP010", "CP011", "CP012", "CP013", "CP015", "CP016", "CP018", "CP019", "CP020", "CP021", "CP022", "CP023", "CP024", "CP027", "CP028", "CP029", "CP030", "CP031", "CP032", "CP033", "CP037", "CP038", "CP039", "CP040", "CP041", "CP042", "CP045", "CP050", "CP051", "CP053", "CP055", "CP058", "CP061", "CP063", "CP065", "CP070", "CP072", "CP073", "CP074", "CP077", "CP081", "CP082", "CP084", "CP086", "CP090", "CP092", "CP093", "CP099", "CP100", "CP104", "CP108"],
-        "MMUS1544": ["CP06", "CP08", "CP09", "CP10", "CP11", "CP12", "CP13", "CP16", "CP17", "CP18", "CP19", "CP20", "CP24", "CP26", "CP27", "CP28", "CP29", "CP30", "CP31", "CP34", "CP36", "CP37", "CP38", "CP40", "CP47", "CP48", "CP49", "CP53", "CP54", "CP58", "CP62", "CP64", "CP66", "CP68", "CP69", "CP78", "CP79", "CP80", "CP82", "CP83", "CP85", "CP86"],
-        "MMUS1588": ["CP10", "CP11", "CP12", "CP13", "CP22"],
-        "MMUS1874": ["CP08", "CP12", "CP13", "CP15", "CP17", "CP18", "CP19", "CP20", "CP24", "CP26", "CP27", "CP28", "CP31", "CP32", "CP33", "CP34"],
-        "MMUS1875": ["CP06", "CP07", "CP08", "CP09", "CP11", "CP12", "CP14", "CP17", "CP20", "CP21"]
-    }
+    # # Overwrite CPs for mice to not run them all for more particles
+    # included_combinations = {
+    #     "MMUS1457": ["CP10", "CP11", "CP12", "CP13", "CP15", "CP16", "CP17", "CP18", "CP19", "CP20", "CP23", "CP25", "CP27", "CP28", "CP29", "CP30", "CP33", "CP34", "CP36", "CP37", "CP39", "CP41"],
+    #     "MMUS1466": ["CP06", "CP07", "CP08", "CP11", "CP12", "CP13", "CP14", "CP16", "CP17", "CP18", "CP19", "CP20", "CP21", "CP22", "CP23", "CP24", "CP26", "CP27"],
+    #     "MMUS1467": ["CP06", "CP08", "CP09", "CP12", "CP13", "CP15", "CP16", "CP17", "CP18", "CP21", "CP23", "CP26", "CP29", "CP32", "CP34", "CP35"],
+    #     # "MMUS1469": ["CP009", "CP013", "CP014", "CP016", "CP017", "CP018", "CP020", "CP021", "CP022", "CP023", "CP025", "CP026", "CP028", "CP029", "CP030", "CP031", "CP033", "CP034", "CP035", "CP037", "CP038", "CP039", "CP040", "CP041", "CP042", "CP045", "CP046", "CP047", "CP048", "CP051", "CP052", "CP054", "CP055", "CP060", "CP062", "CP063", "CP064", "CP065", "CP066", "CP067", "CP069", "CP070", "CP073", "CP074", "CP075", "CP076", "CP077", "CP079", "CP083", "CP084", "CP085", "CP086", "CP091", "CP093", "CP094", "CP096", "CP100", "CP106", "CP108", "CP113", "CP115", "CP117", "CP118", "CP119"],
+    #     "MMUS1492": ["CP06", "CP07", "CP08", "CP09", "CP13"],
+    #     # "MMUS1495": ["CP006", "CP007", "CP008", "CP010", "CP011", "CP012", "CP013", "CP015", "CP016", "CP018", "CP019", "CP020", "CP021", "CP022", "CP023", "CP024", "CP027", "CP028", "CP029", "CP030", "CP031", "CP032", "CP033", "CP037", "CP038", "CP039", "CP040", "CP041", "CP042", "CP045", "CP050", "CP051", "CP053", "CP055", "CP058", "CP061", "CP063", "CP065", "CP070", "CP072", "CP073", "CP074", "CP077", "CP081", "CP082", "CP084", "CP086", "CP090", "CP092", "CP093", "CP099", "CP100", "CP104", "CP108"],
+    #     "MMUS1544": ["CP06", "CP08", "CP09", "CP10", "CP11", "CP12", "CP13", "CP16", "CP17", "CP18", "CP19", "CP20", "CP24", "CP26", "CP27", "CP28", "CP29", "CP30", "CP31", "CP34", "CP36", "CP37", "CP38", "CP40", "CP47", "CP48", "CP49", "CP53", "CP54", "CP58", "CP62", "CP64", "CP66", "CP68", "CP69", "CP78", "CP79", "CP80", "CP82", "CP83", "CP85", "CP86"],
+    #     "MMUS1588": ["CP10", "CP11", "CP12", "CP13", "CP22"],
+    #     "MMUS1874": ["CP08", "CP12", "CP13", "CP15", "CP17", "CP18", "CP19", "CP20", "CP24", "CP26", "CP27", "CP28", "CP31", "CP32", "CP33", "CP34"],
+    #     "MMUS1875": ["CP06", "CP07", "CP08", "CP09", "CP11", "CP12", "CP14", "CP17", "CP20", "CP21"]
+    # }
 
-    if mouse in included_combinations:
-        cps = included_combinations[mouse]
-    else:
-        cps = []
+    # if mouse in included_combinations:
+    #     cps = included_combinations[mouse]
+    # else:
+    #     cps = []
 
     return cps
 
@@ -67,19 +67,14 @@ rule all:
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/beam/{mouse}/{cp}/posterior_expected_over_parsimony/posterior_expected_migration_counts_over_parsimony.csv", outdir=config['outdir'],
         #             cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/machina/{mouse}/{cp}/migration_graph.pdf", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # # expand("{outdir}/machina/{mouse}/plots/machina_migration_plots/trans_mx_all.pdf", outdir=config['outdir'], mouse=mice),
-        # [expand("{outdir}/metient/{mouse}/{cp}/{mouse}_{cp}_{primaryTissue}_migration_graphs.txt", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m, primaryTissue=config['primaryTissue'][m],) for m in mice],
         # [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues_random.pdf", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf", outdir=config['outdir'], 
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 51), mouse=m) for m in mice],
-        [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 51), mouse=m) for m in mice],
+        # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 51), mouse=m) for m in mice],
+        # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 51), mouse=m) for m in mice],
         # # expand("{outdir}/beam_gtr/combined_rf_distances.pdf", outdir=config['outdir']),
         [expand("{outdir}/beam_gtr/{mouse}/{cp}/all_consensus_classifications.csv", outdir=config['outdir'],
                 cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
@@ -89,7 +84,8 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 1001), mouse=m) for m in mice],
         # [expand("{outdir}/beam_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 1001), mouse=m) for m in mice],
-                
+        [expand("{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
 
 rule runEvotracer:
     input:
@@ -802,6 +798,8 @@ rule plotRfDistances:
         """
 
 
+
+
 rule runBeamGtrNS:
     input:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt",
@@ -1174,4 +1172,161 @@ rule runBeamReseedingNS:
         -D numTissues=\"$numTissues\" \
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
+
+rule prepMach2:
+    input:
+        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
+        tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv"
+    output:
+        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths.labeling",
+        edges = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths.tree",
+        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths_colors.txt"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/mach2/{mouse}/{cp}",
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = 1,
+        mem = '1G'
+    singularity:
+        "../../envs/simulate.sif"
+    shell:
+        """
+        # convert csv to tsv for leaf labels
+        sed 's/,/\\t/g' {input.tissues} > {params.outputdir}/leaf_tissues.tsv
+
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTreeNoBranchLengths} | sed 's/^.//' | sed 's/..$//')
+        echo "${{newick}};" > {params.outputdir}/laml_trees_no_origin_no_branch_lengths.nwk
+
+        # prep inputs
+        python {params.scripts}/machina/prep_machina.py {params.outputdir}/laml_trees_no_origin_no_branch_lengths.nwk {params.outputdir} {params.primaryTissue} {params.outputdir}/leaf_tissues.tsv
+
+        # for the labeling and colors file, make sure the names do not have . or - characters
+        sed -i 's/\./_/g; s/-/_/g' {output.labeling}
+        sed -i 's/\./_/g; s/-/_/g' {output.edges}
+        """
+
+rule runMach2:
+    input:
+        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths.labeling",
+        edges = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths.tree",
+        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths_colors.txt"
+    output:
+        mach2graph = "{outdir}/mach2/{mouse}/{cp}/PRL-G-0.graph"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/mach2/{mouse}/{cp}",
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        threads = 50,
+        mem = '5G'
+    conda:
+        "../../envs/mach2.yaml"
+    shell:
+        """
+        unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
+        num_unique_tissues=$(echo "$unique_tissues" | wc -l)
+
+        if [ "$num_unique_tissues" -gt 1 ]; then
+            # check if primary tissue is in the labeling file
+            if grep -q "{params.primaryTissue}" {input.labeling}; then
+                mach2 {input.edges} {input.labeling} --colormap {input.colors} -p {params.primaryTissue} --log -o {params.outputdir} -t {params.threads}
+
+                # Need to touch output files to satisfy output, only if output with a different name exists
+                if [ $(ls {params.outputdir}/*.graph | wc -l) -gt 0 ] && [ ! -f {output.mach2graph} ]; then
+                    touch {output}
+                fi
+            else
+                most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
+                echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
+                mach2 {input.edges} {input.labeling} --colormap {input.colors} -p $most_common_tissue --log -o {params.outputdir} -t {params.threads}
+
+                # Need to touch output files to satisfy output, only if output with a different name exists
+                if [ $(ls {params.outputdir}/*.graph | wc -l) -gt 0 ] && [ ! -f {output.mach2graph} ]; then
+                    touch {output}
+                fi
+            fi
+        else
+            echo "Only one unique tissue found in the labeling file, so not enough to run Mach2. Exiting."
+            touch {output}
+        fi
+        """
+
+rule gatherMach2Results:
+    input:
+        mach2graph = "{outdir}/mach2/{mouse}/{cp}/PRL-G-0.graph"
+    output:
+        mach2Combined = "{outdir}/mach2/{mouse}/{cp}/graph_results_combined.txt",
+        mach2Consensus = "{outdir}/mach2/{mouse}/{cp}/consensus_graph.txt"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/mach2/{mouse}/{cp}",
+        threads = 1,
+        mem = '1G'
+    shell:
+        """
+        # get all graph files
+        results=$(find $(dirname {input.mach2graph}) -name "*.graph")
+
+        # combine all results
+        echo "result_num,source,target,count" > {output.mach2Combined}
+        for file in $results; do
+            result_num=$(basename $file | cut -d'-' -f3 | cut -d'.' -f1)
+            while IFS= read -r line; do
+                echo "$result_num,$(echo $line | tr ' ' ',')" >> {output.mach2Combined}
+            done < "$file"
+        done
+
+        # get the probability weighted edge consensus graph
+        python {params.scripts}/formatting/convert_mach2_results_to_consensus_graph.py {output.mach2Combined} {output.mach2Consensus}
+        """
+
+rule getMach2Classifications:
+    input:
+        mach2Consensus = "{outdir}/mach2/{mouse}/{cp}/consensus_graph.txt",
+    output:
+        mach2Classifications = "{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv",
+    params:
+        primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
+        consensusThresholds = [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99],
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G',
+    shell:
+        """
+        echo "name,threshold,met_to_met,met_to_primary" > {output.mach2Classifications}
+
+        for consensusThreshold in {params.consensusThresholds}; do
+
+            met_to_primary=False
+            met_to_met=False
+
+            if [ ! -s {input.mach2Consensus} ]; then
+                echo "Must be false classifications since the consensus graph is empty, indicating mach2 did not run due to only one tissue in labeling input."
+            else
+                while IFS= read -r line; do
+                    if [ "$met_to_met" = "True" ] && [ "$met_to_primary" = "True" ]; then
+                        continue
+                    fi
+
+                    migration=$(echo $line | cut -d',' -f1)
+                    freq=$(echo $line | cut -d',' -f2)
+
+                    if (( $(echo "$freq > $consensusThreshold" | bc -l) )); then
+                        source=$(echo $migration | cut -d'_' -f1)
+                        target=$(echo $migration | cut -d'_' -f2)
+
+                        if [ "$target" = "{params.primaryTissue}" ]; then
+                            met_to_primary=True
+                        fi
+
+                        if [ "$source" != "{params.primaryTissue}" ] && [ "$target" != "{params.primaryTissue}" ]; then
+                            met_to_met=True
+                        fi
+                    fi
+                done < {input.mach2Consensus}
+            fi
+
+            echo "{wildcards.mouse}_{wildcards.cp},$consensusThreshold,$met_to_met,$met_to_primary" >> {output.mach2Classifications}
+        done
         """

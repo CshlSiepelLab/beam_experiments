@@ -56,11 +56,10 @@ rule all:
         expand("{outdir}/beam_gtr/{mouse}/all_consensus_classifications.pdf", outdir=outdir, mouse=mouse_ids),
         expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.pdf", outdir=outdir, mouse=mouse_ids),
         expand("{outdir}/beam_gtr/{mouse}/combined_rf_distances.pdf", outdir=outdir, mouse=mouse_ids),
-        # expand("{outdir}/mach2/{mouse}/all_consensus_classifications.csv", outdir=outdir, mouse=mouse_ids),
-        [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 151), outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 151), outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 151), outdir=outdir) for m in mouse_ids],
+        # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 151), outdir=outdir) for m in mouse_ids],
         # [expand("{outdir}/beam_gtr_noRLdirectSeeding_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 51), outdir=outdir) for m in mouse_ids],
-
 
 rule plotCountsPerCP:
     input:
@@ -687,7 +686,6 @@ rule prepMachina:
         sed -i 's/\./_/g; s/-/_/g' {output.tree}
         """
 
-
 rule runMach2:
     input:
         labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.labeling",
@@ -703,16 +701,10 @@ rule runMach2:
         primaryTissue = config['primaryTissue'],
         threads = 25,
         mem = '5G',
+    conda:
+        "../../envs/mach2.yaml"
     shell:
         """
-        # work around for now due to bad mach2 installation
-        source ~/miniconda3/etc/profile.d/conda.sh 
-        conda activate mach2
-
-        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
-        module load EBModules
-        module load Gurobi
-
         unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
         num_unique_tissues=$(echo "$unique_tissues" | wc -l)
 
@@ -777,44 +769,47 @@ rule getMach2Classifications:
         mach2Classifications = "{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv",
     params:
         primaryTissue = config['primaryTissue'],
-        consensusThreshold = 0.5,
+        consensusThresholds = [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99],
         scripts = config['scripts'],
         threads = 1,
         mem = '1G',
     shell:
         """
-        echo "name,met_to_met,met_to_primary" > {output.mach2Classifications}
+        echo "name,threshold,met_to_met,met_to_primary" > {output.mach2Classifications}
 
-        met_to_primary=False
-        met_to_met=False
+        for consensusThreshold in {params.consensusThresholds}; do
 
-        if [ ! -s {input.mach2Consensus} ]; then
-            echo "Must be false classifications since the consensus graph is empty, indicating mach2 did not run due to only one tissue in labeling input."
-        else
-            while IFS= read -r line; do
-                if [ "$met_to_met" = "True" ] && [ "$met_to_primary" = "True" ]; then
-                    continue
-                fi
+            met_to_primary=False
+            met_to_met=False
 
-                migration=$(echo $line | cut -d',' -f1)
-                freq=$(echo $line | cut -d',' -f2)
-
-                if (( $(echo "$freq > {params.consensusThreshold}" | bc -l) )); then
-                    source=$(echo $migration | cut -d'_' -f1)
-                    target=$(echo $migration | cut -d'_' -f2)
-
-                    if [ "$target" = "{params.primaryTissue}" ]; then
-                        met_to_primary=True
+            if [ ! -s {input.mach2Consensus} ]; then
+                echo "Must be false classifications since the consensus graph is empty, indicating mach2 did not run due to only one tissue in labeling input."
+            else
+                while IFS= read -r line; do
+                    if [ "$met_to_met" = "True" ] && [ "$met_to_primary" = "True" ]; then
+                        continue
                     fi
 
-                    if [ "$source" != "{params.primaryTissue}" ] && [ "$target" != "{params.primaryTissue}" ]; then
-                        met_to_met=True
-                    fi
-                fi
-            done < {input.mach2Consensus}
-        fi
+                    migration=$(echo $line | cut -d',' -f1)
+                    freq=$(echo $line | cut -d',' -f2)
 
-        echo "{wildcards.mouse}_{wildcards.cp},$met_to_met,$met_to_primary" >> {output.mach2Classifications}
+                    if (( $(echo "$freq > $consensusThreshold" | bc -l) )); then
+                        source=$(echo $migration | cut -d'_' -f1)
+                        target=$(echo $migration | cut -d'_' -f2)
+
+                        if [ "$target" = "{params.primaryTissue}" ]; then
+                            met_to_primary=True
+                        fi
+
+                        if [ "$source" != "{params.primaryTissue}" ] && [ "$target" != "{params.primaryTissue}" ]; then
+                            met_to_met=True
+                        fi
+                    fi
+                done < {input.mach2Consensus}
+            fi
+
+            echo "{wildcards.mouse}_{wildcards.cp},$consensusThreshold,$met_to_met,$met_to_primary" >> {output.mach2Classifications}
+        done
         """
 
 rule runBeamGtrNs:

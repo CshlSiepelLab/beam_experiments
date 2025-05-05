@@ -8,3 +8,7 @@ __default__:
 runEvotracer:
   logout: '{wildcards.outdir}/job_logs/{wildcards.sample}/{rule}.out'
   logerror: '{wildcards.outdir}/job_logs/{wildcards.sample}/{rule}.err'
+
+splitCPs:
+  logout: '{wildcards.outdir}/job_logs/{wildcards.sample}/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{wildcards.sample}/{rule}.err'
