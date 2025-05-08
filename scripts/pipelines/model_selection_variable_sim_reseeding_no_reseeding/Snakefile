@@ -8,12 +8,12 @@ def get_sims():
 sims = get_sims()
 
 # Found all reseeding sims from the model selection reseeding path, discarding any with mut0005 or mig04 due to poor performance on previous evaluations
-all_reseeding_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_2_or_3_parameters_reseeding_no_reseeding_12_7_24_variable_rates_data_8_19_24/reseeding_sims.txt"
+all_reseeding_path = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/model_selection_reseeding_no_reseeding_5_8_25_variable_rates_data_8_19_24/reseeding_sims.txt"
 with open(all_reseeding_path, 'r') as f:
     all_reseeding = [line.strip() for line in f]
 
 # Counted the number of reseeding sims that were available, noticed none of them had mig7, then found all non-reseeding sims and discarded mig4 and mut0005 and mig7, and then randomly shuffled the file and took the top n to match the number of reseeding n from above (done to prevent any class imbalance)
-chosen_non_reseeding_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/model_selection_2_or_3_parameters_reseeding_no_reseeding_12_7_24_variable_rates_data_8_19_24/no_reseeding_sims_randomly_chosen.txt"
+chosen_non_reseeding_path = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/model_selection_reseeding_no_reseeding_5_8_25_variable_rates_data_8_19_24/no_reseeding_sims_randomly_chosen.txt"
 with open(chosen_non_reseeding_path, 'r') as f:
     chosen_non_reseeding = [line.strip() for line in f]
 
@@ -21,7 +21,7 @@ with open(chosen_non_reseeding_path, 'r') as f:
 sims = [sim for sim in sims if sim in all_reseeding or sim in chosen_non_reseeding]
 
 # specific sims that need more particles to reduce the threshold for the minimum bayes factor
-# sims = ['mig5_mut001_3367', 'mig5_mut0025_19909', 'mig5_mut005_10364', 'mig5_mut005_21812', 'mig5_mut005_23817', 'mig5_mut005_24716', 'mig5_mut005_28953', 'mig5_mut005_6169', 'mig5_mut01_15285', 'mig5_mut01_22994', 'mig5_mut01_28920', 'mig5_mut01_6228', 'mig6_mut001_13259', 'mig6_mut001_18037', 'mig6_mut001_22636', 'mig6_mut001_25214', 'mig6_mut0025_1342', 'mig6_mut0025_17715', 'mig6_mut0025_25796', 'mig6_mut0025_6921', 'mig6_mut005_2171', 'mig6_mut005_28340', 'mig6_mut005_8463', 'mig6_mut005_9570', 'mig6_mut01_13401', 'mig6_mut01_18521', 'mig6_mut01_21493', 'mig6_mut01_26589', 'mig6_mut01_28748', 'mig6_mut01_30006', 'mig6_mut01_32163', 'mig6_mut01_4374']
+# sims = []
 
 
 outdir = config['outdir']
@@ -32,11 +32,8 @@ rule all:
         expand("{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/true_reseeding_classification/{sim}/reseeding.txt", sim=sims, outdir=outdir),
         expand("{outdir}/beam_prep/{sim}/{sim}.fasta", sim=sims, outdir=outdir),
-        expand("{outdir}/beam_no_reseeding/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, config['numReps']), outdir=outdir),
-        expand("{outdir}/beam_one_rate_reseeding/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, config['numReps']), outdir=outdir),
-        # expand("{outdir}/beam_no_reseeding/{sim}/combined.log", sim=sims, outdir=outdir),
-        # expand("{outdir}/beam_one_rate_reseeding/{sim}/combined.log", sim=sims, outdir=outdir)
-
+        # expand("{outdir}/beam_reseeding_ns/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, 1), outdir=outdir),
+        # expand("{outdir}/beam_no_reseeding_ns/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, 1), outdir=outdir),
 
 rule labelTrueTreeWithTissues:
     input:
@@ -45,7 +42,9 @@ rule labelTrueTreeWithTissues:
     output:
         "{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.nwk"
     params:
-        scripts = config['scripts']
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -61,7 +60,9 @@ rule plotTrueMigrationGraph:
         "{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.pdf"
     params:
         scripts = config['scripts'],
-        primaryTissue = config['primaryTissue']
+        primaryTissue = config['primaryTissue'],
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/networkx.yaml"
     shell:
@@ -76,7 +77,9 @@ rule obtainTrueDataReseedingClassifications:
         "{outdir}/true_reseeding_classification/{sim}/reseeding.txt"
     params:
         primaryTissue = config['primaryTissue'],
-        scripts = config['scripts']
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -91,7 +94,9 @@ rule runCassiopeia:
         "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
     params:
         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
-        outputdir = "{outdir}/cassiopeia_greedy/{sim}"
+        outputdir = "{outdir}/cassiopeia_greedy/{sim}",
+        threads = 1,
+        mem = '1G'
     singularity:
         "../../envs/simulate.sif"
     shell:
@@ -103,37 +108,72 @@ rule runCassiopeia:
 rule runLAML:
     input:
         sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
-        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk",
+        mutationPriors = config['mutationPriors'],
     output:
         lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+        lamlTreeNoOrigin = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin.nwk",
+        lamlAnnotations = "{outdir}/laml/{sim}/{sim}_laml_annotations.txt",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.nwk"
     params:
+        scripts = config['scripts'],
         outputdir = "{outdir}/laml/{sim}",
+        experimentTime = config['experimentTime'],
         threads = 25,
-        experimentTime = config['generations'],
+        mem = '1G'
     conda:
         "../../envs/laml.yaml"
     shell:
         """
-        # copy sim matrix and replace -1 with ? for missing data
-        cp {input.sim_matrix} {outdir}/laml/{wildcards.sim}/sim_matrix.csv
-        sed -i 's/-1/?/g; s/\t/,/g' {outdir}/laml/{wildcards.sim}/sim_matrix.csv
+        # copy sim matrix, replace header, and replace -1 with ? for missing data
+        laml_sim_matrix={params.outputdir}/sim_matrix.csv
+        num_sites=$(head -n 1 {input.sim_matrix} | awk -F'\t' '{{print NF}}')
+        laml_header="cell"
+        for i in $(seq 1 $num_sites); do
+                laml_header+=",r$i"
+            done
+        echo $laml_header > $laml_sim_matrix
+        tail -n +2 {input.sim_matrix} >> $laml_sim_matrix
+        sed -i 's/-1/?/g; s/\t/,/g' $laml_sim_matrix
+
+        # setup the Q matrix mutation priors for the mutations found in the sim matrix
+        # laml requires a site specific format, so this is just a reformatting step of the input priors
+        mutationPriors={params.outputdir}/mutation_priors.csv
+        python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_sim_matrix {input.mutationPriors} $mutationPriors
 
         # run laml
-        run_laml -c {outdir}/laml/{wildcards.sim}/sim_matrix.csv -t {input.casTree} -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --parallel
+        run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --parallel
+
+        # remove fake root from tree
+        fixed_newick=$(sed "s/);//g" {output.lamlTreeOriginal})
+        fixed_newick="${{fixed_newick:1}});"
+        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
+        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
+        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
+        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
+
+        echo $modified_newick > {output.lamlTreeNoOrigin}
+
+        # obtain newick without branch lengths
+        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTreeNoOrigin} > {output.lamlTreeNoBranchLengths}
         """
 
 rule prepBeamInputs:
     input:
         sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
         leafTissues = lambda wildcards: glob.glob(os.path.join(config['inputpath'], wildcards.sim,"cell_tree_*[0-9].labeling")),
+        mutationPriors = config['mutationPriors'],
     output:
         fasta = "{outdir}/beam_prep/{sim}/{sim}.fasta",
-        dates = "{outdir}/beam_prep/{sim}/{sim}_date_traits.csv",
         tissues = "{outdir}/beam_prep/{sim}/{sim}_tip_tissues.csv",
+        sequentialMutationReorderingMap = "{outdir}/beam_prep/{sim}/{sim}_original_mut_to_edit_model_mut.csv",
+        obervedEditRateProportions = "{outdir}/beam_prep/{sim}/{sim}_edit_rate_proportions.txt",
+        editRates = "{outdir}/beam_prep/{sim}/{sim}_fixed_edit_rates.txt",
     params:
         scripts = config['scripts'],
-        generations = config['generations'],
-        outputdir = "{outdir}/beam_prep/{sim}"
+        outputdir = "{outdir}/beam_prep/{sim}",
+        threads = 1,
+        mem = '1G'
     conda:
         "../../envs/compare_trees.yaml"
     shell:
@@ -141,39 +181,35 @@ rule prepBeamInputs:
         # write tip traits to new csv
         sed 's/ /,/g' {input.leafTissues} > {output.tissues}
 
-        # write date trait
-        sed 's/ /,/g' {input.leafTissues} | cut -d',' -f1 | paste -d',' - <(yes {params.generations} | head -n $(wc -l < {input.leafTissues})) > {output.dates}
-
         # format fasta, re-label mutations sequentially, and get edit rate proportions for new mutation entries
         {params.scripts}/formatting/format_beam_input_files.py {input.sim_matrix} {params.outputdir}
+
+        # get fixed edit rates based on the input edit rate priors filtered for the observed states
+        python {params.scripts}/formatting/get_fixed_edit_rates_for_beam_sim_matrix.py {input.mutationPriors} {output.sequentialMutationReorderingMap} {output.editRates}
         """
 
-rule runBeamNoReseeding:
+rule runBeamNoReseedingNS:
     input:
         fasta = "{outdir}/beam_prep/{sim}/{sim}.fasta",
-        dates = "{outdir}/beam_prep/{sim}/{sim}_date_traits.csv",
         tissues = "{outdir}/beam_prep/{sim}/{sim}_tip_tissues.csv",
-        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
+        editRateProportions = "{outdir}/beam_prep/{sim}/{sim}_edit_rate_proportions.txt",
+        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk"
     output:
-        terminalLog = "{outdir}/beam_no_reseeding/{sim}/{num}/terminal_{num}.log",
+        terminalLog = "{outdir}/beam_no_reseeding_ns/{sim}/{num}/terminal_{num}.log",
     params:
         xml = config['noReseedingTemplate'],
-        fileDir = "{outdir}/beam_prep/{sim}",
-        outDir = "{outdir}/beam_no_reseeding/{sim}/{num}",
-        generations = config['generations'],
+        inFileDir = "{outdir}/beam_prep/{sim}",
+        fileDir = "{outdir}/beam_no_reseeding_ns/{sim}",
+        experimentTime = config['experimentTime'],
         primaryTissue = config['primaryTissue'],
-        numParticles = config['numParticles'],
-        threads = 5
+        threads = 5,
+        mem = '2G'
     shell:
         """
-        cp {params.xml} {params.outDir}/{wildcards.num}.xml
-
-        # use LAML starting tree
-        # remove node names from newick and the origin node
-        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
 
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {wildcards.outdir}/beam_prep/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
+        initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))
@@ -182,6 +218,18 @@ rule runBeamNoReseeding:
         unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
         numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
 
+        # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
+        if [[ $numTissues -eq 1 ]]; then
+            # if the primary already exists then add a dummy
+            if echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
+                unique_tissues="$unique_tissues dummy"
+            # if not, then add the primary as the dummy
+            else
+                unique_tissues="{params.primaryTissue} $unique_tissues"
+            fi
+            numTissues=$(( numTissues + 1 ))
+        fi
+
         # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
         sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
         if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
@@ -189,13 +237,9 @@ rule runBeamNoReseeding:
         fi
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
-        # key to prep the correct rate matrix with no reseeding rates
-        # numTissueRates=$(( (numTissues * numTissues) - (numTissues + (numTissues - 1)) ))
+        # fixed for no reseeding model
         numTissueRates=2
 
-        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
-        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
-
         tissueCodeMap=""
         trailingCodeMap="? = "
         i=0
@@ -207,54 +251,57 @@ rule runBeamNoReseeding:
         tissueCodeMap+="${{trailingCodeMap}}"
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
-        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.outDir}/{wildcards.num}.xml
-        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.outDir}/{wildcards.num}.xml
-        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.outDir}/{wildcards.num}.xml
-
-        beast \
-        -threads {params.threads} \
-        -overwrite \
-        -working \
-        -D inName={wildcards.sim} \
-        -D fileDir={params.fileDir} \
-        -D newick=\"$newick\" \
-        -D generations={params.generations} \
-        -D numEditRates=\"$numEditRates\" \
-        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-        -D numTissueRates=\"$numTissueRates\" \
-        -D numTissues=\"$numTissues\" \
-        -D equalTissueFreqs=\"$equalTissueFreqs\" \
-        -D numParticles={params.numParticles} \
-        -D outname={wildcards.num} \
-        {params.outDir}/{wildcards.num}.xml > {output.terminalLog}
-        """
-    
-rule runBeamOneRateReseeding:
-    input:
-        fasta = "{outdir}/beam_prep/{sim}/{sim}.fasta",
-        dates = "{outdir}/beam_prep/{sim}/{sim}_date_traits.csv",
-        tissues = "{outdir}/beam_prep/{sim}/{sim}_tip_tissues.csv",
-        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
-    output:
-        terminalLog = "{outdir}/beam_one_rate_reseeding/{sim}/{num}/terminal_{num}.log",
-    params:
-        xml = config['oneRateReseedingTemplate'],
-        fileDir = "{outdir}/beam_prep/{sim}",
-        outDir = "{outdir}/beam_one_rate_reseeding/{sim}/{num}",
-        generations = config['generations'],
-        primaryTissue = config['primaryTissue'],
-        numParticles = config['numParticles'],
-        threads = 5
-    shell:
-        """
-        cp {params.xml} {params.outDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
 
         # use LAML starting tree
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
+        # Replace mcmc specs with nested sampling specs
+        mcmc_specs='<run id="mcmc" spec="MCMC" chainLength="\$(mcmclength)">'
+        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-6">'
+        sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
+
+        beast \
+        -threads {params.threads} \
+        -overwrite \
+        -working \
+        -D inName={wildcards.cp} \
+        -D fileDir={params.inFileDir} \
+        -D newick=\"$newick\" \
+        -D generations={params.experimentTime} \
+        -D numEditRates=\"$numEditRates\" \
+        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+        -D numTissueRates=\"$numTissueRates\" \
+        -D numTissues=\"$numTissues\" \
+        -D outname=chain_{wildcards.num} \
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
+        """
+
+rule runBeamReseedingNS:
+    input:
+        fasta = "{outdir}/beam_prep/{sim}/{sim}.fasta",
+        tissues = "{outdir}/beam_prep/{sim}/{sim}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam_prep/{sim}/{sim}_edit_rate_proportions.txt",
+        lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk"
+    output:
+        terminalLog = "{outdir}/beam_reseeding_ns/{sim}/{num}/terminal_{num}.log",
+    params:
+        xml = config['reseedingTemplate'],
+        inFileDir = "{outdir}/beam_prep/{sim}",
+        fileDir = "{outdir}/beam_reseeding_ns/{sim}",
+        experimentTime = config['experimentTime'],
+        primaryTissue = config['primaryTissue'],
+        threads = 5,
+        mem = '2G'
+    shell:
+        """
+        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+
         # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {wildcards.outdir}/beam_prep/{wildcards.sim}/{wildcards.sim}_edit_rate_proportions.txt)
+        initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
         numEditRatesPlusTwo=$(( numEditRates + 2 ))
@@ -263,6 +310,18 @@ rule runBeamOneRateReseeding:
         unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
         numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
 
+        # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
+        if [[ $numTissues -eq 1 ]]; then
+            # if the primary already exists then add a dummy
+            if echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
+                unique_tissues="$unique_tissues dummy"
+            # if not, then add the primary as the dummy
+            else
+                unique_tissues="{params.primaryTissue} $unique_tissues"
+            fi
+            numTissues=$(( numTissues + 1 ))
+        fi
+
         # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
         sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
         if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
@@ -270,12 +329,8 @@ rule runBeamOneRateReseeding:
         fi
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
 
-        # key to prep the correct rate matrix with one reseeding rate
-        # numTissueRates=$(( ((numTissues * numTissues) - (numTissues + (numTissues - 1))) + 1 ))
+        # fixed for reseeding model
         numTissueRates=3
-
-        equalTissueRates=$(echo "scale=10; 1.0 / $numTissueRates" | bc -l)
-        equalTissueFreqs=$(echo "scale=10; 1.0 / $numTissues" | bc -l)
 
         tissueCodeMap=""
         trailingCodeMap="? = "
@@ -288,55 +343,31 @@ rule runBeamOneRateReseeding:
         tissueCodeMap+="${{trailingCodeMap}}"
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
-        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.outDir}/{wildcards.num}.xml
-        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.outDir}/{wildcards.num}.xml
-        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.outDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
+
+        # use LAML starting tree
+        # remove node names from newick and the origin node
+        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+        # Replace mcmc specs with nested sampling specs
+        mcmc_specs='<run id="mcmc" spec="MCMC" chainLength="\$(mcmclength)">'
+        ns_specs='<run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-6">'
+        sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
 
         beast \
         -threads {params.threads} \
         -overwrite \
         -working \
-        -D inName={wildcards.sim} \
-        -D fileDir={params.fileDir} \
+        -D inName={wildcards.cp} \
+        -D fileDir={params.inFileDir} \
         -D newick=\"$newick\" \
-        -D generations={params.generations} \
+        -D generations={params.experimentTime} \
         -D numEditRates=\"$numEditRates\" \
         -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
-        -D equalTissueFreqs=\"$equalTissueFreqs\" \
-        -D numParticles={params.numParticles} \
-        -D outname={wildcards.num} \
-        {params.outDir}/{wildcards.num}.xml > {output.terminalLog}
+        -D outname=chain_{wildcards.num} \
+        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
-
-# rule combineNoReseedingParticles:
-#     input:
-#         logs = lambda wildcards: expand("{outdir}/beam_no_reseeding/{sim}/{num}/terminal_{num}.log", sim=wildcards.sim, num=range(0, config['numReps']), outdir=wildcards.outdir)
-#     output:
-#         log = "{outdir}/beam_no_reseeding/{sim}/combined.log",
-#         terminal = "{outdir}/beam_no_reseeding/{sim}/combined_terminal.log"
-#     params:
-#      
-#         applauncher = config['applauncher'],
-#         numParticles = config['numParticles']
-#     shell:
-#         """
-#         {params.applauncher} NSLogAnalyser -N {params.numParticles} -noposterior -log {input.logs} -out {output.log} > {output.terminal} 2>&1
-#         """
-
-# rule combineOneRateReseedingParticles:
-#     input:
-#         logs = lambda wildcards: expand("{outdir}/beam_one_rate_reseeding/{sim}/{num}/terminal_{num}.log", sim=wildcards.sim, num=range(0, config['numReps']), outdir=wildcards.outdir)
-#     output:
-#         log = "{outdir}/beam_one_rate_reseeding/{sim}/combined.log",
-#         terminal = "{outdir}/beam_one_rate_reseeding/{sim}/combined_terminal.log"
-#     params:
-#      
-#         applauncher = config['applauncher'],
-#         numParticles = config['numParticles']
-#     shell:
-#         """
-#         {params.applauncher} NSLogAnalyser -N {params.numParticles} -noposterior -log {input.logs} -out {output.log} > {output.terminal} 2>&1
-#         """
-

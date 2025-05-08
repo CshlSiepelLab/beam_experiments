@@ -3,7 +3,7 @@
 export REPO_PATH=/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_in_vitro
 
 snakemake \
---until runMach2 \
+--until runBeam \
 --latency-wait 30 \
 --use-conda \
 --use-singularity \

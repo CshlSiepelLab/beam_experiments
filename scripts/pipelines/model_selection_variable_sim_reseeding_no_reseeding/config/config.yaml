@@ -1,0 +1,28 @@
+
+# set path to data dirs
+inputpath: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/variable_migration_and_mutation_rates_8_19_24"
+
+# set where output should go (data is also copied there initially to retain original data in raw form)
+outdir: "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/model_selection_reseeding_no_reseeding_5_8_25_variable_rates_data_8_19_24"
+
+# primary tissue name
+primaryTissue: P
+
+# length of simulation/experiment
+experimentTime: 250
+
+# mutation priors for being fixed in Q matrix
+mutationPriors: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/uniform_50cells_50sites_data_7_24_24/mutation_priors.csv
+
+# set path to scripts
+scripts: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts
+applauncher: /grid/siepel/home/staklins/bin/beast/bin/applauncher
+
+# no reseeding template xml
+noReseedingTemplate: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_ns_no_reseeding.xml
+
+# one rate reseeding template xml
+reseedingTemplate: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_ns_reseeding.xml
+
+# number of particles per rep to use for nested sampling per run
+numParticles: 1

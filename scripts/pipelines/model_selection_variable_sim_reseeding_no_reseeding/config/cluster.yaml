@@ -1,0 +1,9 @@
+__default__:
+  cores: '{params.threads}'
+  mem: '{params.mem}'
+  logout: '{outdir}/job_logs/{wildcards.sim}/{rule}.out'
+  logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}.err'
+  runtime: 24:00:00
+
+
+  
