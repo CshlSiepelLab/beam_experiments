@@ -43,6 +43,17 @@ def get_elements_from_file(path):
     # else:
     #     cps = []
 
+    # ignore for mach2 run due to computational burden
+    excluded = {
+        "MMUS1495": ["CP001"],
+        "MMUS1469": ["CP001", "CP002", "CP003"],
+    }
+
+    if mouse in excluded:
+        cps = [cp for cp in cps if cp not in excluded[mouse]]
+    else:
+        cps = cps
+
     return cps
 
 

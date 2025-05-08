@@ -26,7 +26,7 @@ def get_elements_from_file(path):
     filename = f"{path}/cp_list.txt"
     with open(filename) as f:
         cps = [line.strip() for line in f if set(list(line.strip().replace("CP", ""))) != set('0')]
-    cps = [cp for cp in cps if int(cp.replace("CP", "")) > 24]    # exclude these CPs due to computational burden with Beam analysis
+    cps = [cp for cp in cps if int(cp.replace("CP", "")) > 10]    # exclude these CPs due to computational burden
 
     return cps
 
@@ -34,10 +34,9 @@ def get_elements_from_file(path):
 rule all:
     input:
         expand("{outdir}/evotracer/{sample}/asv_analysis/character_matrix.csv", outdir=config['outdir'], sample=samples),
-        expand("{outdir}/beam/{sample}/cp_list.txt", outdir=config['outdir'], sample=samples),
-        [expand("{outdir}/beam_gtr/{sample}/{cp}/terminal_{num}.log", outdir=config['outdir'], cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), sample=m, num=range(1, config['numChains']+1)) for m in samples],
-        [expand("{outdir}/mach2/{sample}/{cp}/PRL-G-0.graph", outdir=config['outdir'], sample=m, cp=get_elements_from_file(f"{config['outdir']}/beam/{m}")) for m in samples]
-                
+        expand("{outdir}/cp_split/{sample}/cp_list.txt", outdir=config['outdir'], sample=samples),
+        [expand("{outdir}/mach2_{num}/{sample}/{cp}/P-G-0.graph", outdir=config['outdir'], num=n, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for n in range(1,4) for sample in samples],
+        [expand("{outdir}/beam_gtr{num}/{sample}/{cp}/terminal_{numChain}.log", outdir=config['outdir'], num=n, numChain=c, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for n in range(1,4) for sample in samples for c in range(1,config['numChains']+1)],
 
 rule runEvotracer:
     input:
@@ -78,10 +77,10 @@ rule splitCPs:
         asv_stat = "{outdir}/evotracer/{sample}/phylogeny_analysis/phylogeny_del_ins/asv_stat.csv",
         mut_dict = "{outdir}/evotracer/{sample}/asv_analysis/mutation_profile_map.csv",
     output:
-        cpList = "{outdir}/beam/{sample}/cp_list.txt",
-        mutation_dict = "{outdir}/beam/{sample}/mutation_dict.tsv",
+        cpList = "{outdir}/cp_split/{sample}/cp_list.txt",
+        mutation_dict = "{outdir}/cp_split/{sample}/mutation_dict.tsv",
     params:
-        outdir = "{outdir}/beam/{sample}",
+        outdir = "{outdir}/cp_split/{sample}",
         scripts = config['scripts'],
         threads = 1,
         mem = '5G'
@@ -117,19 +116,57 @@ rule splitCPs:
         done
         """
 
-rule prepBeamInputs:
+rule filterForTissueScenarios:
     input:
-        cpList = "{outdir}/beam/{sample}/cp_list.txt",
-        temp_matrix = "{outdir}/beam/{sample}/{cp}/temp_matrix.tsv",
-        temp_tissues = "{outdir}/beam/{sample}/{cp}/temp_tissues.tsv",
-        mutation_dict = "{outdir}/beam/{sample}/mutation_dict.tsv",
+        cpList = "{outdir}/cp_split/{sample}/cp_list.txt",
+        temp_matrix = "{outdir}/cp_split/{sample}/{cp}/temp_matrix.tsv",
+        temp_tissues = "{outdir}/cp_split/{sample}/{cp}/temp_tissues.tsv",
     output:
-        fasta = "{outdir}/beam/{sample}/{cp}/{cp}.fasta",
-        tissues = "{outdir}/beam/{sample}/{cp}/{cp}_tip_tissues.csv",
-        editRateProportions = "{outdir}/beam/{sample}/{cp}/{cp}_edit_rate_proportions.txt",
-        expandedClonesMatrix = "{outdir}/beam/{sample}/{cp}/expanded_clones_matrix.tsv",
+        matrix1 = "{outdir}/scenario1/{sample}/{cp}/matrix.tsv",
+        tissues1 = "{outdir}/scenario1/{sample}/{cp}/tissues.tsv",
+        matrix2 = "{outdir}/scenario2/{sample}/{cp}/matrix.tsv",
+        tissues2 = "{outdir}/scenario2/{sample}/{cp}/tissues.tsv",
+        matrix3 = "{outdir}/scenario3/{sample}/{cp}/matrix.tsv",
+        tissues3 = "{outdir}/scenario3/{sample}/{cp}/tissues.tsv",
     params:
-        outdir = "{outdir}/beam/{sample}/{cp}",
+        outdir1 = "{outdir}/scenario1/{sample}/{cp}",
+        outdir2 = "{outdir}/scenario2/{sample}/{cp}",
+        outdir3 = "{outdir}/scenario3/{sample}/{cp}",
+        ignore_tissues1 = "Pd3,MetReSeedMet5.3to5,PReSeedMet3",
+        ignore_tissues2 = "Pd3,Pd24,Met5",
+        ignore_tissues3 = "Pd3",
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '5G'
+    shell:
+        """
+        # filter for scenario 1 and rename Pd24 to P
+        python {params.scripts}/formatting/filter_for_tissue_scenarios.py {input.temp_matrix} {input.temp_tissues} {params.ignore_tissues1} {params.outdir1}
+        sed -i 's/Pd24/P/g' {output.tissues1}
+
+        # filter for scenario 2 and rename reseeding tissues to P and Met5
+        python {params.scripts}/formatting/filter_for_tissue_scenarios.py {input.temp_matrix} {input.temp_tissues} {params.ignore_tissues2} {params.outdir2}
+        sed -i 's/MetReSeedMet5.3to5/Met5/g' {output.tissues2}
+        sed -i 's/PReSeedMet3/P/g' {output.tissues2}
+        
+        # filter for scenario 3 and rename Pd24 to P
+        python {params.scripts}/formatting/filter_for_tissue_scenarios.py {input.temp_matrix} {input.temp_tissues} {params.ignore_tissues3} {params.outdir3}
+        sed -i 's/Pd24/P/g' {output.tissues3}
+        """
+
+rule prepBeamInputsAllScenarios:
+    input:
+        cpList = "{outdir}/cp_split/{sample}/cp_list.txt",
+        matrix = "{outdir}/scenario{num}/{sample}/{cp}/matrix.tsv",
+        tissues = "{outdir}/scenario{num}/{sample}/{cp}/tissues.tsv",
+        mutation_dict = "{outdir}/cp_split/{sample}/mutation_dict.tsv",
+    output:
+        fasta = "{outdir}/beam_prep{num}/{sample}/{cp}/{cp}.fasta",
+        tissues = "{outdir}/beam_prep{num}/{sample}/{cp}/{cp}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam_prep{num}/{sample}/{cp}/{cp}_edit_rate_proportions.txt",
+        expandedClonesMatrix = "{outdir}/beam_prep{num}/{sample}/{cp}/expanded_clones_matrix.tsv",
+    params:
+        outdir = "{outdir}",
         scripts = config['scripts'],
         experimentTime = config['experimentTime'],
         threads = 1,
@@ -138,18 +175,32 @@ rule prepBeamInputs:
         "../../envs/networkx.yaml"
     shell:
         """
+        scenario={wildcards.num}
+
+        indirScenario={params.outdir}/scenario${{scenario}}/{wildcards.sample}/{wildcards.cp}
+        inMatrixFile=$indirScenario/matrix.tsv
+        inTissuesFile=$indirScenario/tissues.tsv
+
+        outdirScenario={params.outdir}/beam_prep${{scenario}}/{wildcards.sample}/{wildcards.cp}
+        mkdir -p $outdirScenario
+
+        fasta=$outdirScenario/{wildcards.cp}.fasta
+        tissues=$outdirScenario/{wildcards.cp}_tip_tissues.csv
+        editRateProportions=$outdirScenario/{wildcards.cp}_edit_rate_proportions.txt
+        matrixFile=$outdirScenario/expanded_clones_matrix.tsv
+        tissuesFile=$outdirScenario/expanded_clones_tissues.tsv
+
+        # Check if matrix file has more than 1 line (header only)
+        if [ $(wc -l < $inMatrixFile) -le 1 ]; then
+            touch $fasta $tissues $editRateProportions $matrixFile $tissuesFile
+            continue
+        fi
+
         # make mutations successive for each matrix and provide an updated dictionary of int to mutations
-        python {params.scripts}/formatting/matrix_to_successive_matrix.py {input.temp_matrix} {input.mutation_dict} {params.outdir}
+        python {params.scripts}/formatting/matrix_to_successive_matrix.py $inMatrixFile {input.mutation_dict} $outdirScenario
 
         # expand clones found in multiple tissues to separate entries
-        python {params.scripts}/formatting/expand_clones_multiple_tissues.py {params.outdir}/successive_char_matrix.csv {input.temp_tissues} {params.outdir}
-        matrixFile={params.outdir}/expanded_clones_matrix.tsv
-        tissuesFile={params.outdir}/expanded_clones_tissues.tsv
-
-        # make output files
-        fasta={params.outdir}/{wildcards.cp}.fasta
-        tissues={params.outdir}/{wildcards.cp}_tip_tissues.csv
-        editRateProportions={params.outdir}/{wildcards.cp}_edit_rate_proportions.txt
+        python {params.scripts}/formatting/expand_clones_multiple_tissues.py $outdirScenario/successive_char_matrix.csv $inTissuesFile $outdirScenario
 
         # write tip traits to new csv
         tail -n +2 $tissuesFile | grep -v '^$' | cut -f1,2 | tr '\\t' ',' > $tissues
@@ -185,82 +236,88 @@ rule prepBeamInputs:
 
 rule runCassiopeia:
     input:
-        cpList = "{outdir}/beam/{sample}/cp_list.txt",
-        expandedClonesMatrix = "{outdir}/beam/{sample}/{cp}/expanded_clones_matrix.tsv"
+        expandedClonesMatrix = "{outdir}/beam_prep{num}/{sample}/{cp}/expanded_clones_matrix.tsv"
     output:
-        "{outdir}/cassiopeia_greedy/{sample}/{cp}/cassiopeia_greedy_inferred.nwk"
+        casTree = "{outdir}/cassiopeia_greedy{num}/{sample}/{cp}/cassiopeia_greedy_inferred.nwk"
     params:
         cassiopeia_script = os.path.join(config['scripts'], "cassiopeia/cassiopeia_greedy.py"),
-        outputdir = "{outdir}/cassiopeia_greedy/{sample}/{cp}",
+        outputdir = "{outdir}/cassiopeia_greedy{num}/{sample}/{cp}",
         threads = 5,
         mem = '5G'
     singularity:
         "../../envs/simulate.sif"
     shell:
         """
-        # run cassiopeia greedy
-        python {params.cassiopeia_script} {input.expandedClonesMatrix} {params.outputdir}
+        # Check if matrix file has more than 1 line (header only)
+        if [ $(wc -l < {input.expandedClonesMatrix}) -le 2 ]; then
+            touch {output}
+        else
+            # run cassiopeia greedy
+            python {params.cassiopeia_script} {input.expandedClonesMatrix} {params.outputdir}
+        fi
         """
 
 rule runLAML:
     input:
-        cpList = "{outdir}/beam/{sample}/cp_list.txt",
-        expandedClonesMatrix = "{outdir}/beam/{sample}/{cp}/expanded_clones_matrix.tsv",
-        editRateProportions = "{outdir}/beam/{sample}/{cp}/{cp}_edit_rate_proportions.txt",
-        casTree = "{outdir}/cassiopeia_greedy/{sample}/{cp}/cassiopeia_greedy_inferred.nwk"
+        expandedClonesMatrix = "{outdir}/beam_prep{num}/{sample}/{cp}/expanded_clones_matrix.tsv",
+        editRateProportions = "{outdir}/beam_prep{num}/{sample}/{cp}/{cp}_edit_rate_proportions.txt",
+        casTree = "{outdir}/cassiopeia_greedy{num}/{sample}/{cp}/cassiopeia_greedy_inferred.nwk"
     output:
-        lamlTree = "{outdir}/laml/{sample}/{cp}/laml_trees.nwk",
-        lamlAnnotations = "{outdir}/laml/{sample}/{cp}/laml_annotations.txt",
-        lamlTreeNoBranchLengths = "{outdir}/laml/{sample}/{cp}/laml_trees_no_branch_lengths.nwk"
+        lamlTree = "{outdir}/laml{num}/{sample}/{cp}/laml_trees.nwk",
+        lamlAnnotations = "{outdir}/laml{num}/{sample}/{cp}/laml_annotations.txt",
+        lamlTreeNoBranchLengths = "{outdir}/laml{num}/{sample}/{cp}/laml_trees_no_branch_lengths.nwk"
     params:
         scripts = config['scripts'],
-        outputdir = "{outdir}/laml/{sample}/{cp}",
+        outputdir = "{outdir}/laml{num}/{sample}/{cp}",
         experimentTime = config['experimentTime'],
-        threads = 25,
-        mem = '5G'
+        threads = 50,
+        mem = '10G'
     conda:
         "../../envs/laml.yaml"
     shell:
         """
-        # copy matrix and replace -1 with ? for missing data
-        laml_matrix={params.outputdir}/matrix.csv
-        cp {input.expandedClonesMatrix} $laml_matrix
-        sed -i 's/-1/?/g; s/\t/,/g' $laml_matrix
+        if [ $(wc -l < {input.expandedClonesMatrix}) -le 2 ]; then
+            touch {output}
+        else
+            # copy matrix and replace -1 with ? for missing data
+            laml_matrix={params.outputdir}/matrix.csv
+            cp {input.expandedClonesMatrix} $laml_matrix
+            sed -i 's/-1/?/g; s/\t/,/g' $laml_matrix
 
-        # format mutation priors
-        reformattedObservedEditRates={params.outputdir}/reformatted_edit_rate_proportions.csv
-        echo "mutation_code,rate" > $reformattedObservedEditRates
-        numEditRates=$(wc -l < {input.editRateProportions})
-        for i in $(seq 1 $numEditRates); do
-            rate=$(sed -n "${{i}}p" {input.editRateProportions})
-            echo "$i,$rate" >> $reformattedObservedEditRates
-        done
+            # format mutation priors
+            reformattedObservedEditRates={params.outputdir}/reformatted_edit_rate_proportions.csv
+            echo "mutation_code,rate" > $reformattedObservedEditRates
+            numEditRates=$(wc -l < {input.editRateProportions})
+            for i in $(seq 1 $numEditRates); do
+                rate=$(sed -n "${{i}}p" {input.editRateProportions})
+                echo "$i,$rate" >> $reformattedObservedEditRates
+            done
 
-        mutationPriors={params.outputdir}/mutation_priors.csv
-        python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_matrix $reformattedObservedEditRates $mutationPriors
+            mutationPriors={params.outputdir}/mutation_priors.csv
+            python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_matrix $reformattedObservedEditRates $mutationPriors
 
-        # run laml
-        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --parallel
+            # run laml
+            run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --parallel
 
-        # obtain newick without branch lengths
-        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
+            # obtain newick without branch lengths
+            sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
+        fi
         """
 
 rule runBeam:
     input:
-        cpList = "{outdir}/beam/{sample}/cp_list.txt",
-        fasta = "{outdir}/beam/{sample}/{cp}/{cp}.fasta",
-        tissues = "{outdir}/beam/{sample}/{cp}/{cp}_tip_tissues.csv",
-        editRateProportions = "{outdir}/beam/{sample}/{cp}/{cp}_edit_rate_proportions.txt",
-        lamlTree = "{outdir}/laml/{sample}/{cp}/laml_trees.nwk"
+        fasta = "{outdir}/beam_prep{num}/{sample}/{cp}/{cp}.fasta",
+        tissues = "{outdir}/beam_prep{num}/{sample}/{cp}/{cp}_tip_tissues.csv",
+        editRateProportions = "{outdir}/beam_prep{num}/{sample}/{cp}/{cp}_edit_rate_proportions.txt",
+        lamlTree = "{outdir}/laml{num}/{sample}/{cp}/laml_trees.nwk"
     output:
-        terminalLog = "{outdir}/beam_gtr/{sample}/{cp}/terminal_{num}.log",
-        beamLog = "{outdir}/beam_gtr/{sample}/{cp}/chain_{num}.log",
-        beamResult = "{outdir}/beam_gtr/{sample}/{cp}/chain_{num}.trees"
+        terminalLog = "{outdir}/beam_gtr{num}/{sample}/{cp}/terminal_{numChain}.log",
+        beamLog = "{outdir}/beam_gtr{num}/{sample}/{cp}/chain_{numChain}.log",
+        beamResult = "{outdir}/beam_gtr{num}/{sample}/{cp}/chain_{numChain}.trees"
     params:
         xml = config['gtrXml'],
-        inFileDir = "{outdir}/beam/{sample}/{cp}",
-        fileDir = "{outdir}/beam_gtr/{sample}/{cp}",
+        inFileDir = "{outdir}/beam_prep{num}/{sample}/{cp}",
+        fileDir = "{outdir}/beam_gtr{num}/{sample}/{cp}",
         experimentTime = config['experimentTime'],
         primaryTissue = config['primaryTissue'],
         threads = 5,
@@ -268,99 +325,102 @@ rule runBeam:
         mcmclength = config['mcmcLength']
     shell:
         """
-        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
+        if [ $(wc -l < {input.fasta}) -le 2 ]; then
+            touch {output}
+        else
+            cp {params.xml} {params.fileDir}/{wildcards.numChain}.xml
 
-        # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
-        array=($initialEditRates)
-        numEditRates=${{#array[@]}}
-        numEditRatesPlusTwo=$(( numEditRates + 2 ))
+            # calculate necessary inputs for the editing model
+            initialEditRates=$(cat {input.editRateProportions} | tr '\n' ' ')
+            array=($initialEditRates)
+            numEditRates=${{#array[@]}}
+            numEditRatesPlusTwo=$(( numEditRates + 2 ))
 
-        # format tissue information
-        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
-        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
+            # format tissue information
+            unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
+            numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
 
-        # set the mcmc chain length based on the number of tips in the tree
-        # use a minimum of 5 million and a maximum of a user specified length
-        numTips=$(grep -c '^>' {input.fasta})
-        mcmclength=$(( numTips * 1000000 ))
-        if (( mcmclength > {params.mcmclength} )); then
-            mcmclength={params.mcmclength}
-        elif (( mcmclength < 50000000 )); then
-            mcmclength=50000000
-        fi
-
-        # fix mcmc length to the specified number instead of dynamically calculating it based on the number of tips
-        mcmclength={params.mcmclength}
-
-        # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
-        if [[ $numTissues -eq 1 ]]; then
-            # if the primary already exists then add a dummy
-            if echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
-                unique_tissues="$unique_tissues dummy"
-            # if not, then add the primary as the dummy
-            else
-                unique_tissues="{params.primaryTissue} $unique_tissues"
+            # set the mcmc chain length based on the number of tips in the tree
+            # use a minimum of 5 million and a maximum of a user specified length
+            numTips=$(grep -c '^>' {input.fasta})
+            mcmclength=$(( numTips * 1000000 ))
+            if (( mcmclength > {params.mcmclength} )); then
+                mcmclength={params.mcmclength}
+            elif (( mcmclength < 50000000 )); then
+                mcmclength=50000000
             fi
-            numTissues=$(( numTissues + 1 ))
+
+            # fix mcmc length to the specified number instead of dynamically calculating it based on the number of tips
+            mcmclength={params.mcmclength}
+
+            if [[ $numTissues -eq 1 ]] && echo "$unique_tissues" | grep -w "{params.primaryTissue}"; then
+                touch {output}
+                exit 0
+            fi
+
+            # if numTissues is 1, then the model will not run, so we need to add a dummy tissue
+            if [[ $numTissues -eq 1 ]]; then
+                unique_tissues="{params.primaryTissue} $unique_tissues"
+                numTissues=$(( numTissues + 1 ))
+            fi
+
+            # force the known primary tissue at the origin for root frequencies in the likelihood calculation
+            sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
+            if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
+                numTissues=$(( numTissues + 1 ))
+            fi
+            tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
+
+            numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
+
+            tissueCodeMap=""
+            trailingCodeMap="? = "
+            i=0
+            for tissue in $sorted_unique_tissues; do
+                tissueCodeMap+="$tissue=$i,"
+                trailingCodeMap+="$i "
+                i=$((i+1))
+            done
+            tissueCodeMap+="${{trailingCodeMap}}"
+
+            # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
+            sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.numChain}.xml
+            sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.numChain}.xml
+            sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.numChain}.xml
+
+            # use LAML starting tree
+            # remove node names from newick and the origin node
+            newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
+
+            beast \
+            -threads {params.threads} \
+            -overwrite \
+            -working \
+            -D inName={wildcards.cp} \
+            -D fileDir={params.inFileDir} \
+            -D newick=\"$newick\" \
+            -D generations={params.experimentTime} \
+            -D numEditRates=\"$numEditRates\" \
+            -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
+            -D numTissueRates=\"$numTissueRates\" \
+            -D numTissues=\"$numTissues\" \
+            -D mcmclength=\"$mcmclength\" \
+            -D outname=chain_{wildcards.numChain} \
+            {params.fileDir}/{wildcards.numChain}.xml > {output.terminalLog}
         fi
-
-        # force the known primary tissue at the origin for root frequencies in the likelihood calculation
-        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
-        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
-            numTissues=$(( numTissues + 1 ))
-        fi
-        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
-
-        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
-
-        tissueCodeMap=""
-        trailingCodeMap="? = "
-        i=0
-        for tissue in $sorted_unique_tissues; do
-            tissueCodeMap+="$tissue=$i,"
-            trailingCodeMap+="$i "
-            i=$((i+1))
-        done
-        tissueCodeMap+="${{trailingCodeMap}}"
-
-        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
-        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
-        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
-        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
-
-        # use LAML starting tree
-        # remove node names from newick and the origin node
-        newick=$(cat {input.lamlTree} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
-
-        beast \
-        -threads {params.threads} \
-        -resume \
-        -working \
-        -D inName={wildcards.cp} \
-        -D fileDir={params.inFileDir} \
-        -D newick=\"$newick\" \
-        -D generations={params.experimentTime} \
-        -D numEditRates=\"$numEditRates\" \
-        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-        -D numTissueRates=\"$numTissueRates\" \
-        -D numTissues=\"$numTissues\" \
-        -D mcmclength=\"$mcmclength\" \
-        -D outname=chain_{wildcards.num} \
-        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
 rule prepMach2:
     input:
-        lamlTreeNoBranchLengths = "{outdir}/laml/{sample}/{cp}/laml_trees_no_branch_lengths.nwk",
-        tissues = "{outdir}/beam/{sample}/{cp}/{cp}_tip_tissues.csv"
+        lamlTreeNoBranchLengths = "{outdir}/laml{num}/{sample}/{cp}/laml_trees_no_branch_lengths.nwk",
+        tissues = "{outdir}/beam_prep{num}/{sample}/{cp}/{cp}_tip_tissues.csv"
     output:
-        labeling = "{outdir}/mach2/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths.labeling",
-        edges = "{outdir}/mach2/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths.tree",
-        colors = "{outdir}/mach2/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths_colors.txt"
+        labeling = "{outdir}/mach2_prep{num}/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths.labeling",
+        edges = "{outdir}/mach2_prep{num}/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths.tree",
+        colors = "{outdir}/mach2_prep{num}/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths_colors.txt"
     params:
         scripts = config['scripts'],
-        outputdir = "{outdir}/mach2/{sample}/{cp}",
+        outputdir = "{outdir}/mach2_prep{num}/{sample}/{cp}",
         primaryTissue = config['primaryTissue'],
         threads = 1,
         mem = '1G'
@@ -368,62 +428,71 @@ rule prepMach2:
         "../../envs/simulate.sif"
     shell:
         """
-        # convert csv to tsv for leaf labels
-        sed 's/,/\\t/g' {input.tissues} > {params.outputdir}/leaf_tissues.tsv
+        if [ $(wc -l < {input.lamlTreeNoBranchLengths}) -eq 0 ]; then
+            touch {output}
+        else
+            # convert csv to tsv for leaf labels
+            sed 's/,/\\t/g' {input.tissues} > {params.outputdir}/leaf_tissues.tsv
 
-        # remove node names from newick and the origin node
-        newick=$(cat {input.lamlTreeNoBranchLengths} | sed 's/^.//' | sed 's/..$//')
-        echo "${{newick}};" > {params.outputdir}/laml_trees_no_origin_no_branch_lengths.nwk
+            # remove node names from newick and the origin node
+            newick=$(cat {input.lamlTreeNoBranchLengths} | sed 's/^.//' | sed 's/..$//')
+            echo "${{newick}};" > {params.outputdir}/laml_trees_no_origin_no_branch_lengths.nwk
 
-        # prep inputs
-        python {params.scripts}/machina/prep_machina.py {params.outputdir}/laml_trees_no_origin_no_branch_lengths.nwk {params.outputdir} {params.primaryTissue} {params.outputdir}/leaf_tissues.tsv
+            # prep inputs
+            python {params.scripts}/machina/prep_machina.py {params.outputdir}/laml_trees_no_origin_no_branch_lengths.nwk {params.outputdir} {params.primaryTissue} {params.outputdir}/leaf_tissues.tsv
 
-        # for the labeling and colors file, make sure the names do not have . or - characters
-        sed -i 's/\./_/g; s/-/_/g' {output.labeling}
-        sed -i 's/\./_/g; s/-/_/g' {output.edges}
+            # for the labeling and colors file, make sure the names do not have . or - characters
+            sed -i 's/\./_/g; s/-/_/g' {output.labeling}
+            sed -i 's/\./_/g; s/-/_/g' {output.edges}
+            sed -i 's/\./_/g; s/-/_/g' {output.colors}
+        fi
         """
 
 rule runMach2:
     input:
-        labeling = "{outdir}/mach2/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths.labeling",
-        edges = "{outdir}/mach2/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths.tree",
-        colors = "{outdir}/mach2/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths_colors.txt"
+        labeling = "{outdir}/mach2_prep{num}/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths.labeling",
+        edges = "{outdir}/mach2_prep{num}/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths.tree",
+        colors = "{outdir}/mach2_prep{num}/{sample}/{cp}/laml_trees_no_origin_no_branch_lengths_colors.txt"
     output:
-        mach2graph = "{outdir}/mach2/{sample}/{cp}/PRL-G-0.graph"
+        mach2graph = "{outdir}/mach2_{num}/{sample}/{cp}/P-G-0.graph"
     params:
         scripts = config['scripts'],
-        outputdir = "{outdir}/mach2/{sample}/{cp}",
+        outputdir = "{outdir}/mach2_{num}/{sample}/{cp}",
         primaryTissue = config['primaryTissue'],
-        threads = 50,
-        mem = '5G'
+        threads = 5,
+        mem = '1G'
     conda:
         "../../envs/mach2.yaml"
     shell:
         """
-        unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
-        num_unique_tissues=$(echo "$unique_tissues" | wc -l)
+        if [ $(wc -l < {input.labeling}) -eq 0 ]; then
+            touch {output}
+        else
+            unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
+            num_unique_tissues=$(echo "$unique_tissues" | wc -l)
 
-        if [ "$num_unique_tissues" -gt 1 ]; then
-            # check if primary tissue is in the labeling file
-            if grep -q "{params.primaryTissue}" {input.labeling}; then
-                mach2 {input.edges} {input.labeling} --colormap {input.colors} -p {params.primaryTissue} --log -o {params.outputdir} -t {params.threads}
+            if [ "$num_unique_tissues" -gt 1 ]; then
+                # check if primary tissue is in the labeling file
+                if grep -q "{params.primaryTissue}$" {input.labeling}; then
+                    mach2 {input.edges} {input.labeling} --colormap {input.colors} -p {params.primaryTissue} --log -o {params.outputdir} -t {params.threads}
 
-                # Need to touch output files to satisfy output, only if output with a different name exists
-                if [ $(ls {params.outputdir}/*.graph | wc -l) -gt 0 ] && [ ! -f {output.mach2graph} ]; then
-                    touch {output}
+                    # Need to touch output files to satisfy output, only if output with a different name exists
+                    if [ $(ls {params.outputdir}/*.graph | wc -l) -gt 0 ] && [ ! -f {output.mach2graph} ]; then
+                        touch {output}
+                    fi
+                else
+                    most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
+                    echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
+                    mach2 {input.edges} {input.labeling} --colormap {input.colors} -p $most_common_tissue --log -o {params.outputdir} -t {params.threads}
+
+                    # Need to touch output files to satisfy output, only if output with a different name exists
+                    if [ $(ls {params.outputdir}/*.graph | wc -l) -gt 0 ] && [ ! -f {output.mach2graph} ]; then
+                        touch {output}
+                    fi
                 fi
             else
-                most_common_tissue=$(cut -f2 {input.labeling} | sort | uniq -c | sort -nr | head -n 1 | awk '{{print $2}}')
-                echo "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue $most_common_tissue as the primary tissue."
-                mach2 {input.edges} {input.labeling} --colormap {input.colors} -p $most_common_tissue --log -o {params.outputdir} -t {params.threads}
-
-                # Need to touch output files to satisfy output, only if output with a different name exists
-                if [ $(ls {params.outputdir}/*.graph | wc -l) -gt 0 ] && [ ! -f {output.mach2graph} ]; then
-                    touch {output}
-                fi
+                echo "Only one unique tissue found in the labeling file, so not enough to run Mach2. Exiting."
+                touch {output}
             fi
-        else
-            echo "Only one unique tissue found in the labeling file, so not enough to run Mach2. Exiting."
-            touch {output}
         fi
         """

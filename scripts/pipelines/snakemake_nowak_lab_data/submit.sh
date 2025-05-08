@@ -4,7 +4,6 @@ export REPO_PATH=/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scr
 
 snakemake \
 -n \
---until runMach2 \
 --latency-wait 30 \
 --use-conda \
 --use-singularity \

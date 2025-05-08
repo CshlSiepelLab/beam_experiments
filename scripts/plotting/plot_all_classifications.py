@@ -42,8 +42,8 @@ def plot_data(data, outfile):
         index,
         data["met_to_met"],
         bar_width,
-        # label="BEAM Met to Met",
-        label="MACH2 Met to Met",
+        label="BEAM Met to Met",
+        # label="MACH2 Met to Met",
         color="#4c72b0",
         alpha=1.0,
     )
@@ -51,8 +51,8 @@ def plot_data(data, outfile):
         index + bar_width,
         data["met_to_primary"],
         bar_width,
-        # label="BEAM Primary Reseeding",
-        label="MACH2 Primary Reseeding",
+        label="BEAM Primary Reseeding",
+        # label="MACH2 Primary Reseeding",
         color="#dd8452",
         alpha=1.0,
     )
@@ -67,9 +67,9 @@ def plot_data(data, outfile):
     ax.set_xticklabels(data["threshold"].astype(str), fontsize=fs)
     ax.tick_params(axis="y", labelsize=fs)
 
-    # # Optional: drow a horizontal line at specified y-value
-    # ax.axhline(y=84.30913348946136, color="#3a5f8a", linestyle="--", linewidth=2, label="MACH2 Met to Met")    # mach2 met to met average (value obtained seperately)
-    # ax.axhline(y=36.0655737704918, color="#b36238", linestyle="--", linewidth=2, label="MACH2 Primary Reseeding")    # mach2 primary reseeding average (value obtained seperately)
+    # Optional: drow a horizontal line at specified y-value
+    ax.axhline(y=43.60465116279069, color="#3a5f8a", linestyle="--", linewidth=2, label="MACH2 Met to Met")    # mach2 met to met average (value obtained seperately)
+    ax.axhline(y=24.003322259136215, color="#b36238", linestyle="--", linewidth=2, label="MACH2 Primary Reseeding")    # mach2 primary reseeding average (value obtained seperately)
 
     # Add legend with improved placement
     ax.legend(loc="upper left", bbox_to_anchor=(1.02, 0.75), frameon=False, fontsize=16)
