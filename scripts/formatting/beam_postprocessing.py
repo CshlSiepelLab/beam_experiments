@@ -42,7 +42,7 @@ results.plot_probability_graph(
 
 # plot the probability consensus graph for several thresholds
 results.plot_thresholded_graph(
-    thresholds=thresholds,
+    threshold=thresholds,
     output_file_prefix=outprefix_thresholded,
 )
 

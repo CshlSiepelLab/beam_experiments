@@ -301,12 +301,11 @@ rule beamPostprocessing:
         samples = "{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf",
         migrationCountMatrix = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_count_matrix.csv",
         mutualInformation = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt",
-        metastasisTimingPlot = "{outdir}/beam_gtr/{sim}/metastasis_timing_prob.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outprefix_thresholded = "{outdir}/beam_gtr/{sim}/thresholded_migration_graph_",
-        outprefix_samples = "{outdir}/beam_gtr/{sim}/combined_",
+        outprefix_thresholded = "{outdir}/beam_gtr/{sim}/thresholded_migration_graph",
+        outprefix_samples = "{outdir}/beam_gtr/{sim}/combined",
         outprefix_metastasis_timing = "{outdir}/beam_gtr/{sim}/metastasis_timing",
         experimentTime = config['generations'],
         numSamples = 10,

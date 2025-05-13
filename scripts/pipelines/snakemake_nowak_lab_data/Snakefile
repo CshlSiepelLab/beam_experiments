@@ -575,12 +575,11 @@ rule beamPostprocessing:
         samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf",
         migrationCountMatrix = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_count_matrix.csv",
         mutualInformation = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt",
-        metastasisTimingPlot = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf"
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outprefix_thresholded = "{outdir}/beam_gtr/{mouse}/{cp}/thresholded_migration_graph_",
-        outprefix_samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined_",
+        outprefix_thresholded = "{outdir}/beam_gtr/{mouse}/{cp}/thresholded_migration_graph",
+        outprefix_samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined",
         outprefix_metastasis_timing = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         numSamples = 10,

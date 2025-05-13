@@ -311,8 +311,8 @@ rule beamPostprocessing:
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
-        outprefix_thresholded = "{outdir}/beam/{sim}_{threshold}/thresholded_migration_graph_",
-        outprefix_samples = "{outdir}/beam/{sim}_{threshold}/combined_",
+        outprefix_thresholded = "{outdir}/beam/{sim}_{threshold}/thresholded_migration_graph",
+        outprefix_samples = "{outdir}/beam/{sim}_{threshold}/combined",
         experimentTime = config['generations'],
         numSamples = 10,
         threads = 5,

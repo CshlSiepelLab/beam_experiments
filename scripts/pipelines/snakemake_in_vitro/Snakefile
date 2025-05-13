@@ -35,8 +35,12 @@ rule all:
     input:
         expand("{outdir}/evotracer/{sample}/asv_analysis/character_matrix.csv", outdir=config['outdir'], sample=samples),
         expand("{outdir}/cp_split/{sample}/cp_list.txt", outdir=config['outdir'], sample=samples),
-        [expand("{outdir}/mach2_{num}/{sample}/{cp}/P-G-0.graph", outdir=config['outdir'], num=n, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for n in range(1,4) for sample in samples],
+        [expand("{outdir}/mach2_{num}/{sample}/{cp}/consensus_graph.txt", outdir=config['outdir'], num=n, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for n in range(1,4) for sample in samples],
         [expand("{outdir}/beam_gtr{num}/{sample}/{cp}/terminal_{numChain}.log", outdir=config['outdir'], num=n, numChain=c, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for n in range(1,4) for sample in samples for c in range(1,config['numChains']+1)],
+        expand("{outdir}/beam_gtr{num}/{sample}/{cp}/combined.log", outdir=config['outdir'], num=range(1,4), sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")),
+        [expand("{outdir}/beam_gtr{num}/{sample}/{cp}/posterior_prob_graph.csv", outdir=config['outdir'], num=range(1,4), sample=sample, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for sample in samples],
+        [expand("{outdir}/performance{num}/{sample}/{cp}/beam_performance.csv", outdir=config['outdir'], num=range(1,4), sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for sample in samples],
+        [expand("{outdir}/performance{num}/{sample}/{cp}/mach2_performance.csv", outdir=config['outdir'], num=range(1,4), sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for sample in samples]
 
 rule runEvotracer:
     input:
@@ -325,7 +329,12 @@ rule runBeam:
         mcmclength = config['mcmcLength']
     shell:
         """
-        if [ $(wc -l < {input.fasta}) -le 2 ]; then
+        # Only run if there are enough cells and enough non-primary tissue cells
+        primary_count=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq -c | grep -w "{params.primaryTissue}" | awk '{{print $1}}')
+        total_count=$(wc -l < {input.tissues})
+        non_primary_count=$(( total_count - primary_count ))
+        
+        if [ $(wc -l < {input.fasta}) -le 4 ] || [ $non_primary_count -le 1 ]; then
             touch {output}
         else
             cp {params.xml} {params.fileDir}/{wildcards.numChain}.xml
@@ -407,6 +416,106 @@ rule runBeam:
             -D mcmclength=\"$mcmclength\" \
             -D outname=chain_{wildcards.numChain} \
             {params.fileDir}/{wildcards.numChain}.xml > {output.terminalLog}
+        fi
+        """
+
+rule combineBeamChains:
+    input:
+        terminalLog = lambda wildcards: expand("{outdir}/beam_gtr{num}/{sample}/{cp}/terminal_{numChain}.log", numChain=range(1, config['numChains']+1), num=wildcards.num, cp=wildcards.cp, sample=wildcards.sample, outdir=wildcards.outdir),
+        beamLogs = lambda wildcards: expand("{outdir}/beam_gtr{num}/{sample}/{cp}/chain_{numChain}.log", numChain=range(1, config['numChains']+1), num=wildcards.num, cp=wildcards.cp, sample=wildcards.sample, outdir=wildcards.outdir),
+        beamResults = lambda wildcards: expand("{outdir}/beam_gtr{num}/{sample}/{cp}/chain_{numChain}.trees", numChain=range(1, config['numChains']+1), num=wildcards.num, cp=wildcards.cp, sample=wildcards.sample, outdir=wildcards.outdir),
+    output:
+        combinedLog = "{outdir}/beam_gtr{num}/{sample}/{cp}/combined.log",
+        combinedTrees = "{outdir}/beam_gtr{num}/{sample}/{cp}/combined.trees",
+    params:
+        logcombiner = config['logcombiner'],
+        essCutoff = 50,
+        threads = 1,
+        mem = '5G'
+    shell:
+        """
+        if [ $(wc -l < $(echo {input.terminalLog} | cut -d' ' -f1)) -eq 0 ]; then
+            touch {output}
+        else
+            # find chains that have converged based on ess threshold specified
+            log_files=""
+            trees_files=""
+            ess_convergences=()
+            for file in {input.beamLogs}; do
+                terminal_log=$(echo $file | sed 's/chain_/terminal_/')
+                
+                # only use mcmc chains that have converged since many appear to get lost in the search space
+                ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
+                if (( $(echo "$ess_convergence > {params.essCutoff}" | bc -l) )); then
+                    log_files+="-log $file "
+                    trees_file=$(echo $file | sed 's/\.log$/.trees/')
+                    trees_files+="-log $trees_file "
+                else
+                    echo "$file did not converge, so not including it in the final output"
+                fi
+            done
+
+            # combine logs and trees that passed
+            if [ -n "$log_files" ]; then
+                {params.logcombiner} $log_files -o {output.combinedLog}
+                {params.logcombiner} $trees_files -o {output.combinedTrees}
+            else
+                echo "No chains passed the ESS threshold of {params.essCutoff}, so not combining any chains"
+            fi
+        fi
+        """
+
+rule beamPostprocessing:
+    input:
+        combinedTrees = "{outdir}/beam_gtr{num}/{sample}/{cp}/combined.trees",
+        combinedLog = "{outdir}/beam_gtr{num}/{sample}/{cp}/combined.log"
+    output:
+        graphPosterior = "{outdir}/beam_gtr{num}/{sample}/{cp}/posterior_prob_graph.csv",
+        probabilityPlot = "{outdir}/beam_gtr{num}/{sample}/{cp}/probability_migration_graph.pdf",
+        samples = "{outdir}/beam_gtr{num}/{sample}/{cp}/combined_migration_graph_1.pdf",
+        migrationCountMatrix = "{outdir}/beam_gtr{num}/{sample}/{cp}/posterior_trees_migration_count_matrix.csv",
+        mutualInformation = "{outdir}/beam_gtr{num}/{sample}/{cp}/posterior_trees_migration_mutual_information.txt",
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outprefix_thresholded = "{outdir}/beam_gtr{num}/{sample}/{cp}/thresholded_migration_graph",
+        outprefix_samples = "{outdir}/beam_gtr{num}/{sample}/{cp}/combined",
+        outprefix_metastasis_timing = "{outdir}/beam_gtr{num}/{sample}/{cp}/metastasis_timing",
+        experimentTime = config['experimentTime'],
+        numSamples = 10,
+        consensusTimingThreshold = 0.5,
+        threads = 5,
+        mem = "1G"
+    shell:
+        """
+        # work around until beam visualization is pip installable
+        source ~/miniforge3/etc/profile.d/conda.sh 
+        conda activate beam_visualization
+
+        export QT_QPA_PLATFORM=offscreen;
+
+        if [ ! -s {input.combinedTrees} ]; then
+            echo "Combined trees file is empty. Exiting."
+            touch {output}
+        else
+            thresholds="0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99"
+            
+            python {params.scripts}/formatting/beam_postprocessing.py \
+                {input.combinedTrees} \
+                {input.combinedLog} \
+                {params.primaryTissue} \
+                {output.graphPosterior} \
+                {params.threads} \
+                {output.probabilityPlot} \
+                $thresholds \
+                {params.outprefix_thresholded} \
+                {params.outprefix_samples} \
+                {params.numSamples} \
+                {params.experimentTime} \
+                {output.migrationCountMatrix} \
+                {output.mutualInformation} \
+                {params.outprefix_metastasis_timing} \
+                {params.consensusTimingThreshold}
         fi
         """
 
@@ -494,5 +603,76 @@ rule runMach2:
                 echo "Only one unique tissue found in the labeling file, so not enough to run Mach2. Exiting."
                 touch {output}
             fi
+        fi
+        """
+
+rule gatherMach2Results:
+    input:
+        mach2graph = "{outdir}/mach2_{num}/{sample}/{cp}/P-G-0.graph"
+    output:
+        mach2Combined = "{outdir}/mach2_{num}/{sample}/{cp}/graph_results_combined.txt",
+        mach2Consensus = "{outdir}/mach2_{num}/{sample}/{cp}/consensus_graph.txt"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/mach2_{num}/{sample}/{cp}",
+        threads = 1,
+        mem = '1G'
+    shell:
+        """
+        # get all graph files
+        results=$(find $(dirname {input.mach2graph}) -name "*.graph")
+
+        # combine all results
+        echo "result_num,source,target,count" > {output.mach2Combined}
+        for file in $results; do
+            result_num=$(basename $file | cut -d'-' -f3 | cut -d'.' -f1)
+            while IFS= read -r line; do
+                echo "$result_num,$(echo $line | tr ' ' ',')" >> {output.mach2Combined}
+            done < "$file"
+        done
+
+        # get the probability weighted edge consensus graph
+        python {params.scripts}/formatting/convert_mach2_results_to_consensus_graph.py {output.mach2Combined} {output.mach2Consensus}
+        """
+
+rule BeamPerformance:
+    input:
+        beamGraph = "{outdir}/beam_gtr{num}/{sample}/{cp}/posterior_prob_graph.csv",
+    output:
+        performance = "{outdir}/performance{num}/{sample}/{cp}/beam_performance.csv"
+    params:
+        scripts = config['scripts'],
+        groundTruth = lambda wildcards: config['scenario'][int(wildcards.num)],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        if [ -s {input.beamGraph} ]; then
+            python {params.scripts}/statistics/quantify_in_vitro_performance_beam_mach2_ground_truth.py {input.beamGraph} {params.groundTruth} {output.performance}
+        else
+            touch {output}
+        fi
+        """
+
+rule Mach2Performance:
+    input:
+        mach2Graph = "{outdir}/mach2_{num}/{sample}/{cp}/consensus_graph.txt",
+    output:
+        performance = "{outdir}/performance{num}/{sample}/{cp}/mach2_performance.csv"
+    params:
+        scripts = config['scripts'],
+        groundTruth = lambda wildcards: config['scenario'][int(wildcards.num)],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/matplotlib.yaml"
+    shell:
+        """
+        if [ -s {input.mach2Graph} ]; then
+            python {params.scripts}/statistics/quantify_in_vitro_performance_beam_mach2_ground_truth.py {input.mach2Graph} {params.groundTruth} {output.performance}
+        else
+            touch {output}
         fi
         """

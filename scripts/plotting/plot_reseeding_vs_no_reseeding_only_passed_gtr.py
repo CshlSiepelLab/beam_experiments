@@ -31,13 +31,15 @@ def plot_bayes_factors(file_path1, file_path2, outfile, bin_width=1, threshold=1
 
     # Add vertical line at threshold
     plt.axvline(x=threshold, color="black", linestyle="--", linewidth=2)
+    plt.axvline(x=-threshold, color="black", linestyle="--", linewidth=2)
 
     # Add count annotations
     fs = 20
-    count_above_threshold = sum(df2[bf_column2] >= threshold)
-    count_below_threshold = sum(df2[bf_column2] < threshold)
+    count_above_threshold = sum(df2[bf_column2] > threshold)
+    count_below_threshold = sum(df2[bf_column2] < -threshold)
+    count_middle = sum((df2[bf_column2] > -threshold) & (df2[bf_column2] < threshold))
     plt.title(
-        f"Count ≥ {threshold}: {count_above_threshold}\nCount < {threshold}: {count_below_threshold}",
+        f"Count > {threshold}: {count_above_threshold}\nCount < {-threshold}: {count_below_threshold}\nCount between {-threshold} and {threshold}: {count_middle}",
         fontsize=fs,
     )
 
