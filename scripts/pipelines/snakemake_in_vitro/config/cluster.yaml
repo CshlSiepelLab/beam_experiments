@@ -12,3 +12,7 @@ runEvotracer:
 splitCPs:
   logout: '{wildcards.outdir}/job_logs/{wildcards.sample}/{rule}.out'
   logerror: '{wildcards.outdir}/job_logs/{wildcards.sample}/{rule}.err'
+
+combinePerformanceMetrics:
+  logout: '{wildcards.outdir}/job_logs/{rule}.out'
+  logerror: '{wildcards.outdir}/job_logs/{rule}.err'

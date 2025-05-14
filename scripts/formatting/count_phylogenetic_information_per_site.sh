@@ -48,3 +48,16 @@ sed -i '/CP00/d' $outFile
 # Manually removed the quinn CPs that were not analyzed
 
 
+# In-vitro data
+inDir="/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/in_vitro_data_4_24_25/cp_split"
+outFile="/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/in_vitro_data_4_24_25/phylogenetic_information_per_site_in_vitro.csv"
+
+echo "name,average_informative_characters_per_site" > $outFile
+
+matrixFiles=$(find $inDir -type f -name "temp_matrix.tsv")
+
+for matrixFile in $matrixFiles; do
+    name=$(basename $(dirname $matrixFile))
+    val=$(python /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts/formatting/count_phylogenetic_information_per_site.py $matrixFile | grep "Average informative characters per site:" | cut -d " " -f 6)
+    echo "$name,$val" >> $outFile
+done
