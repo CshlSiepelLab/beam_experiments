@@ -6,6 +6,8 @@ import seaborn as sns
 import sys
 import numpy as np
 from matplotlib.colors import ListedColormap
+import random
+import colorsys
 
 
 def generate_extended_palette(n_colors):
@@ -30,7 +32,6 @@ def generate_extended_palette(n_colors):
         extended_palette = [color for color in extended_palette if not is_grey(color)]
 
     return extended_palette[:n_colors]
-
 
 def main(barcode_file, tissue_file, primary_tissue, outfile):
     # Read input TSV files
@@ -102,8 +103,12 @@ def main(barcode_file, tissue_file, primary_tissue, outfile):
     values = sorted(np.unique(barcode_df.values))
     if 0 in values:
         extended_palette = ["white"] + extended_palette
+        value_to_index = {key: value+1 for key, value in value_to_index.items()}
+        value_to_index[0] = 0
     if -1 in values:
         extended_palette = ["grey"] + extended_palette
+        value_to_index = {key: value+1 for key, value in value_to_index.items()}
+        value_to_index[-1] = 0
     index_to_color = [extended_palette[i] for i, val in enumerate(values)]
 
     # Create a custom colormap for the dashed line fill
