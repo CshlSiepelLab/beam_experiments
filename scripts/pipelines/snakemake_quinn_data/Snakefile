@@ -60,6 +60,7 @@ rule all:
         # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 151), outdir=outdir) for m in mouse_ids],
         # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 151), outdir=outdir) for m in mouse_ids],
         # [expand("{outdir}/beam_gtr_noRLdirectSeeding_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 51), outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/fitch_count/{mouse}/{cp}/fitchcount_classifications.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
 
 rule plotCountsPerCP:
     input:
@@ -1116,3 +1117,64 @@ rule runBeamGtrNoRLDirectSeeding:
             {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         fi
         """
+
+rule modifyLamlTree:
+    input:
+        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
+    output:
+        lamlTreeNoOrigin = "{outdir}/fitch_count/{mouse}/{cp}/laml_trees_no_origin.nwk"
+    params:
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/laml.yaml"
+    shell:
+        """
+        # remove fake root from tree
+        fixed_newick=$(sed "s/);//g" {input.lamlTree})
+        fixed_newick="${{fixed_newick:1}});"
+        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
+        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
+        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
+        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
+
+        echo $modified_newick > {output.lamlTreeNoOrigin}
+        """
+
+rule runFitchCount:
+    input:
+        lamlTreeNoOrigin = "{outdir}/fitch_count/{mouse}/{cp}/laml_trees_no_origin.nwk",
+        tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv",
+    output:
+        fitchHartigan = "{outdir}/fitch_count/{mouse}/{cp}/cassiopeia_fitch_hartigan_result.nwk"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/fitch_count/{mouse}/{cp}",
+        threads = 1,
+        mem = '1G'
+    singularity:
+        "../../envs/simulate.sif"
+    shell:
+        """
+        # remove fake root from tree
+        python {params.scripts}/cassiopeia/cassiopeia_fitch_hartigan.py {input.lamlTreeNoOrigin} {input.tissues} {params.outputdir}
+        """
+
+rule classifyFitchCount:
+    input:
+        fitchHartigan = "{outdir}/fitch_count/{mouse}/{cp}/cassiopeia_fitch_hartigan_result.nwk"
+    output:
+        classifications = "{outdir}/fitch_count/{mouse}/{cp}/fitchcount_classifications.csv",
+    params:
+        primaryTissue = config['primaryTissue'],
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
+    conda:
+        "../../envs/laml.yaml"
+    shell:
+        """
+        python {params.scripts}/formatting/classifications_from_newick.py {input.fitchHartigan} {params.primaryTissue} {output.classifications}
+        """
+
+

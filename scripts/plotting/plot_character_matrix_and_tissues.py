@@ -150,7 +150,7 @@ def main(barcode_file, tissue_file, primary_tissue, outfile):
 
     # Set font size for x and y axis tick labels and titles
     fs = 18
-    ax.tick_params(axis="x", labelsize=fs)
+    ax.tick_params(axis="x", labelsize=fs, rotation=45)
     ax.tick_params(axis="y", labelsize=fs)
     ax.set_title(ax.get_title(), fontsize=fs)
     ax.set_xlabel(ax.get_xlabel(), fontsize=fs)

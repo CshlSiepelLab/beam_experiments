@@ -19,10 +19,10 @@ scripts: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts
 applauncher: /grid/siepel/home/staklins/bin/beast/bin/applauncher
 
 # no reseeding template xml
-noReseedingTemplate: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_ns_no_reseeding.xml
+noReseedingTemplate: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_no_reseeding_ns.xml
 
 # one rate reseeding template xml
-reseedingTemplate: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_ns_reseeding.xml
+reseedingTemplate: /grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/inputs/beam_reseeding_ns.xml
 
 # number of particles per rep to use for nested sampling per run
 numParticles: 1

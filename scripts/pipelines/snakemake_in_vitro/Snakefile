@@ -21,17 +21,28 @@ for file in glob.glob(os.path.join(config['fastqPath'], "*.fastq.gz")):
 #     for fastq in fastqs:
 #         print(f"    {fastq}")
 
-def get_elements_from_file(path):
+def get_elements_from_file(path, n):
     # to get all cps
     filename = f"{path}/cp_list.txt"
     with open(filename) as f:
         cps = [line.strip() for line in f if set(list(line.strip().replace("CP", ""))) != set('0')]
 
-    # cps with phylogenetic information
-    informative_cps = ['CP001', 'CP002', 'CP003', 'CP004', 'CP005', 'CP006', 'CP007', 'CP008', 'CP009', 'CP010', 'CP011', 'CP012', 'CP013', 'CP014', 'CP015', 'CP016', 'CP017', 'CP018', 'CP019', 'CP020', 'CP021', 'CP022', 'CP023', 'CP024', 'CP025', 'CP026', 'CP027', 'CP028', 'CP029', 'CP030', 'CP031', 'CP032', 'CP033', 'CP034', 'CP035', 'CP036', 'CP037', 'CP038', 'CP040', 'CP045', 'CP054', 'CP055', 'CP061', 'CP065', 'CP093', 'CP121', 'CP190']
-    cps = [cp for cp in cps if cp in informative_cps]
+    # # cps with phylogenetic information
+    # informative_cps = ['CP001', 'CP002', 'CP003', 'CP004', 'CP005', 'CP006', 'CP007', 'CP008', 'CP009', 'CP010', 'CP011', 'CP012', 'CP013', 'CP014', 'CP015', 'CP016', 'CP017', 'CP018', 'CP019', 'CP020', 'CP021', 'CP022', 'CP023', 'CP024', 'CP025', 'CP026', 'CP027', 'CP028', 'CP029', 'CP030', 'CP031', 'CP032', 'CP033', 'CP034', 'CP035', 'CP036', 'CP037', 'CP038', 'CP040', 'CP045', 'CP054', 'CP055', 'CP061', 'CP065', 'CP093', 'CP121', 'CP190']
+    # cps = [cp for cp in cps if cp in informative_cps]
 
-    cps = [cp for cp in cps if int(cp.replace("CP", "")) > 10]    # exclude these CPs due to computational burden
+    cps = [cp for cp in cps if int(cp.replace("CP", "")) <= 10]
+
+    cps = [cp for cp in cps if int(cp.replace("CP", "")) > 2]    # exclude these CPs due to computational burden
+
+    # # Keep only CPs with the necessary all tissues for that scenario
+    # if n == 1:
+    #     include_scenario = ['CP020', 'CP021', 'CP032', 'CP035', 'CP027', 'CP013', 'CP054', 'CP018', 'CP038']
+    # elif n == 2:
+    #     include_scenario = ['CP021', 'CP035', 'CP054', 'CP017', 'CP023']
+    # elif n == 3:
+    #     include_scenario = ['CP021', 'CP035', 'CP054']
+    # cps = [cp for cp in cps if cp in include_scenario]
 
     return cps
 
@@ -40,13 +51,12 @@ rule all:
     input:
         expand("{outdir}/evotracer/{sample}/asv_analysis/character_matrix.csv", outdir=config['outdir'], sample=samples),
         expand("{outdir}/cp_split/{sample}/cp_list.txt", outdir=config['outdir'], sample=samples),
-        [expand("{outdir}/mach2_{num}/{sample}/{cp}/consensus_graph.txt", outdir=config['outdir'], num=n, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for n in range(1,4) for sample in samples],
-        [expand("{outdir}/beam_gtr{num}/{sample}/{cp}/terminal_{numChain}.log", outdir=config['outdir'], num=n, numChain=c, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for n in range(1,4) for sample in samples for c in range(1,config['numChains']+1)],
-        expand("{outdir}/beam_gtr{num}/{sample}/{cp}/combined.log", outdir=config['outdir'], num=range(1,4), sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")),
-        [expand("{outdir}/beam_gtr{num}/{sample}/{cp}/posterior_prob_graph.csv", outdir=config['outdir'], num=range(1,4), sample=sample, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for sample in samples],
-        [expand("{outdir}/performance{num}/{sample}/{cp}/beam_performance.csv", outdir=config['outdir'], num=range(1,4), sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for sample in samples],
-        [expand("{outdir}/performance{num}/{sample}/{cp}/mach2_performance.csv", outdir=config['outdir'], num=range(1,4), sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}")) for sample in samples],
-        expand("{outdir}/combined_performance_metrics.csv", outdir=config['outdir'])
+        [expand("{outdir}/mach2_{num}/{sample}/{cp}/consensus_graph.txt", outdir=config['outdir'], num=n, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}", n)) for n in range(1,4) for sample in samples],
+        [expand("{outdir}/beam_gtr{num}/{sample}/{cp}/terminal_{numChain}.log", outdir=config['outdir'], num=n, numChain=c, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}", n)) for n in range(1,4) for sample in samples for c in range(1,config['numChains']+1)],
+        [expand("{outdir}/beam_gtr{num}/{sample}/{cp}/combined.log", outdir=config['outdir'], num=n, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}", n)) for n in range(1,4) for sample in samples],
+        [expand("{outdir}/beam_gtr{num}/{sample}/{cp}/posterior_prob_graph.csv", outdir=config['outdir'], num=n, sample=sample, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}", n)) for n in range(1,4) for sample in samples],
+        [expand("{outdir}/performance{num}/{sample}/{cp}/beam_performance.csv", outdir=config['outdir'], num=n, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}", n)) for n in range(1,4) for sample in samples],
+        [expand("{outdir}/performance{num}/{sample}/{cp}/mach2_performance.csv", outdir=config['outdir'], num=n, sample=samples, cp=get_elements_from_file(f"{config['outdir']}/cp_split/{sample}", n)) for n in range(1,4) for sample in samples],
 
 rule runEvotracer:
     input:
@@ -409,7 +419,7 @@ rule runBeam:
 
             beast \
             -threads {params.threads} \
-            -resume \
+            -overwrite \
             -working \
             -D inName={wildcards.cp} \
             -D fileDir={params.inFileDir} \
@@ -574,8 +584,8 @@ rule runMach2:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2_{num}/{sample}/{cp}",
         primaryTissue = config['primaryTissue'],
-        threads = 50,
-        mem = '8G'
+        threads = 150,
+        mem = '3G'
     conda:
         "../../envs/mach2.yaml"
     shell:

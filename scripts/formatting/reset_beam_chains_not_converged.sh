@@ -13,6 +13,12 @@ for cp in $(seq 11 30); do
         if [[ "$ess_above_200" == "false" ]]; then
             echo $cp $i
             rm $terminal_files
+            
+            dir_to_remove=$(dirname $terminal_files)
+            find $dir_to_remove -type f -name "*.pdf" -delete
+            find $dir_to_remove -type f -name "*.csv" -delete
+            find $dir_to_remove -type f -name "*.txt" -delete
+            find $dir_to_remove -type f -name "*.pkl" -delete
         fi
     done
 done

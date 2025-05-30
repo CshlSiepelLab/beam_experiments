@@ -21,7 +21,23 @@ with open(chosen_non_reseeding_path, 'r') as f:
 sims = [sim for sim in sims if sim in all_reseeding or sim in chosen_non_reseeding]
 
 # specific sims that need more particles to reduce the threshold for the minimum bayes factor
-# sims = []
+sims = [
+    "mig5_mut005_2289",
+    "mig5_mut0025_983",
+    "mig6_mut001_8905",
+    "mig5_mut0025_2468",
+    "mig5_mut0025_1772",
+    "mig5_mut0025_5291",
+    "mig6_mut0025_4973",
+    "mig6_mut01_18521",
+    "mig5_mut0025_32617",
+    "mig5_mut001_9405",
+    "mig5_mut005_1707",
+    "mig5_mut001_1688",
+    "mig5_mut01_21317",
+    "mig6_mut001_30120",
+    "mig5_mut005_10837"
+]
 
 
 outdir = config['outdir']
@@ -32,8 +48,8 @@ rule all:
         expand("{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/true_reseeding_classification/{sim}/reseeding.txt", sim=sims, outdir=outdir),
         expand("{outdir}/beam_prep/{sim}/{sim}.fasta", sim=sims, outdir=outdir),
-        # expand("{outdir}/beam_reseeding_ns/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, 1), outdir=outdir),
-        # expand("{outdir}/beam_no_reseeding_ns/{sim}/{num}/terminal_{num}.log", sim=sims, num=range(0, 1), outdir=outdir),
+        expand("{outdir}/beam_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 701), outdir=outdir),
+        expand("{outdir}/beam_no_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 701), outdir=outdir),
 
 rule labelTrueTreeWithTissues:
     input:
@@ -119,7 +135,7 @@ rule runLAML:
         scripts = config['scripts'],
         outputdir = "{outdir}/laml/{sim}",
         experimentTime = config['experimentTime'],
-        threads = 25,
+        threads = 10,
         mem = '1G'
     conda:
         "../../envs/laml.yaml"
@@ -145,7 +161,7 @@ rule runLAML:
         run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --parallel
 
         # remove fake root from tree
-        fixed_newick=$(sed "s/);//g" {output.lamlTreeOriginal})
+        fixed_newick=$(sed "s/);//g" {output.lamlTree})
         fixed_newick="${{fixed_newick:1}});"
         last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
         second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
@@ -195,7 +211,7 @@ rule runBeamNoReseedingNS:
         editRateProportions = "{outdir}/beam_prep/{sim}/{sim}_edit_rate_proportions.txt",
         lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk"
     output:
-        terminalLog = "{outdir}/beam_no_reseeding_ns/{sim}/{num}/terminal_{num}.log",
+        terminalLog = "{outdir}/beam_no_reseeding_ns/{sim}/terminal_{num}.log",
     params:
         xml = config['noReseedingTemplate'],
         inFileDir = "{outdir}/beam_prep/{sim}",
@@ -268,7 +284,7 @@ rule runBeamNoReseedingNS:
         -threads {params.threads} \
         -overwrite \
         -working \
-        -D inName={wildcards.cp} \
+        -D inName={wildcards.sim} \
         -D fileDir={params.inFileDir} \
         -D newick=\"$newick\" \
         -D generations={params.experimentTime} \
@@ -287,7 +303,7 @@ rule runBeamReseedingNS:
         editRateProportions = "{outdir}/beam_prep/{sim}/{sim}_edit_rate_proportions.txt",
         lamlTree = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk"
     output:
-        terminalLog = "{outdir}/beam_reseeding_ns/{sim}/{num}/terminal_{num}.log",
+        terminalLog = "{outdir}/beam_reseeding_ns/{sim}/terminal_{num}.log",
     params:
         xml = config['reseedingTemplate'],
         inFileDir = "{outdir}/beam_prep/{sim}",
@@ -360,7 +376,7 @@ rule runBeamReseedingNS:
         -threads {params.threads} \
         -overwrite \
         -working \
-        -D inName={wildcards.cp} \
+        -D inName={wildcards.sim} \
         -D fileDir={params.inFileDir} \
         -D newick=\"$newick\" \
         -D generations={params.experimentTime} \

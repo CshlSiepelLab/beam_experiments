@@ -3,7 +3,6 @@
 export REPO_PATH=/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_variable_sim_reseeding_no_reseeding
 
 snakemake \
--n \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
 --latency-wait 300 \

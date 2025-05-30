@@ -3,7 +3,6 @@
 export REPO_PATH=/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_quinn_data
 
 snakemake \
--n \
 --use-conda \
 --use-singularity \
 --singularity-args "--bind $HOME/" \

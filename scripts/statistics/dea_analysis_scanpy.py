@@ -171,19 +171,46 @@ rl_vs_norl = create_DE_df(adata_ll, "model", "RL", "noRL", result, method='wilco
 rl_vs_norl_sig = rl_vs_norl[(rl_vs_norl['qval'] < 0.05) & (np.abs(rl_vs_norl['log2fc']) > np.log2(1.5))]
 rl_vs_norl_sig = rl_vs_norl_sig.sort_values(by='log2fc', ascending=False)
 
+# Write the significant genes to a file
+rl_vs_norl_sig.to_csv("rl_vs_norl_sig_genes.tsv", sep="\t", index=False)
+
+# For the significant genes, get the proportion of cells that express the gene in each model and write to a file
+prop_expr = []
+for gene in rl_vs_norl_sig['gene']:
+    # Get cells for each model
+    rl_cells = adata_ll[adata_ll.obs['model'] == 'RL', gene]
+    norl_cells = adata_ll[adata_ll.obs['model'] == 'noRL', gene]
+    
+    # Calculate percentage of cells with non-zero expression
+    rl_prop = (rl_cells.X > 0).sum() / len(rl_cells)
+    norl_prop = (norl_cells.X > 0).sum() / len(norl_cells)
+    
+    prop_expr.append({
+        'gene': gene,
+        'RL_prop': rl_prop,
+        'noRL_prop': norl_prop,
+    })
+
+prop_expr_df = pd.DataFrame(prop_expr)
+prop_expr_df.to_csv("rl_vs_norl_gene_expression_proportions.tsv", sep="\t", index=False)
+
 # Get genes with large fold changes regardless of significance
 rl_vs_norl_fc = rl_vs_norl[(np.abs(rl_vs_norl['log2fc']) > np.log2(1.5))]
+rl_vs_norl_fc = rl_vs_norl_fc.sort_values(by='log2fc', ascending=False)
+
+# Write the large fold change genes to a file
+rl_vs_norl_fc.to_csv("rl_vs_norl_large_fc_all_genes.tsv", sep="\t", index=False)
 
 # Get the significant genes
 significant_genes = rl_vs_norl_sig['gene'].tolist()
 
-# Create matrix plot of significant genes
-fig = plt.figure(figsize=(5,6))
-ax = sc.pl.matrixplot(adata_ll, significant_genes, groupby='model', dendrogram=False,
-                use_raw=False, log=True, vmin = -2, vmax=2,
-                swap_axes=True, standard_scale='var', show=False)
-plt.savefig("rl_vs_norl_sig_gene_expression_matrix.pdf", bbox_inches='tight')
-plt.close()
+# # Create matrix plot of significant genes
+# fig = plt.figure(figsize=(5,6))
+# ax = sc.pl.matrixplot(adata_ll, significant_genes, groupby='model', dendrogram=False,
+#                 use_raw=False, log=True, vmin = -2, vmax=2,
+#                 swap_axes=True, standard_scale='var', show=False)
+# plt.savefig("rl_vs_norl_sig_gene_expression_matrix.pdf", bbox_inches='tight')
+# plt.close()
 
 # Make a two sided barplot of log2fc of significant genes
 fig = plt.figure(figsize=(6,10))
