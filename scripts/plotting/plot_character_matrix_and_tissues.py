@@ -128,7 +128,7 @@ def main(barcode_file, tissue_file, primary_tissue, outfile):
         fmt="d",
         cmap=cmap,
         cbar=False,  # Disable the color bar
-        linewidths=0.5,  # Add box borders
+        linewidths=0.1,  # Add box borders
         linecolor="black",
     )
 

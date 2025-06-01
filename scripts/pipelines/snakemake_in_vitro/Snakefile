@@ -419,7 +419,7 @@ rule runBeam:
 
             beast \
             -threads {params.threads} \
-            -overwrite \
+            -resume \
             -working \
             -D inName={wildcards.cp} \
             -D fileDir={params.inFileDir} \
@@ -489,9 +489,9 @@ rule beamPostprocessing:
         graphPosterior = "{outdir}/beam_gtr{num}/{sample}/{cp}/posterior_prob_graph.csv",
         probabilityPlot = "{outdir}/beam_gtr{num}/{sample}/{cp}/probability_migration_graph.pdf",
         samples = "{outdir}/beam_gtr{num}/{sample}/{cp}/combined_migration_graph_1.pdf",
+    params:
         migrationCountMatrix = "{outdir}/beam_gtr{num}/{sample}/{cp}/posterior_trees_migration_count_matrix.csv",
         mutualInformation = "{outdir}/beam_gtr{num}/{sample}/{cp}/posterior_trees_migration_mutual_information.txt",
-    params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         outprefix_thresholded = "{outdir}/beam_gtr{num}/{sample}/{cp}/thresholded_migration_graph",
@@ -528,8 +528,8 @@ rule beamPostprocessing:
                 {params.outprefix_samples} \
                 {params.numSamples} \
                 {params.experimentTime} \
-                {output.migrationCountMatrix} \
-                {output.mutualInformation} \
+                {params.migrationCountMatrix} \
+                {params.mutualInformation} \
                 {params.outprefix_metastasis_timing} \
                 {params.consensusTimingThreshold}
         fi
