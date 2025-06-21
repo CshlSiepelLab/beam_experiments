@@ -52,15 +52,15 @@ results.sample_and_plot_trees(
     output_prefix=outprefix_samples
 )
 
-# # Get migration count matrix and mutual information
-# results.compute_posterior_mutual_info(
-#     output_file_matrix = output_file_matrix,
-#     output_file_information = output_file_information,
-#     threads = cores
-# )
+# Get migration count matrix and mutual information
+results.compute_posterior_mutual_info(
+    output_file_matrix = output_file_matrix,
+    output_file_information = output_file_information,
+    threads = cores
+)
 
-# # Get metastasis timing plot
-# results.get_metastasis_times(
-#     output_prefix = outprefix_metastasis_timing,
-#     min_prob_threshold= consensus_timing_threshold
-# )
+# Get metastasis timing plot
+results.get_metastasis_times(
+    output_prefix = outprefix_metastasis_timing,
+    min_prob_threshold= consensus_timing_threshold
+)

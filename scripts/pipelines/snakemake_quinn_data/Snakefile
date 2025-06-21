@@ -73,8 +73,8 @@ rule plotCountsPerCP:
         scripts = config['scripts'],
         threads = 1,
         mem = "1G"
-    singularity:
-        "../../envs/matplotlib.sif"
+    conda:
+        "../../envs/matplotlib.yaml"
     shell:
         """
         # get the counts csv file
@@ -139,8 +139,8 @@ rule plotCharacterMatrix:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G',
-    singularity:
-        "../../envs/matplotlib.sif"
+    conda:
+        "../../envs/matplotlib.yaml"
     shell:
         """
         # convert tissues to expected format with "group_name,tissues" header and tsv sep
@@ -437,6 +437,8 @@ rule beamPostprocessing:
         samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf",
         migrationCountMatrix = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_count_matrix.csv",
         mutualInformation = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt",
+        metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl",
+        metastasisTimingPlot = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf",
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
