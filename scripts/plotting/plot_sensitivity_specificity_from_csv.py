@@ -12,7 +12,7 @@ file_path = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results
 df = pd.read_csv(file_path)
 
 # Classify beam Bayes factors as supporting reseeding or not
-min_bf = 1.1  # 0 = support barely worth mentioning, 1.1 = positive support, 3 = strong support, 5 = overwhelming support
+min_bf = 3  # 0 = support barely worth mentioning, 1.1 = positive support, 3 = strong support, 5 = overwhelming support
 df["beam"] = df.apply(
     lambda row: (
         "yes" if row["bf"] >= min_bf

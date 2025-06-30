@@ -132,6 +132,12 @@ sc.pp.log1p(adata)
 adata_ll = adata[adata.obs.apply(lambda x: x['sampleID'] in ["LL"], axis=1),:]
 
 # Set the CPs/groups that chose the RL model and no RL model based on external hypothesis tests
+
+# CPs from the threshold 3
+groups_RL_model = ['34', '43', '37', '47', '40', '30', '36', '70', '57', '60', '66', '62', '67', '74', '86', '71', '54', '24']
+groups_no_RL_model = ['42', '35', '28', '45', '44', '51', '79', '59', '64', '80', '82']
+
+# CPs from the threshold 1.1
 groups_RL_model = [
     "24", "26", "30", "32", "34", "36", "37", "40", "43", "47",
     "54", "57", "60", "62", "66", "67", "70", "71", "74", "84",
@@ -153,6 +159,9 @@ adata_ll = adata_ll[adata_ll.obs.apply(lambda x: x['LineageGroup'] in groups_RL_
 
 # Add a column to the adata_ll object to indicate which model each cell belongs to
 adata_ll.obs["model"] = adata_ll.obs.apply(lambda x: "RL" if x['LineageGroup'] in groups_RL_model else "noRL", axis=1)
+
+print("Number of cells in each group:")
+print(adata_ll.obs["model"].value_counts())
 
 # Convert model column to categorical type for differential expression analysis
 adata_ll.obs["model"] = adata_ll.obs["model"].astype('category')
