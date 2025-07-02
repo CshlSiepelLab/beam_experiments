@@ -12,7 +12,7 @@ def extract_tissue_from_name(tip_name):
     if '.' in tip_name:
         parts = tip_name.split('.', 1)  # Split on first '.' only
         if len(parts) == 2:
-            tissue = parts[0]
+            tissue = parts[0].replace("'", "")  # Remove any quotes
             # Remove numbers from tissue name for coarse grained annotations
             tissue = ''.join(char for char in tissue if not char.isdigit())
             if "R" in tissue:
@@ -117,8 +117,8 @@ def plot_circular_tree_by_tissue(newick_file, outfile):
     
     # Create tree style for circular layout
     ts = TreeStyle()
-    ts.mode = "c"  # Circular mode
-    ts.show_leaf_name = False  # Don't show tip names
+    ts.mode = "r"  # Circular mode
+    ts.show_leaf_name = True  # Show tip names
     ts.show_branch_length = False  # Don't show branch lengths
     ts.show_scale = False  # Don't show scale
     ts.show_border = False  # No border
