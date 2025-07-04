@@ -10,7 +10,7 @@ import dendropy
 nexus_file = sys.argv[1]
 
 outdir = os.path.dirname(nexus_file)
-num_samples = 5
+num_samples = 10
 
 # Read trees from nexus file
 tree_collection = dendropy.TreeList.get_from_path(nexus_file, schema="nexus")

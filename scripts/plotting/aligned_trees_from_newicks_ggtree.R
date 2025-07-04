@@ -58,6 +58,7 @@ right_tree_labels$tissue <- extract_tissue(right_tree_labels$label)
 # Define a consistent color palette for tissues
 tissues_all <- unique(c(left_tree_labels$tissue, right_tree_labels$tissue))
 
+# For quinn data tissue labels
 palette <- c(
     "LL" = "black",
     "M" = "red",
