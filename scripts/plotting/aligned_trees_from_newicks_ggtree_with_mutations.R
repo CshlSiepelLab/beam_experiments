@@ -23,6 +23,7 @@ nwk1 <- "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/qui
 nwk2 <- "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/52/sampled_tree_3_with_tissue_appended_to_name.nwk"
 mutations <- "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/successive_raw_data/5k/52_successive_character_matrix.tsv"
 
+
 outfile <- sub("\\.nwk$", "_with_mutations.pdf", nwk2)
 
 # Read in trees from provided Newick file paths
@@ -103,12 +104,15 @@ if (length(new_states) > 0) {
 # Clean names of tips
 clean_tip_name <- function(x) {
   x <- sub("^[^.]*\\.", "", x)   # Remove everything but the cell barcode
+  x <- sub("'", "", x)      # Remove single quotes
   x <- gsub("-1", "", x)         # Remove '-1'
   return(x)
 }
 
 left_tree$tip.label <- clean_tip_name(left_tree$tip.label)
+left_tree$node.label <- clean_tip_name(left_tree$node.label)
 right_tree$tip.label <- clean_tip_name(right_tree$tip.label)
+right_tree$node.label <- clean_tip_name(right_tree$node.label)
 mut_mat_left$label <- clean_tip_name(mut_mat_left$label)
 mut_mat_right$label <- clean_tip_name(mut_mat_right$label)
 left_tree_labels$label <- clean_tip_name(left_tree_labels$label)
@@ -120,24 +124,26 @@ max_x2 <- max(nodeHeights(right_tree)) + 50
 
 # Plot the trees
 p1 <- ggtree(left_tree) %<+% left_tree_labels +
-    geom_tree(aes(color = tissue)) +
-    geom_tiplab(align = TRUE, linetype = 'dotted', linesize = 0, hjust = 0, size = 1, offset = 2) +
-    geom_tippoint(aes(color = tissue), size = 0.5) +
-    scale_color_manual(values = palette) +
-    theme_tree2() +
-    theme(plot.margin = unit(c(1, 2, 1, 1), "lines"), legend.position = "none") +
-    xlim(0, max_x1) +
-    coord_cartesian(ylim = c(-1, NA), clip = 'off')
+  geom_tree(aes(color = tissue)) +
+  geom_tiplab(align = TRUE, linetype = 'dotted', linesize = 0, hjust = 0, size = 1, offset = 2) +
+  geom_tippoint(aes(color = tissue), size = 0.5) +
+  scale_color_manual(values = palette) +
+  theme_tree2() +
+  theme(plot.margin = unit(c(1, 2, 1, 1), "lines"), legend.position = "none") +
+  xlim(0, max_x1) +
+  scale_x_continuous(breaks = seq(0, 60, by = 20)) +
+  coord_cartesian(ylim = c(-1, NA), clip = 'off')
 
 p2 <- ggtree(right_tree) %<+% right_tree_labels +
-    geom_tree(aes(color = tissue)) +
-    geom_tiplab(align = TRUE, linetype = 'dotted', linesize = 0, hjust = 0, size = 1, offset = 2) +
-    geom_tippoint(aes(color = tissue), size = 0.5) +
-    scale_color_manual(values = palette) +
-    theme_tree2() +
-    theme(plot.margin = unit(c(1, 1, 1, 2), "lines"), legend.position = "none") +
-    xlim(0, max_x2) +
-    coord_cartesian(ylim = c(-1, NA), clip = 'off')
+  geom_tree(aes(color = tissue)) +
+  geom_tiplab(align = TRUE, linetype = 'dotted', linesize = 0, hjust = 0, size = 1, offset = 2) +
+  geom_tippoint(aes(color = tissue), size = 0.5) +
+  scale_color_manual(values = palette) +
+  theme_tree2() +
+  theme(plot.margin = unit(c(1, 1, 1, 2), "lines"), legend.position = "none") +
+  xlim(0, max_x2) +
+  scale_x_continuous(breaks = seq(0, 60, by = 20)) +
+  coord_cartesian(ylim = c(-1, NA), clip = 'off')
 
 # Add the mutations
 p1 <- p1 +

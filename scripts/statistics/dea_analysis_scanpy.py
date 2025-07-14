@@ -133,9 +133,9 @@ adata_ll = adata[adata.obs.apply(lambda x: x['sampleID'] in ["LL"], axis=1),:]
 
 # Set the CPs/groups that chose the RL model and no RL model based on external hypothesis tests
 
-# CPs from the threshold 3
-groups_RL_model = ['34', '43', '37', '47', '40', '30', '36', '70', '57', '60', '66', '62', '67', '74', '86', '71', '54', '24']
-groups_no_RL_model = ['42', '35', '28', '45', '44', '51', '79', '59', '64', '80', '82']
+# # CPs from the threshold 3
+# groups_RL_model = ['34', '43', '37', '47', '40', '30', '36', '70', '57', '60', '66', '62', '67', '74', '86', '71', '54', '24']
+# groups_no_RL_model = ['42', '35', '28', '45', '44', '51', '79', '59', '64', '80', '82']
 
 # CPs from the threshold 1.1
 groups_RL_model = [
