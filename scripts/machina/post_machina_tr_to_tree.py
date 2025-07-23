@@ -54,10 +54,6 @@ leaf_tree = sys.argv[1]
 machina_labels = sys.argv[2]
 machina_dir = sys.argv[3]
 
-# leaf_tree = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_2_20_25_uniform_50cells_50sites_data_7_24_24/machina/mS_854/P-T-P-R.tree"
-# machina_labels = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_2_20_25_uniform_50cells_50sites_data_7_24_24/machina/mS_854/P-T-P-R.labeling"
-# machina_dir = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_2_20_25_uniform_50cells_50sites_data_7_24_24/machina/mS_854"
-
 # read in tree from edge list
 connections = read_file_to_list_of_tuples(leaf_tree)
 tree = Tree.from_parent_child_table(connections)

@@ -13,12 +13,6 @@ patient = sys.argv[3]
 primary = sys.argv[4]
 output_dir = sys.argv[5]
 
-# tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test/metient/2945/metadata.tsv"
-# tree = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test/metient/2945/tree.txt"
-# patient = "2945"
-# primary = "P"
-# output_dir = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/test/metient/2945"
-
 df = pd.read_csv(tsv, sep="\t")
 
 print_config = met.PrintConfig(visualize=True, verbose=True, k_best_trees=5)

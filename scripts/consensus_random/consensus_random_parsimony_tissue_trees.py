@@ -136,11 +136,6 @@ outdir = sys.argv[3]
 
 primary_tissue = "P"
 
-# tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees_no_branch_lengths.nwk"
-# leaf_tissues_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/raw_data/mS_854/cell_tree_seed1833437564.labeling"
-# outdir = "."
-
-
 tree = ete3.Tree(tree_file, format=8)
 tissue_map = pd.read_csv(
     leaf_tissues_tsv,

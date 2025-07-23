@@ -1,14 +1,7 @@
-# if (!requireNamespace("EvoTraceR", quietly = TRUE)) {
-#   if (!requireNamespace("devtools", quietly = TRUE)) {
-#     install.packages("devtools", repos = "https://cloud.r-project.org/")
-#   }
-#   devtools::install_github("Nowak-Lab/EvoTraceR@v1.0.1")
-# }
 
 library(EvoTraceR)
 args = commandArgs(trailingOnly=TRUE)
 
-#input_dir <- system.file("extdata", "input", package = "EvoTraceR")
 input_dir <- args[1]
 output_dir <- args[2]
 asv_threshold <- as.numeric(args[3])

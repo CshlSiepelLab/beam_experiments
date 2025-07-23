@@ -129,13 +129,6 @@ threshold_num_solutions = int(
     sys.argv[5]
 )  # the maximum number of possible solutions to enumerate them all in the output
 
-# # Testing
-# tree_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_22_24/laml/MMUS3012/CP06/laml_trees_no_branch_lengths.nwk"
-# leaf_tissues_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_11_22_24/machina/MMUS3012/CP06/laml_trees_no_branch_lengths.labeling"
-# outdir = "./"
-# primary_tissue = "BDR"
-# threshold_num_solutions = 25
-
 tree = ete3.Tree(tree_file, format=8)
 tissue_map = pd.read_csv(
     leaf_tissues_tsv,

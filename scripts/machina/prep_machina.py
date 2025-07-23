@@ -9,11 +9,6 @@ output_dir = sys.argv[2]
 primary_tissue = str(sys.argv[3])
 leaf_labels_tsv = str(sys.argv[4])
 
-# leaf_labeled_tree = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/laml/5k/64/laml_trees_no_branch_lengths.nwk"
-# output_dir = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/mach2/5k/64"
-# primary_tissue = "LL"
-# leaf_labels_tsv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/mach2/5k/64/leaf_tissues.tsv"
-
 input_file = leaf_labeled_tree.split("/")[-1]
 input_prefix = input_file.split(".")[0]
 output_file_leaf = output_dir + "/" + input_prefix + ".labeling"

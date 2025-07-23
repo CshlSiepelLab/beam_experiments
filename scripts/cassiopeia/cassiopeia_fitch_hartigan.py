@@ -49,11 +49,6 @@ newick_file = sys.argv[1]
 tissues_file = sys.argv[2]
 outdir = sys.argv[3]
 
-# # testing
-# newick_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_20_25_uniform_50cells_50sites_data_7_24_24/laml/mS_854/mS_854_laml_trees_no_origin.nwk"
-# tissues_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_1_20_25_uniform_50cells_50sites_data_7_24_24/beam/mS_854/mS_854_tip_tissues.csv"
-# outdir = "./"
-
 # read in newick to ete3 tree
 ete_tree = Tree(newick_file, format=3)
 ete_tree.name = "root"
