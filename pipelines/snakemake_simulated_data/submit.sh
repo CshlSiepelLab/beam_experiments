@@ -1,13 +1,13 @@
 #!/bin/bash
 
-export REPO_PATH=/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/snakemake_nowak_lab_data
+export REPO_PATH=/grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/pipelines/snakemake_simulated_data
 
 snakemake \
---until beamPostprocessing \
---latency-wait 30 \
---use-conda \
+-n \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
+--latency-wait 15 \
+--use-conda \
 --snakefile $REPO_PATH/Snakefile \
 --configfile $REPO_PATH/config/config.yaml \
 --printshellcmds \

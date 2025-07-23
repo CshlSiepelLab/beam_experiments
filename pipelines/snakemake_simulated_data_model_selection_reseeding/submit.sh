@@ -1,8 +1,9 @@
 #!/bin/bash
 
-export REPO_PATH=/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/scripts/pipelines/model_selection_variable_sim_reseeding_no_reseeding
+export REPO_PATH=/grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/pipelines/snakemake_simulated_data_model_selection_reseeding
 
 snakemake \
+-n \
 --use-singularity \
 --singularity-args "--bind $HOME/" \
 --latency-wait 300 \
