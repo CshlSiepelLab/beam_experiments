@@ -31,7 +31,7 @@ rule runCassiopeia:
         threads = 1,
         mem = '1G'
     singularity:
-        "../../scripts/envs/simulate.sif"
+        f"{config['containers']}/simulate.sif"
     shell:
         """
         # run cassiopeia greedy
@@ -55,16 +55,16 @@ rule runLAML:
         threads = 1,
         mem = '1G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # copy sim matrix, replace header, and replace -1 with ? for missing data
         laml_sim_matrix={params.outputdir}/sim_matrix.csv
-        num_sites=$(head -n 1 {input.sim_matrix} | awk -F'\t' '{{print NF}}')
+        num_sites=$(head -n 1 {input.sim_matrix} | awk -F'\t' '{{print NF-1}}')
         laml_header="cell"
         for i in $(seq 1 $num_sites); do
-                laml_header+=",r$i"
-            done
+            laml_header+=",r$i"
+        done
         echo $laml_header > $laml_sim_matrix
         tail -n +2 {input.sim_matrix} >> $laml_sim_matrix
         sed -i 's/-1/?/g; s/\t/,/g' $laml_sim_matrix
@@ -108,7 +108,7 @@ rule prepBeamInputs:
         threads = 1,
         mem = '1G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # write tip traits to new csv
@@ -309,7 +309,7 @@ rule runRandomAndConsensusTissueInference:
         threads = 1,
         mem = '1G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/consensus_random/consensus_random_parsimony_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
@@ -331,7 +331,7 @@ rule prepMachina:
         threads = 1,
         mem = '1G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {input.leafTissues}
@@ -353,7 +353,7 @@ rule runMachina:
         threads = 100,
         mem = '5G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
@@ -398,7 +398,7 @@ rule processMachinaResults:
         threads = 1,
         mem = '1G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
@@ -418,7 +418,7 @@ rule runMach2:
         threads = 10,
         mem = '40G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
@@ -491,7 +491,7 @@ rule prepMetient:
         threads = 1,
         mem = '1G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # format tsv file and edge list
@@ -529,7 +529,7 @@ rule labelTrueTreeWithTissues:
         threads = 1,
         mem = '1G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # run add tissue to newick
@@ -547,7 +547,7 @@ rule plotTrueMigrationGraph:
         threads = 1,
         mem = '1G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
@@ -567,7 +567,6 @@ rule plotPrecisionRecall:
         trueTrees = glob.glob(os.path.join(outdir, "raw_data", "*", "tissue_labeled_tree.nwk"))
     output:
         overallPrecisionRecall = f"{outdir}/precision_recall_curve/precision_recall.pdf",
-        # individualPrecisionRecalls = [f"{outdir}/precision_recall_curve/{s}/precision_recall.pdf" for s in sims],
         overallF1 = f"{outdir}/precision_recall_curve/f1_score.pdf",
     params:
         scripts = config['scripts'],
@@ -576,7 +575,7 @@ rule plotPrecisionRecall:
         threads = 1,
         mem = '5G'
     singularity:
-        "{config[containers]}/crispr_barcode_migration_inference.sif"
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         true_trees=$(echo {input.trueTrees} | tr ' ' ',')

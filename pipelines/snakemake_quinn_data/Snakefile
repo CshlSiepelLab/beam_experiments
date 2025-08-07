@@ -190,7 +190,7 @@ rule runLAML:
         """
         # copy matrix and replace -1 with ? for missing data
         laml_matrix={params.outputdir}/matrix.csv
-        num_sites=$(head -n 1 {input.matrix} | awk -F'\t' '{{print NF}}')
+        num_sites=$(head -n 1 {input.matrix} | awk -F'\t' '{{print NF-1}}')
         laml_header="cell"
         for i in $(seq 1 $num_sites); do
                 laml_header+=",r$i"
