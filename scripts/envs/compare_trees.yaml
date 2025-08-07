@@ -201,4 +201,3 @@ dependencies:
   - zstd=1.5.6=ha6fb4c9_0
   - pip:
       - plot-phylo==0.1.11
-prefix: /grid/siepel/home_norepl/staklins/miniconda3/envs/compare_trees

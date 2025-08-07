@@ -245,4 +245,3 @@ dependencies:
       - typing-extensions==4.12.2
       - xarray==2024.6.0
       - xarray-einstats==0.7.0
-prefix: /grid/siepel/home_norepl/staklins/miniconda3/envs/matplotlib

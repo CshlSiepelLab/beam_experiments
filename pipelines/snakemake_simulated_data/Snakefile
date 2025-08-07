@@ -12,21 +12,19 @@ rule all:
     input:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
-        # expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
+        expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
-        # expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
-        expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
-        expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir=outdir),
-        # expand("{outdir}/beam_gtr/incomplete.txt", outdir=outdir),
-        expand("{outdir}/beam_gtr/{sim}/metastasis_timing_prob.pdf", sim=sims, outdir=outdir),
-        expand("{outdir}/gtr_beam_mutual_information.csv", outdir=outdir),
-        expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
-        expand("{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
-        expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk", sim=sims, outdir=outdir),
-        f"{outdir}/precision_recall_curve/precision_recall.pdf",
-        expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 6), outdir=outdir),
-        expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 6), outdir=outdir),
+        expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
+        # expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
+        # expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir=outdir),
+        # expand("{outdir}/beam_gtr/{sim}/metastasis_timing_prob.pdf", sim=sims, outdir=outdir),
+        # expand("{outdir}/gtr_beam_mutual_information.csv", outdir=outdir),
+        # expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
+        # expand("{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
+        # expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
+        # f"{outdir}/precision_recall_curve/precision_recall.pdf",
+        # expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 6), outdir=outdir),
+        # expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 6), outdir=outdir),
 
 
 rule runCassiopeia:
@@ -40,7 +38,7 @@ rule runCassiopeia:
         threads = 1,
         mem = '1G'
     singularity:
-        "../../envs/simulate.sif"
+        "../../scripts/envs/simulate.sif"
     shell:
         """
         # run cassiopeia greedy
@@ -61,10 +59,10 @@ rule runLAML:
         scripts = config['scripts'],
         outputdir = "{outdir}/laml/{sim}",
         experimentTime = config['generations'],
-        threads = 25,
+        threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/laml.yaml"
+    singularity:
+        "/grid/siepel/home/staklins/containers/crispr_barcode_migration_inference.sif"
     shell:
         """
         # copy sim matrix, replace header, and replace -1 with ? for missing data
@@ -84,7 +82,7 @@ rule runLAML:
         python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_sim_matrix {input.mutationPriors} $mutationPriors
 
         # run laml
-        run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --parallel
+        run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --topology_search --noDropout
 
         # remove fake root from tree
         fixed_newick=$(sed "s/);//g" {output.lamlTreeOriginal})
@@ -93,7 +91,6 @@ rule runLAML:
         second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
         new_branch=$(echo "$last_branch + $second_last_branch" | bc)
         modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
-
         echo $modified_newick > {output.lamlTreeNoOrigin}
 
         # obtain newick without branch lengths
@@ -118,7 +115,7 @@ rule prepBeamInputs:
         threads = 1,
         mem = '1G'
     conda:
-        "../../envs/compare_trees.yaml"
+        "../../scripts/envs/compare_trees.yaml"
     shell:
         """
         # write tip traits to new csv
@@ -264,7 +261,7 @@ rule sampleBeamMetastasisTiming:
         threads = 1,
         mem = "1G"
     conda:
-        "../../envs/compare_trees.yaml"
+        "../../scripts/envs/compare_trees.yaml"
     shell:
         """
         python {params.scripts}/formatting/sample_metastasis_times_from_posterior.py {input.combinedTrees} {params.experimentTime} {params.primaryTissue} {output.metastasisTiming}
@@ -285,7 +282,7 @@ rule plotBeamMetastasisTiming:
         threads = 1,
         mem = "1G"
     conda:
-        "../../envs/matplotlib.yaml"
+        "../../scripts/envs/matplotlib.yaml"
     shell:
         """
         python {params.scripts}/plotting/plot_metastasis_times.py {input.metastasisTiming} {input.graphPosterior} {params.experimentTime} {params.primaryTissue} {params.consensusThreshold} {params.outdir}/metastasis_timing
@@ -354,7 +351,7 @@ rule collectMutualInformationAndPlot:
         threads = 1,
         mem = '1G'
     conda:
-        "../../envs/matplotlib.yaml"
+        "../../scripts/envs/matplotlib.yaml"
     shell:
         """
         echo "simname,mutual_information_normalized" > {output.combinedResults}
@@ -382,29 +379,12 @@ rule runRandomAndConsensusTissueInference:
         threads = 1,
         mem = '1G'
     conda:
-        "../../envs/compare_trees.yaml"
+        "../../scripts/envs/compare_trees.yaml"
     shell:
         """
         python {params.scripts}/consensus_random/consensus_random_parsimony_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
         """
 
-rule runCassiopeiaFitchCount:
-    input:
-        lamlTreeNoOrigin = "{outdir}/laml/{sim}/{sim}_laml_trees_no_origin.nwk",
-        tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
-    output:
-        fitchHartigan = "{outdir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk"
-    params:
-        scripts = config['scripts'],
-        outputdir = "{outdir}/cassiopeia_fitch_count/{sim}",
-        threads = 1,
-        mem = '1G'
-    singularity:
-        "../../envs/simulate.sif"
-    shell:
-        """
-        python {params.scripts}/cassiopeia/cassiopeia_fitch_hartigan.py {input.lamlTreeNoOrigin} {input.tissues} {params.outputdir}
-        """
 
 rule prepMachina:
     input:
@@ -421,7 +401,7 @@ rule prepMachina:
         threads = 1,
         mem = '1G'
     singularity:
-        "../../envs/simulate.sif"
+        "../../scripts/envs/simulate.sif"
     shell:
         """
         python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {input.leafTissues}
@@ -443,7 +423,7 @@ rule runMachina:
         threads = 50,
         mem = '2G'
     conda:
-        "../../envs/machina.yaml"
+        "../../scripts/envs/machina.yaml"
     shell:
         """
         # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
@@ -492,7 +472,7 @@ rule processMachinaResults:
         threads = 1,
         mem = '1G'
     singularity:
-        "../../envs/simulate.sif"
+        "../../scripts/envs/simulate.sif"
     shell:
         """
         python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
@@ -514,7 +494,7 @@ rule runMach2:
         threads = 50,
         mem = '5G'
     conda:
-        "../../envs/mach2.yaml"
+        "../../scripts/envs/mach2.yaml"
     shell:
         """
         # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
@@ -591,7 +571,7 @@ rule prepMetient:
         threads = 1,
         mem = '1G'
     conda:
-        "../../envs/compare_trees.yaml"
+        "../../scripts/envs/compare_trees.yaml"
     shell:
         """
         # format tsv file and edge list
@@ -611,7 +591,7 @@ rule runMetient:
         threads = 50,
         mem = '2G'
     singularity:
-        "../../envs/metient.sif"
+        "../../scripts/envs/metient.sif"
     shell:
         """
         python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.sim} {params.primaryTissue} {params.outputdir}
@@ -629,7 +609,7 @@ rule labelTrueTreeWithTissues:
         threads = 1,
         mem = '1G'
     conda:
-        "../../envs/compare_trees.yaml"
+        "../../scripts/envs/compare_trees.yaml"
     shell:
         """
         # run add tissue to newick
@@ -647,7 +627,7 @@ rule plotTrueMigrationGraph:
         threads = 1,
         mem = '1G'
     conda:
-        "../../envs/networkx.yaml"
+        "../../scripts/envs/networkx.yaml"
     shell:
         """
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
@@ -659,7 +639,6 @@ rule plotPrecisionRecall:
         # randomResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         # consensusResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk", sim=sims, outdir=outdir),
         # parsimonyResultDone = expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/parsimony_tissues.nwk", sim=sims, outdir=outdir),
-        # fitchcountResultDone = expand("{outdir}/cassiopeia_fitch_count/{sim}/cassiopeia_fitch_hartigan_result.nwk", sim=sims, outdir=outdir),
         # trueTissueTreeDone = expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         # machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         # combinedTreesDone = expand("{outdir}/beam_gtr/{sim}/combined.trees", sim=sims, outdir=outdir),
@@ -677,7 +656,7 @@ rule plotPrecisionRecall:
         threads = 1,
         mem = '5G'
     conda:
-        "../../envs/matplotlib.yaml"
+        "../../scripts/envs/matplotlib.yaml"
     shell:
         """
         true_trees=$(echo {input.trueTrees} | tr ' ' ',')

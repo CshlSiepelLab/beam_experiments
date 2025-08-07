@@ -175,7 +175,7 @@ dependencies:
       - ecos==2.0.14
       - fonttools==4.53.1
       - kiwisolver==1.4.5
-      - laml==0.0.4
+      - laml==1.0.5
       - matplotlib==3.9.1
       - mosek==10.2.1
       - numpy==2.0.1
@@ -186,6 +186,6 @@ dependencies:
       - pyparsing==3.1.2
       - qdldl==0.1.7.post4
       - scipy==1.14.0
+      - scikit-bio
       - scs==3.2.6
       - treeswift==1.1.44
-prefix: /grid/siepel/home_norepl/staklins/miniconda3/envs/laml

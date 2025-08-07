@@ -1,11 +1,11 @@
 
 # set path to data dirs
-inputpath: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/uniform_50cells_50sites_data_7_24_24
-# inputpath: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/variable_migration_and_mutation_rates_8_19_24
+# inputpath: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/uniform_50cells_50sites_data_7_24_24
+inputpath: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/variable_migration_and_mutation_rates_8_19_24
 
 # set where output should go
-outdir: /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/results/snakemake_performance_2_20_25_uniform_50cells_50sites_data_7_24_24
-# outdir: /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24
+# outdir: /grid/siepel/home/staklins/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24
+outdir: /grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24
 
 # mutation priors for being fixed in Q matrix
 mutationPriors: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/uniform_50cells_50sites_data_7_24_24/mutation_priors.csv
