@@ -3,9 +3,9 @@
 export REPO_PATH=/grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/pipelines/snakemake_simulated_data
 
 snakemake \
---until runLAML \
+--until processMachinaResults \
 --use-singularity \
---singularity-args "--bind $HOME/" \
+--singularity-args "--bind $HOME/ --env GRB_LICENSE_FILE=$GRB_LICENSE_FILE" \
 --latency-wait 15 \
 --use-conda \
 --snakefile $REPO_PATH/Snakefile \

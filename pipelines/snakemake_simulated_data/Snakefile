@@ -13,18 +13,11 @@ rule all:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
+        # expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
         expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
-        # expand("{outdir}/beam_gtr/{sim}/terminal_{num}.log", sim=sims, num=range(1, config['numChains']+1), outdir=outdir),
-        # expand("{outdir}/beam_gtr/{sim}/combined.log", sim=sims, outdir=outdir),
-        # expand("{outdir}/beam_gtr/{sim}/metastasis_timing_prob.pdf", sim=sims, outdir=outdir),
-        # expand("{outdir}/gtr_beam_mutual_information.csv", outdir=outdir),
+        expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         # expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
-        # expand("{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf", sim=sims, outdir=outdir),
-        # expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         # f"{outdir}/precision_recall_curve/precision_recall.pdf",
-        # expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 6), outdir=outdir),
-        # expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 6), outdir=outdir),
 
 
 rule runCassiopeia:
@@ -62,7 +55,7 @@ rule runLAML:
         threads = 1,
         mem = '1G'
     singularity:
-        "/grid/siepel/home/staklins/containers/crispr_barcode_migration_inference.sif"
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # copy sim matrix, replace header, and replace -1 with ? for missing data
@@ -114,8 +107,8 @@ rule prepBeamInputs:
         outputdir = "{outdir}/beam/{sim}",
         threads = 1,
         mem = '1G'
-    conda:
-        "../../scripts/envs/compare_trees.yaml"
+    singularity:
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # write tip traits to new csv
@@ -248,45 +241,6 @@ rule combineBeamChains:
         fi
         """
 
-rule sampleBeamMetastasisTiming:
-    input:
-        combinedTrees = "{outdir}/beam_gtr/{sim}/combined.trees"
-    output:
-        metastasisTiming = "{outdir}/beam_gtr/{sim}/metastasis_timing.pkl"
-    params:
-        scripts = config['scripts'],
-        primaryTissue = config['primaryTissue'],
-        experimentTime = config['generations'],
-        outdir = "{outdir}/beam_gtr/{sim}",
-        threads = 1,
-        mem = "1G"
-    conda:
-        "../../scripts/envs/compare_trees.yaml"
-    shell:
-        """
-        python {params.scripts}/formatting/sample_metastasis_times_from_posterior.py {input.combinedTrees} {params.experimentTime} {params.primaryTissue} {output.metastasisTiming}
-        """
-
-rule plotBeamMetastasisTiming:
-    input:
-        metastasisTiming = "{outdir}/beam_gtr/{sim}/metastasis_timing.pkl",
-        graphPosterior = "{outdir}/beam_gtr/{sim}/posterior_prob_graph.csv"
-    output:
-        metastasisTimingPlot = "{outdir}/beam_gtr/{sim}/metastasis_timing_prob.pdf"
-    params:
-        scripts = config['scripts'],
-        primaryTissue = config['primaryTissue'],
-        experimentTime = config['generations'],
-        outdir = "{outdir}/beam_gtr/{sim}",
-        consensusThreshold = 0.5,
-        threads = 1,
-        mem = "1G"
-    conda:
-        "../../scripts/envs/matplotlib.yaml"
-    shell:
-        """
-        python {params.scripts}/plotting/plot_metastasis_times.py {input.metastasisTiming} {input.graphPosterior} {params.experimentTime} {params.primaryTissue} {params.consensusThreshold} {params.outdir}/metastasis_timing
-        """
 
 rule beamPostprocessing:
     input:
@@ -340,30 +294,6 @@ rule beamPostprocessing:
         fi
         """
 
-rule collectMutualInformationAndPlot:
-    input:
-        mutualInformation = expand("{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt", sim=sims, outdir='{outdir}')
-    output:
-        combinedResults = "{outdir}/gtr_beam_mutual_information.csv",
-        plot = "{outdir}/gtr_beam_mutual_information.pdf"
-    params:
-        scripts = config['scripts'],
-        threads = 1,
-        mem = '1G'
-    conda:
-        "../../scripts/envs/matplotlib.yaml"
-    shell:
-        """
-        echo "simname,mutual_information_normalized" > {output.combinedResults}
-        
-        for file in {input.mutualInformation}; do
-            simname=$(basename $(dirname $file))
-            mutual_information=$(head -n 1 $file | tr -d '[:space:]')
-            echo "$simname,$mutual_information" >> {output.combinedResults}
-        done
-
-        python {params.scripts}/plotting/plot_mutual_information_normalized_histogram.py {output.combinedResults} {output.plot}
-        """
 
 rule runRandomAndConsensusTissueInference:
     input:
@@ -378,8 +308,8 @@ rule runRandomAndConsensusTissueInference:
         outputdir = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}",
         threads = 1,
         mem = '1G'
-    conda:
-        "../../scripts/envs/compare_trees.yaml"
+    singularity:
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/consensus_random/consensus_random_parsimony_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
@@ -401,7 +331,7 @@ rule prepMachina:
         threads = 1,
         mem = '1G'
     singularity:
-        "../../scripts/envs/simulate.sif"
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {input.leafTissues}
@@ -420,16 +350,12 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{sim}",
         primaryTissue = config['primaryTissue'],
-        threads = 50,
-        mem = '2G'
-    conda:
-        "../../scripts/envs/machina.yaml"
+        threads = 100,
+        mem = '5G'
+    singularity:
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
-        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
-        module load EBModules
-        module load Gurobi
-
         unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
         num_unique_tissues=$(echo "$unique_tissues" | wc -l)
 
@@ -472,7 +398,7 @@ rule processMachinaResults:
         threads = 1,
         mem = '1G'
     singularity:
-        "../../scripts/envs/simulate.sif"
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/machina/post_machina_tr_to_tree.py {input.machinaTree} {input.machinaTissues} {params.outputdir}
@@ -484,23 +410,17 @@ rule runMach2:
         edges = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths.tree",
         colors = "{outdir}/machina/{sim}/{sim}_laml_trees_no_origin_no_branch_lengths_colors.txt",
     output:
-        mach2tree = "{outdir}/mach2/{sim}/P-T-0.tree",
-        mach2labeling = "{outdir}/mach2/{sim}/P-T-0.labeling",
         mach2graph = "{outdir}/mach2/{sim}/P-G-0.graph",
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{sim}",
         primaryTissue = config['primaryTissue'],
-        threads = 50,
-        mem = '5G'
-    conda:
-        "../../scripts/envs/mach2.yaml"
+        threads = 10,
+        mem = '40G'
+    singularity:
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
-        # load Gurobi license (specific to CSHL HPC; will need to be modified on other systems)
-        module load EBModules
-        module load Gurobi
-
         unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
         num_unique_tissues=$(echo "$unique_tissues" | wc -l)
 
@@ -570,8 +490,8 @@ rule prepMetient:
         outputdir = "{outdir}/metient/{sim}",
         threads = 1,
         mem = '1G'
-    conda:
-        "../../scripts/envs/compare_trees.yaml"
+    singularity:
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # format tsv file and edge list
@@ -608,8 +528,8 @@ rule labelTrueTreeWithTissues:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../scripts/envs/compare_trees.yaml"
+    singularity:
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # run add tissue to newick
@@ -626,8 +546,8 @@ rule plotTrueMigrationGraph:
         primaryTissue = config['primaryTissue'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../scripts/envs/networkx.yaml"
+    singularity:
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input.trueTissueTree} {params.primaryTissue} {output.trueTissueGraph}
@@ -655,177 +575,12 @@ rule plotPrecisionRecall:
         outputdir = outdir + "/precision_recall_curve",
         threads = 1,
         mem = '5G'
-    conda:
-        "../../scripts/envs/matplotlib.yaml"
+    singularity:
+        "{config[containers]}/crispr_barcode_migration_inference.sif"
     shell:
         """
         true_trees=$(echo {input.trueTrees} | tr ' ' ',')
         python {params.scripts}/plotting/plot_precision_recall.py $true_trees {params.primaryTissue} {params.outputdir}
         python {params.scripts}/plotting/plot_f1_score.py {params.outputdir}/metrics.csv {params.outputdir}
-        """
-
-
-rule runBeamGtrNs:
-    input:
-        fasta = "{outdir}/beam/{sim}/{sim}.fasta",
-        tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
-        editRates = "{outdir}/beam/{sim}/{sim}_fixed_edit_rates.txt",
-        lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
-    output:
-        terminalLog = "{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log",
-        beamLog = "{outdir}/beam_gtr_ns/{sim}/chain_{num}.log",
-        beamResult = "{outdir}/beam_gtr_ns/{sim}/chain_{num}.trees"
-    params:
-        xml = config['gtrXml'],
-        inFileDir = "{outdir}/beam/{sim}",
-        fileDir = "{outdir}/beam_gtr_ns/{sim}",
-        generations = config['generations'],
-        primaryTissue = config['primaryTissue'],
-        threads = 5,
-        mem = '2G'
-    shell:
-        """
-        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
-
-        # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {input.editRates} | tr '\\n' ' ')
-        array=($initialEditRates)
-        numEditRates=${{#array[@]}}
-        numEditRatesPlusTwo=$(( numEditRates + 2 ))
-
-        # format tissue information
-        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
-        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
-
-        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
-        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
-        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
-            numTissues=$(( numTissues + 1 ))
-        fi
-        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
-
-        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
-
-        tissueCodeMap=""
-        trailingCodeMap="? = "
-        i=0
-        for tissue in $sorted_unique_tissues; do
-            tissueCodeMap+="$tissue=$i,"
-            trailingCodeMap+="$i "
-            i=$((i+1))
-        done
-        tissueCodeMap+="${{trailingCodeMap}}"
-
-        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
-        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
-        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
-        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
-
-        # use LAML starting tree
-        # remove node names from newick and the origin node
-        newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
-
-        # Replace mcmc specs with nested sampling specs
-        mcmc_specs="<run id=\\"mcmc\\" spec=\\"MCMC\\" chainLength=\\"\\$(mcmclength)\\">"
-        ns_specs="<run id=\\"mcmc\\" spec=\\"beast.gss.NS\\" chainLength=\\"100000000\\" particleCount=\\"1\\" subChainLength=\\"10000\\" epsilon=\\"1e-10\\">"
-        sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
-
-
-        beast \
-        -threads {params.threads} \
-        -overwrite \
-        -working \
-        -D inName={wildcards.sim} \
-        -D fileDir={params.inFileDir} \
-        -D newick=\"$newick\" \
-        -D generations={params.generations} \
-        -D numEditRates=\"$numEditRates\" \
-        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-        -D numTissueRates=\"$numTissueRates\" \
-        -D numTissues=\"$numTissues\" \
-        -D outname=chain_{wildcards.num} \
-        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
-        """
-
-rule runBeamRandomNs:
-    input:
-        fasta = "{outdir}/beam/{sim}/{sim}.fasta",
-        tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
-        editRates = "{outdir}/beam/{sim}/{sim}_fixed_edit_rates.txt",
-        lamlTreeOriginal = "{outdir}/laml/{sim}/{sim}_laml_trees.nwk",
-    output:
-        terminalLog = "{outdir}/beam_random_ns/{sim}/terminal_{num}.log",
-        beamLog = "{outdir}/beam_random_ns/{sim}/chain_{num}.log",
-        beamResult = "{outdir}/beam_random_ns/{sim}/chain_{num}.trees"
-    params:
-        xml = config['randomXml'],
-        inFileDir = "{outdir}/beam/{sim}",
-        fileDir = "{outdir}/beam_random_ns/{sim}",
-        generations = config['generations'],
-        primaryTissue = config['primaryTissue'],
-        threads = 5,
-        mem = '2G'
-    shell:
-        """
-        cp {params.xml} {params.fileDir}/{wildcards.num}.xml
-
-        # calculate necessary inputs for the editing model
-        initialEditRates=$(cat {input.editRates} | tr '\\n' ' ')
-        array=($initialEditRates)
-        numEditRates=${{#array[@]}}
-        numEditRatesPlusTwo=$(( numEditRates + 2 ))
-
-        # format tissue information
-        unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
-        numTissues=$(echo $unique_tissues | tr ' ' '\n' | wc -l)
-
-        # force the known known primary tissue at the origin for root frequencies in the likelihood calculation
-        sorted_unique_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ' ')"
-        if ! echo "$unique_tissues" | grep -qw "{params.primaryTissue}"; then
-            numTissues=$(( numTissues + 1 ))
-        fi
-        tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
-
-        numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
-
-        tissueCodeMap=""
-        trailingCodeMap="? = "
-        i=0
-        for tissue in $sorted_unique_tissues; do
-            tissueCodeMap+="$tissue=$i,"
-            trailingCodeMap+="$i "
-            i=$((i+1))
-        done
-        tissueCodeMap+="${{trailingCodeMap}}"
-
-        # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
-        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
-        sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
-        sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
-
-        # use LAML starting tree
-        # remove node names from newick and the origin node
-        newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
-
-        # Replace mcmc specs with nested sampling specs
-        mcmc_specs="<run id=\\"mcmc\\" spec=\\"MCMC\\" chainLength=\\"\\$(mcmclength)\\">"
-        ns_specs="<run id=\\"mcmc\\" spec=\\"beast.gss.NS\\" chainLength=\\"100000000\\" particleCount=\\"1\\" subChainLength=\\"10000\\" epsilon=\\"1e-10\\">"
-        sed -i "s/$mcmc_specs/$ns_specs/g" {params.fileDir}/{wildcards.num}.xml
-
-
-        beast \
-        -threads {params.threads} \
-        -overwrite \
-        -working \
-        -D inName={wildcards.sim} \
-        -D fileDir={params.inFileDir} \
-        -D newick=\"$newick\" \
-        -D generations={params.generations} \
-        -D numEditRates=\"$numEditRates\" \
-        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
-        -D numTissueRates=\"$numTissueRates\" \
-        -D numTissues=\"$numTissues\" \
-        -D outname=chain_{wildcards.num} \
-        {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
