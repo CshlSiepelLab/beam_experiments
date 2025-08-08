@@ -3,7 +3,7 @@
 fastqPath: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/ryan_prostate_cancer_data_cancer_discovery_7_3_24/fastq_files
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25
+outdir: /grid/siepel/home/staklins/stored_results/beam/latest_results/serio_prostate_cancer_data
 
 # set the asv count threshold for filtering in evotracer
 asvThreshold: 3
@@ -30,6 +30,7 @@ primaryTissue:
 
 # set path to scripts and executables
 scripts: /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/scripts
+containers: /grid/siepel/home/staklins/containers
 treeannotator: /grid/siepel/home/staklins/bin/beast/bin/treeannotator
 logcombiner: /grid/siepel/home/staklins/bin/beast/bin/logcombiner
 

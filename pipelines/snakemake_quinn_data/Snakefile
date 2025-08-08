@@ -20,19 +20,13 @@ for mouse in mouse_ids:
         excluded_cps_5k_by_compute_requirements = ["1", "2", "3", "4", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "17", "19", "20", "21", "22", "23", "27", "31"]
         mouse_cps = [cp for cp in mouse_cps if cp not in excluded_cps_5k_by_original_paper and cp not in excluded_cps_5k_by_compute_requirements]
 
-        # gtr and random
-        # mouse_cps = ["77", "46", "85", "48", "29", "49", "78", "68", "96", "54"]
-
-        # no RL direct seeding
-        # mouse_cps = ['30', '34', '37', '47', '67', '62', '40', '60', '66', '70', '43', '74', '86', '71', '98', '92', '84', '91', '99', '26', '32', '95', '56', '90', '63', '83', '55', '73', '61', '58', '89', '72', '76', '52', '100', '59', '97', '35', '82', '79', '42', '80', '44', '64', '51']
-
     cps_for_mouse[mouse] = mouse_cps
 
 
 tissue_labeling_files = glob.glob(os.path.join(config['inputpath'], f"*_meta*"))
 
 # Not clear what this file is for, but not one of the 4 mice in the study with character matrices
-tissue_labeling_files.remove("/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/quinn_2021_real_data/GSE161363/GSM4905342_meta.LM0.tsv")
+tissue_labeling_files.remove("/grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/quinn_2021_real_data/GSE161363/GSM4905342_meta.LM0.tsv")
 
 outdir = config['outdir']
 
@@ -60,7 +54,6 @@ rule all:
         # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 151), outdir=outdir) for m in mouse_ids],
         # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 151), outdir=outdir) for m in mouse_ids],
         # [expand("{outdir}/beam_gtr_noRLdirectSeeding_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 51), outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/fitch_count/{mouse}/{cp}/fitchcount_classifications.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
 
 rule plotCountsPerCP:
     input:
@@ -73,8 +66,8 @@ rule plotCountsPerCP:
         scripts = config['scripts'],
         threads = 1,
         mem = "1G"
-    conda:
-        "../../envs/matplotlib.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # get the counts csv file
@@ -121,7 +114,7 @@ rule convertMatrixToSuccessive:
         threads = 1,
         mem = "1G"
     singularity:
-        "../../envs/simulate.sif"
+        f"{config['containers']}/cassiopeia.sif"
     shell:
         """
         python {params.scripts}/formatting/convert_allele_table_to_successive_matrix.py {input.alleleTable} {wildcards.cp} {params.outputdir}
@@ -139,8 +132,8 @@ rule plotCharacterMatrix:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G',
-    conda:
-        "../../envs/matplotlib.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # convert tissues to expected format with "group_name,tissues" header and tsv sep
@@ -162,7 +155,7 @@ rule runCassiopeia:
         threads = 1,
         mem = "1G"
     singularity:
-        "../../envs/simulate.sif"
+        f"{config['containers']}/cassiopeia.sif"
     shell:
         """
         # run cassiopeia greedy
@@ -177,15 +170,16 @@ rule runLAML:
     output:
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
         lamlAnnotations = "{outdir}/laml/{mouse}/{cp}/laml_annotations.txt",
-        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk"
+        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
+        lamlTreeNoOrigin = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_origin.nwk"
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/laml/{mouse}/{cp}",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        threads = 25,
-        mem = "1G"
-    conda:
-        "../../envs/laml.yaml"
+        threads = 1,
+        mem = "5G"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # copy matrix and replace -1 with ? for missing data
@@ -205,18 +199,28 @@ rule runLAML:
         python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_matrix {input.mutationPriors} $mutationPriors
 
         # run laml
-        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --parallel
+        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --topology_search
 
         # obtain newick without branch lengths
         sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
+
+        # remove fake root from tree
+        fixed_newick=$(sed "s/);//g" {output.lamlTree})
+        fixed_newick="${{fixed_newick:1}});"
+        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
+        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
+        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
+        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
+
+        echo $modified_newick > {output.lamlTreeNoOrigin}
         """
 
 rule plotLamlTreeWithTissues:
     input:
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
-        tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
-    output:
+        tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv",
         lamlTreeNoOrigin = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_origin.nwk",
+    output:
         lamlTreePlot = "{outdir}/laml/{mouse}/{cp}/laml_tree_with_tissues.pdf"
     params:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
@@ -224,14 +228,10 @@ rule plotLamlTreeWithTissues:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/matplotlib.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
-        # remove the origin node
-        newick=$(cat {input.lamlTree} | sed 's/^.//' | sed 's/..$//')
-        echo "${{newick}};" > {output.lamlTreeNoOrigin}
-
         # hacks for use on CSHL HPC
         RANDOM_DIR=$RANDOM
         mkdir -p ~/tmp/runtime-$RANDOM_DIR
@@ -491,8 +491,8 @@ rule collectMutualInformationAndPlot:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/matplotlib.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         echo "simname,mutual_information_normalized" > {output.combinedResults}
@@ -520,8 +520,8 @@ rule getExpectedClassificationsAndTimes:
         scripts = config['scripts'],
         threads = 1,
         mem = "1G"
-    conda:
-        "../../envs/matplotlib.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         echo "name,met_to_met,met_to_primary,threshold" > {output.allClassifications}
@@ -577,8 +577,8 @@ rule plotExpectedTimes:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/matplotlib.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/plotting/plot_all_metastasis_times.py {input} {params.experimentTime} {params.primaryTissue} {output}
@@ -593,8 +593,8 @@ rule plotClassifications:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/matplotlib.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/plotting/plot_all_classifications.py {input.allClassifications} {output.allClassificationsPlot}
@@ -610,8 +610,8 @@ rule getExpectedRfDistanceBeamLaml:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/compare_trees.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/statistics/compare_beam_laml_rf_distance.py {input.lamlTreeNoOrigin} {input.combinedTrees} {output.rfDistance}
@@ -646,8 +646,8 @@ rule plotRfDistances:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/matplotlib.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/plotting/plot_expected_rf_distances_distribution.py {input.combinedRfDistances} {output.rfDistancePlot}
@@ -670,7 +670,7 @@ rule prepMachina:
         threads = 1,
         mem = '1G'
     singularity:
-        '../../envs/simulate.sif'
+        f"{config['containers']}/cassiopeia.sif"
     shell:
         """
         # convert csv to tsv for leaf labels
@@ -703,8 +703,8 @@ rule runMach2:
         primaryTissue = config['primaryTissue'],
         threads = 25,
         mem = '5G',
-    conda:
-        "../../envs/mach2.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
@@ -1119,64 +1119,3 @@ rule runBeamGtrNoRLDirectSeeding:
             {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         fi
         """
-
-rule modifyLamlTree:
-    input:
-        lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk"
-    output:
-        lamlTreeNoOrigin = "{outdir}/fitch_count/{mouse}/{cp}/laml_trees_no_origin.nwk"
-    params:
-        threads = 1,
-        mem = '1G'
-    conda:
-        "../../envs/laml.yaml"
-    shell:
-        """
-        # remove fake root from tree
-        fixed_newick=$(sed "s/);//g" {input.lamlTree})
-        fixed_newick="${{fixed_newick:1}});"
-        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
-        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
-        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
-        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
-
-        echo $modified_newick > {output.lamlTreeNoOrigin}
-        """
-
-rule runFitchCount:
-    input:
-        lamlTreeNoOrigin = "{outdir}/fitch_count/{mouse}/{cp}/laml_trees_no_origin.nwk",
-        tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv",
-    output:
-        fitchHartigan = "{outdir}/fitch_count/{mouse}/{cp}/cassiopeia_fitch_hartigan_result.nwk"
-    params:
-        scripts = config['scripts'],
-        outputdir = "{outdir}/fitch_count/{mouse}/{cp}",
-        threads = 1,
-        mem = '1G'
-    singularity:
-        "../../envs/simulate.sif"
-    shell:
-        """
-        # remove fake root from tree
-        python {params.scripts}/cassiopeia/cassiopeia_fitch_hartigan.py {input.lamlTreeNoOrigin} {input.tissues} {params.outputdir}
-        """
-
-rule classifyFitchCount:
-    input:
-        fitchHartigan = "{outdir}/fitch_count/{mouse}/{cp}/cassiopeia_fitch_hartigan_result.nwk"
-    output:
-        classifications = "{outdir}/fitch_count/{mouse}/{cp}/fitchcount_classifications.csv",
-    params:
-        primaryTissue = config['primaryTissue'],
-        scripts = config['scripts'],
-        threads = 1,
-        mem = '1G'
-    conda:
-        "../../envs/laml.yaml"
-    shell:
-        """
-        python {params.scripts}/formatting/classifications_from_newick.py {input.fitchHartigan} {params.primaryTissue} {output.classifications}
-        """
-
-

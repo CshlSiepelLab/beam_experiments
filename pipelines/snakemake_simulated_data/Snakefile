@@ -13,7 +13,7 @@ rule all:
         expand("{outdir}/raw_data/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/raw_data/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        # expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
+        expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
         expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         # expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
@@ -350,8 +350,8 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{sim}",
         primaryTissue = config['primaryTissue'],
-        threads = 100,
-        mem = '5G'
+        threads = 25,
+        mem = '20G'
     singularity:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
@@ -508,10 +508,10 @@ rule runMetient:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         outputdir = "{outdir}/metient/{sim}",
-        threads = 50,
-        mem = '2G'
+        threads = 25,
+        mem = '20G'
     singularity:
-        "../../scripts/envs/metient.sif"
+        f"{config['containers']}/metient.sif"
     shell:
         """
         python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.sim} {params.primaryTissue} {params.outputdir}
