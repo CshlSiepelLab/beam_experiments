@@ -75,10 +75,10 @@ rule runLAML:
         python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_sim_matrix {input.mutationPriors} $mutationPriors
 
         # run laml
-        run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --topology_search --noDropout
+        run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --topology_search --noDropout --keep_polytomies
 
-        # remove fake root from tree
-        fixed_newick=$(sed "s/);//g" {output.lamlTreeOriginal})
+        # remove origin from tree
+        fixed_newick=$(cat {output.lamlTreeOriginal} | sed 's/\[&R\]//g' | sed "s/);//g")
         fixed_newick="${{fixed_newick:1}});"
         last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
         second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
@@ -421,6 +421,9 @@ rule runMach2:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
+        rm -r {params.outputdir}/../../laml/{wildcards.sim}/
+        exit
+
         unique_tissues=$(cut -f2 {input.labeling} | sort | uniq)
         num_unique_tissues=$(echo "$unique_tissues" | wc -l)
 

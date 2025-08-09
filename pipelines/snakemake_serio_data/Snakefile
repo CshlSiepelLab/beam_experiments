@@ -203,65 +203,12 @@ rule plotCpNumAsvs:
         python {params.scripts}/plotting/plot_tip_counts.py $asv_count_csv {params.max_tips}
         """
 
-rule downsampleInputsTree:
+rule prepBeamInputs:
     input:
         cpList = "{outdir}/beam/{mouse}/cp_list.txt",
         evotracerCassiopeiaTree= "{outdir}/evotracer/{mouse}/phylogeny_analysis/phylogeny_del_ins/tree_all_clones.newick",
-        temp_matrix = "{outdir}/beam/{mouse}/{cp}/temp_matrix.tsv",
-        temp_tissues = "{outdir}/beam/{mouse}/{cp}/temp_tissues.tsv"
-    output:
-        downsampledMatrix = "{outdir}/beam/{mouse}/{cp}/downsampled_char_matrix.tsv",
-        downsampledTissues = "{outdir}/beam/{mouse}/{cp}/downsampled_tissue_labels.tsv"
-    params:
-        outputdir = "{outdir}/beam/{mouse}/{cp}",
-        scripts = config['scripts'],
-        experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        max_tips = config['downsampleTipNumThreshold'], # downsampling only occurs if the number of tips is greater than this
-        threshold = config['downsampleDistanceThreshold'], # height of the tree for which downsampling occurs below it
-        threads = 25,
-        mem = '5G'
-    singularity:
-        f"{config['containers']}/crispr_barcode_migration_inference.sif"
-    shell:
-        """
-        # Check the number of rows in temp_tissues
-        num_tips=$(tail -n +2 {input.temp_tissues} | wc -l)
-
-        # If the number of rows is greater than 150, downsample
-        if [ "$num_tips" -gt {params.max_tips} ]; then
-            echo "Number of tips is greater than {params.max_tips}. Downsampling with a tree threshold of {params.threshold}."
-
-            # subset the existing cassiopeia tree
-            asv_names=$(tail -n +2 {input.temp_matrix} | cut -f1 | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
-            subset_cas_tree={params.outputdir}/subset_evotracer_cassiopeia_tree.nwk
-            python {params.scripts}/formatting/subset_evotracer_cassiopeia_tree.py {input.evotracerCassiopeiaTree} $asv_names $subset_cas_tree
-
-            # use the cassiopeia tree to get a laml tree for downsampling
-            cp {input.temp_matrix} {params.outputdir}/matrix.csv
-            sed -i 's/-1/?/g; s/\t/,/g' {params.outputdir}/matrix.csv
-
-            run_laml -c {params.outputdir}/matrix.csv -t $subset_cas_tree -o {params.outputdir}/{wildcards.mouse}_{wildcards.cp}_laml --timescale {params.experimentTime} --parallel
-
-            # remove origin from the laml tree
-            newick=$(sed 's/):.*$//g' {params.outputdir}/{wildcards.mouse}_{wildcards.cp}_laml_trees.nwk)
-            lamlTreeNoOrigin={params.outputdir}/{wildcards.mouse}_{wildcards.cp}_laml_trees_no_origin.nwk
-            echo "${{newick:1}}" > $lamlTreeNoOrigin
-            echo ");" >> $lamlTreeNoOrigin
-
-            # downsample the tree
-            python {params.scripts}/formatting/downsample_tree.py {input.temp_matrix} $lamlTreeNoOrigin {input.temp_tissues} {params.threshold} {params.outputdir}/downsampled
-
-        else
-            echo "Number of tips is less than {params.max_tips}. No downsampling."
-            cp {input.temp_matrix} {output.downsampledMatrix}
-            cp {input.temp_tissues} {output.downsampledTissues}
-        fi
-        """
-
-rule prepBeamInputs:
-    input:
-        downsampledMatrix = "{outdir}/beam/{mouse}/{cp}/downsampled_char_matrix.tsv",
-        downsampledTissues = "{outdir}/beam/{mouse}/{cp}/downsampled_tissue_labels.tsv",
+        matrix = "{outdir}/beam/{mouse}/{cp}/temp_matrix.tsv",
+        tissues = "{outdir}/beam/{mouse}/{cp}/temp_tissues.tsv",
         mutation_dict = "{outdir}/beam/{mouse}/mutation_dict.tsv"
     output:
         fasta = "{outdir}/beam/{mouse}/{cp}/{cp}.fasta",
@@ -279,7 +226,7 @@ rule prepBeamInputs:
     shell:
         """
         # make mutations successive for each matrix and provide an updated dictionary of int to mutations
-        python {params.scripts}/formatting/matrix_to_successive_matrix.py {input.downsampledMatrix} {input.mutation_dict} {params.outdir}
+        python {params.scripts}/formatting/matrix_to_successive_matrix.py {input.matrix} {input.mutation_dict} {params.outdir}
 
         # expand clones found in multiple tissues to separate entries
         python {params.scripts}/formatting/expand_clones_multiple_tissues.py {params.outdir}/successive_char_matrix.csv {input.downsampledTissues} {params.outdir}
@@ -380,10 +327,19 @@ rule runLAML:
         python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_matrix $reformattedObservedEditRates $mutationPriors
 
         # run laml
-        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --topology_search --noDropout
+        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --topology_search --noDropout --keep_polytomies
+
+        # remove origin from tree
+        fixed_newick=$(cat {output.lamlTree} | sed 's/\[&R\]//g' | sed "s/);//g")
+        fixed_newick="${{fixed_newick:1}});"
+        last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
+        second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
+        new_branch=$(echo "$last_branch + $second_last_branch" | bc)
+        modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
+        echo $modified_newick > {output.lamlTreeNoOrigin}
 
         # obtain newick without branch lengths
-        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTree} > {output.lamlTreeNoBranchLengths}
+        sed 's/:\([0-9]\+\.\?\([0-9]\+\)\?\)//g' {output.lamlTreeNoOrigin} > {output.lamlTreeNoBranchLengths}
         """
 
 rule runBeam:

@@ -3,6 +3,7 @@
 export REPO_PATH=/grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/pipelines/snakemake_quinn_data
 
 snakemake \
+-n \
 --until runLAML \
 --use-conda \
 --use-singularity \
