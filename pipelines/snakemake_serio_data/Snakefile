@@ -298,7 +298,8 @@ rule runLAML:
     output:
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
         lamlAnnotations = "{outdir}/laml/{mouse}/{cp}/laml_annotations.txt",
-        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk"
+        lamlTreeNoOrigin = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_origin.nwk",
+        lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/laml/{mouse}/{cp}",

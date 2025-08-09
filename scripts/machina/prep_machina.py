@@ -17,13 +17,17 @@ output_file_colors = output_dir + "/" + input_prefix + "_colors.txt"
 
 tree = ete3.Tree(leaf_labeled_tree, format=8)
 
-# Remove tissue labels for internal node names, if they exist
+# Remove tissue labels for internal node names, if they exist and add names to nodes that are dummy nodes for identical sequences from laml output
+i=1
 for node in tree.traverse():
     if node.is_root():
         node.name = "root"
     elif not node.is_leaf():
         current_name = node.name
         new_name = current_name.split("_")[0]
+        if new_name == "node" and current_name.split("_")[1] == "dummy":
+            new_name = f"nodedummy{i}"
+            i += 1
         node.name = new_name
 
 edges = []

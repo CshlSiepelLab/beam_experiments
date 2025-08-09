@@ -137,6 +137,10 @@ outdir = sys.argv[3]
 primary_tissue = "P"
 
 tree = ete3.Tree(tree_file, format=8)
+
+# Force the tree to be binary (ie. resovle polytomies)
+tree.resolve_polytomy()
+
 tissue_map = pd.read_csv(
     leaf_tissues_tsv,
     sep=r"\s+",
