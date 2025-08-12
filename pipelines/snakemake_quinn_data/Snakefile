@@ -36,7 +36,7 @@ rule all:
         [expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.tsv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/laml/{mouse}/{cp}/laml_tree_with_tissues.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
+        # [expand("{outdir}/laml/{mouse}/{cp}/laml_tree_with_tissues.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}.fasta", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         [expand("{outdir}/successive_raw_data/{mouse}/{cp}_successive_character_matrix.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         expand("{outdir}/asv_counts_per_cp.csv", outdir=outdir),
@@ -238,7 +238,7 @@ rule plotLamlTreeWithTissues:
         export XDG_RUNTIME_DIR=/tmp/runtime-$RANDOM_DIR
         export QT_QPA_PLATFORM=offscreen;
 
-        python {params.scripts}/plotting/plot_tree_with_tissues.py {output.lamlTreeNoOrigin} {input.tissues} {params.primaryTissue} {params.experimentTime} {output.lamlTreePlot}
+        python {params.scripts}/plotting/plot_tree_with_tissues.py {input.lamlTreeNoOrigin} {input.tissues} {params.primaryTissue} {params.experimentTime} {output.lamlTreePlot}
 
         rm -r ~/tmp/runtime-$RANDOM_DIR
         """
@@ -652,16 +652,15 @@ rule plotRfDistances:
         python {params.scripts}/plotting/plot_expected_rf_distances_distribution.py {input.combinedRfDistances} {output.rfDistancePlot}
         """
 
-rule prepMachina:
+rule prepMach2:
     input:
         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
         tissues = "{outdir}/beam/{mouse}/{cp}/{mouse}_{cp}_tip_tissues.csv"
     output:
-        lamlTreeNoBranchLengthsNoOrigin = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.nwk",
         tissuesTsv = "{outdir}/mach2/{mouse}/{cp}/leaf_tissues.tsv",
-        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.labeling",
-        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin_colors.txt",
-        tree = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.tree",
+        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
+        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt",
+        tree = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
     params:
         primaryTissue = config['primaryTissue'],
         scripts = config['scripts'],
@@ -675,12 +674,8 @@ rule prepMachina:
         # convert csv to tsv for leaf labels
         sed 's/,/\\t/g' {input.tissues} > {output.tissuesTsv}
 
-        # remove node names from newick and the origin node
-        newick=$(cat {input.lamlTreeNoBranchLengths} | sed 's/^.//' | sed 's/..$//')
-        echo "${{newick}};" > {output.lamlTreeNoBranchLengthsNoOrigin}
-
         # prep inputs
-        python {params.scripts}/machina/prep_machina.py {output.lamlTreeNoBranchLengthsNoOrigin} {params.outputdir} {params.primaryTissue} {output.tissuesTsv}
+        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {output.tissuesTsv}
 
         # for the labeling and colors file, make sure the names do not have . or - characters
         sed -i 's/\./_/g; s/-/_/g' {output.labeling}
@@ -689,19 +684,17 @@ rule prepMachina:
 
 rule runMach2:
     input:
-        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.labeling",
-        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin_colors.txt",
-        tree = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_no_origin.tree",
+        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
+        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt",
+        tree = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
     output:
-        mach2tree = "{outdir}/mach2/{mouse}/{cp}/LL-T-0.tree",
-        mach2labeling = "{outdir}/mach2/{mouse}/{cp}/LL-T-0.labeling",
         mach2graph = "{outdir}/mach2/{mouse}/{cp}/LL-G-0.graph",
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{mouse}/{cp}",
         primaryTissue = config['primaryTissue'],
         threads = 25,
-        mem = '5G',
+        mem = '20G',
     singularity:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:

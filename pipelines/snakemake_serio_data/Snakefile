@@ -62,8 +62,8 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 1001), mouse=m) for m in mice],
         # [expand("{outdir}/beam_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 1001), mouse=m) for m in mice],
-        # [expand("{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
 
 rule runEvotracer:
     input:
@@ -297,7 +297,6 @@ rule runLAML:
         casTree = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/cassiopeia_greedy_inferred.nwk"
     output:
         lamlTree = "{outdir}/laml/{mouse}/{cp}/laml_trees.nwk",
-        lamlAnnotations = "{outdir}/laml/{mouse}/{cp}/laml_annotations.txt",
         lamlTreeNoOrigin = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_origin.nwk",
         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
     params:
@@ -1054,9 +1053,9 @@ rule prepMach2:
         lamlTreeNoBranchLengths = "{outdir}/laml/{mouse}/{cp}/laml_trees_no_branch_lengths.nwk",
         tissues = "{outdir}/beam/{mouse}/{cp}/{cp}_tip_tissues.csv"
     output:
-        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths.labeling",
-        edges = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths.tree",
-        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths_colors.txt"
+        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
+        edges = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
+        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt"
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{mouse}/{cp}",
@@ -1070,12 +1069,8 @@ rule prepMach2:
         # convert csv to tsv for leaf labels
         sed 's/,/\\t/g' {input.tissues} > {params.outputdir}/leaf_tissues.tsv
 
-        # remove node names from newick and the origin node
-        newick=$(cat {input.lamlTreeNoBranchLengths} | sed 's/^.//' | sed 's/..$//')
-        echo "${{newick}};" > {params.outputdir}/laml_trees_no_origin_no_branch_lengths.nwk
-
         # prep inputs
-        python {params.scripts}/machina/prep_machina.py {params.outputdir}/laml_trees_no_origin_no_branch_lengths.nwk {params.outputdir} {params.primaryTissue} {params.outputdir}/leaf_tissues.tsv
+        python {params.scripts}/machina/prep_machina.py {input.lamlTreeNoBranchLengths} {params.outputdir} {params.primaryTissue} {params.outputdir}/leaf_tissues.tsv
 
         # for the labeling and colors file, make sure the names do not have . or - characters
         sed -i 's/\./_/g; s/-/_/g' {output.labeling}
@@ -1084,17 +1079,17 @@ rule prepMach2:
 
 rule runMach2:
     input:
-        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths.labeling",
-        edges = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths.tree",
-        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_origin_no_branch_lengths_colors.txt"
+        labeling = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.labeling",
+        edges = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths.tree",
+        colors = "{outdir}/mach2/{mouse}/{cp}/laml_trees_no_branch_lengths_colors.txt"
     output:
         mach2graph = "{outdir}/mach2/{mouse}/{cp}/PRL-G-0.graph"
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 50,
-        mem = '5G'
+        threads = 25,
+        mem = '20G'
     singularity:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
