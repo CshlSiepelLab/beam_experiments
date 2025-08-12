@@ -514,7 +514,7 @@ rule runMetient:
         f"{config['containers']}/metient.sif"
     shell:
         """
-        python {params.scripts}/metient/run_metient.py {input.metientTsv} {input.metientTree} {wildcards.sim} {params.primaryTissue} {params.outputdir}
+        python {params.scripts}/metient/run_metient_evaluate.py {input.metientTsv} {input.metientTree} {wildcards.sim} {params.primaryTissue} {params.outputdir}
         """
 
 
