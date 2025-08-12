@@ -32,7 +32,7 @@ with open(sim_matrix, "r") as f:
             # laml wants just int site names for the input priors
             if site_name not in laml_priors:
                 laml_priors[site_name] = {}
-            if code not in laml_priors:
+            if code not in laml_priors[site_name]:
                 try:
                     laml_priors[site_name][code] = priors[code]
                 except KeyError:

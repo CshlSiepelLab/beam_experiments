@@ -63,7 +63,7 @@ allele_table = pd.read_csv(
 
 group = allele_table[allele_table["LineageGroup"] == lineage]
 
-# get indel priors as per Cassiopeis docs
+# get indel priors as per Cassiopeia docs
 indel_priors = cas.pp.compute_empirical_indel_priors(group)
 
 char_matrix_df, priors, mut_dict = cas.pp.convert_alleletable_to_character_matrix(
