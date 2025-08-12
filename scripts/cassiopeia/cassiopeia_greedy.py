@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 import os, sys
 import pandas as pd
 import cassiopeia as cas

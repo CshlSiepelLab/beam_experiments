@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import os, sys
 from ete3 import Tree

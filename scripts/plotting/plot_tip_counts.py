@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import pandas as pd
@@ -21,7 +20,6 @@ DEFAULT_COLORS = [
 ] * 3
 
 infile = sys.argv[1]
-# infile = "/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/asv_counts_per_cp.csv"
 
 max_tips = int(sys.argv[2])
 # max_tips = 150

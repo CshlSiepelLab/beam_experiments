@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-### This script takes in a newick tree and tsv style tissue map for the tips of the tree and then outputs inferred newicks for both a consensus and random approach to labeling tissues for internal nodes
 
 import sys
 import ete3

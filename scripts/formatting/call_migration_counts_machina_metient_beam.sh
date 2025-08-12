@@ -1,6 +1,3 @@
-#!/bin/bash
-
-# mamba activate compare_trees
 
 working_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50"
 primaryTissue="PRL"

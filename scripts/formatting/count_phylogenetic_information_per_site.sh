@@ -1,4 +1,3 @@
-#!/bin/bash
 
 # Variable rates data
 inDir="/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/data/variable_migration_and_mutation_rates_8_19_24/"

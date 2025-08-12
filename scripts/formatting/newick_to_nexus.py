@@ -1,13 +1,9 @@
-#!/usr/bin/env python3
 
 import sys
 from Bio import Phylo
 
-# # user input
-# newick_file = sys.argv[1]
-
-# testing
-newick_file = "seed0.nwk"
+# user input
+newick_file = sys.argv[1]
 
 # format outfile
 outfile = newick_file.replace(".nwk", ".nexus")

@@ -1,5 +1,3 @@
-#!/bin/bash
-source ~/miniconda3/etc/profile.d/conda.sh
 
 if [[ $# -eq 0 ]] ; then
     echo "Usage: run_machina.sh --edges <edges_file> --labels <labels_file> --colors <colors_file> --primary-tissue <tissue> --outdir <dir_path> --threads <num_threads>"

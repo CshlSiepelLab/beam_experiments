@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import os
@@ -16,10 +15,7 @@ import ast
 import pickle
 
 # meant to be used after the initial precision/recall processing across all datasets, now stratifying them by topology restriction in the simulation
-# outdir = sys.argv[1]
-
-# testing
-outdir = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_repeat_origin_scaling_implemented_10_15_24_uniform_50cells_50sites_data_7_24_24/precision_recall_curve"
+outdir = sys.argv[1]
 
 # optionally to open from pickle file and avoid recalculations above
 with open(f"{outdir}/precision_recall_vars.pkl", "rb") as file:

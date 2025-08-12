@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
 
 import sys
 import pydot
 
 
-# Read command-line arguments
 dot_file = sys.argv[1]
 outfile = sys.argv[2]
 

@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-### This script takes in a MCC tree from TreeAnnotator made from the BEAST2 posterior and then collapses the tree to a migration graph with edges weighted based on node tissue location probabilities. We essentially make a graph of all possible routes and then each route intensity is based on probability of occuring in the tree given node probabilities.
 
 import re, sys
 import random
@@ -44,9 +41,6 @@ def label_nodes(newick):
 
 consensus_tree_file = sys.argv[1]
 primary_tissue = sys.argv[2]
-
-# consensus_tree_file = "results/beast_gundem_2015_2_21_24/A10_sym/tissue_tree_with_trait.tree"
-# primary_tissue = "prostate"
 
 
 with open(consensus_tree_file, "r") as file:

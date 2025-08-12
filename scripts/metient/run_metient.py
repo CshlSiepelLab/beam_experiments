@@ -1,4 +1,3 @@
-#!/usr/bin/env
 
 import os, sys
 import gzip
@@ -23,12 +22,11 @@ met.evaluate_label_clone_tree(
 )
 
 
-### Sort through results to obtain samples from the solution space
+# Sort through results to obtain samples from the solution space
 with gzip.open(os.path.join(output_dir, f"{patient}_{primary}.pkl.gz"), "rb") as f:
     pckl = pickle.load(f)
-# print(pckl.keys())
 
-# obtain samples from the solution space up to 1024 samples if available
+# Obtain samples from the solution space
 num_samples = 1024
 num_results = len(pckl["clone_tree_labelings"])
 if num_results < num_samples:
@@ -37,11 +35,9 @@ if num_results < num_samples:
 tissues = pckl["ordered_anatomical_sites"]
 migration_graphs = np.empty(num_samples, dtype=dict)
 losses = np.empty(num_samples)
-# trees = np.empty(num_samples,dtype=dict)
 
 
 for i in range(num_samples):
-    # obtain the migration graph
     V = pckl["clone_tree_labelings"][i]
     A = pckl["full_adjacency_matrices"][i]
     G = met.migration_graph(V, A)
@@ -50,14 +46,7 @@ for i in range(num_samples):
     migration_graphs[i] = df_dict
     losses[i] = pckl["losses"][i]
 
-    # would be nice to record the full tree node labels here, but unsure how to do it given that some scenarios may have differing trees due to polytomy resolution, so will leave it blank to prevent pipeline bugs
-
-# output samples to files
 with open(f"{output_dir}/{patient}_{primary}_migration_graphs.txt", "w") as file:
     file.write(f"loss\tmigration_graph\n")
     for l, g in zip(losses, migration_graphs):
         file.write(f"{l}\t{g}\n")
-
-# with open(f"{output_dir}/{patient}_{primary}_labeled_trees.txt", "w") as file:
-#     for t in trees:
-#         file.write(f"{t}\n")

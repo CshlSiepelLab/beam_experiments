@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import os
@@ -7,11 +6,6 @@ import pandas as pd
 char_matrix_file = sys.argv[1]
 mut_dict_file = sys.argv[2]
 outdir = sys.argv[3]
-
-# # testing
-# char_matrix_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_9_1_24/metastabayes/MMUS1834/CP00/temp_matrix.tsv"
-# mut_dict_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_9_1_24/metastabayes/MMUS1834/mutation_dict.tsv"
-# outdir = "./"
 
 char_matrix_df = pd.read_csv(char_matrix_file, sep="\t", index_col=0)
 mut_dict_df = pd.read_csv(mut_dict_file, sep="\t", index_col=0, header=None)

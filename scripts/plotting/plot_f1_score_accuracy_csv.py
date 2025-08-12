@@ -1,15 +1,11 @@
-#!/usr/bin/env python3
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys, os
 import seaborn as sns
 
-# # user inputs
-# filepath=sys.argv[1]
-
-# testing
-filepath = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/asymTissueModel_more_informative_sims_joint_inference_cassiopeia_machina_5_24_24/accuracy.csv"
+# user inputs
+filepath=sys.argv[1]
 
 # set outdir from input file
 outdir = os.path.dirname(filepath)

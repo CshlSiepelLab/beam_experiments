@@ -508,7 +508,7 @@ rule runMetient:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
         outputdir = "{outdir}/metient/{sim}",
-        threads = 25,
+        threads =25,
         mem = '20G'
     singularity:
         f"{config['containers']}/metient.sif"

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import os
@@ -173,9 +172,6 @@ def main():
     
     newick_file = sys.argv[1]
     outfile = sys.argv[2]
-
-    # newick_file = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/mach2/5k/28/laml_trees_no_branch_lengths_no_origin.nwk"
-    # outfile = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/mach2/5k/28/laml_trees_no_branch_lengths_no_origin.pdf"
     
     # Ensure output directory exists
     outdir = os.path.dirname(outfile)

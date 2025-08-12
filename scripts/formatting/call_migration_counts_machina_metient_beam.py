@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 import sys
 import ast
@@ -15,15 +14,6 @@ parsimony = sys.argv[4]
 primaryTissue = sys.argv[5]
 outdir = sys.argv[6]
 name = sys.argv[7]
-
-# # testing
-# machina = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/machina/MMUS1469/CP10/PRL-G-PRL-R.tree"
-# metient = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/metient/MMUS1469/CP10/MMUS1469_CP10_PRL_migration_graphs.txt"
-# beam = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/beam/MMUS1469/CP10/combined.trees"
-# parsimony = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/parsimony_tissue_inference/MMUS1469/CP10/all_parsimony_solutions.txt"
-# primaryTissue = "PRL"
-# outdir = "./"
-# name = "test"
 
 
 def getMigrationComigrationCountsFromNewick(newick):

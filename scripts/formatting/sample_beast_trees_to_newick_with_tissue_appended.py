@@ -1,11 +1,8 @@
-#!/usr/bin/env python3
 
 import sys
 import os
 import random
 import dendropy
-
-# nexus_file = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/26/combined_subsample.trees"
 
 nexus_file = sys.argv[1]
 

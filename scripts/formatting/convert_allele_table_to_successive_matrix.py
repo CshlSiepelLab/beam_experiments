@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import pandas as pd
@@ -43,11 +42,6 @@ def convert_matrix_to_successive(character_matrix, mut_dict, indel_priors):
 infile = sys.argv[1]
 lineage = int(sys.argv[2])
 outdir = sys.argv[3]
-
-# # testing
-# infile = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/data/quinn_2021_real_data/GSE161363/GSM4905334_alleleTable.5k.txt'
-# lineage=21
-# outdir = '/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_1_22_25/successive_raw_data/5k'
 
 # read in the proivded allele table
 allele_table = pd.read_csv(

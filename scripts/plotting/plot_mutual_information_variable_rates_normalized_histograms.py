@@ -1,12 +1,8 @@
-#!/usr/bin/env python3
 
 import pandas as pd
 import sys
 import matplotlib.pyplot as plt
 
-
-# input_file_path = sys.argv[1]
-# output_file_path = sys.argv[2]
 
 input_file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_1_31_25_data_from_8_19_24/gtr_beam_mutual_information.csv"
 output_file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_1_31_25_data_from_8_19_24/gtr_beam_mutual_information_variable_rates.pdf"

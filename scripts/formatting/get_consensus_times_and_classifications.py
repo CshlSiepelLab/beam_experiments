@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import os
@@ -10,11 +9,6 @@ file_path = sys.argv[1]
 origin_tissue = sys.argv[2]
 consensus_threshold = float(sys.argv[3])
 outprefix = sys.argv[4]
-
-# file_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/71/metastasis_timing.pkl"
-# origin_tissue = "LL"
-# consensus_threshold = 0.50
-# outprefix = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/71/5k_71"
 
 with open(file_path, "rb") as file:
     met_times = pkl.load(file)

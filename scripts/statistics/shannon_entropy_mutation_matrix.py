@@ -1,17 +1,11 @@
-#!/usr/env/bin python3
 
 import sys
-
-# import math
 import pandas as pd
 import scipy.stats
 import numpy as np
 
-# user input
-file_path = sys.argv[1]
 
-# # testing
-# file_path = 'results/moreSims_joint_inference_vs_cassiopeia_machina_vs_random_cellTree_simdataset_5_3_24/mS/1983/1983_indel_character_matrix_with_tissues.tsv'
+file_path = sys.argv[1]
 
 # read in mutation matrix
 matrix = pd.read_csv(file_path, sep="\t", header=0, index_col=0)
@@ -30,15 +24,6 @@ for row in matrix.iterrows():
                 probs[mut] += 1
             total += 1
 
-# # compute shannon entropy manually
-# entropy = 0
-# for key, count in probs.items():
-#     if count > 0:
-#         probability = count / total
-#         entropy += probability * math.log2(probability)
-# entropy *= -1
-
-# alternative calculation with scipy.stats
 total_probs = len(probs)
 probs_array = np.zeros(total_probs)
 

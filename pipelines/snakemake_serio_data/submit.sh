@@ -3,8 +3,6 @@
 export REPO_PATH=/grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/pipelines/snakemake_serio_data
 
 snakemake \
--n \
---until runLAML \
 --latency-wait 30 \
 --use-conda \
 --use-singularity \

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import os
@@ -61,7 +60,6 @@ def process_tree(filepath):
     return counts, tissues
 
 
-# inputs
 newick = sys.argv[1]
 primary_tissue = sys.argv[2]
 outfile = sys.argv[3]

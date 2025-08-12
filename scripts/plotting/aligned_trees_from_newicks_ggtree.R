@@ -1,4 +1,3 @@
-#!/usr/bin/env Rscript
 
 library(ape)
 library(ggtree)
@@ -12,9 +11,6 @@ library(RColorBrewer)
 args <- commandArgs(trailingOnly = TRUE)
 nwk1 <- args[1] # LAML tree with branch lengths but no origin
 nwk2 <- args[2] # BEAM tree
-
-# nwk1 <- "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/laml/5k/28/laml_trees_no_origin.nwk"
-# nwk2 <- "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/28/sampled_tree_1_with_tissue_appended_to_name.nwk"
 
 outfile <- sub("\\.nwk$", ".pdf", nwk2)
 

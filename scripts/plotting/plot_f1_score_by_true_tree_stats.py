@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import pandas as pd
@@ -6,14 +5,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-# user inputs
-# csv_path = sys.argv[1]
-# tree_stats_path = sys.argv[2]
-# output_dir = sys.argv[3]
-
-csv_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_repeat_origin_scaling_implemented_10_25_24_data_from_8_19_24/precision_recall_variable_rates/metrics_all.csv"
-tree_stats_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_repeat_origin_scaling_implemented_10_25_24_data_from_8_19_24/true_tree_stats.txt"
-output_dir = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_repeat_origin_scaling_implemented_10_25_24_data_from_8_19_24/precision_recall_variable_rates"
+csv_path = sys.argv[1]
+tree_stats_path = sys.argv[2]
+output_dir = sys.argv[3]
 
 # Read the CSV files into pandas DataFrames
 df = pd.read_csv(csv_path)

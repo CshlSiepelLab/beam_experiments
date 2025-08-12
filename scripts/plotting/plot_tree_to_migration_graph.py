@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import re, sys, os
 import random
@@ -11,7 +10,6 @@ from networkx.drawing.nx_pydot import to_pydot
 import matplotlib
 
 tree_file = sys.argv[1]
-# tree_file="/grid/siepel/home_norepl/staklins/stephen_data/beast_bayesian_migration_graph_inference/variable_migration_and_mutation_rates_8_19_24_data_from_8_19_24/raw_data/mig4_mut001_231/tissue_labeled_tree.nwk"
 
 outfile = tree_file.replace(".nwk", "_migration_graph.pdf")
 

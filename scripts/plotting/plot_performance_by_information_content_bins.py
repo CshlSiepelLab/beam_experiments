@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import pandas as pd
@@ -8,10 +7,6 @@ import matplotlib.pyplot as plt
 performance_threshold_csv = sys.argv[1]
 information_csv = sys.argv[2]
 outfile = sys.argv[3]
-
-# performance_threshold_csv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/information_content_GTI_model_12_13_24_variable_rates_data_8_19_24/bin_information_performance/concat_all_threshold_stats.csv"
-# information_csv = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/information_content_GTI_model_12_13_24_variable_rates_data_8_19_24/beam_information_content.csv"
-# outfile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/information_content_GTI_model_12_13_24_variable_rates_data_8_19_24/bin_information_performance/bin_information_precision_recall.pdf"
 
 df1 = pd.read_csv(performance_threshold_csv)
 df2 = pd.read_csv(information_csv)

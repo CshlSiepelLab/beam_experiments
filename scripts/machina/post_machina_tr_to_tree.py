@@ -1,4 +1,4 @@
-### Take in MACHINA internal node label output and leaf labeled tree and output tree with all node and leaf labels
+
 from ete3 import Tree
 import pandas as pd
 import sys

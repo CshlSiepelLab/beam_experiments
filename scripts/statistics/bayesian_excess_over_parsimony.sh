@@ -1,7 +1,3 @@
-#!/bin/bash
-
-# need an environment with ete3 installed
-# mamba activate compare_trees
 
 main_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24"
 

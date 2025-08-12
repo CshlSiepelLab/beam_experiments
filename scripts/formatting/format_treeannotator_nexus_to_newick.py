@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 from ete3 import Tree
@@ -34,8 +33,6 @@ def dendropy_beast_to_ete_newick_with_strict_locations(tree):
 
 def main():
     beast_file = sys.argv[1]
-
-    # beast_file = "sim_data_barcodes_modifiedTTPmachina_3_29_24/mS/24874/joint_inference_beast_tissues.tree"
 
     out_file = beast_file + ".nwk"
 

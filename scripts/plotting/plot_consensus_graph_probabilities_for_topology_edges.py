@@ -1,14 +1,10 @@
-#!/usr/bin/env python3
 
 import sys
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# infile = sys.argv[1]
-
-# testing
-infile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_11_18_24_asv_cutoff_50/consensus_edge_probabilities_by_topology/consensus_graph_probabilities_by_edge_topology.csv"
+infile = sys.argv[1]
 
 outfile = infile.replace(".csv", ".pdf")
 

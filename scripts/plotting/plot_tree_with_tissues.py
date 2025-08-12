@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 from ete3 import Tree, TreeStyle, NodeStyle, CircleFace, TextFace
@@ -138,12 +137,5 @@ tissues_file = sys.argv[2]
 primary_tissue = sys.argv[3]
 total_time = int(sys.argv[4])
 outfile = sys.argv[5]
-
-# newick_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/mach2/5k/58/M-T-0.nwk"
-# tissues_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/mach2/5k/58/M-T-0_labeling.csv"
-# primary_tissue = "LL"
-# total_time = 54
-# outfile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/mach2/5k/58/M-T-0_labeling.pdf"
-
 
 plot_tree_and_graph(newick_file, tissues_file, primary_tissue, total_time, outfile)

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import os
@@ -8,11 +7,6 @@ import pandas as pd
 matrix_file = sys.argv[1]
 tissues_file = sys.argv[2]
 output_dir = sys.argv[3]
-
-# # testing
-# matrix_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_9_1_24/metastabayes/MMUS1782/CP00/temp_matrix.tsv"
-# tissues_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/billy_bladder_cancer_data_9_1_24/metastabayes/MMUS1782/CP00/temp_tissues.tsv"
-# output_dir ="./"
 
 # read in matrix and tissues files to df where the files are tsv files
 matrix_df = pd.read_csv(matrix_file, sep="\t", index_col=0)
