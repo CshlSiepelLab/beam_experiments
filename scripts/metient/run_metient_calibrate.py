@@ -17,11 +17,6 @@ input_dir = "/mnt/stored_results/beam/latest_results/snakemake_performance_unifo
 dataset_names = [os.path.basename(d) for d in os.listdir(input_dir) if os.path.isdir(os.path.join(input_dir, d))]
 print(f"Found {len(dataset_names)} datasets:", dataset_names)
 
-# # Downsample datasets since metient calibrate is slow
-# downsample_num = 10
-# dataset_names = random.sample(dataset_names, downsample_num)
-# print(f"Downsampled to {len(dataset_names)} datasets:", dataset_names)
-
 clone_tree_fns = [os.path.join(input_dir, name, "tree.txt") for name in dataset_names]
 ref_var_fns = [os.path.join(input_dir, name, "metadata.tsv") for name in dataset_names]
 
