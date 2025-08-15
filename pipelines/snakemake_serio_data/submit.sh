@@ -3,8 +3,7 @@
 export REPO_PATH=/grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/pipelines/snakemake_serio_data
 
 snakemake \
--n \
---latency-wait 30 \
+--latency-wait 15 \
 --use-conda \
 --use-singularity \
 --singularity-args "--bind $HOME/ --bind $GRB_LICENSE_FILE:/mnt/gurobi.lic --env GRB_LICENSE_FILE=/mnt/gurobi.lic" \

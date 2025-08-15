@@ -216,6 +216,9 @@ for true_tree_file in dirs:
     machina_file = f"{dir}/machina/{sim}/machina_tree_all_tissue_labels.nwk"
     mach2_file = f"{dir}/mach2/{sim}/consensus_graph.txt"
     metient_file = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_migration_graphs.txt"
+    
+    # metient_file=f"/grid/siepel/home/staklins/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24/metient_calibrate_80_ideal_sims_8_15_25/calibrate/{sim}_migration_graphs.txt"
+    
     beast_posterior_file = f"{dir}/beam_gtr/{sim}/posterior_prob_graph.csv"
     consensus_file = (
         f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk"

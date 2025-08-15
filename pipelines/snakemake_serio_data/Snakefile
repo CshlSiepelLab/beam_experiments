@@ -28,42 +28,24 @@ def get_elements_from_file(path):
 
 rule all:
     input:
-        expand("{outdir}/evotracer/{mouse}/asv_analysis/character_matrix.csv", outdir=config['outdir'], mouse=mice),
-        # expand("{outdir}/evotracer/{mouse}/hist_freq_indels.pdf", outdir=config['outdir'], mouse=mice),
-        expand("{outdir}/beam/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice),
-        expand("{outdir}/asv_counts_per_cp_boxplot.pdf", outdir=config['outdir']),
-        [expand("{outdir}/laml/{mouse}/{cp}/laml_trees.nwk", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, config['numChains']+1), mouse=m) for m in mice],
-        # [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # expand("{outdir}/gtr_beam_mutual_information.pdf", outdir=config['outdir']),
         # [expand("{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        [expand("{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv", outdir=config['outdir'],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/beam/{mouse}/{cp}/posterior_expected_over_parsimony/posterior_expected_migration_counts_over_parsimony.csv", outdir=config['outdir'],
         #             cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/parsimony_tissue_inference/{mouse}/{cp}/parsimony_tissues_random.pdf", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # [expand("{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf", outdir=config['outdir'], 
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
+        # expand("{outdir}/gtr_beam_mutual_information.pdf", outdir=config['outdir']),
         # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 51), mouse=m) for m in mice],
         # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 51), mouse=m) for m in mice],
-        # # expand("{outdir}/beam_gtr/combined_rf_distances.pdf", outdir=config['outdir']),
         # [expand("{outdir}/beam_gtr/{mouse}/{cp}/all_consensus_classifications.csv", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
-        # expand("{outdir}/beam_gtr/all_consensus_classifications.pdf", outdir=config['outdir']),
         # [expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.pdf", outdir=config['outdir'], mouse=m) for m in mice],
         # [expand("{outdir}/beam_no_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 1001), mouse=m) for m in mice],
         # [expand("{outdir}/beam_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 1001), mouse=m) for m in mice],
-        [expand("{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
 
 rule runEvotracer:
     input:
@@ -98,33 +80,6 @@ rule runEvotracer:
         rm -r $tempDir
         """
 
-rule plotEvotracerResults:
-    input:
-        rDataObject = "{outdir}/evotracer/{mouse}/evotracer.RData",
-    output:
-        indels = "{outdir}/evotracer/{mouse}/hist_freq_indels.pdf",
-        dispersal = "{outdir}/evotracer/{mouse}/stat_cps_dispersal_bargraph_hm.pdf",
-        phylo = "{outdir}/evotracer/{mouse}/cp_tree_msa_cna_bc_bubble_qnt_ggtree_mp.pdf",
-    params:
-        evoPlotsOutDir = "{outdir}/evotracer/{mouse}/plots",
-        scripts = config['scripts'],
-        threads = 1,
-        mem = '5G'
-    singularity:
-        f"{config['containers']}/evotracer_plotting.sif"
-    shell:
-        """
-        Rscript {params.scripts}/plotting_nowak_lab/2_barcode_edits_analysis/04.1_hist_freq_indels.R {input.rDataObject} "{params.evoPlotsOutDir}"
-
-        Rscript {params.scripts}/plotting_nowak_lab/2_barcode_edits_analysis/04.2_hist_freq_seq_length.R {input.rDataObject} "{params.evoPlotsOutDir}"
-
-        Rscript {params.scripts}/plotting_nowak_lab//2_barcode_edits_analysis/04.3_hist_freq_site_marked.R {input.rDataObject} "{params.evoPlotsOutDir}"
-
-        Rscript {params.scripts}/plotting_nowak_lab/3_clonal_population_analysis/05.1_cp_stat_vis.R {input.rDataObject} "{params.evoPlotsOutDir}"
-
-        Rscript {params.scripts}/plotting_nowak_lab/4_phylogenetic_analysis/06.1_tree_msa_bubble_all_clones.R {input.rDataObject} "{params.evoPlotsOutDir}"
-
-        """
 
 rule splitCPs:
     input:
@@ -169,38 +124,6 @@ rule splitCPs:
             # track all CPs as they finish pre-processing
             echo "$cp" >> {output.cpList}
         done
-        """
-
-rule plotCpNumAsvs:
-    input:
-        cpLists = expand("{outdir}/beam/{mouse}/cp_list.txt", outdir=config['outdir'], mouse=mice)
-    output:
-        asvCountPdf = "{outdir}/asv_counts_per_cp_boxplot.pdf"
-    params:
-        outdir = "{outdir}",
-        scripts = config['scripts'],
-        threads = 1,
-        max_tips = config['downsampleTipNumThreshold'],
-        mem = '5G'
-    singularity:
-        f"{config['containers']}/crispr_barcode_migration_inference.sif"
-    shell:
-        """
-        # Count the number of ASVs in each CP for each mouse
-        asv_count_csv={params.outdir}/asv_counts_per_cp.csv
-        echo "mouse,cp,num_asvs" > $asv_count_csv
-
-        files=$(find {params.outdir}/beam -type f -name "temp_tissues.tsv")
-
-        for file in $files; do
-            mouse=$(echo $file | rev | cut -d'/' -f3 | rev)
-            cp=$(echo $file | rev | cut -d'/' -f2 | rev)
-            num_asvs=$(($(wc -l < $file) - 1))
-            echo "$mouse,$cp,$num_asvs" >> $asv_count_csv
-        done
-
-        # Plot the number of ASVs in each CP for each mouse
-        python {params.scripts}/plotting/plot_tip_counts.py $asv_count_csv {params.max_tips}
         """
 
 rule prepBeamInputs:
@@ -1088,8 +1011,8 @@ rule runMach2:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 150,
-        mem = '3G'
+        threads = 50,
+        mem = '8G'
     singularity:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
