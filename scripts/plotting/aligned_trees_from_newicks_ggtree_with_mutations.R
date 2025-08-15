@@ -18,9 +18,9 @@ library(ggnewscale)
 # nwk2 <- args[2] # BEAM tree
 # mutations <- args[3]
 
-nwk1 <- "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/laml/5k/52/laml_trees_no_origin.nwk"
-nwk2 <- "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/52/sampled_tree_3_with_tissue_appended_to_name.nwk"
-mutations <- "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/successive_raw_data/5k/52_successive_character_matrix.tsv"
+nwk1 <- "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/laml/5k/52/laml_trees_no_origin.nwk"
+nwk2 <- "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/beam_gtr/5k/52/sampled_tree_3_with_tissue_appended_to_name.nwk"
+mutations <- "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/successive_raw_data/5k/52_successive_character_matrix.tsv"
 
 
 outfile <- sub("\\.nwk$", "_with_mutations.pdf", nwk2)

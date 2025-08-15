@@ -303,8 +303,8 @@ rule runLAML:
         scripts = config['scripts'],
         outputdir = "{outdir}/laml/{mouse}/{cp}",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        threads = 1,
-        mem = '5G'
+        threads = 10,
+        mem = '1G'
     singularity:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
@@ -327,7 +327,7 @@ rule runLAML:
         python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_matrix $reformattedObservedEditRates $mutationPriors
 
         # run laml
-        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --topology_search --noDropout --keep_polytomies
+        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --topology_search --noDropout --keep_polytomies --parallel
 
         # remove origin from tree
         fixed_newick=$(cat {output.lamlTree} | sed 's/\[&R\]//g' | sed "s/);//g")
@@ -1088,8 +1088,8 @@ rule runMach2:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 25,
-        mem = '20G'
+        threads = 150,
+        mem = '3G'
     singularity:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:

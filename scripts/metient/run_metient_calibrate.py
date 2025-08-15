@@ -22,7 +22,7 @@ ref_var_fns = [os.path.join(input_dir, name, "metadata.tsv") for name in dataset
 
 print_config = met.PrintConfig(visualize=True, verbose=False, k_best_trees=5)
 
-output_dir = "/mnt/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24/metient_calibrate_80_ideal_sims_8_12_25"
+output_dir = "/mnt/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24/metient/metient_calibrate_80_ideal_sims_8_15_25"
 os.makedirs(output_dir, exist_ok=True)
 
 # Run metient calibrate

@@ -7,7 +7,7 @@ import seaborn as sns
 from scipy.stats import entropy
 
 
-mach2_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/general_graph_stats_for_beam_paper_from_latest_runs_8_2_25/all_mach2_results_quinn_and_serio_8_2_25.csv"
+mach2_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/general_graph_stats_for_beam_paper_from_latest_runs_8_2_25/all_mach2_results_quinn_and_serio_8_14_25.csv"
 beam_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/general_graph_stats_for_beam_paper_from_latest_runs_8_2_25/all_beam_results_quinn_and_serio_8_2_25.csv"
 
 # Output directory to save plots in
@@ -30,6 +30,13 @@ mach2_df = mach2_df[~((mach2_df["dataset_name"] == "serio") &
 beam_df = beam_df[~((beam_df["dataset_name"] == "serio") & 
                     (beam_df.apply(lambda row: (row["mouse"] , row["cp"]) in serio_cps_to_exlude, axis=1)))]
 
+
+# Remove CPs that were run with beam but not mach2, due to not having the primary tissue where mach2 requires it
+mach2_mouse_cp = set(zip(mach2_df['mouse'], mach2_df['cp']))
+beam_mouse_cp = set(zip(beam_df['mouse'], beam_df['cp']))
+missing_in_mach2 = beam_mouse_cp - mach2_mouse_cp
+beam_df = beam_df[~beam_df.apply(lambda row: (row['mouse'], row['cp']) in missing_in_mach2, axis=1)]
+
 # Filter to only keep edges >= 0.5 for the comparison
 mach2_df_05 = mach2_df[mach2_df["probability"] >= 0.5].copy()
 beam_df_05 = beam_df[beam_df["probability"] >= 0.5].copy()
@@ -40,7 +47,7 @@ for df in [mach2_df_05, beam_df_05]:
     df['edgenum'] = df['edgenum'].astype(int)
 
 # Get migration counts
-mach2_migration_counts = mach2_df_05.groupby(["dataset_name", "mouse", "cp"]).shape[0].reset_index(name='migration_count')
+mach2_migration_counts = mach2_df_05.groupby(["dataset_name", "mouse", "cp"]).size().reset_index(name='migration_count')
 beam_migration_counts = beam_df_05.groupby(["dataset_name", "mouse", "cp"]).size().reset_index(name='migration_count')
 mach2_migration_counts_mean = mach2_migration_counts.groupby("dataset_name")["migration_count"].mean()
 beam_migration_counts_mean = beam_migration_counts.groupby("dataset_name")["migration_count"].mean()

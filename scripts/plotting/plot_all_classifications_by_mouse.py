@@ -34,31 +34,31 @@ def plot_data(data, outfile):
     fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 5, nrows * 4), squeeze=False)
     bar_width = 0.35
 
-    # Set mach2 lines to be drawn by mouse
-    mach2_met = {
-        "MMUS1457": 34.883721,
-        "MMUS1466": 42.307692,
-        "MMUS1467": 42.857143,
-        "MMUS1469": 34.166667,
-        "MMUS1492": 0.000000,
-        "MMUS1495": 61.403509,
-        "MMUS1544": 69.767442,
-        "MMUS1588": 39.130435,
-        "MMUS1874": 5.882353,
-        "MMUS1875": 9.523810,
-    }
-    mach2_pr = {
-        "MMUS1457": 18.604651,
-        "MMUS1466": 7.692308,
-        "MMUS1467": 22.857143,
-        "MMUS1469": 30.000000,
-        "MMUS1492": 28.571429,
-        "MMUS1495": 34.085213,
-        "MMUS1544": 20.930233,
-        "MMUS1588": 17.391304,
-        "MMUS1874": 5.882353,
-        "MMUS1875": 14.285714,
-    }
+    # # Set mach2 lines to be drawn by mouse
+    # mach2_met = {
+    #     "MMUS1457": 34.883721,
+    #     "MMUS1466": 42.307692,
+    #     "MMUS1467": 42.857143,
+    #     "MMUS1469": 34.166667,
+    #     "MMUS1492": 0.000000,
+    #     "MMUS1495": 61.403509,
+    #     "MMUS1544": 69.767442,
+    #     "MMUS1588": 39.130435,
+    #     "MMUS1874": 5.882353,
+    #     "MMUS1875": 9.523810,
+    # }
+    # mach2_pr = {
+    #     "MMUS1457": 18.604651,
+    #     "MMUS1466": 7.692308,
+    #     "MMUS1467": 22.857143,
+    #     "MMUS1469": 30.000000,
+    #     "MMUS1492": 28.571429,
+    #     "MMUS1495": 34.085213,
+    #     "MMUS1544": 20.930233,
+    #     "MMUS1588": 17.391304,
+    #     "MMUS1874": 5.882353,
+    #     "MMUS1875": 14.285714,
+    # }
 
     for idx, mouse in enumerate(mice):
         ax = axes[idx // ncols, idx % ncols]
@@ -92,9 +92,9 @@ def plot_data(data, outfile):
         if idx == 0:
             ax.legend(fontsize=fs-2)
 
-        # Add mach2 lines
-        ax.axhline(y=mach2_met[mouse], color="#3a5f8a", linestyle="--", linewidth=2, label="MACH2 Met to Met")    # mach2 met to met average (value obtained seperately)
-        ax.axhline(y=mach2_pr[mouse], color="#b36238", linestyle="--", linewidth=2, label="MACH2 Primary Reseeding")    # mach2 primary reseeding average (value obtained seperately)
+        # # Add mach2 lines
+        # ax.axhline(y=mach2_met[mouse], color="#3a5f8a", linestyle="--", linewidth=2, label="MACH2 Met to Met")    # mach2 met to met average (value obtained seperately)
+        # ax.axhline(y=mach2_pr[mouse], color="#b36238", linestyle="--", linewidth=2, label="MACH2 Primary Reseeding")    # mach2 primary reseeding average (value obtained seperately)
 
 
     # Hide unused subplots
