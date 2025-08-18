@@ -5,10 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def load_data(file_path):
-    return pd.read_csv(file_path)
-
-
 def preprocess_data(data):
     # Group by threshold and calculate the percentage of True values for each category
     grouped = (
@@ -67,8 +63,8 @@ def plot_data(data, outfile):
     ax.tick_params(axis="y", labelsize=fs)
 
     # # Optional: drow a horizontal line at specified y-value
-    # ax.axhline(y=43.60465116279069, color="#3a5f8a", linestyle="--", linewidth=2, label="MACH2 Met to Met")    # mach2 met to met average (value obtained seperately)
-    # ax.axhline(y=24.003322259136215, color="#b36238", linestyle="--", linewidth=2, label="MACH2 Primary Reseeding")    # mach2 primary reseeding average (value obtained seperately)
+    # ax.axhline(y=54.0669856459, color="#3a5f8a", linestyle="--", linewidth=2, label="MACH2 M2M")    # mach2 m2m average (value obtained seperately)
+    # ax.axhline(y=27.7853725222146, color="#b36238", linestyle="--", linewidth=2, label="MACH2 PR")    # mach2 pr average (value obtained seperately)
 
     # Add legend with improved placement
     ax.legend(loc="upper left", bbox_to_anchor=(1.02, 0.75), frameon=False, fontsize=16)
@@ -89,7 +85,7 @@ def main():
     file_path = sys.argv[1]
     outfile = sys.argv[2]
 
-    data = load_data(file_path)
+    data = pd.read_csv(file_path)
     data = preprocess_data(data)
     plot_data(data, outfile)
 

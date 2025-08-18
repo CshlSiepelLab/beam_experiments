@@ -4,12 +4,16 @@ import csv
 from matplotlib import pyplot as plt
 import seaborn
 
-consensus_graph_files = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/34/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/37/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/85/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/80/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/83/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/56/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/51/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/59/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/24/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/70/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/78/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/73/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/43/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/46/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/49/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/97/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/92/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/60/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/68/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/63/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/36/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/82/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/55/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/58/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/26/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/74/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/29/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/77/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/72/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/45/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/40/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/48/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/96/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/91/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/99/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/100/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/94/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/64/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/67/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/62/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/32/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/35/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/30/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/86/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/89/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/84/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/54/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/57/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/52/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/28/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/76/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/71/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/79/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/44/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/47/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/95/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/42/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/90/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/98/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/66/posterior_prob_graph.csv,/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/61/posterior_prob_graph.csv"
-outfile = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/beam_gtr/5k/model_classifications_by_posterior_prob.csv"
+outfile = "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/beam_gtr/5k/model_classifications_by_posterior_prob.csv"
+infile_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/beam_gtr/5k"
+
+cps=['34', '37', '80', '83', '56', '51', '59', '24', '70', '73', '43', '97', '92', '60', '68', '63', '36', '82', '55', '58', '26', '74', '77', '72', '45', '40', '91', '99', '100', '64', '67', '62', '32', '35', '30', '86', '89', '84', '54', '57', '52', '28', '76', '71', '79', '44', '47', '95', '42', '90', '98', '66', '61']
+
+files=[]
+for cp in cps:
+    files.append(f"{infile_path}/{cp}/posterior_prob_graph.csv")
 
 primary_tissue = "LL"
-
-files = consensus_graph_files.split(",")
 
 thresholds = [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
 
@@ -36,7 +40,7 @@ for file in files:
                 if prob >= threshold and source == primary_tissue:
                     tissues_seeded_from_primary.add(target)
 
-        if "RL" in tissues_seeded_from_primary:
+        if tissues_seeded_from_primary == {"RL", "M"} or tissues_seeded_from_primary == {"RL"}:
             model_counts_by_threshold[threshold]["rl"] += 1
         elif tissues_seeded_from_primary == {"M"}:
             model_counts_by_threshold[threshold]["m_only"] += 1
@@ -46,26 +50,19 @@ for file in files:
             model_counts_by_threshold[threshold]["none"] += 1
 
 # check the sums all match, so all solutions have been accounted for
-total_files = len(files)
-for threshold in thresholds:
-    counts = list(model_counts_by_threshold[threshold].values())
-    total_count = sum(counts)
-    if total_count != total_files:
-        print(f"Mismatch for threshold {threshold}: {total_count} != {total_files}")
-        # write to output csv
-        with open(outfile, "w", newline="") as csvfile:
-            writer = csv.writer(csvfile)
-            csvfile.write("threshold,rl,m_only,others,none\n")
-            for threshold in thresholds:
-                writer.writerow(
-                    [
-                        threshold,
-                        model_counts_by_threshold[threshold]["rl"],
-                        model_counts_by_threshold[threshold]["m_only"],
-                        model_counts_by_threshold[threshold]["others"],
-                        model_counts_by_threshold[threshold]["none"],
-                    ]
-                )
+with open(outfile, "w", newline="") as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(["threshold", "rl", "m_only", "others", "none"])
+    for threshold in thresholds:
+        writer.writerow(
+            [
+                threshold,
+                model_counts_by_threshold[threshold]["rl"],
+                model_counts_by_threshold[threshold]["m_only"],
+                model_counts_by_threshold[threshold]["others"],
+                model_counts_by_threshold[threshold]["none"],
+            ]
+        )
 
 # plot data for threshold groups as the x axis and the y axis as the counts with a single bar stacked for each group
 thresholds = list(model_counts_by_threshold.keys())
@@ -83,7 +80,7 @@ x_positions = range(len(thresholds))  # Discrete x-axis positions
 colors = ["#4c72b0", "#dd8452", "#a3be8c", "darkgrey"]
 
 # Create stacked bar plot with improved styling
-plt.bar(x_positions, rl, color=colors[0], label="RL (and others)")
+plt.bar(x_positions, rl, color=colors[0], label="RL only or RL an M")
 plt.bar(x_positions, m_only, bottom=rl, color=colors[1], label="M only")
 plt.bar(
     x_positions,
@@ -101,8 +98,8 @@ plt.bar(
 )
 
 # Add labels, title, and legend with improved styling
-plt.xlabel("Consensus Graph Threshold", fontsize=fs)
-plt.ylabel("Percentage of All Data (%)", fontsize=fs)
+plt.xlabel("Posterior probability", fontsize=fs)
+plt.ylabel("Percentage of CPs (%)", fontsize=fs)
 plt.legend(
     fontsize=fs,
     loc="center left",

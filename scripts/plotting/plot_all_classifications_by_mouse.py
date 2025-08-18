@@ -34,31 +34,31 @@ def plot_data(data, outfile):
     fig, axes = plt.subplots(nrows, ncols, figsize=(ncols * 5, nrows * 4), squeeze=False)
     bar_width = 0.35
 
-    # # Set mach2 lines to be drawn by mouse
-    # mach2_met = {
-    #     "MMUS1457": 34.883721,
-    #     "MMUS1466": 42.307692,
-    #     "MMUS1467": 42.857143,
-    #     "MMUS1469": 34.166667,
-    #     "MMUS1492": 0.000000,
-    #     "MMUS1495": 61.403509,
-    #     "MMUS1544": 69.767442,
-    #     "MMUS1588": 39.130435,
-    #     "MMUS1874": 5.882353,
-    #     "MMUS1875": 9.523810,
-    # }
-    # mach2_pr = {
-    #     "MMUS1457": 18.604651,
-    #     "MMUS1466": 7.692308,
-    #     "MMUS1467": 22.857143,
-    #     "MMUS1469": 30.000000,
-    #     "MMUS1492": 28.571429,
-    #     "MMUS1495": 34.085213,
-    #     "MMUS1544": 20.930233,
-    #     "MMUS1588": 17.391304,
-    #     "MMUS1874": 5.882353,
-    #     "MMUS1875": 14.285714,
-    # }
+    # Set mach2 lines to be drawn by mouse
+    mach2_met = {
+        "MMUS1457": 70.83333333333336,
+        "MMUS1466": 70.58823529411767,
+        "MMUS1467": 57.692307692307686,
+        "MMUS1469": 37.61467889908257,
+        "MMUS1492": 0.0,
+        "MMUS1495": 65.38461538461537,
+        "MMUS1544": 83.09859154929576,
+        "MMUS1588": 47.36842105263157,
+        "MMUS1874": 13.043478260869565,
+        "MMUS1875": 12.5,
+    }
+    mach2_pr = {
+        "MMUS1457": 33.33333333333332,
+        "MMUS1466": 11.76470588235294,
+        "MMUS1467": 30.76923076923077,
+        "MMUS1469": 28.440366972477072,
+        "MMUS1492": 44.44444444444445,
+        "MMUS1495": 37.5,
+        "MMUS1544": 24.144869215291745,
+        "MMUS1588": 10.526315789473683,
+        "MMUS1874": 8.695652173913045,
+        "MMUS1875": 18.75,
+    }
 
     for idx, mouse in enumerate(mice):
         ax = axes[idx // ncols, idx % ncols]
@@ -90,11 +90,11 @@ def plot_data(data, outfile):
         ax.tick_params(axis="y", labelsize=fs-2)
         ax.set_title(f"Mouse {mouse}", fontsize=fs+2)
         if idx == 0:
-            ax.legend(fontsize=fs-2)
+            ax.legend(fontsize=fs-12)
 
-        # # Add mach2 lines
-        # ax.axhline(y=mach2_met[mouse], color="#3a5f8a", linestyle="--", linewidth=2, label="MACH2 Met to Met")    # mach2 met to met average (value obtained seperately)
-        # ax.axhline(y=mach2_pr[mouse], color="#b36238", linestyle="--", linewidth=2, label="MACH2 Primary Reseeding")    # mach2 primary reseeding average (value obtained seperately)
+        # Add mach2 lines
+        ax.axhline(y=mach2_met[mouse], color="#3a5f8a", linestyle="--", linewidth=2, label="MACH2 Met to Met")    # mach2 met to met average (value obtained seperately)
+        ax.axhline(y=mach2_pr[mouse], color="#b36238", linestyle="--", linewidth=2, label="MACH2 Primary Reseeding")    # mach2 primary reseeding average (value obtained seperately)
         
         print(mouse)
         print("m2m", mouse_data["met_to_met"].mean())
