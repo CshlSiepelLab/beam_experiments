@@ -95,6 +95,10 @@ def plot_data(data, outfile):
         # # Add mach2 lines
         # ax.axhline(y=mach2_met[mouse], color="#3a5f8a", linestyle="--", linewidth=2, label="MACH2 Met to Met")    # mach2 met to met average (value obtained seperately)
         # ax.axhline(y=mach2_pr[mouse], color="#b36238", linestyle="--", linewidth=2, label="MACH2 Primary Reseeding")    # mach2 primary reseeding average (value obtained seperately)
+        
+        print(mouse)
+        print("m2m", mouse_data["met_to_met"].mean())
+        print("pr", mouse_data["met_to_primary"].mean())
 
 
     # Hide unused subplots

@@ -20,8 +20,32 @@ def get_elements_from_file(path):
     with open(filename) as f:
         cps = [line.strip() for line in f if set(list(line.strip().replace("CP", ""))) != set('0')]
     mouse = os.path.basename(path)
+    # exclude these CPs due to computational burden with Beam analysis
     if mouse == "MMUS1875" or mouse == "MMUS1466":
-        cps = [cp for cp in cps if cp != "CP01"]    # exclude these CPs due to computational burden with Beam analysis
+        cps = [cp for cp in cps if cp != "CP01"]
+    
+    # exclude these CPs with only one tissue label observed
+    if mouse == "MMUS1492":
+        cps = [cp for cp in cps if cp not in {"CP04", "CP06", "CP07", "CP09", "CP13"}]
+    if mouse == "MMUS1588":
+        cps = [cp for cp in cps if cp not in {"CP10", "CP13", "CP19", "CP21"}]
+    if mouse == "MMUS1469":
+        cps = [cp for cp in cps if cp not in {"CP096", "CP100", "CP084", "CP097", "CP123", "CP067", "CP116", "CP115", "CP114", "CP103", "CP093", "CP077"}]
+    if mouse == "MMUS1457":
+        cps = [cp for cp in cps if cp not in {"CP30", "CP07", "CP33", "CP41", "CP43", "CP18", "CP19", "CP13", "CP28", "CP14", "CP29", "CP38", "CP24", "CP25", "CP11", "CP26", "CP12", "CP34", "CP36"}]
+    if mouse == "MMUS1875":
+        cps = [cp for cp in cps if cp not in {"CP22", "CP09", "CP16", "CP12", "CP21"}]
+    if mouse == "MMUS1495":
+        cps = [cp for cp in cps if cp not in {"CP096", "CP113", "CP108", "CP089", "CP086", "CP109", "CP095", "CP097", "CP104", "CP115"}]
+    if mouse == "MMUS1466":
+        cps = [cp for cp in cps if cp not in {"CP22", "CP06", "CP17", "CP27", "CP15", "CP16", "CP24", "CP26", "CP20"}]
+    if mouse == "MMUS1544":
+        cps = [cp for cp in cps if cp not in {"CP37", "CP84", "CP70", "CP85", "CP40", "CP55", "CP53", "CP68", "CP62", "CP79", "CP86", "CP60", "CP82", "CP36", "CP83"}]
+    if mouse == "MMUS1874":
+        cps = [cp for cp in cps if cp not in {"CP22", "CP32", "CP07", "CP33", "CP18", "CP27", "CP28", "CP24", "CP26", "CP34", "CP20"}]
+    if mouse == "MMUS1467":
+        cps = [cp for cp in cps if cp not in {"CP17", "CP27", "CP29", "CP15", "CP26", "CP12", "CP34", "CP35", "CP21"}]
+
 
     return cps
 
@@ -226,7 +250,7 @@ rule runLAML:
         scripts = config['scripts'],
         outputdir = "{outdir}/laml/{mouse}/{cp}",
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-        threads = 10,
+        threads = 1,
         mem = '1G'
     singularity:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
@@ -250,7 +274,7 @@ rule runLAML:
         python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_matrix $reformattedObservedEditRates $mutationPriors
 
         # run laml
-        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --topology_search --noDropout --keep_polytomies --parallel
+        run_laml -c $laml_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/laml --timescale {params.experimentTime} --topology_search --noDropout --keep_polytomies
 
         # remove origin from tree
         fixed_newick=$(cat {output.lamlTree} | sed 's/\[&R\]//g' | sed "s/);//g")
@@ -1011,8 +1035,8 @@ rule runMach2:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{mouse}/{cp}",
         primaryTissue = lambda wildcards: config['primaryTissue'][wildcards.mouse],
-        threads = 50,
-        mem = '8G'
+        threads = 150,
+        mem = '3G'
     singularity:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:

@@ -7,8 +7,8 @@ import seaborn as sns
 from scipy.stats import entropy
 
 
-mach2_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/general_graph_stats_for_beam_paper_from_latest_runs_8_2_25/all_mach2_results_quinn_and_serio_8_14_25.csv"
-beam_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/general_graph_stats_for_beam_paper_from_latest_runs_8_2_25/all_beam_results_quinn_and_serio_8_2_25.csv"
+mach2_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/general_graph_stats_for_beam_paper_from_latest_runs_8_2_25/mach2_all_results_8_18_25.csv"
+beam_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/general_graph_stats_for_beam_paper_from_latest_runs_8_2_25/beam_all_results_8_18_25.csv"
 
 # Output directory to save plots in
 outdir = os.path.dirname(mach2_file)

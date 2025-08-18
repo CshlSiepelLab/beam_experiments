@@ -11,11 +11,11 @@ import pickle
 
 
 # Use to merge ideal and variable simulated rates data
-ideal_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_2_20_25_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/precision_recall_vars.pkl"
-ideal_tree_stats_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/snakemake_performance_2_20_25_uniform_50cells_50sites_data_7_24_24/true_tree_stats.txt"
+ideal_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/precision_recall_vars.pkl"
+ideal_tree_stats_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24/true_tree_stats.txt"
 
-variable_file = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24/precision_recall_curve/precision_recall_vars.pkl"
-variable_tree_stats_path = "/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24/true_tree_stats.txt"
+variable_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/precision_recall_curve/precision_recall_vars.pkl"
+variable_tree_stats_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/true_tree_stats.txt"
 
 
 outdir = os.path.dirname(ideal_file)
@@ -33,8 +33,6 @@ with open(ideal_file, "rb") as file:
         ideal_consensus_recalls,
         ideal_parsimony_precisions,
         ideal_parsimony_recalls,
-        ideal_fitchcount_precisions,
-        ideal_fitchcount_recalls,
         ideal_mach2_all_thresh_df,
         ideal_all_thresh_df,
     ) = pickle.load(file)
@@ -51,8 +49,6 @@ with open(variable_file, "rb") as file:
         variable_consensus_recalls,
         variable_parsimony_precisions,
         variable_parsimony_recalls,
-        variable_fitchcount_precisions,
-        variable_fitchcount_recalls,
         variable_mach2_all_thresh_df,
         variable_all_thresh_df,
     ) = pickle.load(file)
@@ -81,12 +77,6 @@ parsimony_precisions = np.concatenate(
 )
 parsimony_recalls = np.concatenate(
     (ideal_parsimony_recalls, variable_parsimony_recalls)
-)
-fitchcount_precisions = np.concatenate(
-    (ideal_fitchcount_precisions, variable_fitchcount_precisions)
-)
-fitchcount_recalls = np.concatenate(
-    (ideal_fitchcount_recalls, variable_fitchcount_recalls)
 )
 mach2_all_thresh_df = pd.concat(
     [ideal_mach2_all_thresh_df, variable_mach2_all_thresh_df]
@@ -171,15 +161,9 @@ for column in ["migration_count", "comigration_count", "num_multiedges"]:
         avg_parsimony_recall = np.nanmean(
             [parsimony_recalls[sim_names.tolist().index(sim)] for sim in bin_sims]
         )
-        avg_fitchcount_precision = np.nanmean(
-            [fitchcount_precisions[sim_names.tolist().index(sim)] for sim in bin_sims]
-        )
-        avg_fitchcount_recall = np.nanmean(
-            [fitchcount_recalls[sim_names.tolist().index(sim)] for sim in bin_sims]
-        )
 
         if not avg_df.empty:
-            ax.plot(avg_df["recall"], avg_df["precision"], color="grey", label="BEAM")
+            ax.plot(avg_df["recall"], avg_df["precision"], color="red", label="BEAM")
         if not avg_df2.empty:
             ax.plot(
                 avg_df2["recall"], avg_df2["precision"], color="navy", label="MACH2"
@@ -188,7 +172,7 @@ for column in ["migration_count", "comigration_count", "num_multiedges"]:
             ax.scatter(
                 avg_machina_recall,
                 avg_machina_precision,
-                color="red",
+                color="gold",
                 label="MACHINA",
                 s=size,
                 marker="x",
@@ -226,17 +210,6 @@ for column in ["migration_count", "comigration_count", "num_multiedges"]:
                 avg_parsimony_precision,
                 color="purple",
                 label="Parsimony",
-                s=size,
-                marker="x",
-            )
-        if not np.isnan(avg_fitchcount_recall) and not np.isnan(
-            avg_fitchcount_precision
-        ):
-            ax.scatter(
-                avg_fitchcount_recall,
-                avg_fitchcount_precision,
-                color="orange",
-                label="FitchCount",
                 s=size,
                 marker="x",
             )
@@ -326,15 +299,9 @@ for column in ["met_to_met", "reseeding", "clonality"]:
         avg_parsimony_recall = np.nanmean(
             [parsimony_recalls[sim_names.tolist().index(sim)] for sim in value_sims]
         )
-        avg_fitchcount_precision = np.nanmean(
-            [fitchcount_precisions[sim_names.tolist().index(sim)] for sim in value_sims]
-        )
-        avg_fitchcount_recall = np.nanmean(
-            [fitchcount_recalls[sim_names.tolist().index(sim)] for sim in value_sims]
-        )
 
         if not avg_df.empty:
-            ax.plot(avg_df["recall"], avg_df["precision"], color="grey", label="BEAM")
+            ax.plot(avg_df["recall"], avg_df["precision"], color="red", label="BEAM")
         if not avg_df2.empty:
             ax.plot(
                 avg_df2["recall"], avg_df2["precision"], color="navy", label="MACH2"
@@ -343,7 +310,7 @@ for column in ["met_to_met", "reseeding", "clonality"]:
             ax.scatter(
                 avg_machina_recall,
                 avg_machina_precision,
-                color="red",
+                color="gold",
                 label="MACHINA",
                 s=size,
                 marker="x",
@@ -381,17 +348,6 @@ for column in ["met_to_met", "reseeding", "clonality"]:
                 avg_parsimony_precision,
                 color="purple",
                 label="Parsimony",
-                s=size,
-                marker="x",
-            )
-        if not np.isnan(avg_fitchcount_recall) and not np.isnan(
-            avg_fitchcount_precision
-        ):
-            ax.scatter(
-                avg_fitchcount_recall,
-                avg_fitchcount_precision,
-                color="orange",
-                label="FitchCount",
                 s=size,
                 marker="x",
             )
