@@ -16,29 +16,6 @@ process_dir() {
     fi
 
     files=$(find "$dir" -type f -regex '.*/chain_[0-9]+\.log')
-
-    # # Filter out files with the infinite ML calculation due to bad seed
-    # count=0
-    # for file in $files; do
-    #     starting_ml=$(grep -v "#" $file | sed -n '2p' | awk '{print $2}')
-    #     if [ $(echo "$starting_ml > -2" | bc -l) -eq 1 ]; then
-    #         echo $file
-
-    #         dir=$(dirname $file)
-
-    #         num=$(echo $file | rev | cut -d'/' -f1 | rev | cut -d'_' -f2 | cut -d'.' -f1)
-
-    #         rm -f "$dir/chain_${num}.log"
-    #         rm -f "$dir/chain_${num}.posterior.log"
-    #         rm -f "$dir/chain_${num}.trees"
-    #         rm -f "$dir/chain_${num}.posterior.trees"
-    #         rm -f "$dir/terminal_${num}.log"
-    #     fi
-    #     count=$((count + 1))
-    #     echo $count
-    # done
-
-    # files=$(find "$dir" -type f -regex '.*/chain_[0-9]+\.log')
     
     if [ -n "$files" ]; then
         echo $dir
