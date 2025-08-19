@@ -67,26 +67,26 @@ fig, axes = plt.subplots(1, 3, figsize=(22, 6), sharex=False, sharey=False)
 
 # Panel 1: Serio
 sns.scatterplot(x=serio_df["serio_mi"], y=serio_df["serio_bf"], color="grey", ax=axes[0])
-spearman_corr_serio, _ = spearmanr(serio_df["serio_mi"], serio_df["serio_bf"])
+pearson_corr_serio, _ = np.corrcoef(serio_df["serio_mi"], serio_df["serio_bf"])[0, 1], None
 axes[0].set_xlabel("Mutual Information Normalized", fontsize=fs)
 axes[0].set_ylabel("ln(Bayes factor)", fontsize=fs)
-axes[0].set_title(f"Prostate cancer\nSpearman: {spearman_corr_serio:.2f}", fontsize=fs)
+axes[0].set_title(f"Prostate cancer\nPearson: {pearson_corr_serio:.2f}", fontsize=fs)
 axes[0].tick_params(labelsize=fs)
 
 # Panel 2: Quinn
 sns.scatterplot(x=quinn_df["quinn_mi"], y=quinn_df["quinn_bf"], color="grey", ax=axes[1])
-spearman_corr_quinn, _ = spearmanr(quinn_df["quinn_mi"], quinn_df["quinn_bf"])
+pearson_corr_quinn, _ = np.corrcoef(quinn_df["quinn_mi"], quinn_df["quinn_bf"])[0, 1], None
 axes[1].set_xlabel("Mutual Information Normalized", fontsize=fs)
 axes[1].set_ylabel("ln(Bayes factor)", fontsize=fs)
-axes[1].set_title(f"Lung cancer\nSpearman: {spearman_corr_quinn:.2f}", fontsize=fs)
+axes[1].set_title(f"Lung cancer\nPearson: {pearson_corr_quinn:.2f}", fontsize=fs)
 axes[1].tick_params(labelsize=fs)
 
 # Panel 3: Both datasets
 sns.scatterplot(data=all_df, x="Mutual Information Normalized", y="ln(Bayes factor)", hue="Dataset", ax=axes[2], palette=["blue", "orange"])
-spearman_corr_all, _ = spearmanr(all_df["Mutual Information Normalized"], all_df["ln(Bayes factor)"])
+pearson_corr_all, _ = np.corrcoef(all_df["Mutual Information Normalized"], all_df["ln(Bayes factor)"])[0, 1], None
 axes[2].set_xlabel("Mutual Information Normalized", fontsize=fs)
 axes[2].set_ylabel("ln(Bayes factor)", fontsize=fs)
-axes[2].set_title(f"Combined\nSpearman: {spearman_corr_all:.2f}", fontsize=fs)
+axes[2].set_title(f"Combined\nPearson: {pearson_corr_all:.2f}", fontsize=fs)
 axes[2].tick_params(labelsize=fs)
 legend = axes[2].legend(fontsize=fs)
 axes[2].legend(fontsize=fs, bbox_to_anchor=(1.15, 0.5), loc='center left', borderaxespad=0.)
