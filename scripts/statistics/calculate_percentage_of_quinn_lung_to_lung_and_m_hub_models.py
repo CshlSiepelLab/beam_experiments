@@ -18,7 +18,7 @@ primary_tissue = "LL"
 thresholds = [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
 
 model_counts_by_threshold = {
-    threshold: {"rl": 0, "m_only": 0, "others": 0, "none": 0}
+    threshold: {"rl_and_m": 0, "m_only": 0, "rl_only": 0, "others": 0, "none": 0}
     for threshold in thresholds
 }
 
@@ -40,8 +40,10 @@ for file in files:
                 if prob >= threshold and source == primary_tissue:
                     tissues_seeded_from_primary.add(target)
 
-        if tissues_seeded_from_primary == {"RL", "M"} or tissues_seeded_from_primary == {"RL"}:
-            model_counts_by_threshold[threshold]["rl"] += 1
+        if tissues_seeded_from_primary == {"RL", "M"}:
+            model_counts_by_threshold[threshold]["rl_and_m"] += 1
+        elif tissues_seeded_from_primary == {"RL"}:
+            model_counts_by_threshold[threshold]["rl_only"] += 1
         elif tissues_seeded_from_primary == {"M"}:
             model_counts_by_threshold[threshold]["m_only"] += 1
         elif tissues_seeded_from_primary:
@@ -52,13 +54,14 @@ for file in files:
 # check the sums all match, so all solutions have been accounted for
 with open(outfile, "w", newline="") as csvfile:
     writer = csv.writer(csvfile)
-    writer.writerow(["threshold", "rl", "m_only", "others", "none"])
+    writer.writerow(["threshold", "rl_and_m", "m_only", "rl_and_m", "others", "none"])
     for threshold in thresholds:
         writer.writerow(
             [
                 threshold,
-                model_counts_by_threshold[threshold]["rl"],
+                model_counts_by_threshold[threshold]["rl_and_m"],
                 model_counts_by_threshold[threshold]["m_only"],
+                model_counts_by_threshold[threshold]["rl_and_m"],
                 model_counts_by_threshold[threshold]["others"],
                 model_counts_by_threshold[threshold]["none"],
             ]
@@ -66,8 +69,9 @@ with open(outfile, "w", newline="") as csvfile:
 
 # plot data for threshold groups as the x axis and the y axis as the counts with a single bar stacked for each group
 thresholds = list(model_counts_by_threshold.keys())
-rl = [model_counts_by_threshold[t]["rl"] for t in thresholds]
+rl_and_m = [model_counts_by_threshold[t]["rl_and_m"] for t in thresholds]
 m_only = [model_counts_by_threshold[t]["m_only"] for t in thresholds]
+rl_only = [model_counts_by_threshold[t]["rl_only"] for t in thresholds]
 others = [model_counts_by_threshold[t]["others"] for t in thresholds]
 none = [model_counts_by_threshold[t]["none"] for t in thresholds]
 
@@ -77,23 +81,30 @@ fs = 22
 x_positions = range(len(thresholds))  # Discrete x-axis positions
 
 # Define colors for better aesthetics
-colors = ["#4c72b0", "#dd8452", "#a3be8c", "darkgrey"]
+colors = ["#4c72b0", "#dd8452", "#a3be8c", "brown", "darkgrey",]
 
 # Create stacked bar plot with improved styling
-plt.bar(x_positions, rl, color=colors[0], label="RL only or RL an M")
-plt.bar(x_positions, m_only, bottom=rl, color=colors[1], label="M only")
+plt.bar(x_positions, rl_and_m, color=colors[0], label="RL and M")
+plt.bar(x_positions, m_only, bottom=rl_and_m, color=colors[1], label="M only")
+plt.bar(
+    x_positions,
+    rl_only,
+    bottom=[i + j for i, j in zip(rl_and_m, m_only)],
+    color=colors[2],
+    label="RL only",
+)
 plt.bar(
     x_positions,
     others,
-    bottom=[i + j for i, j in zip(rl, m_only)],
-    color=colors[2],
+    bottom=[i + j + k for i, j, k in zip(rl_and_m, m_only, rl_only)],
+    color=colors[3],
     label="Others",
 )
 plt.bar(
     x_positions,
     none,
-    bottom=[i + j + k for i, j, k in zip(rl, m_only, others)],
-    color=colors[3],
+    bottom=[i + j + k + l for i, j, k, l in zip(rl_and_m, m_only, rl_only, others)],
+    color=colors[4],
     label="None",
 )
 

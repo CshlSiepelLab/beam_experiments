@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-file_path = sys.argv[1]
-origin_time = float(sys.argv[2])
-origin_tissue = sys.argv[3]
-outfile = sys.argv[4]
+file_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/beam_gtr/5k/all_expected_migration_times_no_multiedge_combined.csv"
+origin_time = 54
+origin_tissue = 'LL'
+outfile = file_path.replace(".csv", ".pdf")
 
 
 data = pd.read_csv(file_path)
