@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-variable_file = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24/phylogenetic_information_per_site_variable_rates.csv"
-quinn_file = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25/phylogenetic_information_per_site_quinn.csv"
-serio_file = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25/phylogenetic_information_per_site_serio.csv"
-outfile = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25/phylogenetic_information_per_site.pdf"
+variable_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/phylogenetic_information_per_site_variable_rates.csv"
+quinn_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/phylogenetic_information_per_site_quinn.csv"
+serio_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/serio_prostate_cancer_data/phylogenetic_information_per_site_serio.csv"
+outfile = "/grid/siepel/home/staklins/stored_results/beam/latest_results/serio_prostate_cancer_data/phylogenetic_information_per_site_all_zoom.pdf"
 
 
 variable_data = pd.read_csv(variable_file)
@@ -60,8 +60,8 @@ ax1.set_xlim(0, max_x)
 ax2.set_xlim(0, max_x)
 ax3.set_xlim(0, max_x)
 
-# ax3.set_ylim(0,10)
-# ax3.set_yticks(range(0, 11, 1))
+ax3.set_ylim(0,10)
+ax3.set_yticks(range(0, 11, 1))
 
 # Remove grid
 ax1.grid(False)
@@ -77,56 +77,4 @@ plt.tight_layout()
 
 # Save the plot
 plt.savefig(outfile, dpi=300, bbox_inches='tight')
-plt.close()
-
-
-# in-vitro data
-invitro = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/in_vitro_data_4_24_25/phylogenetic_information_per_site_in_vitro_sorted_subset_cp_above_10.csv"
-outfile_invitro = invitro.replace(".csv", ".pdf")
-
-invitro_data = pd.read_csv(invitro)
-
-fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 12))
-fs=22
-num_bins = 100
-
-
-# Plot for invitro
-sns.histplot(data=invitro_data, 
-            x='average_informative_characters_per_site',
-            ax=ax1, kde=False, bins=num_bins, color='grey')
-ax1.set_title('In-vitro dataset', fontsize=fs)
-ax1.set_xlabel('', fontsize=fs)
-ax1.set_ylabel('Count', fontsize=fs)
-ax1.set_xlabel('Mean site count of unique characters\nshared by more than one cell', fontsize=fs)
-
-
-# Get the maximum y value across all plots
-max_x = 9.358
-
-ax1.set_xlim(0, max_x)
-ax1.grid(False)
-ax1.tick_params(labelsize=fs)
-
-# in vitro zoom > 1
-invitro_data_zoom = invitro_data[invitro_data['average_informative_characters_per_site'] > 1]
-sns.histplot(data=invitro_data_zoom, 
-            x='average_informative_characters_per_site',
-            ax=ax3, kde=False, bins=num_bins, color='grey')
-ax3.set_title('In-vitro dataset', fontsize=fs)
-ax3.set_xlabel('', fontsize=fs)
-ax3.set_ylabel('Count', fontsize=fs)
-ax3.set_xlabel('Mean site count of unique characters\nshared by more than one cell', fontsize=fs)
-ax3.set_xlim(0, max_x)
-ax3.set_ylim(0, 16)
-ax3.set_yticks(range(0, 16, 2))
-
-ax3.grid(False)
-ax3.tick_params(labelsize=fs)
-
-# Adjust layout
-plt.tight_layout()
-
-# Save the plot
-plt.savefig(outfile_invitro, dpi=300, bbox_inches='tight')
 plt.close()

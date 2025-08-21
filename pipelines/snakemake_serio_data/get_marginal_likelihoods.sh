@@ -1,6 +1,6 @@
 #!/bin/bash
 
-main_dir="/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/serio_prostate_cancer_data_2_24_25"
+main_dir="/grid/siepel/home/staklins/stored_results/beam/latest_results/serio_prostate_cancer_data"
 
 
 ### Combining particles
@@ -15,6 +15,19 @@ process_dir() {
         return
     fi
 
+    # To clean improper nested sampling runs that did not fully finish
+    files=$(find $dir -type f -name "terminal_*")
+    for file in $files; do
+        if ! grep -q "Done!" "$file"; then
+            run_number=$(basename $file | sed 's/terminal_//g' | sed 's/\.log//g')
+            dir=$(dirname $file)
+            rm "$file"
+            rm $dir/${run_number}.*
+            rm $dir/chain_${run_number}.*
+        fi
+    done
+
+    # Combine logs from all chains in the directory
     files=$(find "$dir" -type f -regex '.*/chain_[0-9]+\.log')
     
     if [ -n "$files" ]; then
@@ -25,7 +38,7 @@ process_dir() {
 
 export -f process_dir
 
-num_threads=50
+num_threads=100
 
 # process all chains in one
 # dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns $main_dir/beam_reseeding_ns $main_dir/beam_no_reseeding_ns -maxdepth 2 -mindepth 2)
@@ -121,27 +134,53 @@ bf_field=6
 (head -n1 $outfile &&  tail -n +2 $outfile | sort -t, -k${bf_field},${bf_field}nr)  > $outfile.tmp
 mv $outfile.tmp $outfile
 
-# find which need more particles
-diff_field=$(( bf_field + 1 ))
-threshold=1.1
-awk -F',' -v bf=$bf_field -v diff=$diff_field -v thresh=$threshold 'NR > 1 { 
-    if ($bf < 0 && ($bf + $diff) > thresh) print $1;
-    else if ($bf > 0 && ($bf - $diff) < thresh) print $1;
-}' $outfile
 
 
-# # to clean files with bad x11 connection or empty files
-# files=$(find $main_dir/beam_random_ns $main_dir/beam_gtr_ns -type f -name "combined_terminal.log")
 
-# for file in $files; do
-#     if ! grep -q "Done!" "$file"; then
-#         echo $file
-#         rm "$file"
-#     fi
-# done
+### Separate from above
+# To clean combined terminal files for specific mouse_cp combinations
+combinations=(
+    "MMUS1457_CP01"
+)
 
+dirs=()
 
-# # to remove all combined terminal logs for gtr and random
-# find $main_dir/beam_gtr_ns $main_dir/beam_random_ns -type f -name "combined_terminal.log" -delete
+for combo in "${combinations[@]}"; do
+    mouse=$(echo $combo | cut -d'_' -f1)
+    cp=$(echo $combo | cut -d'_' -f2)
 
+    # gtr and random
+    # gtr_file="$main_dir/beam_gtr_ns/$mouse/$cp/combined_terminal.log"
+    # random_file="$main_dir/beam_random_ns/$mouse/$cp/combined_terminal.log"
+
+    # if [ -f "$gtr_file" ]; then
+    #     rm $gtr_file
+    #     rm $(dirname $gtr_file)/combined.log
+    # fi
+    # if [ -f "$random_file" ]; then
+    #     rm "$random_file"
+    #     rm $(dirname $random_file)/combined.log
+    # fi
+
+    # dirs+=("$(dirname $gtr_file)")
+    # dirs+=("$(dirname $random_file)")
+
+    # reseeding and no reseeding
+    reseeding_file="$main_dir/beam_reseeding_ns/$mouse/$cp/combined_terminal.log"
+    no_reseeding_file="$main_dir/beam_no_reseeding_ns/$mouse/$cp/combined_terminal.log"
+
+    if [ -f "$reseeding_file" ]; then
+        rm $reseeding_file
+        rm $(dirname $reseeding_file)/combined.log
+    fi
+    if [ -f "$no_reseeding_file" ]; then
+        rm "$no_reseeding_file"
+        rm $(dirname $no_reseeding_file)/combined.log
+    fi
+
+    dirs+=("$(dirname $reseeding_file)")
+    dirs+=("$(dirname $no_reseeding_file)")
+done
+
+printf "%s\n" "${dirs[@]}" | parallel -j $num_threads process_dir
 

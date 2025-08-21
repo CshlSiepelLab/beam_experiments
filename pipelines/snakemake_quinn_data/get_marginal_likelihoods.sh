@@ -1,6 +1,6 @@
 #!/bin/bash
 
-main_dir="/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/quinn_2021_lung_cancer_data_2_21_25" 
+main_dir="/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data" 
 
 
 ### Combining particles
@@ -15,8 +15,22 @@ process_dir() {
         return
     fi
 
+    # To clean improper nested sampling runs that did not fully finish
+    files=$(find $dir -type f -name "terminal_*")
+    for file in $files; do
+        if ! grep -q "Done!" "$file"; then
+            run_number=$(basename $file | sed 's/terminal_//g' | sed 's/\.log//g')
+            dir=$(dirname $file)
+            rm "$file"
+            rm $dir/${run_number}.*
+            rm $dir/chain_${run_number}.*
+        fi
+    done
+
+    # Combine logs from all chains in the directory
     files=$(find "$dir" -type f -regex '.*/chain_[0-9]+\.log')
-    if [[ -n $files ]]; then
+    
+    if [ -n "$files" ]; then
         echo $dir
         applauncher NSLogAnalyser -N 1 -noposterior $files -out "$dir/combined.log" > "$dir/combined_terminal.log" 2>&1
     fi
@@ -27,7 +41,8 @@ export -f process_dir
 num_threads=50
 
 # process all chains in one
-dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns $main_dir/beam_gtr_noRLdirectSeeding_ns -maxdepth 2 -mindepth 2 -type d)
+# dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns $main_dir/beam_gtr_noRLdirectSeeding_ns -maxdepth 2 -mindepth 2 -type d)
+dirs=$(find $main_dir/beam_gtr_noRLdirectSeeding_ns -maxdepth 2 -mindepth 2 -type d)
 echo "$dirs" | parallel -j $num_threads process_dir
 
 
@@ -78,12 +93,12 @@ for file in $files; do
         noRL_ml=$(grep "Marginal likelihood" $noRL_file | cut -d' ' -f3)
         noRL_sd=$(grep "Marginal likelihood" $noRL_file | cut -d' ' -f4 | cut -d'(' -f4 | sed 's/)//g')
 
-        # Calculate Bayes factor for GTR vs RL
+        # Calculate Bayes factor for GTR vs noRL
         if [[ -n $gtr_ml && -n $noRL_ml ]]; then
             beam_bf_RL=$(echo "scale=10; $gtr_ml - $noRL_ml" | bc -l)
         fi
 
-        # Calculate threshold for GTR vs RL
+        # Calculate threshold for GTR vs noRL
         if [[ -n $gtr_sd && -n $noRL_sd ]]; then
             diff_threshold_RL=$(echo "scale=10; 2 * sqrt(($gtr_sd^2) + ($noRL_sd^2))" | bc -l)
         fi
@@ -93,18 +108,22 @@ for file in $files; do
     echo -e "$name,$gtr_ml,$gtr_sd,$random_ml,$random_sd,$beam_bf_random,$diff_threshold_random,$noRL_ml,$noRL_sd,$beam_bf_RL,$diff_threshold_RL" >> $outfile
 done
 
-# find which need more particles
+
 # sort results by Bayes factor from high to low
 bf_field=6
 (head -n1 $outfile &&  tail -n +2 $outfile | sort -t, -k${bf_field},${bf_field}nr)  > $outfile.tmp
 mv $outfile.tmp $outfile
 
-# find which need more particles
-diff_field=$(( bf_field + 1 ))
-threshold=1.1
-awk -F',' -v bf=$bf_field -v diff=$diff_field -v thresh=$threshold 'NR > 1 { 
-    if ($bf < 0 && ($bf + $diff) > thresh) print $1;
-    else if ($bf > 0 && ($bf - $diff) < thresh) print $1;
-}' $outfile
+
+
+
+### Separate from above
+# Reset come cps
+cps=(51 52 54 55 56 57 58 59 60 61 62 63 64 66 67 68 70 71 72 74 76 80 83 84 86 91 92 98 99)
+
+for cp in "${cps[@]}"; do
+    rm ${main_dir}/beam_gtr_noRLdirectSeeding_ns/5k/${cp}/combined_terminal.log
+    rm ${main_dir}/beam_gtr_noRLdirectSeeding_ns/5k/${cp}/combined.log
+done
 
 

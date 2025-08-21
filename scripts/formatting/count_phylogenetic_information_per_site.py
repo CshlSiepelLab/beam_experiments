@@ -22,33 +22,27 @@ def count_informative_characters(site_values):
     
     return informative_count
 
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: python count_phylogenetic_information_per_site.py <input_tsv>")
-        sys.exit(1)
 
-    input_file = sys.argv[1]
-    
-    # Read the TSV file
-    df = pd.read_csv(input_file, sep='\t', index_col=0)
-    
-    # Calculate informative characters per site
-    informative_counts = df.apply(count_informative_characters)
-    
-    # Calculate average informative characters
-    avg_informative = informative_counts.mean()
-    
-    # Print results
-    print("\nPhylogenetically informative characters per site:")
-    print("-" * 50)
-    for site, count in informative_counts.items():
-        print(f"Site {site}: {count} informative characters")
-    
-    print("\nSummary Statistics:")
-    print("-" * 50)
-    print(f"Average informative characters per site: {avg_informative:.2f}")
-    print(f"Total number of sites: {len(informative_counts)}")
-    print(f"Total number of informative characters: {informative_counts.sum()}")
 
-if __name__ == "__main__":
-    main()
+input_file = sys.argv[1]
+
+# Read the TSV file
+df = pd.read_csv(input_file, sep='\t', index_col=0)
+
+# Calculate informative characters per site
+informative_counts = df.apply(count_informative_characters)
+
+# Calculate average informative characters
+avg_informative = informative_counts.mean()
+
+# Print results
+print("\nPhylogenetically informative characters per site:")
+print("-" * 50)
+for site, count in informative_counts.items():
+    print(f"Site {site}: {count} informative characters")
+
+print("\nSummary Statistics:")
+print("-" * 50)
+print(f"Average informative characters per site: {avg_informative:.2f}")
+print(f"Total number of sites: {len(informative_counts)}")
+print(f"Total number of informative characters: {informative_counts.sum()}")

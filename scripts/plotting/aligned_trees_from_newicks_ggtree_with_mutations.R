@@ -18,9 +18,9 @@ library(ggnewscale)
 # nwk2 <- args[2] # BEAM tree
 # mutations <- args[3]
 
-nwk1 <- "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/laml/5k/52/laml_trees_no_origin.nwk"
-nwk2 <- "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/beam_gtr/5k/52/sampled_tree_3_with_tissue_appended_to_name.nwk"
-mutations <- "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/successive_raw_data/5k/52_successive_character_matrix.tsv"
+nwk1 <- "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/laml/5k/72/laml_trees_no_origin.nwk"
+nwk2 <- "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/beam_gtr/5k/72/sampled_tree_5_with_tissue_appended_to_name.nwk"
+mutations <- "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/successive_raw_data/5k/72_successive_character_matrix.tsv"
 
 
 outfile <- sub("\\.nwk$", "_with_mutations.pdf", nwk2)
@@ -130,7 +130,7 @@ p1 <- ggtree(left_tree) %<+% left_tree_labels +
   theme_tree2() +
   theme(plot.margin = unit(c(1, 2, 1, 1), "lines"), legend.position = "none") +
   xlim(0, max_x1) +
-  scale_x_continuous(breaks = seq(0, 60, by = 20)) +
+  scale_x_continuous(breaks = seq(0, 54, by = 9)) +
   coord_cartesian(ylim = c(-1, NA), clip = 'off')
 
 p2 <- ggtree(right_tree) %<+% right_tree_labels +
@@ -141,7 +141,7 @@ p2 <- ggtree(right_tree) %<+% right_tree_labels +
   theme_tree2() +
   theme(plot.margin = unit(c(1, 1, 1, 2), "lines"), legend.position = "none") +
   xlim(0, max_x2) +
-  scale_x_continuous(breaks = seq(0, 60, by = 20)) +
+  scale_x_continuous(breaks = seq(0, 54, by = 9)) +
   coord_cartesian(ylim = c(-1, NA), clip = 'off')
 
 # Add the mutations

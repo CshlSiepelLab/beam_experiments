@@ -1,8 +1,6 @@
 
 import pandas as pd
 import seaborn as sns
-from scipy.stats import spearmanr
-from sklearn.linear_model import LinearRegression
 import numpy as np
 import matplotlib.pyplot as plt
 
