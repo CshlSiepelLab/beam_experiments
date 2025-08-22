@@ -75,7 +75,7 @@ rule runLAML:
         python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_sim_matrix {input.mutationPriors} $mutationPriors
 
         # run laml
-        run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --topology_search --noDropout --keep_polytomies --parallel
+        run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --topology_search --keep_polytomies --parallel
 
         # remove origin from tree
         fixed_newick=$(cat {output.lamlTreeOriginal} | sed 's/\[&R\]//g' | sed "s/);//g")

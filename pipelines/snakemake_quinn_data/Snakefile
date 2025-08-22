@@ -22,8 +22,7 @@ for mouse in mouse_ids:
         mouse_cps = [cp for cp in mouse_cps if cp not in excluded_cps_5k_by_original_paper and cp not in excluded_cps_5k_by_compute_requirements and cp not in excluded_cps_5k_with_one_tissue]
 
         # temp
-        # mouse_cps = [cp for cp in mouse_cps if cp in ['24', '26', '30', '32', '34', '35', '37', '40', '42', '43', '44', '47']]
-        mouse_cps = [cp for cp in mouse_cps if cp in ['51', '52', '54', '55', '56', '57', '58', '59', '60', '61', '62', '63', '64', '66', '67', '68', '70', '71', '72', '74', '76', '80', '83', '84', '86', '91', '92', '98', '99']]
+        mouse_cps = [cp for cp in mouse_cps if int(cp) > 50]
 
     cps_for_mouse[mouse] = mouse_cps
 
@@ -40,9 +39,9 @@ rule all:
         # [expand("{outdir}/laml/{mouse}/{cp}/laml_tree_with_tissues.pdf", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
         # expand("{outdir}/beam_gtr/{mouse}/all_consensus_classifications.pdf", outdir=outdir, mouse=mouse_ids),
         # [expand("{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv", mouse=m, cp=cps_for_mouse[m], outdir=outdir) for m in mouse_ids],
-        # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 201), outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 201), outdir=outdir) for m in mouse_ids],
         # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 201), outdir=outdir) for m in mouse_ids],
-        [expand("{outdir}/beam_gtr_noRLdirectSeeding_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 101), outdir=outdir) for m in mouse_ids],
+        [expand("{outdir}/beam_gtr_noRLdirectSeeding_ns/{mouse}/{cp}/terminal_{num}.log", mouse=m, cp=cps_for_mouse[m], num=range(1, 201), outdir=outdir) for m in mouse_ids],
 
 rule formatTissues:
     input:

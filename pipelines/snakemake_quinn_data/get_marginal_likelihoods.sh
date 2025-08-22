@@ -38,11 +38,11 @@ process_dir() {
 
 export -f process_dir
 
-num_threads=50
+num_threads=100
 
 # process all chains in one
 # dirs=$(find $main_dir/beam_gtr_ns $main_dir/beam_random_ns $main_dir/beam_gtr_noRLdirectSeeding_ns -maxdepth 2 -mindepth 2 -type d)
-dirs=$(find $main_dir/beam_gtr_noRLdirectSeeding_ns -maxdepth 2 -mindepth 2 -type d)
+dirs=$(find $main_dir/beam_gtr_noRLdirectSeeding_ns $main_dir/beam_gtr_ns -maxdepth 2 -mindepth 2 -type d)
 echo "$dirs" | parallel -j $num_threads process_dir
 
 
@@ -119,11 +119,16 @@ mv $outfile.tmp $outfile
 
 ### Separate from above
 # Reset come cps
-cps=(51 52 54 55 56 57 58 59 60 61 62 63 64 66 67 68 70 71 72 74 76 80 83 84 86 91 92 98 99)
+cps=($(seq 1 100))
 
 for cp in "${cps[@]}"; do
-    rm ${main_dir}/beam_gtr_noRLdirectSeeding_ns/5k/${cp}/combined_terminal.log
-    rm ${main_dir}/beam_gtr_noRLdirectSeeding_ns/5k/${cp}/combined.log
+    if [ $cp -gt 50 ]; then
+        rm ${main_dir}/beam_gtr_noRLdirectSeeding_ns/5k/${cp}/combined_terminal.log
+        rm ${main_dir}/beam_gtr_noRLdirectSeeding_ns/5k/${cp}/combined.log
+
+        rm ${main_dir}/beam_gtr_ns/5k/${cp}/combined_terminal.log
+        rm ${main_dir}/beam_gtr_ns/5k/${cp}/combined.log
+    fi
 done
 
 

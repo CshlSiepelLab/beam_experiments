@@ -8,12 +8,12 @@ def get_sims():
 sims = get_sims()
 
 # Found all reseeding sims from the model selection reseeding path, discarding any with mut0005 or mig04 due to poor performance on previous evaluations
-all_reseeding_path = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/model_selection_reseeding_no_reseeding_5_8_25_variable_rates_data_8_19_24/reseeding_sims.txt"
+all_reseeding_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/model_selection_reseeding_no_reseeding_5_8_25_variable_rates_data_8_19_24/reseeding_sims.txt"
 with open(all_reseeding_path, 'r') as f:
     all_reseeding = [line.strip() for line in f]
 
 # Counted the number of reseeding sims that were available, noticed none of them had mig7, then found all non-reseeding sims and discarded mig4 and mut0005 and mig7, and then randomly shuffled the file and took the top n to match the number of reseeding n from above (done to prevent any class imbalance)
-chosen_non_reseeding_path = "/grid/siepel/home/staklins/bayesian_phylogenetic_metastasis/results/model_selection_reseeding_no_reseeding_5_8_25_variable_rates_data_8_19_24/no_reseeding_sims_randomly_chosen.txt"
+chosen_non_reseeding_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/model_selection_reseeding_no_reseeding_5_8_25_variable_rates_data_8_19_24/no_reseeding_sims_randomly_chosen.txt"
 with open(chosen_non_reseeding_path, 'r') as f:
     chosen_non_reseeding = [line.strip() for line in f]
 
@@ -21,35 +21,17 @@ with open(chosen_non_reseeding_path, 'r') as f:
 sims = [sim for sim in sims if sim in all_reseeding or sim in chosen_non_reseeding]
 
 # specific sims that need more particles to reduce the threshold for the minimum bayes factor
-sims = [
-    "mig5_mut005_2289",
-    "mig5_mut0025_983",
-    "mig6_mut001_8905",
-    "mig5_mut0025_2468",
-    "mig5_mut0025_1772",
-    "mig5_mut0025_5291",
-    "mig6_mut0025_4973",
-    "mig6_mut01_18521",
-    "mig5_mut0025_32617",
-    "mig5_mut001_9405",
-    "mig5_mut005_1707",
-    "mig5_mut001_1688",
-    "mig5_mut01_21317",
-    "mig6_mut001_30120",
-    "mig5_mut005_10837"
-]
+sims = ['mig5_mut0025_1251', 'mig5_mut005_21812', 'mig5_mut005_23638', 'mig6_mut0025_12143', 'mig6_mut005_30294', 'mig6_mut01_23364', 'mig6_mut001_22566', 'mig5_mut01_6758', 'mig5_mut001_7848', 'mig5_mut005_2289', 'mig5_mut005_28953', 'mig5_mut001_974', 'mig5_mut01_2534', 'mig6_mut01_26589', 'mig6_mut001_22110', 'mig6_mut01_28748', 'mig6_mut005_28340', 'mig6_mut01_13401', 'mig5_mut01_6232', 'mig6_mut0025_25796', 'mig5_mut005_6169', 'mig6_mut01_32163', 'mig5_mut0025_10050', 'mig6_mut001_13259', 'mig6_mut001_18037', 'mig5_mut0025_6233', 'mig5_mut0025_2468', 'mig5_mut005_1707', 'mig6_mut005_9570', 'mig5_mut0025_32617', 'mig5_mut01_28920', 'mig6_mut005_21643', 'mig5_mut001_1688', 'mig6_mut001_30120', 'mig5_mut005_24716', 'mig5_mut005_10364', 'mig6_mut0025_1342', 'mig6_mut001_10537', 'mig5_mut005_10837', 'mig6_mut0025_17715', 'mig6_mut01_4374', 'mig6_mut001_25214', 'mig5_mut0025_19909', 'mig5_mut01_6228', 'mig6_mut005_1596', 'mig6_mut01_21493']
 
 
 outdir = config['outdir']
 
 rule all:
     input:
-        expand("{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/true_reseeding_classification/{sim}/reseeding.txt", sim=sims, outdir=outdir),
-        expand("{outdir}/beam_prep/{sim}/{sim}.fasta", sim=sims, outdir=outdir),
-        expand("{outdir}/beam_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 701), outdir=outdir),
-        expand("{outdir}/beam_no_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 701), outdir=outdir),
+        expand("{outdir}/beam_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 401), outdir=outdir),
+        expand("{outdir}/beam_no_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 401), outdir=outdir),
 
 rule labelTrueTreeWithTissues:
     input:
@@ -61,8 +43,8 @@ rule labelTrueTreeWithTissues:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/compare_trees.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # run add tissue to newick
@@ -79,8 +61,8 @@ rule plotTrueMigrationGraph:
         primaryTissue = config['primaryTissue'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/networkx.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input} {params.primaryTissue} {output}
@@ -96,8 +78,8 @@ rule obtainTrueDataReseedingClassifications:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/compare_trees.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         python {params.scripts}/formatting/classify_is_reseeding_from_newick.py {input} {params.primaryTissue} {output}
@@ -114,7 +96,7 @@ rule runCassiopeia:
         threads = 1,
         mem = '1G'
     singularity:
-        "../../envs/simulate.sif"
+        f"{config['containers']}/cassiopeia.sif"
     shell:
         """
         # run cassiopeia greedy
@@ -137,8 +119,8 @@ rule runLAML:
         experimentTime = config['experimentTime'],
         threads = 10,
         mem = '1G'
-    conda:
-        "../../envs/laml.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # copy sim matrix, replace header, and replace -1 with ? for missing data
@@ -158,16 +140,15 @@ rule runLAML:
         python {params.scripts}/formatting/format_laml_mutation_priors.py $laml_sim_matrix {input.mutationPriors} $mutationPriors
 
         # run laml
-        run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --topology_search --keep_polytomies --noDropout --parallel
+        run_laml -c $laml_sim_matrix -t {input.casTree} -p $mutationPriors -o {params.outputdir}/{wildcards.sim}_laml --timescale {params.experimentTime} --topology_search --keep_polytomies --parallel
 
-        # remove fake root from tree
+        # remove origin from tree
         fixed_newick=$(sed "s/);//g" {output.lamlTree})
         fixed_newick="${{fixed_newick:1}});"
         last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\)\;)' | tail -1 | tr -d ':')
         second_last_branch=$(echo "$fixed_newick" | grep -oP ':[0-9]+\.[0-9]+(?=\))' | tail -2 | head -1 | tr -d ':')
         new_branch=$(echo "$last_branch + $second_last_branch" | bc)
         modified_newick=$(echo "$fixed_newick" | sed -r "s/$second_last_branch\):$last_branch/0$new_branch/g")
-
         echo $modified_newick > {output.lamlTreeNoOrigin}
 
         # obtain newick without branch lengths
@@ -190,8 +171,8 @@ rule prepBeamInputs:
         outputdir = "{outdir}/beam_prep/{sim}",
         threads = 1,
         mem = '1G'
-    conda:
-        "../../envs/compare_trees.yaml"
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
         # write tip traits to new csv

@@ -2,44 +2,8 @@
 import pandas as pd
 import numpy as np
 import scanpy as sc
-from tqdm import tqdm
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-
-def compute_log2fc(gr, bg, gene, adata):
-	gene_ii = np.where(adata.raw.var_names == gene)[0][0]
-	exp_g = np.mean(gr[:,gene_ii]) + 0.01
-	exp_bg = np.mean(bg[:,gene_ii]) + 0.01
-	return np.log2(exp_g / exp_bg)
-
-
-def create_DE_df(counts, groupby_var, gr, bg, result, method='ttest'):
-	g_filt = counts.obs.apply(lambda x: x[groupby_var] ==  gr, axis=1).values
-	bg_filt = counts.obs.apply(lambda x: x[groupby_var] == bg, axis=1).values
-	print(counts.X.shape, len(g_filt), g_filt[:10])
-	gdata = counts.X[g_filt, :]
-	bgdata = counts.X[bg_filt, :]
-	log2fc = {}
-	adj_pvalues = {}
-	scores = {}
-	if method == 'logreg':
-		for gene, score in zip(result['names'][gr], result['scores'][gr]):
-			scores[gene] = score
-			log2fc[gene] = compute_log2fc(gdata, bgdata, gene, counts)
-		de_df = pd.DataFrame.from_dict(scores, orient='index', columns=['scores'])
-		de_df['gene'] = de_df.index
-		de_df['log2fc'] = de_df.index.map(log2fc)
-		de_df.index = range(de_df.shape[0])
-		return de_df
-	for gene, qval, fc in zip(result['names'][gr], result['pvals_adj'][gr], result['logfoldchanges'][gr]):
-		adj_pvalues[gene] = qval
-		log2fc[gene] = compute_log2fc(gdata, bgdata, gene, counts)
-	de_df = pd.DataFrame.from_dict(adj_pvalues, orient='index', columns=['qval'])
-	de_df['gene'] = de_df.index
-	de_df['log2fc'] = de_df.index.map(log2fc)
-	de_df.index = range(de_df.shape[0])
-	return de_df
 
 
 input_matrix = "/grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/quinn_2021_real_data/GSE161363/GSM4905335_matrix.5k.mtx"
@@ -49,80 +13,89 @@ input_meta = "/grid/siepel/home/staklins/stored_data/crispr_barcode_related_data
 
 outfile = "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/rl_vs_norl_sig_gene_log2fc_barplot.pdf"
 
-# Load count matrix and transpose to get cells as rows and genes as columns
-adata = sc.read(input_matrix, cache=True).T
-# Load gene annotations
+# Load count matrix
+adata = sc.read(input_matrix, cache=True).T	# cells as rows, genes as columns
+
+# Load in gene names and add to adata
 genes = pd.read_csv(input_genes, header=None, sep='\t')
-# Load cell barcodes
-barcodes = pd.read_csv(input_barcodes, header=None)
-# Load metadata
-meta = pd.read_csv(input_meta, sep='\t', index_col=0)
-
-# Set gene names as variable names (columns) in the AnnData object
 adata.var_names = genes[1]
-# Store the original gene IDs as an annotation in the var dataframe
-adata.var['gene_ids'] = genes[0]
-# Set cell barcodes as observation names (rows) in the AnnData object
-adata.obs_names = barcodes[0]
-# Ensure all gene names are unique by appending numbers if necessary
-adata.var_names_make_unique()
-# Convert all gene names to uppercase for consistency
 adata.var_names = [x.upper() for x in adata.var_names]
+adata.var_names_make_unique()
 
-# Find cells that are present in both the expression data and metadata
+# Load in cell names and add to adata
+barcodes = pd.read_csv(input_barcodes, header=None)
+adata.obs_names = barcodes[0]
+
+# Load in the cell metadata, keep only cells in adata that have metadata, and add metadata to adata
+meta = pd.read_csv(input_meta, sep='\t', index_col=0)
 ts_rna_overlap = np.intersect1d(adata.obs_names, meta.index)
 meta = meta.loc[ts_rna_overlap]
 adata = adata[ts_rna_overlap,:]
-
-# Get percentage of mitochondrial reads per cell
-mito_genes = [name for name in adata.var_names if name.startswith('MT-')]
-adata.obs['percent_mito'] = np.sum(adata[:,mito_genes].X, axis=1).A1 / np.sum(adata.X, axis=1).A1
-
-# Merge cell metadata with the AnnData object
-# This adds all columns from meta to adata.obs, matching cells by their index
 adata.obs = adata.obs.merge(meta, left_index = True, right_index=True, how="left")
 
-# Calculate median library size across all cells to use as scaling factor
-# Normalize cells to have the same total count (scale_factor)
-# This helps account for differences in library size between cells
-scale_factor = np.median(np.array(adata.X.sum(axis=1)))
-sc.pp.normalize_per_cell(adata, counts_per_cell_after = scale_factor)
+# Filter cells with > 20% mitochondrial gene expression
+mito_genes = [name for name in adata.var_names if name.startswith('MT-')]
+mito_frac = np.sum(adata[:, mito_genes].X, axis=1).A1 / np.sum(adata.X, axis=1).A1
+adata = adata[mito_frac <= 0.20, :]
 
-# Filter out cells with high mitochondrial content (>20%)
-adata = adata[adata.obs.percent_mito <= 0.20, :]
+# Filter cells with few genes expressed
+sc.pp.filter_cells(adata, min_genes=100)
 
 # Filter out genes that are not expressed in at least 1% of cells
 sc.pp.filter_genes(adata, min_cells=0.01*adata.shape[0])
 
-# Store the raw data before normalization for later use
-adata.raw = adata
+# Scale the library size to counts per million based on median total counts per cell
+sc.pp.normalize_total(adata)
 
 # Log transform the data
 sc.pp.log1p(adata)
 
 # Subset to only the LL data
-adata_ll = adata[adata.obs.apply(lambda x: x['sampleID'] in ["LL"], axis=1),:]
+adata_ll = adata[adata.obs.apply(lambda x: x['sampleID'] == "LL", axis=1),:]
 
-# Set the CPs/groups that chose the RL model and no RL model based on external hypothesis tests with threshold 1.1
-groups_RL_model = np.array(['32', '34', '43', '37', '26', '47', '40', '30', '36', '70', '57', '60', '66', '84', '62', '67', '74', '86', '71', '99', '98', '92', '54'], dtype=int)
-groups_no_RL_model = np.array(['42', '24', '35', '28', '45', '44', '51', '79', '59', '64', '80', '72', '82', '97', '52', '76', '89', '100', '68'], dtype=int)
+# Set the CPs/groups that chose the RL model and no RL model based on external hypothesis tests
+groups_RL_model = np.array(['32', '34', '43', '37', '26', '47', '40', '30', '79', '63', '36', '58', '70', '56', '57', '55', '61', '66', '84', '62', '80', '83', '74', '67', '86', '98', '52', '90', '92', '91', '95', '68'], dtype=int)
+groups_no_RL_model = np.array(['42', '24', '35', '28', '45', '44', '51', '82', '64', '59', '72', '60', '89', '71', '73', '99', '97', '77', '76', '100', '54'], dtype=int)
 
 # Subset to only the groups in either model and label cells with groups
 adata_ll = adata_ll[adata_ll.obs.apply(lambda x: x['LineageGroup'] in groups_RL_model or x['LineageGroup'] in groups_no_RL_model, axis=1),:]
 adata_ll.obs["model"] = adata_ll.obs.apply(lambda x: "RL" if x['LineageGroup'] in groups_RL_model else "noRL", axis=1)
-print("Number of cells in each group:")
-print(adata_ll.obs["model"].value_counts())
-
-# Convert model column to categorical type for differential expression analysis
 adata_ll.obs["model"] = adata_ll.obs["model"].astype('category')
 
-# Run the DEA analysis
-sc.tl.rank_genes_groups(adata_ll, "model", groups=["RL"], reference="noRL", method="wilcoxon", use_raw = True, n_genes = len(adata_ll.var_names), only_positive = False)
-result = adata_ll.uns["rank_genes_groups"]
-groups = result['names'].dtype.names
+# Remove mitochondrial and ribosomal genes
+remove_genes = [name for name in adata_ll.var_names if name.startswith('MT-') or name.startswith('RPL') or name.startswith('RPS')]
+adata_ll = adata_ll[:, [gene for gene in adata_ll.var_names if gene not in remove_genes]].copy()
 
-# Create differential expression dataframes for RL vs noRL comparison
-rl_vs_norl = create_DE_df(adata_ll, "model", "RL", "noRL", result, method='wilcoxon')
+# Only keep genes in >20% of cells in at least one group
+min_frac = 0.2
+groupby_col = "model"
+mask = np.any([
+    (adata_ll[adata_ll.obs[groupby_col] == grp].X > 0).mean(axis=0) >= min_frac
+    for grp in adata_ll.obs[groupby_col].unique()
+], axis=0).flatten()
+adata_ll = adata_ll[:, mask].copy()
+
+# Run the DEA analysis
+sc.tl.rank_genes_groups(adata = adata_ll, 
+                        groupby = "model",
+                        groups = ["RL"],
+                        reference = "noRL",
+                        method = "wilcoxon",
+                        only_positive = False)
+
+result = adata_ll.uns["rank_genes_groups"]
+
+# Create a DataFrame for RL vs noRL results
+rl_vs_norl = pd.DataFrame({
+	'gene': result['names']['RL'],
+	'logfc': result['logfoldchanges']['RL'],
+	'log2fc': np.log2(np.exp(result['logfoldchanges']['RL'])),  # convert lnFC → log2FC
+	'pval': result['pvals']['RL'],
+	'qval': result['pvals_adj']['RL']
+}).sort_values(
+	by='qval',
+	ascending=True
+)
 
 # Filter for significant genes (q-value < 0.05 and |log2FC| > log2(1.5))
 rl_vs_norl_sig = rl_vs_norl[(rl_vs_norl['qval'] < 0.05) & (np.abs(rl_vs_norl['log2fc']) > np.log2(1.5))]
@@ -131,33 +104,9 @@ rl_vs_norl_sig = rl_vs_norl_sig.sort_values(by='log2fc', ascending=False)
 # Write the significant genes to a file
 rl_vs_norl_sig.to_csv(outfile.replace(".pdf", ".tsv"), sep="\t", index=False)
 
-# For the significant genes, get the proportion of cells that express the gene in each model and write to a file
-prop_expr = []
-for gene in rl_vs_norl_sig['gene']:
-    # Get cells for each model
-    rl_cells = adata_ll[adata_ll.obs['model'] == 'RL', gene]
-    norl_cells = adata_ll[adata_ll.obs['model'] == 'noRL', gene]
-    
-    # Calculate percentage of cells with non-zero expression
-    rl_prop = (rl_cells.X > 0).sum() / len(rl_cells)
-    norl_prop = (norl_cells.X > 0).sum() / len(norl_cells)
-    
-    prop_expr.append({
-        'gene': gene,
-        'RL_prop': rl_prop,
-        'noRL_prop': norl_prop,
-    })
-
-prop_expr_df = pd.DataFrame(prop_expr)
-prop_expr_df.to_csv(outfile.replace(".pdf", "_gene_expression_proportions.tsv"), sep="\t", index=False)
-
-# Get the significant genes
-significant_genes = rl_vs_norl_sig['gene'].tolist()
-
 # Make a two sided barplot of log2fc of significant genes
 fig = plt.figure(figsize=(6,10))
-# Create color palette based on log2fc values using muted colors
-colors = ['#d62728' if x < 0 else '#1f77b4' for x in rl_vs_norl_sig['log2fc']]  # muted red and blue
+colors = ['#d62728' if x < 0 else '#1f77b4' for x in rl_vs_norl_sig['log2fc']]
 sns.barplot(data=rl_vs_norl_sig, y='gene', x='log2fc', palette=colors)
 plt.axvline(x=0, color='black', linestyle='-', alpha=0.3)
 plt.ylabel('Genes')

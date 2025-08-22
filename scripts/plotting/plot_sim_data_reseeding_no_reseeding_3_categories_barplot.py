@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Data preparation
-categories = ['No PR\n(lBf < 3)', 'Between\nclassification\nthresholds', 'PR\n(lBf > 3)']
+categories = ['No PR\n(lBf < -1.1)', 'Between\nclassification\nthresholds', 'PR\n(lBf > 1.1)']
 
 # Data for each category
-no_counts = [5, 34, 0]
-yes_counts = [0, 29, 10]
+no_counts = [18, 20, 0]
+yes_counts = [10, 12, 17]
 
 # Set up the plot
 fig, ax = plt.subplots(figsize=(10, 6))
@@ -58,5 +58,5 @@ ax.set_ylim(0, max(np.array(no_counts) + np.array(yes_counts)) + 10)
 plt.tight_layout()
 
 # Display the plot
-plt.savefig('/grid/siepel/home/staklins/stored_results/bayesian_migration_graph_inference/latest_results/model_selection_reseeding_no_reseeding_5_8_25_variable_rates_data_8_19_24/3_category_barplot.pdf', dpi=300, bbox_inches='tight')
+plt.savefig('/grid/siepel/home/staklins/stored_results/beam/latest_results/model_selection_reseeding_no_reseeding_5_8_25_variable_rates_data_8_19_24/3_category_barplot.pdf', dpi=300, bbox_inches='tight')
 plt.close()

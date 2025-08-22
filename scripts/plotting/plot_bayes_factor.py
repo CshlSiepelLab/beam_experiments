@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=3):
+def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=1.1):
     # Read the data
     df = pd.read_csv(file_path)
 
