@@ -30,8 +30,8 @@ rule all:
     input:
         expand("{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.pdf", sim=sims, outdir=outdir),
         expand("{outdir}/true_reseeding_classification/{sim}/reseeding.txt", sim=sims, outdir=outdir),
-        expand("{outdir}/beam_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 401), outdir=outdir),
-        expand("{outdir}/beam_no_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 401), outdir=outdir),
+        expand("{outdir}/beam_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 501), outdir=outdir),
+        expand("{outdir}/beam_no_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 501), outdir=outdir),
 
 rule labelTrueTreeWithTissues:
     input:
