@@ -11,8 +11,8 @@ import pickle
 
 
 # Use to merge ideal and variable simulated rates data
-ideal_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/precision_recall_vars.pkl"
-ideal_tree_stats_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24/true_tree_stats.txt"
+ideal_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24/precision_recall_curve/precision_recall_vars.pkl"
+ideal_tree_stats_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24/true_tree_stats.txt"
 
 variable_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/precision_recall_curve/precision_recall_vars.pkl"
 variable_tree_stats_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/true_tree_stats.txt"
@@ -88,11 +88,16 @@ tree_stats_df = pd.concat(
     [pd.read_csv(ideal_tree_stats_path), pd.read_csv(variable_tree_stats_path)]
 )
 
+# Ensure 'sim' and 'sim_name' columns are strings in all relevant DataFrames
+all_thresh_df["sim"] = all_thresh_df["sim"].astype(str)
+mach2_all_thresh_df["sim"] = mach2_all_thresh_df["sim"].astype(str)
+tree_stats_df["sim_name"] = tree_stats_df["sim_name"].astype(str)
+
 # Merge the dataframes on the 'sim_name' column
 df = all_thresh_df.merge(tree_stats_df, left_on="sim", right_on="sim_name")
 df2 = mach2_all_thresh_df.merge(tree_stats_df, left_on="sim", right_on="sim_name")
 
-sim_names = all_thresh_df["sim"].unique()
+sim_names = df["sim"].unique()
 
 fs = 24
 

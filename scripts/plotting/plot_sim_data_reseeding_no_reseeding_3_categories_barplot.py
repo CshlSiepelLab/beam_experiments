@@ -6,8 +6,8 @@ import numpy as np
 categories = ['No PR\n(lBf < -1.1)', 'Between\nclassification\nthresholds', 'PR\n(lBf > 1.1)']
 
 # Data for each category
-no_counts = [18, 20, 0]
-yes_counts = [10, 12, 17]
+no_counts = [21, 18, 0]
+yes_counts = [7, 18, 14]
 
 # Set up the plot
 fig, ax = plt.subplots(figsize=(10, 6))

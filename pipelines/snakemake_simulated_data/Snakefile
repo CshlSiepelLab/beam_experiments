@@ -184,7 +184,7 @@ rule runBeam:
 
         beast \
         -threads {params.threads} \
-        -resume \
+        -overwrite \
         -working \
         -D inName={wildcards.sim} \
         -D fileDir={params.inFileDir} \
@@ -266,7 +266,7 @@ rule beamPostprocessing:
     shell:
         """
         # work around until beam visualization is pip installable
-        source ~/miniconda3/etc/profile.d/conda.sh 
+        source ~/miniforge3/etc/profile.d/conda.sh 
         conda activate beam_visualization
 
         if [ ! -s {input.combinedTrees} ]; then
@@ -350,8 +350,8 @@ rule runMachina:
         scripts = config['scripts'],
         outputdir = "{outdir}/machina/{sim}",
         primaryTissue = config['primaryTissue'],
-        threads = 150,
-        mem = '3G'
+        threads = 50,
+        mem = '1G'
     singularity:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
@@ -416,7 +416,7 @@ rule runMach2:
         outputdir = "{outdir}/mach2/{sim}",
         primaryTissue = config['primaryTissue'],
         threads = 25,
-        mem = '20G'
+        mem = '1G'
     singularity:
         f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:

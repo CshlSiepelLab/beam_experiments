@@ -12,7 +12,7 @@ for migration_rate in ${migration_rates[@]}; do
 
     for mutrate in ${mutation_rates[@]}; do
 
-        for ((i = 0; i < 80; i++)); do
+        for ((i = 0; i < 1; i++)); do
 
             echo "Running simulation $i"
 

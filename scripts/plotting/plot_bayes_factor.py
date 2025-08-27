@@ -6,7 +6,6 @@ import numpy as np
 
 
 def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=1.1):
-    # Read the data
     df = pd.read_csv(file_path)
 
     # Get the Bayes factor column
@@ -14,15 +13,13 @@ def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=1.1):
     # bf_column = 'bf(gtr-gtrNoRLdirectSeeding)'
     # bf_column = 'bf(reseeding-no_reseeding)'
 
-    # Create the figure with specific size
-    plt.figure(figsize=(12, 6))
-
     # Calculate bin edges
     min_val = np.floor(df[bf_column].min())
     max_val = np.ceil(df[bf_column].max())
     bins = np.arange(min_val, max_val + bin_width, bin_width)
 
     # Create histogram
+    plt.figure(figsize=(12, 6))
     plt.hist(df[bf_column], bins=bins, color="grey", edgecolor="grey", linewidth=0)
 
     # Add vertical line at threshold

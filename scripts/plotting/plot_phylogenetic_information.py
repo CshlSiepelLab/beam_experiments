@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-variable_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/phylogenetic_information_per_site_variable_rates.csv"
-quinn_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/phylogenetic_information_per_site_quinn.csv"
-serio_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/serio_prostate_cancer_data/phylogenetic_information_per_site_serio.csv"
-outfile = "/grid/siepel/home/staklins/stored_results/beam/latest_results/serio_prostate_cancer_data/phylogenetic_information_per_site_all_zoom.pdf"
+variable_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/phylogenetic_information_to_cell_ratio_variable_rates.csv"
+quinn_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/phylogenetic_information_to_cell_ratio_quinn.csv"
+serio_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/serio_prostate_cancer_data/phylogenetic_information_to_cell_ratio_serio.csv"
+outfile = "/grid/siepel/home/staklins/stored_results/beam/latest_results/serio_prostate_cancer_data/phylogenetic_information_to_cell_ratio.pdf"
 
 
 variable_data = pd.read_csv(variable_file)
@@ -26,7 +26,7 @@ num_bins = 100
 
 # Plot for variable
 sns.histplot(data=variable_data, 
-            x='average_informative_characters_per_site',
+            x='informative_muts_to_cell_ratio',
             hue='Mutation rate',
             palette='tab10',
             ax=ax1, kde=False, bins=num_bins)
@@ -38,7 +38,7 @@ ax1.set_ylabel('Count', fontsize=fs)
 
 # Plot for quinn
 sns.histplot(data=quinn_data, 
-            x='average_informative_characters_per_site',
+            x='informative_muts_to_cell_ratio',
             ax=ax2, kde=False, bins=num_bins, color='grey')
 ax2.set_title('Lung cancer dataset', fontsize=fs)
 ax2.set_xlabel('', fontsize=fs)
@@ -46,10 +46,10 @@ ax2.set_ylabel('Count', fontsize=fs)
 
 # Plot for serio
 sns.histplot(data=serio_data, 
-            x='average_informative_characters_per_site',
+            x='informative_muts_to_cell_ratio',
             ax=ax3, kde=False, bins=num_bins, color='grey')
 ax3.set_title('Prostate cancer dataset', fontsize=fs)
-ax3.set_xlabel('Mean site count of unique characters\nshared by more than one cell', fontsize=fs)
+ax3.set_xlabel('Ratio of phylogenetically informative mutations to cells', fontsize=fs)
 ax3.set_ylabel('Count', fontsize=fs)
 
 # Get the maximum y value across all plots
@@ -60,8 +60,8 @@ ax1.set_xlim(0, max_x)
 ax2.set_xlim(0, max_x)
 ax3.set_xlim(0, max_x)
 
-ax3.set_ylim(0,10)
-ax3.set_yticks(range(0, 11, 1))
+# ax3.set_ylim(0,10)
+# ax3.set_yticks(range(0, 11, 1))
 
 # Remove grid
 ax1.grid(False)

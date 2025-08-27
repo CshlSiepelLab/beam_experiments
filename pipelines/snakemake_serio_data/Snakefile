@@ -50,20 +50,9 @@ def get_elements_from_file(path):
     # temp
     # Only keep the specified mouse/cp pairs
     if mouse == "MMUS1457":
-        cps = [cp for cp in cps if cp in ["CP03", "CP04", "CP01", "CP02", "CP05", "CP27"]]
-    elif mouse == "MMUS1469":
-        cps = [cp for cp in cps if cp in ["CP055", "CP062", "CP076", "CP042", "CP051", "CP038", "CP085"]]
-    elif mouse == "MMUS1495":
-        cps = [cp for cp in cps if cp in ["CP022"]]
-    elif mouse == "MMUS1544":
-        cps = [cp for cp in cps if cp in ["CP34"]]
-    elif mouse == "MMUS1467":
-        cps = [cp for cp in cps if cp in ["CP16", "CP05"]]
-    elif mouse == "MMUS1466":
-        cps = [cp for cp in cps if cp in ["CP05"]]
+        cps = [cp for cp in cps if cp in {"CP02"}]
     else:
         cps = []
-
 
     return cps
 
@@ -81,13 +70,13 @@ rule all:
         #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), mouse=m) for m in mice],
         # [expand("{outdir}/beam_gtr/{mouse}/all_expected_migration_times_no_multiedge_combined.pdf", outdir=config['outdir'], mouse=m) for m in mice],
         # [expand("{outdir}/beam_gtr_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 251), mouse=m) for m in mice],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 101), mouse=m) for m in mice],
         # [expand("{outdir}/beam_random_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 251), mouse=m) for m in mice],
+        #         cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 101), mouse=m) for m in mice],
         [expand("{outdir}/beam_no_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 1001), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 3001), mouse=m) for m in mice],
         [expand("{outdir}/beam_reseeding_ns/{mouse}/{cp}/terminal_{num}.log", outdir=config['outdir'],
-                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 1001), mouse=m) for m in mice],
+                cp=get_elements_from_file(f"{config['outdir']}/beam/{m}"), num=range(1, 3001), mouse=m) for m in mice],
 
 rule runEvotracer:
     input:

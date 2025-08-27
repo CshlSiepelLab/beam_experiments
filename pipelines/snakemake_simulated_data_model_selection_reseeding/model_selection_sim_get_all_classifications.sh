@@ -42,7 +42,7 @@ process_dir() {
 
 export -f process_dir
 
-num_threads=100
+num_threads=32
 
 # process all directories to combine particles across all chains
 dirs=$(find $main_dir/beam_no_reseeding_ns $main_dir/beam_reseeding_ns -maxdepth 1 -mindepth 1 -type d )

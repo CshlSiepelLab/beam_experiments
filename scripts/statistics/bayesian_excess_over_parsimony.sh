@@ -1,9 +1,9 @@
 
-main_dir="/grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/results/variable_migration_and_mutation_rates_2_25_25_data_from_8_19_24"
+main_dir="/grid/siepel/home/staklins/stored_results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24"
 
 posterior_files=$(find $main_dir/beam_gtr -type f -name "combined.trees")
 
-num_cpus=100
+num_cpus=150
 
 process_posterior_file() {
     posterior_file=$1
@@ -18,27 +18,27 @@ process_posterior_file() {
     count=0
 
     while IFS= read -r line; do
-        # take 1/100 samples
-        if (( count % 100 == 0 )); then
+        # take 1/10 samples
+        if (( count % 10 == 0 )); then
             id=$(echo $line | cut -d' ' -f2 | cut -d'_' -f2)
             working_dir_id=${working_dir}/${id}
             mkdir -p $working_dir_id
             newick=$(echo $line | cut -d' ' -f4-)
 
             # process beast tree and get migration count
-            python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/formatting/beast_posterior_tree_to_newicks.py $newick $id $working_dir_id
+            python /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/scripts/formatting/beast_posterior_tree_to_newicks.py $newick $id $working_dir_id
             beast_result=$working_dir_id/${id}_beast.newick
             plain_newick=$working_dir_id/${id}.newick
             tip_tissues=$working_dir_id/${id}_tip_tissues.tsv
 
             # get parsimony result
-            python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/consensus_random/parsimony_only.py $plain_newick $tip_tissues $working_dir_id $primary_tissue 1
+            python /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/scripts/consensus_random/parsimony_only.py $plain_newick $tip_tissues $working_dir_id $primary_tissue 1
             parsimony_result=$working_dir_id/parsimony_tissues_random.nwk
 
             # get migration counts
-            python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/statistics/migration_count_from_tree.py $beast_result $primary_tissue > $working_dir_id/beast_count.txt
+            python /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/scripts/statistics/migration_count_from_tree.py $beast_result $primary_tissue > $working_dir_id/beast_count.txt
             beast_migration_count=$(cat $working_dir_id/beast_count.txt)
-            python /grid/siepel/home_norepl/staklins/bayesian_phylogenetic_metastasis/scripts/statistics/migration_count_from_tree.py $parsimony_result $primary_tissue > $working_dir_id/parsimony_count.txt
+            python /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/scripts/statistics/migration_count_from_tree.py $parsimony_result $primary_tissue > $working_dir_id/parsimony_count.txt
             parsimony_migration_count=$(cat $working_dir_id/parsimony_count.txt)
 
             # save results

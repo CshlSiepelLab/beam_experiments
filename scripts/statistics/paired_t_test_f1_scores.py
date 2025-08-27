@@ -3,7 +3,7 @@ import pandas as pd
 from scipy.stats import ttest_rel, ttest_ind
 
 # Load the CSV file
-file_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24/precision_recall_curve/metrics.csv"
+file_path = "/grid/siepel/home/staklins/stored_results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24/precision_recall_curve/metrics.csv"
 data = pd.read_csv(file_path)
 
 # Drop rows with NaN values in the relevant columns
