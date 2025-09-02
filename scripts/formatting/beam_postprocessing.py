@@ -1,6 +1,6 @@
 
 import sys
-from beam_visualization import BeamResults
+from beam_sup import BeamResults
 
 
 # user inputs

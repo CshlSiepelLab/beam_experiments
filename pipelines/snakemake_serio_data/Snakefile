@@ -469,7 +469,7 @@ rule beamPostprocessing:
         """
         # work around until beam visualization is pip installable
         source ~/miniconda3/etc/profile.d/conda.sh 
-        conda activate beam_visualization
+        conda activate beam_sup
 
         if [ ! -s {input.combinedTrees} ]; then
             echo "Combined trees file is empty. Exiting."

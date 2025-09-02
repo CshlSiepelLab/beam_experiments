@@ -1,4 +1,5 @@
 
+import os
 import sys
 import pandas as pd
 import numpy as np
@@ -26,8 +27,15 @@ def count_informative_characters(site_values):
 
 input_file = sys.argv[1]
 
-# Read the TSV file
-df = pd.read_csv(input_file, sep='\t', index_col=0)
+
+ext = os.path.splitext(input_file)[1].lower()
+
+if ext == ".tsv":
+    sep = "\t"
+else:
+    sep = ","
+    
+df = pd.read_csv(input_file, sep=sep, index_col=0)
 
 # Calculate informative characters per site
 informative_counts = df.apply(count_informative_characters)
