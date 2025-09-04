@@ -24,7 +24,6 @@ for migration_rate in ${migration_rates[@]}; do
                 outprefix="${outdir}/${seed}"
             done
             mkdir ${outprefix}
-            log_file="${outprefix}/log.txt"
 
             # set simulator parameters
             num_generations=250
@@ -32,21 +31,14 @@ for migration_rate in ${migration_rates[@]}; do
             num_cells_downsample=50
             num_sites=50
 
-            # run simulator
-            timeout 10m $barcode_simulator_dir/build/simulate -c ${num_generations} -mig ${migration_rate} -s ${seed} -o ${outprefix} -m ${max_anatomical_sites} -d ${num_cells_downsample} >> ${log_file} || (rm -rf ${outprefix} && continue)
-
-            # if no migrations, then repeat simulation
-            migrations=$(grep -v '^$' ${outprefix}/migration_graph* | wc -l)
-            if [ $migrations -lt 2 ]; then
-                echo "No migrations occurred, repeating simulation"
-                rm -rf ${outprefix}
-                i=$((i-1))
-                continue
-            fi
-
-
-            # run barcode simulator to overlay barcode data
-            python $barcode_simulator_dir/overlay_barcode.py ${outprefix} ${num_sites} ${mutrate} ${outprefix}/cell_tree_seed*.nwk
+            # run executable from beam_sup package
+            run_met_cancer_barcode_simulations.sh -\
+            -outdir ${outprefix} \
+            --num_generations ${num_generations} \
+            --migration_rate ${migration_rate} \
+            --num_cells_downsample ${num_cells_downsample} \
+            --max_anatomical_sites ${max_anatomical_sites} \
+            --seed ${seed}
 
         done
     done

@@ -39,7 +39,7 @@ def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=5):
                 continue
 
             ax = axes[i, j]
-            ax.hist(subset[bf_column], bins=20, color="grey")
+            ax.hist(subset[bf_column], bins=10, color="grey")
             ax.axvline(x=threshold, color="black", linestyle="--", linewidth=2)
             ax.axvline(x=-threshold, color="black", linestyle="--", linewidth=2)
 
