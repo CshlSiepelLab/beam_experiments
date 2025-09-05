@@ -175,10 +175,12 @@ rule prepBeamInputs:
         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
         threads = 1,
         mem = '5G'
-    singularity:
-        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
+        # work around until beam sup is pip installable
+        source ~/miniconda3/etc/profile.d/conda.sh 
+        conda activate beam_sup
+
         # make mutations successive for each matrix and provide an updated dictionary of int to mutations
         python {params.scripts}/formatting/matrix_to_successive_matrix.py {input.matrix} {input.mutation_dict} {params.outdir}
 
@@ -467,7 +469,7 @@ rule beamPostprocessing:
         mem = "1G"
     shell:
         """
-        # work around until beam visualization is pip installable
+        # work around until beam sup is pip installable
         source ~/miniconda3/etc/profile.d/conda.sh 
         conda activate beam_sup
 
@@ -539,10 +541,12 @@ rule getExpectedClassificationsAndTimes:
         scripts = config['scripts'],
         threads = 1,
         mem = "1G"
-    singularity:
-        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
+        # work around until beam sup is pip installable
+        source ~/miniconda3/etc/profile.d/conda.sh 
+        conda activate beam_sup
+        
         echo "name,met_to_met,met_to_primary,threshold" > {output.allClassifications}
         echo "name,source,target,time,threshold" > {output.allTimes}
 

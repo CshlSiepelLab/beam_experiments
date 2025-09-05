@@ -109,10 +109,12 @@ rule prepBeamInputs:
         outputdir = "{outdir}/beam/{sim}",
         threads = 1,
         mem = '1G'
-    singularity:
-        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
+        # work around until beam sup is pip installable
+        source ~/miniforge3/etc/profile.d/conda.sh 
+        conda activate beam_sup
+
         # write tip traits to new csv
         sed 's/ /,/g' {input.leafTissues} > {output.tissues}
 
@@ -267,7 +269,7 @@ rule beamPostprocessing:
         mem = "1G"
     shell:
         """
-        # work around until beam visualization is pip installable
+        # work around until beam sup is pip installable
         source ~/miniforge3/etc/profile.d/conda.sh 
         conda activate beam_sup
 
@@ -530,10 +532,12 @@ rule labelTrueTreeWithTissues:
         scripts = config['scripts'],
         threads = 1,
         mem = '1G'
-    singularity:
-        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
+        # work around until beam sup is pip installable
+        source ~/miniconda3/etc/profile.d/conda.sh 
+        conda activate beam_sup
+
         # run add tissue to newick
         python {params.scripts}/formatting/format_add_tissues_to_newick.py {input.true_tree} {input.true_tissues} {output}
         """

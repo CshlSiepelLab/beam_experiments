@@ -3,31 +3,17 @@ import sys
 import os
 import pandas as pd
 
+from beam_sup.matrix_utils import convert_matrix_to_row_successive_matrix
+
 char_matrix_file = sys.argv[1]
 mut_dict_file = sys.argv[2]
 outdir = sys.argv[3]
 
 char_matrix_df = pd.read_csv(char_matrix_file, sep="\t", index_col=0)
 mut_dict_df = pd.read_csv(mut_dict_file, sep="\t", index_col=0, header=None)
+mut_dict = {row[1][0]: row[0] for row in mut_dict_df.iterrows()}
 
-successive_char_matrix = char_matrix_df.copy()
-successive_mut_dict = {}
-i = 1
-for clone, row in char_matrix_df.iterrows():
-    for site, mut in row.items():
-        mut = int(mut)
-        # skip unedited or missing sites
-        if mut == 0 or mut == -1:
-            continue
-        mut_str = mut_dict_df.loc[mut, 1]
-        # replace the mutation with the successive mutation
-        if mut_str not in successive_mut_dict:
-            successive_mut_dict[mut_str] = i
-            new_mut_value = i
-            i += 1
-        else:
-            new_mut_value = successive_mut_dict[mut_str]
-        successive_char_matrix.loc[clone, site] = new_mut_value
+successive_char_matrix, successive_mut_dict, _ = convert_matrix_to_row_successive_matrix(char_matrix_df, mut_dict)
 
 outfile_char_matrix = f"{outdir}/successive_char_matrix.csv"
 outfile_mut_dict = f"{outdir}/successive_mut_dict.csv"
