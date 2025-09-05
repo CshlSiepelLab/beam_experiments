@@ -32,10 +32,12 @@ rule runCassiopeia:
         outputdir = "{outdir}/cassiopeia_greedy/{sim}",
         threads = 1,
         mem = '1G'
-    singularity:
-        f"{config['containers']}/cassiopeia.sif"
     shell:
         """
+        # work around until beam sup is pip installable
+        source ~/miniforge3/etc/profile.d/conda.sh 
+        conda activate beam_sup
+
         # run cassiopeia greedy
         python {params.cassiopeia_script} {input.sim_matrix} {params.outputdir}
         """
@@ -312,10 +314,12 @@ rule runRandomAndConsensusTissueInference:
         outputdir = "{outdir}/random_consensus_parsimony_tissue_inference/{sim}",
         threads = 1,
         mem = '1G'
-    singularity:
-        f"{config['containers']}/crispr_barcode_migration_inference.sif"
     shell:
         """
+        # work around until beam sup is pip installable
+        source ~/miniforge3/etc/profile.d/conda.sh 
+        conda activate beam_sup
+        
         python {params.scripts}/consensus_random/consensus_random_parsimony_tissue_trees.py {input.lamlTreeNoBranchLengths} {input.leafTissues} {params.outputdir}
         """
 

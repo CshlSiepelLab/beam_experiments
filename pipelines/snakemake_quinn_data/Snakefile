@@ -70,10 +70,12 @@ rule convertMatrixToSuccessive:
         scripts = config['scripts'],
         threads = 1,
         mem = "1G"
-    singularity:
-        f"{config['containers']}/cassiopeia.sif"
     shell:
         """
+        # work around until beam sup is pip installable
+        source ~/miniforge3/etc/profile.d/conda.sh 
+        conda activate beam_sup
+
         python {params.scripts}/formatting/convert_allele_table_to_successive_matrix.py {input.alleleTable} {wildcards.cp} {params.outputdir}
         """
 
@@ -111,10 +113,12 @@ rule runCassiopeia:
         outputdir = "{outdir}/cassiopeia_greedy/{mouse}/{cp}/",
         threads = 1,
         mem = "1G"
-    singularity:
-        f"{config['containers']}/cassiopeia.sif"
     shell:
         """
+        # work around until beam sup is pip installable
+        source ~/miniforge3/etc/profile.d/conda.sh 
+        conda activate beam_sup
+        
         # run cassiopeia greedy
         python {params.scripts}/cassiopeia/cassiopeia_greedy.py {input.matrix} {params.outputdir}
         """

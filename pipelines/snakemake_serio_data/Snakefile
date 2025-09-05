@@ -237,10 +237,12 @@ rule runCassiopeia:
         outputdir = "{outdir}/cassiopeia_greedy/{mouse}/{cp}",
         threads = 5,
         mem = '5G'
-    singularity:
-        f"{config['containers']}/cassiopeia.sif"
     shell:
         """
+        # work around until beam sup is pip installable
+        source ~/miniforge3/etc/profile.d/conda.sh 
+        conda activate beam_sup
+
         # run cassiopeia greedy
         python {params.cassiopeia_script} {input.expandedClonesMatrix} {params.outputdir}
         """

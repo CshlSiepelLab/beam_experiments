@@ -29,7 +29,6 @@ outdir = config['outdir']
 rule all:
     input:
         expand("{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.pdf", sim=sims, outdir=outdir),
-        expand("{outdir}/true_reseeding_classification/{sim}/reseeding.txt", sim=sims, outdir=outdir),
         expand("{outdir}/beam_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 501), outdir=outdir),
         expand("{outdir}/beam_no_reseeding_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 501), outdir=outdir),
 
@@ -70,23 +69,6 @@ rule plotTrueMigrationGraph:
         python {params.scripts}/plotting/plot_migration_graph_from_newick.py {input} {params.primaryTissue} {output}
         """
 
-rule obtainTrueDataReseedingClassifications:
-    input:
-        "{outdir}/true_labeled_trees/{sim}/tissue_labeled_tree.nwk"
-    output:
-        "{outdir}/true_reseeding_classification/{sim}/reseeding.txt"
-    params:
-        primaryTissue = config['primaryTissue'],
-        scripts = config['scripts'],
-        threads = 1,
-        mem = '1G'
-    singularity:
-        f"{config['containers']}/crispr_barcode_migration_inference.sif"
-    shell:
-        """
-        python {params.scripts}/formatting/classify_is_reseeding_from_newick.py {input} {params.primaryTissue} {output}
-        """
-
 rule runCassiopeia:
     input:
         sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
@@ -97,10 +79,12 @@ rule runCassiopeia:
         outputdir = "{outdir}/cassiopeia_greedy/{sim}",
         threads = 1,
         mem = '1G'
-    singularity:
-        f"{config['containers']}/cassiopeia.sif"
     shell:
         """
+        # work around until beam sup is pip installable
+        source ~/miniforge3/etc/profile.d/conda.sh 
+        conda activate beam_sup
+
         # run cassiopeia greedy
         python {params.cassiopeia_script} {input.sim_matrix} {params.outputdir}
         """
