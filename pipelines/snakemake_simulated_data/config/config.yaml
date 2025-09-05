@@ -5,7 +5,8 @@ inputpath: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/va
 
 # set where output should go
 # outdir: /grid/siepel/home/staklins/stored_results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24
-outdir: /grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24
+# outdir: /grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24
+outdir: /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/test
 
 # mutation priors for being fixed in Q matrix
 mutationPriors: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/uniform_50cells_50sites_0.005mut_10-6mig_data_7_24_24/mutation_priors.csv
