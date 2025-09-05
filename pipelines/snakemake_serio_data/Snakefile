@@ -2,6 +2,13 @@ import os
 import sys
 import glob
 
+# Make sure beam_sup is availabe
+import importlib.util
+spec = importlib.util.find_spec("beam_sup")
+if spec is None:
+    print(f"The required package beam_sup is NOT installed, so the pipeline will not run. Exiting.")
+    sys.exit(1)
+
 # get mouse ids and fastq files from input fastq dir
 mice = []
 mouse_fastqs = {}
@@ -177,10 +184,6 @@ rule prepBeamInputs:
         mem = '5G'
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniconda3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-
         # make mutations successive for each matrix and provide an updated dictionary of int to mutations
         python {params.scripts}/formatting/matrix_to_successive_matrix.py {input.matrix} {input.mutation_dict} {params.outdir}
 
@@ -239,10 +242,6 @@ rule runCassiopeia:
         mem = '5G'
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniforge3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-
         # run cassiopeia greedy
         python {params.cassiopeia_script} {input.expandedClonesMatrix} {params.outputdir}
         """
@@ -471,10 +470,6 @@ rule beamPostprocessing:
         mem = "1G"
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniconda3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-
         if [ ! -s {input.combinedTrees} ]; then
             echo "Combined trees file is empty. Exiting."
             touch {output.graphPosterior}
@@ -545,10 +540,6 @@ rule getExpectedClassificationsAndTimes:
         mem = "1G"
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniconda3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-        
         echo "name,met_to_met,met_to_primary,threshold" > {output.allClassifications}
         echo "name,source,target,time,threshold" > {output.allTimes}
 

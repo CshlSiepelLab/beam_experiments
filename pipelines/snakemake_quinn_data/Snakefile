@@ -2,6 +2,13 @@ import os
 import sys
 import glob
 
+# Make sure beam_sup is availabe
+import importlib.util
+spec = importlib.util.find_spec("beam_sup")
+if spec is None:
+    print(f"The required package beam_sup is NOT installed, so the pipeline will not run. Exiting.")
+    sys.exit(1)
+
 # specific to yang et al data to get the input files (character matrices and tissue labeling files)
 character_matrices = glob.glob(os.path.join(config['inputpath'], "character_matrices", "*_character_matrix.alleleThresh.txt"))
 mouse_ids = list(set([os.path.basename(f).split("_")[0].replace("m", "") for f in character_matrices]))
@@ -72,10 +79,6 @@ rule convertMatrixToSuccessive:
         mem = "1G"
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniforge3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-
         python {params.scripts}/formatting/convert_allele_table_to_successive_matrix.py {input.alleleTable} {wildcards.cp} {params.outputdir}
         """
 
@@ -115,10 +118,6 @@ rule runCassiopeia:
         mem = "1G"
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniforge3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-        
         # run cassiopeia greedy
         python {params.scripts}/cassiopeia/cassiopeia_greedy.py {input.matrix} {params.outputdir}
         """
@@ -403,10 +402,6 @@ rule beamPostprocessing:
         mem = "1G"
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniconda3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-
         if [ ! -s {input.combinedTrees} ]; then
             echo "Combined trees file is empty. Exiting."
             touch {output.graphPosterior}
@@ -473,10 +468,6 @@ rule getExpectedClassificationsAndTimes:
         mem = "1G"
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniconda3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-        
         echo "name,met_to_met,met_to_primary,threshold" > {output.allClassifications}
         echo "name,source,target,time,threshold" > {output.allTimes}
 

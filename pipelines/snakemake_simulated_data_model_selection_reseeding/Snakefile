@@ -2,6 +2,13 @@ import os
 import sys
 import glob
 
+# Make sure beam_sup is availabe
+import importlib.util
+spec = importlib.util.find_spec("beam_sup")
+if spec is None:
+    print(f"The required package beam_sup is NOT installed, so the pipeline will not run. Exiting.")
+    sys.exit(1)
+
 def get_sims():
     return [d for d in os.listdir(config['inputpath']) if os.path.isdir(os.path.join(config['inputpath'], d))]
 
@@ -44,10 +51,6 @@ rule labelTrueTreeWithTissues:
         mem = '1G'
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniconda3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-
         # run add tissue to newick
         python {params.scripts}/formatting/format_add_tissues_to_newick.py {input.true_tree} {input.true_tissues} {output}
         """
@@ -81,10 +84,6 @@ rule runCassiopeia:
         mem = '1G'
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniforge3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-
         # run cassiopeia greedy
         python {params.cassiopeia_script} {input.sim_matrix} {params.outputdir}
         """
@@ -159,10 +158,6 @@ rule prepBeamInputs:
         mem = '1G'
     shell:
         """
-        # work around until beam sup is pip installable
-        source ~/miniforge3/etc/profile.d/conda.sh 
-        conda activate beam_sup
-
         # write tip traits to new csv
         sed 's/ /,/g' {input.leafTissues} > {output.tissues}
 
