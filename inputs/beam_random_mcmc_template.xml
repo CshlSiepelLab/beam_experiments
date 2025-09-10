@@ -183,7 +183,7 @@
                 </log>
         </logger>
 
-    <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+    <operatorschedule id="OperatorSchedule" spec="kernel.BactrianOperatorSchedule"/>
 </run>
 
 </beast>
