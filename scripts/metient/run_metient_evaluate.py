@@ -15,7 +15,7 @@ output_dir = sys.argv[5]
 df = pd.read_csv(tsv, sep="\t")
 
 print_config = met.PrintConfig(visualize=True, verbose=True, k_best_trees=5)
-weights = met.Weights()  # Use default weights which have been calibrated to real data
+weights = met.pancancer_genetic_uniform_weighting()  # Use default weights based on Metient author's suggestion for non-human data
 
 met.evaluate_label_clone_tree(
     tree, tsv, weights, print_config, output_dir, patient, solve_polytomies=True
@@ -27,15 +27,11 @@ with gzip.open(os.path.join(output_dir, f"{patient}_{primary}.pkl.gz"), "rb") as
     pckl = pickle.load(f)
 
 # Obtain samples from the solution space
-num_samples = 1024
-num_results = len(pckl["clone_tree_labelings"])
-if num_results < num_samples:
-    num_samples = num_results
+num_samples = len(pckl["clone_tree_labelings"])
 
 tissues = pckl["ordered_anatomical_sites"]
 migration_graphs = np.empty(num_samples, dtype=dict)
 losses = np.empty(num_samples)
-
 
 for i in range(num_samples):
     V = pckl["clone_tree_labelings"][i]
