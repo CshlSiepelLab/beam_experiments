@@ -512,12 +512,24 @@ if not mach2_all_thresh_df.empty:
     )
     mach2_all_thresh_df.to_csv(f"{outdir}/mach2_all_threshold_stats.csv", index=False)
 
-size = 100
+size = 200
 textsize = 20
 plt.figure()
 if not avg_df.empty:
     # plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(avg_df["recall"], avg_df["precision"], color="red", label="BEAM")
+    plt.scatter(
+    avg_df[avg_df['Threshold'] == 0.50]["recall"],
+    avg_df[avg_df['Threshold'] == 0.50]["precision"],
+    facecolors='none', edgecolors='red', label='BEAM 0.5',
+    s=size/2, marker='o'
+)
+    plt.scatter(
+        avg_df[avg_df['Threshold'] == 0.90]["recall"],
+        avg_df[avg_df['Threshold'] == 0.90]["precision"],
+        facecolors='none', edgecolors='red', label='BEAM 0.9',
+        s=size/2, marker='s'
+    )
 if not avg_mach2_df.empty:
     # plt.scatter(avg_mach2_df['recall'], avg_mach2_df['precision'], c=avg_mach2_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(
