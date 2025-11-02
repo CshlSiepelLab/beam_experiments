@@ -136,21 +136,27 @@ def calculate_metrics(true_counts, inferred_counts):
 
 
 def posterior_threshold_metrics(posterior_prob_graph, true_counts, i, t=0.50):
-    max_threshold = max(map(float, posterior_prob_graph.values()))
+    # max_threshold = max(map(float, posterior_prob_graph.values()))
+    max_threshold = 1.0
     thresholds = [j for j in np.arange(0, max_threshold, 0.01)]
     rows = []
     for thresh in thresholds:
         thresh_counts = {
             key: value for key, value in posterior_prob_graph.items() if value > thresh
         }
-        edges = ["_".join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
-        thresh_counts = {}
-        for edge in edges:
-            if edge not in thresh_counts:
-                thresh_counts[edge] = 1
-            else:
-                thresh_counts[edge] += 1
-        f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
+        if len(thresh_counts) == 0:
+            f1 = 0.0
+            recall = 0.0
+            precision = 1.0
+        else:
+            edges = ["_".join(edge.split("_")[:-1]) for edge in thresh_counts.keys()]
+            thresh_counts = {}
+            for edge in edges:
+                if edge not in thresh_counts:
+                    thresh_counts[edge] = 1
+                else:
+                    thresh_counts[edge] += 1
+            f1, recall, precision = calculate_metrics(true_counts, thresh_counts)
         rows.append(
             {
                 "Threshold": thresh,
@@ -198,6 +204,7 @@ random_precisions = np.zeros(len(dirs))
 random_recalls = np.zeros(len(dirs))
 parsimony_precisions = np.zeros(len(dirs))
 parsimony_recalls = np.zeros(len(dirs))
+metient_all_thresh_rows = []
 mach2_all_thresh_rows = []
 all_thresh_rows = []
 i = 0
@@ -267,20 +274,45 @@ for true_tree_file in dirs:
     metient_recall = float("nan")
     metient_precision = float("nan")
     if os.path.exists(metient_file):
+        metient_prob_graph = {}
+        num_solutions = None
         with open(metient_file, "r") as file:
-            lines = file.readlines()
-        top_loss_metient = lines[1].strip().split("\t")
-        metient_counts_input = ast.literal_eval(top_loss_metient[1])
+            graph_lines = file.readlines()[1:]  # skip header line
+            num_solutions = len(graph_lines)
+            all_graphs = []
+            for line in graph_lines:
+                loss, graph = line.strip().split("\t")
+                metient_counts_input = ast.literal_eval(graph)
+                all_graphs.append((float(loss), metient_counts_input))
+        prob = None
+        metient_equal_prob = False  # Use if each sampled graph should have equal probability
+        if metient_equal_prob:
+            prob = 1.0 / num_solutions
+        else:
+            total_loss = sum(solution[0] for solution in all_graphs)
         metient_counts = {}
-        for outer_key, inner_dict in metient_counts_input.items():
-            for inner_key, value in inner_dict.items():
-                if value != 0.0:
-                    metient_counts[f"{outer_key}_{inner_key}"] = value
-        metient_f1, metient_recall, metient_precision = calculate_metrics(
-            true_counts, metient_counts
+        for solution_num, (loss, metient_counts_input) in enumerate(all_graphs):
+            if not prob:
+                prob = loss / total_loss
+            for source_tissue, targets_dict in metient_counts_input.items():
+                for target_tissue, edge_count in targets_dict.items():
+                    if edge_count > 0:
+                        if solution_num == 0:   # Just to retain old approach of calculating performance for the best solution
+                            metient_counts[f"{source_tissue}_{target_tissue}"] = edge_count
+                        for n in range(1, int(edge_count) + 1):
+                            migration = f"{source_tissue}_{target_tissue}_{n}"
+                            if migration not in metient_prob_graph:
+                                metient_prob_graph[migration] = prob
+                            else:
+                                metient_prob_graph[migration] += prob
+                    if solution_num == 0:   # Just to retain old approach of calculating performance for the best solution
+                        metient_f1_top, metient_recall_top, metient_precision_top = calculate_metrics(true_counts, metient_counts)
+                        metient_precisions[i] = metient_precision_top
+                        metient_recalls[i] = metient_recall_top
+        metient_thresh_prec_rec, metient_rows, metient_f1, metient_recall, metient_precision = (
+            posterior_threshold_metrics(metient_prob_graph, true_counts, sim)
         )
-        metient_precisions[i] = metient_precision
-        metient_recalls[i] = metient_recall
+        metient_all_thresh_rows.extend(metient_rows)
 
     # process random result to get precision and recall
     random_f1 = float("nan")
@@ -383,13 +415,11 @@ for true_tree_file in dirs:
                 marker="x",
             )
         if os.path.exists(metient_file):
-            plt.scatter(
-                metient_recall,
-                metient_precision,
+            plt.plot(
+                metient_thresh_prec_rec["recall"],
+                metient_thresh_prec_rec["precision"],
                 color="green",
                 label="Metient",
-                s=size,
-                marker="x",
             )
         if os.path.exists(consensus_file):
             plt.scatter(
@@ -436,6 +466,7 @@ for true_tree_file in dirs:
 
     i += 1
 
+metient_all_thresh_df = pd.DataFrame(metient_all_thresh_rows)
 mach2_all_thresh_df = pd.DataFrame(mach2_all_thresh_rows)
 all_thresh_df = pd.DataFrame(all_thresh_rows)
 
@@ -445,14 +476,13 @@ with open(f"{outdir}/precision_recall_vars.pkl", "wb") as file:
         [
             machina_precisions,
             machina_recalls,
-            metient_precisions,
-            metient_recalls,
             random_precisions,
             random_recalls,
             consensus_precisions,
             consensus_recalls,
             parsimony_precisions,
             parsimony_recalls,
+            metient_all_thresh_df,
             mach2_all_thresh_df,
             all_thresh_df,
         ],
@@ -461,7 +491,7 @@ with open(f"{outdir}/precision_recall_vars.pkl", "wb") as file:
 
 # # optionally open from pickle file and avoid recalculations above
 # with open(f"{outdir}/precision_recall_vars.pkl", "rb") as file:
-#     machina_precisions, machina_recalls, metient_precisions, metient_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, mach2_all_thresh_df, all_thresh_df = pickle.load(file)
+#     machina_precisions, machina_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, metient_all_thresh_df, mach2_all_thresh_df, all_thresh_df = pickle.load(file)
 
 # make an overall averaged precision/recall curve
 outfile = f"{outdir}/precision_recall.pdf"
@@ -512,28 +542,39 @@ if not mach2_all_thresh_df.empty:
     )
     mach2_all_thresh_df.to_csv(f"{outdir}/mach2_all_threshold_stats.csv", index=False)
 
+if not metient_all_thresh_df.empty:
+    avg_metient_df = (
+        metient_all_thresh_df.groupby("Threshold")[["precision", "recall"]]
+        .mean()
+        .reset_index()
+    )
+    metient_all_thresh_df.to_csv(
+        f"{outdir}/metient_all_threshold_stats.csv", index=False
+    )
+
 size = 200
 textsize = 20
 plt.figure()
 if not avg_df.empty:
     # plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(avg_df["recall"], avg_df["precision"], color="red", label="BEAM")
-    plt.scatter(
-    avg_df[avg_df['Threshold'] == 0.50]["recall"],
-    avg_df[avg_df['Threshold'] == 0.50]["precision"],
-    facecolors='none', edgecolors='red', label='BEAM 0.5',
-    s=size/2, marker='o'
-)
-    plt.scatter(
-        avg_df[avg_df['Threshold'] == 0.90]["recall"],
-        avg_df[avg_df['Threshold'] == 0.90]["precision"],
-        facecolors='none', edgecolors='red', label='BEAM 0.9',
-        s=size/2, marker='s'
-    )
+    plt.scatter(avg_df[avg_df['Threshold'] == 0.50]["recall"], avg_df[avg_df['Threshold'] == 0.50]["precision"],
+        facecolors='none', edgecolors='red', label='BEAM 0.5', s=size/2, marker='o')
+    plt.scatter(avg_df[avg_df['Threshold'] == 0.90]["recall"], avg_df[avg_df['Threshold'] == 0.90]["precision"],
+        facecolors='none', edgecolors='red', label='BEAM 0.9', s=size/2, marker='s')
 if not avg_mach2_df.empty:
     # plt.scatter(avg_mach2_df['recall'], avg_mach2_df['precision'], c=avg_mach2_df['Threshold'], cmap='viridis', s=25, marker='x')
-    plt.plot(
-        avg_mach2_df["recall"], avg_mach2_df["precision"], color="navy", label="MACH2"
+    plt.plot(avg_mach2_df["recall"], avg_mach2_df["precision"], color="navy", label="MACH2")
+if not avg_metient_df.empty:
+    plt.plot(avg_metient_df["recall"], avg_metient_df["precision"], color="Green", label="Metient")
+if not np.isnan(avg_metient_recall) and not np.isnan(avg_metient_precision):
+    plt.scatter(
+        avg_metient_recall,
+        avg_metient_precision,
+        color="green",
+        label="Metient",
+        s=size,
+        marker="x",
     )
 if not np.isnan(avg_machina_recall) and not np.isnan(avg_machina_precision):
     plt.scatter(
@@ -541,15 +582,6 @@ if not np.isnan(avg_machina_recall) and not np.isnan(avg_machina_precision):
         avg_machina_precision,
         color="gold",
         label="MACHINA",
-        s=size,
-        marker="x",
-    )
-if not np.isnan(avg_metient_recall) and not np.isnan(avg_metient_precision):
-    plt.scatter(
-        avg_metient_recall,
-        avg_metient_precision,
-        color="green",
-        label="Metient",
         s=size,
         marker="x",
     )
