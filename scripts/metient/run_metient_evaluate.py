@@ -15,7 +15,7 @@ output_dir = sys.argv[5]
 df = pd.read_csv(tsv, sep="\t")
 
 print_config = met.PrintConfig(visualize=True, verbose=True, k_best_trees=5)
-weights = met.pancancer_genetic_uniform_weighting()  # Use default weights based on Metient author's suggestion for non-human data
+weights = met.Weights.pancancer_genetic_uniform_weighting()  # Use default weights based on Metient author's suggestion for non-human data
 
 met.evaluate_label_clone_tree(
     tree, tsv, weights, print_config, output_dir, patient, solve_polytomies=True
@@ -27,20 +27,19 @@ with gzip.open(os.path.join(output_dir, f"{patient}_{primary}.pkl.gz"), "rb") as
     pckl = pickle.load(f)
 
 # Obtain samples from the solution space
-num_samples = len(pckl["clone_tree_labelings"])
+num_samples = len(pckl["node_labels"])
 
-tissues = pckl["ordered_anatomical_sites"]
+tissues = pckl["anatomical_sites"]
 migration_graphs = np.empty(num_samples, dtype=dict)
 losses = np.empty(num_samples)
 
 for i in range(num_samples):
-    V = pckl["clone_tree_labelings"][i]
-    A = pckl["full_adjacency_matrices"][i]
+    V = pckl["node_labels"][i]
+    parents = pckl['parents'][i]
+    A = met.adjacency_matrix_from_parents(parents)
     G = met.migration_graph(V, A)
-    df_G = pd.DataFrame(G.numpy(), columns=tissues, index=tissues)
-    df_dict = df_G.transpose().to_dict()
-    migration_graphs[i] = df_dict
-    losses[i] = pckl["losses"][i]
+    migration_graphs[i] = pd.DataFrame(G.numpy(), columns=tissues, index=tissues).transpose().to_dict()
+    losses[i] = float(pckl["losses"][i])
 
 with open(f"{output_dir}/{patient}_{primary}_migration_graphs.txt", "w") as file:
     file.write(f"loss\tmigration_graph\n")
