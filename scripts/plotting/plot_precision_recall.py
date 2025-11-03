@@ -136,9 +136,7 @@ def calculate_metrics(true_counts, inferred_counts):
 
 
 def posterior_threshold_metrics(posterior_prob_graph, true_counts, i, t=0.50):
-    # max_threshold = max(map(float, posterior_prob_graph.values()))
-    max_threshold = 1.0
-    thresholds = [j for j in np.arange(0, max_threshold, 0.01)]
+    thresholds = [j for j in np.arange(0, 1.0, 0.01)]
     rows = []
     for thresh in thresholds:
         thresh_counts = {
@@ -168,9 +166,6 @@ def posterior_threshold_metrics(posterior_prob_graph, true_counts, i, t=0.50):
         )
     thresh_prec_rec = pd.DataFrame(rows)
 
-    # check that the max for the data is not below the threshold for the consensus graph
-    if max_threshold < t:
-        t = np.floor(max_threshold * 100) / 100
     threshold_df = thresh_prec_rec[np.isclose(thresh_prec_rec["Threshold"], t)]
     post_prob_precision = threshold_df["precision"].values[0]
     post_prob_recall = threshold_df["recall"].values[0]
@@ -285,15 +280,16 @@ for true_tree_file in dirs:
                 metient_counts_input = ast.literal_eval(graph)
                 all_graphs.append((float(loss), metient_counts_input))
         prob = None
-        metient_equal_prob = False  # Use if each sampled graph should have equal probability
+        metient_equal_prob = True  # Use if each sampled graph should have equal probability
         if metient_equal_prob:
             prob = 1.0 / num_solutions
         else:
             total_loss = sum(solution[0] for solution in all_graphs)
+            all_graphs = [(loss / total_loss, counts) for loss, counts in all_graphs]  # Normalize losses to sum to 1
         metient_counts = {}
         for solution_num, (loss, metient_counts_input) in enumerate(all_graphs):
             if not prob:
-                prob = loss / total_loss
+                prob = loss
             for source_tissue, targets_dict in metient_counts_input.items():
                 for target_tissue, edge_count in targets_dict.items():
                     if edge_count > 0:
