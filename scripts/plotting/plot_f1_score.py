@@ -18,7 +18,7 @@ def plot_f1_score(csv_path, output_dir):
     data_f1.columns = [col.replace("_f1", "") for col in data_f1.columns]
     
     # Sort data
-    desired_order = ["Random", "Consensus", "Parsimony", "MACHINA", "Metient", "MACH2", "BEAM"]
+    desired_order = ["Random", "Consensus", "Fitch-Hartigan", "MACHINA", "PathFinder", "Metient", "MACH2", "BEAM"]
     data_f1 = data_f1[desired_order]
 
     # Create a boxplot for all f1 columns
@@ -28,7 +28,8 @@ def plot_f1_score(csv_path, output_dir):
     colors = {
         "BEAM": "red",
         "Random": "darkgrey",
-        "Parsimony": "purple",
+        "Fitch-Hartigan": "purple",
+        "PathFinder": "orange",
         "MACHINA": "gold",
         "Metient": "green",
         "Consensus": "blue",

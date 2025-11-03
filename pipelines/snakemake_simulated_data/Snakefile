@@ -20,11 +20,12 @@ rule all:
         expand("{outdir}/true_trees/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         # expand("{outdir}/true_trees/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         # expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        # expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
+        expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_consensus_migration_graph.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
+        expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
         # expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
         # expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         # expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
-        # f"{outdir}/precision_recall_curve/precision_recall.pdf",
+        f"{outdir}/precision_recall_curve/precision_recall.pdf",
         # expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 101), outdir=outdir),
         # expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 101), outdir=outdir),
 
@@ -510,10 +511,75 @@ rule runMetient:
         threads = 50,
         mem = '1G'
     singularity:
-        f"{config['containers']}/metient.sif"
+        f"{config['containers']}/metient_v0.1.3.4.11.sif"
     shell:
         """
         python {params.scripts}/metient/run_metient_evaluate.py {input.metientTsv} {input.metientTree} {wildcards.sim} {params.primaryTissue} {params.outputdir}
+        """
+
+rule postprocessMetientConsensus:
+    input:
+        metientResults = "{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt",
+    output:
+        metientConsensus = "{outdir}/metient/{sim}/{sim}_{primaryTissue}_consensus_migration_graph.txt",
+    params:
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G'
+    shell:
+        """
+        python {params.scripts}/metient/postprocess_metient_consensus.py {input.metientResults} {output.metientConsensus}
+        """
+
+
+rule prepPathfinder:
+    input:
+        leafTissues = lambda wildcards: glob.glob(os.path.join(config['inputpath'], wildcards.sim,"cell_tree_*[0-9].labeling")),
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv"))
+    output:
+        pathfinderTissues = "{outdir}/pathfinder/{sim}/clone_presence.txt",
+        pathfinderFasta = "{outdir}/pathfinder/{sim}/clone_aln.fas"
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/pathfinder/{sim}",
+        threads = 1,
+        mem = '1G'
+    singularity:
+        f"{config['containers']}/crispr_barcode_migration_inference.sif"
+    shell:
+        """
+        python {params.scripts}/pathfinder/format_pathfinder.py {input.leafTissues} {input.sim_matrix} {params.outputdir}
+        """
+
+
+rule runPathfinder:
+    input:
+        pathfinderTissues = "{outdir}/pathfinder/{sim}/clone_presence.txt",
+        pathfinderFasta = "{outdir}/pathfinder/{sim}/clone_aln.fas"
+    output:
+        pathfinderResult = "{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt"
+    params:
+        outputdir = "{outdir}/pathfinder/{sim}",
+        primaryTissue = config['primaryTissue'],
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '5G'
+    singularity:
+        f"{config['containers']}/pathfinder.sif"
+    shell:
+        """
+        # Check that the primary tissue is in the tissues file
+        primaryTissue="{params.primaryTissue}"
+        if ! grep -q "{params.primaryTissue}" {input.pathfinderTissues}; then
+            most_common_tissue=$(awk 'NR>1 {{sum=0; for (i=2; i<=NF; i++) sum+=$i; print $1, sum}}' {input.pathfinderTissues} | sort -k2,2nr | head -n1 | awk '{{print $1}}')
+            echo -e "The {params.primaryTissue} is not in the tissue labels. Using the most common tissue ${{most_common_tissue}} as the primary tissue."
+            primaryTissue=${{most_common_tissue}}
+        fi
+
+        # Remove any incomplete previous runs
+        rm -rf {params.outputdir}/scratch*
+
+        python {params.scripts}/pathfinder/pathfinder.py {input.pathfinderFasta} {input.pathfinderTissues} --primary $primaryTissue -o {params.outputdir} --relax_threshold --scripts {params.scripts}/pathfinder --verbosity 4
         """
 
 
@@ -559,7 +625,7 @@ rule plotPrecisionRecall:
         # trueTissueTreeDone = expand("{outdir}/true_trees/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         # machinaTissueTreeDone = expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
         # combinedTreesDone = expand("{outdir}/beam_gtr/{sim}/combined.trees", sim=sims, outdir=outdir),
-        # metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_migration_graphs.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
+        # metientResultsDone = expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_consensus_migration_graph.txt", sim=sims, primaryTissue=config['primaryTissue'], outdir=outdir),
         # actual input used
         trueTrees = glob.glob(os.path.join(outdir, "true_trees", "*", "tissue_labeled_tree.nwk"))
     output:

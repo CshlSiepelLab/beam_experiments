@@ -181,14 +181,15 @@ def posterior_threshold_metrics(posterior_prob_graph, true_counts, i, t=0.50):
 dirs = (sys.argv[1]).split(",")
 primary_tissue = sys.argv[2]
 outdir = sys.argv[3]
-plot_independent_plots = False
 
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header = "sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Parsimony_f1,Parsimony_recall,Parsimony_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,MACH2_f1,MACH2_recall,MACH2_precision,Metient_f1,Metient_recall,Metient_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
+    header = "sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Fitch-Hartigan_f1,Fitch-Hartigan_recall,Fitch-Hartigan_precision,PathFinder_f1,PathFinder_recall,PathFinder_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,MACH2_f1,MACH2_recall,MACH2_precision,Metient_f1,Metient_recall,Metient_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
     file.write(header)
 
+pathfinder_precisions = np.zeros(len(dirs))
+pathfinder_recalls = np.zeros(len(dirs))
 machina_precisions = np.zeros(len(dirs))
 machina_recalls = np.zeros(len(dirs))
 metient_precisions = np.zeros(len(dirs))
@@ -215,6 +216,7 @@ for true_tree_file in dirs:
     sim = os.path.basename(os.path.dirname(true_tree_file))
 
     # get other files to compare
+    pathfinder_file = f"{dir}/pathfinder/{sim}/clone_aln_Mig.txt"
     machina_file = f"{dir}/machina/{sim}/machina_tree_all_tissue_labels.nwk"
     mach2_file = f"{dir}/mach2/{sim}/consensus_graph.txt"
     metient_file_consensus = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_consensus_migration_graph.txt"
@@ -253,6 +255,26 @@ for true_tree_file in dirs:
         file.write(f"source_target,num_edges\n")
         for key, value in true_counts.items():
             file.write(f"{key},{value}\n")
+    
+    # process pathfinder result to get precision and recall
+    pathfinder_f1 = float("nan")
+    pathfinder_recall = float("nan")
+    pathfinder_precision = float("nan")
+    if os.path.exists(pathfinder_file):
+        pathfinder_counts = {}
+        with open(pathfinder_file, "r") as file:
+            for line in file.readlines()[1:]:  # skip header line
+                edge, prob, mutation_count = line.strip().split("\t")
+                migration = edge.replace("->", "_").split("[")[0]
+                if migration in pathfinder_counts:
+                    pathfinder_counts[migration] += 1
+                else:
+                    pathfinder_counts[migration] = 1
+        pathfinder_f1, pathfinder_recall, pathfinder_precision = calculate_metrics(
+            true_counts, pathfinder_counts
+        )
+        pathfinder_precisions[i] = pathfinder_precision
+        pathfinder_recalls[i] = pathfinder_recall
 
     # process machina result to get precision and recall
     machina_f1 = float("nan")
@@ -364,87 +386,8 @@ for true_tree_file in dirs:
 
     # write metrics used for the plot to a file
     with open(outfile_metrics, "a") as file:
-        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{parsimony_f1},{parsimony_recall},{parsimony_precision},{machina_f1},{machina_recall},{machina_precision},{mach2_f1},{mach2_recall},{mach2_precision},{metient_f1},{metient_recall},{metient_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
+        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{parsimony_f1},{parsimony_recall},{parsimony_precision},{pathfinder_f1},{pathfinder_recall},{pathfinder_precision},{machina_f1},{machina_recall},{machina_precision},{mach2_f1},{mach2_recall},{mach2_precision},{metient_f1},{metient_recall},{metient_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
         file.write(data)
-
-    if plot_independent_plots:
-        size = 75
-        textsize = 18
-        plt.figure()
-        if os.path.exists(beast_posterior_file):
-            # plt.scatter(thresh_prec_rec['recall'], thresh_prec_rec['precision'], c=thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
-            plt.plot(
-                thresh_prec_rec["recall"],
-                thresh_prec_rec["precision"],
-                color="red",
-                label="BEAM",
-            )
-        if os.path.exists(mach2_file):
-            # plt.scatter(mach2_thresh_prec_rec['recall'], mach2_thresh_prec_rec['precision'], c=mach2_thresh_prec_rec['Threshold'], cmap='viridis', s=25, marker='x')
-            plt.plot(
-                mach2_thresh_prec_rec["recall"],
-                mach2_thresh_prec_rec["precision"],
-                color="navy",
-                label="Mach2",
-            )
-        if os.path.exists(machina_file):
-            plt.scatter(
-                machina_recall,
-                machina_precision,
-                color="gold",
-                label="Machina",
-                s=size,
-                marker="x",
-            )
-        if os.path.exists(metient_file):
-            plt.plot(
-                metient_thresh_prec_rec["recall"],
-                metient_thresh_prec_rec["precision"],
-                color="green",
-                label="Metient",
-            )
-        if os.path.exists(consensus_file):
-            plt.scatter(
-                consensus_recall,
-                consensus_precision,
-                color="blue",
-                label="Consensus",
-                s=size,
-                marker="x",
-            )
-        if os.path.exists(random_file):
-            plt.scatter(
-                random_recall,
-                random_precision,
-                color="black",
-                label="Random",
-                s=size,
-                marker="x",
-            )
-        if os.path.exists(parsimony_file):
-            plt.scatter(
-                parsimony_recall,
-                parsimony_precision,
-                color="Purple",
-                label="Parsimony",
-                s=size,
-                marker="x",
-            )
-        plt.xlim(-0.05, 1.05)
-        plt.ylim(-0.05, 1.05)
-        plt.xlabel("Recall", fontsize=textsize)
-        plt.ylabel("Precision", fontsize=textsize)
-        plt.xticks(fontsize=textsize)
-        plt.yticks(fontsize=textsize)
-        plt.legend(
-            bbox_to_anchor=(1.05, 0.4), loc="upper left", fontsize=14, edgecolor="none"
-        )
-        # cbar = plt.colorbar(shrink=0.4, orientation="vertical", drawedges=False, anchor=(1.05, 0.80))
-        # cbar.ax.tick_params(labelsize=14)
-        # cbar.ax.set_ylabel('Posterior threshold', fontsize=14, rotation=90)
-        plt.tight_layout()
-        plt.savefig(outfile)
-        plt.close()
 
     i += 1
 
@@ -456,6 +399,8 @@ all_thresh_df = pd.DataFrame(all_thresh_rows)
 with open(f"{outdir}/precision_recall_vars.pkl", "wb") as file:
     pickle.dump(
         [
+            pathfinder_precisions,
+            pathfinder_recalls,
             machina_precisions,
             machina_recalls,
             random_precisions,
@@ -473,10 +418,12 @@ with open(f"{outdir}/precision_recall_vars.pkl", "wb") as file:
 
 # # optionally open from pickle file and avoid recalculations above
 # with open(f"{outdir}/precision_recall_vars.pkl", "rb") as file:
-#     machina_precisions, machina_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, metient_all_thresh_df, mach2_all_thresh_df, all_thresh_df = pickle.load(file)
+#     pathfinder_precisions, pathfinder_recalls, machina_precisions, machina_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, metient_all_thresh_df, mach2_all_thresh_df, all_thresh_df = pickle.load(file)
 
 # make an overall averaged precision/recall curve
 outfile = f"{outdir}/precision_recall.pdf"
+avg_pathfinder_precision = float("nan")
+avg_pathfinder_recall = float("nan")
 avg_machina_precision = float("nan")
 avg_machina_recall = float("nan")
 avg_metient_precision = float("nan")
@@ -489,6 +436,10 @@ avg_parsimony_precision = float("nan")
 avg_parsimony_recall = float("nan")
 
 
+if np.any(pathfinder_precisions):
+    avg_pathfinder_precision = sum(pathfinder_precisions) / len(pathfinder_precisions)
+if np.any(pathfinder_recalls):
+    avg_pathfinder_recall = sum(pathfinder_recalls) / len(pathfinder_recalls)
 if np.any(machina_precisions):
     avg_machina_precision = sum(machina_precisions) / len(machina_precisions)
 if np.any(machina_recalls):
@@ -558,12 +509,30 @@ if not np.isnan(avg_metient_recall) and not np.isnan(avg_metient_precision):
         s=size,
         marker="x",
     )
+if not np.isnan(avg_pathfinder_recall) and not np.isnan(avg_pathfinder_precision):
+    plt.scatter(
+        avg_pathfinder_recall,
+        avg_pathfinder_precision,
+        color="orange",
+        label="PathFinder",
+        s=size,
+        marker="x",
+    )
 if not np.isnan(avg_machina_recall) and not np.isnan(avg_machina_precision):
     plt.scatter(
         avg_machina_recall,
         avg_machina_precision,
         color="gold",
         label="MACHINA",
+        s=size,
+        marker="x",
+    )
+if not np.isnan(avg_parsimony_recall) and not np.isnan(avg_parsimony_precision):
+    plt.scatter(
+        avg_parsimony_recall,
+        avg_parsimony_precision,
+        color="purple",
+        label="Fitch-Hartigan",
         s=size,
         marker="x",
     )
@@ -582,15 +551,6 @@ if not np.isnan(avg_random_recall) and not np.isnan(avg_random_precision):
         avg_random_precision,
         color="black",
         label="Random",
-        s=size,
-        marker="x",
-    )
-if not np.isnan(avg_parsimony_recall) and not np.isnan(avg_parsimony_precision):
-    plt.scatter(
-        avg_parsimony_recall,
-        avg_parsimony_precision,
-        color="purple",
-        label="Parsimony",
         s=size,
         marker="x",
     )
