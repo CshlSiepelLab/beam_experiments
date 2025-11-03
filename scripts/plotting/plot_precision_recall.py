@@ -217,6 +217,8 @@ for true_tree_file in dirs:
     # get other files to compare
     machina_file = f"{dir}/machina/{sim}/machina_tree_all_tissue_labels.nwk"
     mach2_file = f"{dir}/mach2/{sim}/consensus_graph.txt"
+    metient_file_consensus = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_consensus_migration_graph.txt"
+    
     metient_file = f"{dir}/metient/{sim}/{sim}_{primary_tissue}_migration_graphs.txt"
     
     # metient_file=f"/grid/siepel/home/staklins/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24/metient_calibrate_80_ideal_sims_8_15_25/calibrate/{sim}_migration_graphs.txt"
@@ -264,51 +266,35 @@ for true_tree_file in dirs:
         machina_precisions[i] = machina_precision
         machina_recalls[i] = machina_recall
 
-    # process metient result to get precision and recall
+    # process metient result to get precision and recall curve
     metient_f1 = float("nan")
     metient_recall = float("nan")
     metient_precision = float("nan")
-    if os.path.exists(metient_file):
+    if os.path.exists(metient_file_consensus):
         metient_prob_graph = {}
-        num_solutions = None
-        with open(metient_file, "r") as file:
-            graph_lines = file.readlines()[1:]  # skip header line
-            num_solutions = len(graph_lines)
-            all_graphs = []
-            for line in graph_lines:
-                loss, graph = line.strip().split("\t")
-                metient_counts_input = ast.literal_eval(graph)
-                all_graphs.append((float(loss), metient_counts_input))
-        prob = None
-        metient_equal_prob = True  # Use if each sampled graph should have equal probability
-        if metient_equal_prob:
-            prob = 1.0 / num_solutions
-        else:
-            total_loss = sum(solution[0] for solution in all_graphs)
-            all_graphs = [(loss / total_loss, counts) for loss, counts in all_graphs]  # Normalize losses to sum to 1
-        metient_counts = {}
-        for solution_num, (loss, metient_counts_input) in enumerate(all_graphs):
-            if not prob:
-                prob = loss
-            for source_tissue, targets_dict in metient_counts_input.items():
-                for target_tissue, edge_count in targets_dict.items():
-                    if edge_count > 0:
-                        if solution_num == 0:   # Just to retain old approach of calculating performance for the best solution
-                            metient_counts[f"{source_tissue}_{target_tissue}"] = edge_count
-                        for n in range(1, int(edge_count) + 1):
-                            migration = f"{source_tissue}_{target_tissue}_{n}"
-                            if migration not in metient_prob_graph:
-                                metient_prob_graph[migration] = prob
-                            else:
-                                metient_prob_graph[migration] += prob
-                    if solution_num == 0:   # Just to retain old approach of calculating performance for the best solution
-                        metient_f1_top, metient_recall_top, metient_precision_top = calculate_metrics(true_counts, metient_counts)
-                        metient_precisions[i] = metient_precision_top
-                        metient_recalls[i] = metient_recall_top
+        with open(metient_file_consensus, "r") as file:
+            for line in file.readlines():
+                line = line.strip().split(",")
+                metient_prob_graph[line[0]] = float(line[1])
         metient_thresh_prec_rec, metient_rows, metient_f1, metient_recall, metient_precision = (
             posterior_threshold_metrics(metient_prob_graph, true_counts, sim)
         )
         metient_all_thresh_rows.extend(metient_rows)
+        
+    # retain old metient approach of getting top solution precision and recall
+    if os.path.exists(metient_file):
+        with open(metient_file, "r") as file:
+            top_graph_solution = file.readlines()[1]  # skip header line
+            loss, graph = top_graph_solution.strip().split("\t")
+            metient_counts_input = ast.literal_eval(graph)
+            metient_counts = {}
+            for source_tissue, targets_dict in metient_counts_input.items():
+                for target_tissue, edge_count in targets_dict.items():
+                    if edge_count > 0:
+                            metient_counts[f"{source_tissue}_{target_tissue}"] = edge_count
+            metient_f1_top, metient_recall_top, metient_precision_top = calculate_metrics(true_counts, metient_counts)
+            metient_precisions[i] = metient_precision_top
+            metient_recalls[i] = metient_recall_top
 
     # process random result to get precision and recall
     random_f1 = float("nan")
@@ -555,9 +541,9 @@ if not avg_df.empty:
     # plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(avg_df["recall"], avg_df["precision"], color="red", label="BEAM")
     plt.scatter(avg_df[avg_df['Threshold'] == 0.50]["recall"], avg_df[avg_df['Threshold'] == 0.50]["precision"],
-        facecolors='none', edgecolors='red', label='BEAM 0.5', s=size/2, marker='o')
+        facecolors='red', edgecolors='red', label='BEAM 0.5', s=size/3, marker='o')
     plt.scatter(avg_df[avg_df['Threshold'] == 0.90]["recall"], avg_df[avg_df['Threshold'] == 0.90]["precision"],
-        facecolors='none', edgecolors='red', label='BEAM 0.9', s=size/2, marker='s')
+        facecolors='red', edgecolors='red', label='BEAM 0.9', s=size/3, marker='s')
 if not avg_mach2_df.empty:
     # plt.scatter(avg_mach2_df['recall'], avg_mach2_df['precision'], c=avg_mach2_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(avg_mach2_df["recall"], avg_mach2_df["precision"], color="navy", label="MACH2")
@@ -614,7 +600,7 @@ plt.xlabel("Recall", fontsize=textsize)
 plt.ylabel("Precision", fontsize=textsize)
 plt.xticks(fontsize=textsize)
 plt.yticks(fontsize=textsize)
-plt.legend(bbox_to_anchor=(1.05, 0.5), loc="upper left", fontsize=14, edgecolor="none")
+plt.legend(bbox_to_anchor=(1.05, 0.75), loc="upper left", fontsize=14, edgecolor="none")
 plt.tight_layout()
 plt.savefig(outfile)
 plt.close()
