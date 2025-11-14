@@ -71,7 +71,7 @@
                 <distribution id="birthDeathSamplingModel" spec="bdsky.evolution.speciation.BirthDeathSkylineModel"
                           conditionOnSurvival="True" tree="@tree" origin="$(generations).0001" contemp="true"
                           birthRate="@birthRate" deathRate="@deathRate" rho="1.0"
-                          samplingRate="0.0" >
+                          samplingRate="0.0">
                 </distribution>
 
                 <prior id="silencingRatePrior" name="distribution" x="@silencingRate">
@@ -197,7 +197,7 @@
                 </log>
         </logger>
 
-    <operatorschedule id="OperatorSchedule" spec="kernel.BactrianOperatorSchedule"/>
+    <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
 </run>
 
 </beast>
