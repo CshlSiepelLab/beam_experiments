@@ -185,21 +185,21 @@ outdir = sys.argv[3]
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header = "sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Fitch-Hartigan_f1,Fitch-Hartigan_recall,Fitch-Hartigan_precision,PathFinder_f1,PathFinder_recall,PathFinder_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,MACH2_f1,MACH2_recall,MACH2_precision,Metient_f1,Metient_recall,Metient_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
+    header = "sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Fitch-Hartigan_f1,Fitch-Hartigan_recall,Fitch-Hartigan_precision,PathFinder_f1,PathFinder_recall,PathFinder_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,MACH2_f1,MACH2_recall,MACH2_precision,Metient_f1,Metient_recall,Metient_precision,Metient_bestSol_f1,Metient_bestSol_recall,Metient_bestSol_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
     file.write(header)
 
-pathfinder_precisions = np.zeros(len(dirs))
-pathfinder_recalls = np.zeros(len(dirs))
-machina_precisions = np.zeros(len(dirs))
-machina_recalls = np.zeros(len(dirs))
-metient_precisions = np.zeros(len(dirs))
-metient_recalls = np.zeros(len(dirs))
-consensus_precisions = np.zeros(len(dirs))
-consensus_recalls = np.zeros(len(dirs))
-random_precisions = np.zeros(len(dirs))
-random_recalls = np.zeros(len(dirs))
-parsimony_precisions = np.zeros(len(dirs))
-parsimony_recalls = np.zeros(len(dirs))
+pathfinder_precisions = np.full(len(dirs), np.nan)
+pathfinder_recalls = np.full(len(dirs), np.nan)
+machina_precisions = np.full(len(dirs), np.nan)
+machina_recalls = np.full(len(dirs), np.nan)
+metient_precisions = np.full(len(dirs), np.nan)
+metient_recalls = np.full(len(dirs), np.nan)
+consensus_precisions = np.full(len(dirs), np.nan)
+consensus_recalls = np.full(len(dirs), np.nan)
+random_precisions = np.full(len(dirs), np.nan)
+random_recalls = np.full(len(dirs), np.nan)
+parsimony_precisions = np.full(len(dirs), np.nan)
+parsimony_recalls = np.full(len(dirs), np.nan)
 metient_all_thresh_rows = []
 mach2_all_thresh_rows = []
 all_thresh_rows = []
@@ -265,11 +265,13 @@ for true_tree_file in dirs:
         with open(pathfinder_file, "r") as file:
             for line in file.readlines()[1:]:  # skip header line
                 edge, prob, mutation_count = line.strip().split("\t")
-                migration = edge.replace("->", "_").split("[")[0]
-                if migration in pathfinder_counts:
-                    pathfinder_counts[migration] += 1
-                else:
-                    pathfinder_counts[migration] = 1
+                # assert float(prob) == 1.0, "Check pathfinder output! I assume only the best solution edges are output, which is not true here."
+                if float(prob) > 0.5:  # only consider edges with prob > 0.5 for the few cases where variable probability edges are output
+                    migration = edge.replace("->", "_").split("[")[0]
+                    if migration in pathfinder_counts:
+                        pathfinder_counts[migration] += 1
+                    else:
+                        pathfinder_counts[migration] = 1
         pathfinder_f1, pathfinder_recall, pathfinder_precision = calculate_metrics(
             true_counts, pathfinder_counts
         )
@@ -304,6 +306,9 @@ for true_tree_file in dirs:
         metient_all_thresh_rows.extend(metient_rows)
         
     # retain old metient approach of getting top solution precision and recall
+    metient_f1_top = float("nan")
+    metient_recall_top = float("nan")
+    metient_precision_top = float("nan")
     if os.path.exists(metient_file):
         with open(metient_file, "r") as file:
             top_graph_solution = file.readlines()[1]  # skip header line
@@ -386,7 +391,7 @@ for true_tree_file in dirs:
 
     # write metrics used for the plot to a file
     with open(outfile_metrics, "a") as file:
-        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{parsimony_f1},{parsimony_recall},{parsimony_precision},{pathfinder_f1},{pathfinder_recall},{pathfinder_precision},{machina_f1},{machina_recall},{machina_precision},{mach2_f1},{mach2_recall},{mach2_precision},{metient_f1},{metient_recall},{metient_precision},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
+        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{parsimony_f1},{parsimony_recall},{parsimony_precision},{pathfinder_f1},{pathfinder_recall},{pathfinder_precision},{machina_f1},{machina_recall},{machina_precision},{mach2_f1},{mach2_recall},{mach2_precision},{metient_f1},{metient_recall},{metient_precision},{metient_f1_top},{metient_recall_top},{metient_precision_top},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
         file.write(data)
 
     i += 1
@@ -437,29 +442,33 @@ avg_parsimony_recall = float("nan")
 
 
 if np.any(pathfinder_precisions):
-    avg_pathfinder_precision = sum(pathfinder_precisions) / len(pathfinder_precisions)
+    avg_pathfinder_precision = np.nanmean(pathfinder_precisions)
 if np.any(pathfinder_recalls):
-    avg_pathfinder_recall = sum(pathfinder_recalls) / len(pathfinder_recalls)
+    avg_pathfinder_recall = np.nanmean(pathfinder_recalls)
 if np.any(machina_precisions):
-    avg_machina_precision = sum(machina_precisions) / len(machina_precisions)
+    avg_machina_precision = np.nanmean(machina_precisions)
 if np.any(machina_recalls):
-    avg_machina_recall = sum(machina_recalls) / len(machina_recalls)
+    avg_machina_recall = np.nanmean(machina_recalls)
 if np.any(metient_precisions):
-    avg_metient_precision = sum(metient_precisions) / len(metient_precisions)
+    avg_metient_precision = np.nanmean(metient_precisions)
 if np.any(metient_recalls):
-    avg_metient_recall = sum(metient_recalls) / len(metient_recalls)
+    avg_metient_recall = np.nanmean(metient_recalls)
 if np.any(random_precisions):
-    avg_random_precision = sum(random_precisions) / len(random_precisions)
+    avg_random_precision = np.nanmean(random_precisions)
 if np.any(random_recalls):
-    avg_random_recall = sum(random_recalls) / len(random_recalls)
+    avg_random_recall = np.nanmean(random_recalls)
 if np.any(consensus_precisions):
-    avg_consensus_precision = sum(consensus_precisions) / len(consensus_precisions)
+    avg_consensus_precision = np.nanmean(consensus_precisions)
 if np.any(consensus_recalls):
-    avg_consensus_recall = sum(consensus_recalls) / len(consensus_recalls)
+    avg_consensus_recall = np.nanmean(consensus_recalls)
 if np.any(parsimony_precisions):
-    avg_parsimony_precision = sum(parsimony_precisions) / len(parsimony_precisions)
+    avg_parsimony_precision = np.nanmean(parsimony_precisions)
 if np.any(parsimony_recalls):
-    avg_parsimony_recall = sum(parsimony_recalls) / len(parsimony_recalls)
+    avg_parsimony_recall = np.nanmean(parsimony_recalls)
+
+avg_df = pd.DataFrame()
+avg_mach2_df = pd.DataFrame()
+avg_metient_df = pd.DataFrame()
 
 if not all_thresh_df.empty:
     avg_df = (
@@ -485,9 +494,9 @@ if not metient_all_thresh_df.empty:
         f"{outdir}/metient_all_threshold_stats.csv", index=False
     )
 
-size = 200
+size = 500
 textsize = 20
-plt.figure()
+plt.figure(figsize=(7, 4.8))
 if not avg_df.empty:
     # plt.scatter(avg_df['recall'], avg_df['precision'], c=avg_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(avg_df["recall"], avg_df["precision"], color="red", label="BEAM")
@@ -500,15 +509,15 @@ if not avg_mach2_df.empty:
     plt.plot(avg_mach2_df["recall"], avg_mach2_df["precision"], color="navy", label="MACH2")
 if not avg_metient_df.empty:
     plt.plot(avg_metient_df["recall"], avg_metient_df["precision"], color="Green", label="Metient")
-if not np.isnan(avg_metient_recall) and not np.isnan(avg_metient_precision):
-    plt.scatter(
-        avg_metient_recall,
-        avg_metient_precision,
-        color="green",
-        label="Metient",
-        s=size,
-        marker="x",
-    )
+# if not np.isnan(avg_metient_recall) and not np.isnan(avg_metient_precision):
+#     plt.scatter(
+#         avg_metient_recall,
+#         avg_metient_precision,
+#         color="green",
+#         label="Metient",
+#         s=size,
+#         marker="x",
+#     )
 if not np.isnan(avg_pathfinder_recall) and not np.isnan(avg_pathfinder_precision):
     plt.scatter(
         avg_pathfinder_recall,
@@ -560,7 +569,7 @@ plt.xlabel("Recall", fontsize=textsize)
 plt.ylabel("Precision", fontsize=textsize)
 plt.xticks(fontsize=textsize)
 plt.yticks(fontsize=textsize)
-plt.legend(bbox_to_anchor=(1.05, 0.75), loc="upper left", fontsize=14, edgecolor="none")
+plt.legend(bbox_to_anchor=(1.05, 0.9), loc="upper left", fontsize=14, edgecolor="none")
 plt.tight_layout()
 plt.savefig(outfile)
 plt.close()

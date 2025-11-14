@@ -9,7 +9,7 @@ if spec is None:
     print(f"The required package beam_sup is NOT installed, so the pipeline will not run. Exiting.")
     sys.exit(1)
 
-# specific to yang et al data to get the input files (character matrices and tissue labeling files)
+# specific to quinn et al data to get the input files (character matrices and tissue labeling files)
 character_matrices = glob.glob(os.path.join(config['inputpath'], "character_matrices", "*_character_matrix.alleleThresh.txt"))
 mouse_ids = list(set([os.path.basename(f).split("_")[0].replace("m", "") for f in character_matrices]))
 
@@ -79,7 +79,7 @@ rule convertMatrixToSuccessive:
         mem = "1G"
     shell:
         """
-        python {params.scripts}/formatting/convert_allele_table_to_successive_matrix.py {input.alleleTable} {wildcards.cp} {params.outputdir}
+        python {params.scripts}/formatting/preprocess_quinn.py {input.alleleTable} {wildcards.cp} {params.outputdir}
         """
 
 rule plotCharacterMatrix:

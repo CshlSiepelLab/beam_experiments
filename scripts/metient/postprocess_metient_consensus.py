@@ -43,6 +43,9 @@ for loss, solution in all_graphs:
                     else:
                         metient_prob_graph[migration] += prob
 
+# Sort descending by probability
+metient_prob_graph = dict(sorted(metient_prob_graph.items(), key=lambda item: item[1], reverse=True))
+
 # Output the consensus graph
 with open(outfile, "w") as f:
     for migration, probability in metient_prob_graph.items():

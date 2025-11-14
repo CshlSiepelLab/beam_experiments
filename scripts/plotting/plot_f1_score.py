@@ -11,7 +11,7 @@ def plot_f1_score(csv_path, output_dir):
     df = pd.read_csv(csv_path)
 
     # Filter columns with "f1" in the name
-    f1_columns = [col for col in df.columns if "f1" in col]
+    f1_columns = [col for col in df.columns if "f1" in col and not col.startswith("Metient_bestSol")]
 
     data_f1 = df[f1_columns]
     # Remove "_f1" from all column names
@@ -48,6 +48,7 @@ def plot_f1_score(csv_path, output_dir):
         medianprops=dict(color="black"),
     )
     sns.stripplot(data=data_f1, orient="v", color="black", alpha=0.5)
+    
     plt.ylabel("F1 score", fontsize=fs)
     plt.xticks(rotation=45, fontsize=fs)
     plt.yticks(fontsize=fs)

@@ -23,7 +23,7 @@ for node in tree.traverse():
         node.name = "root"
     elif not node.is_leaf():
         current_name = node.name
-        new_name = current_name.split("_")[0]
+        new_name = current_name
         if new_name == "node" and current_name.split("_")[1] == "dummy":
             new_name = f"nodedummy{i}"
             i += 1
@@ -36,7 +36,7 @@ for node in tree.traverse():
         for child in node.children:
             edges.append((node.name, child.name))
 
-leaf_label = pd.read_csv(leaf_labels_tsv, sep="\s+", names=["leaf", "tissue"])
+leaf_label = pd.read_csv(leaf_labels_tsv, sep=r"\s+", names=["leaf", "tissue"])
 tissues = leaf_label["tissue"].unique().tolist()
 
 # Fix when primary tissue is not a leaf label, but required in coloring scheme for MACHINA to run

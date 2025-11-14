@@ -1,0 +1,31 @@
+__default__:
+  cores: '{params.threads}'
+  mem: '{params.mem}'
+  logout: '{outdir}/job_logs/{wildcards.clone}/{rule}.out'
+  logerror: '{outdir}/job_logs/{wildcards.clone}/{rule}.err'
+  runtime: 500:00:00
+
+# collectMach2Classifications:
+#     logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+#     logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
+# plotClassifications:
+#     logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+#     logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
+# collectMouseLevelClassificationsAndTimes:
+#     logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+#     logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
+# plotExpectedTimes:
+#     logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+#     logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+
+# collectMutualInformationAndPlot:
+#     logout: '{outdir}/job_logs/{rule}.out'
+#     logerror: '{outdir}/job_logs/{rule}.err'
+
+# collectRfDistances:
+#     logout: '{outdir}/job_logs/{wildcards.mouse}/{rule}.out'
+#     logerror: '{outdir}/job_logs/{wildcards.mouse}/{rule}.err'
+  

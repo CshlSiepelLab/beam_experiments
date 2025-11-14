@@ -1,5 +1,5 @@
 
-indir="/grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/true_trees"
+indir="/grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/true_trees"
 
 # get all files
 files=$(find $indir -type f -name "*issue_labeled_tree.nwk")
@@ -24,7 +24,7 @@ muts=($(echo "${muts[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
 mainOutdir="$(dirname $indir)/precision_recall_variable_rates"
 mkdir -p $mainOutdir
 
-scripts="/grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/scripts"
+scripts="/grid/siepel/home/staklins/projects/crispr_barcode/beam/bayesian_phylogenetic_metastasis/scripts"
 
 # make output directories and submit jobs for each combination
 primary_tissue="P"
@@ -47,9 +47,9 @@ for mig in ${migs[@]}; do
         # check if true_trees is not empty
         if [[ -n $true_trees ]]; then
             # submit job
-            echo "python $scripts/plotting/plot_precision_recall.py $true_trees $primary_tissue $outdir" >> $mainOutdir/parallel.sh
+            # echo "python $scripts/plotting/plot_precision_recall.py $true_trees $primary_tissue $outdir" >> $mainOutdir/parallel.sh
 
-            # echo "python $scripts/plotting/plot_f1_score.py ${outdir}/metrics.csv $outdir" >> $mainOutdir/parallel.sh
+            echo "python $scripts/plotting/plot_f1_score.py ${outdir}/metrics.csv $outdir" >> $mainOutdir/parallel.sh
         fi
     done
 done

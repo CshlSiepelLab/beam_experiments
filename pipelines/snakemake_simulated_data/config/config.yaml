@@ -1,15 +1,18 @@
 
 # set path to data dirs
-# inputpath: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_22_24
-inputpath: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/variable_migration_and_mutation_rates_8_19_24
+inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/data/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_22_24
+# inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/data/variable_migration_and_mutation_rates_8_19_24
 
 # set where output should go
-# outdir: /grid/siepel/home/staklins/stored_results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24
-# outdir: /grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24
-outdir: /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/test
+# outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24
+# outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24
+
+# Output directories for special runs with the ground truth tree OR cassiopeia-greedy topology/laml branch lengths used for other methods, which requires some manual modifications to the Snakemake workflow
+outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24/ground_truth_tree_runs_11_10_25
+# outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24/cas_greedy_tree_runs_11_10_25
 
 # mutation priors for being fixed in Q matrix
-mutationPriors: /grid/siepel/home/staklins/stored_data/crispr_barcode_related_data/uniform_50cells_50sites_0.005mut_10-6mig_data_7_24_24/mutation_priors.csv
+mutationPriors: /grid/siepel/home/staklins/projects/crispr_barcode/data/uniform_50cells_50sites_0.005mut_10-6mig_data_7_24_24/mutation_priors.csv
 
 # set path to the beam model xml template files
 gtrXml: /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
@@ -32,7 +35,7 @@ essCutoff: 200
 consensusThreshold: 0.5
 
 # set path to scripts and executables
-scripts: /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/scripts
+scripts: /grid/siepel/home/staklins/projects/crispr_barcode/beam/bayesian_phylogenetic_metastasis/scripts
 containers: /grid/siepel/home/staklins/containers
 treeannotator: /grid/siepel/home/staklins/bin/beast/bin/treeannotator
 logcombiner: /grid/siepel/home/staklins/bin/beast/bin/logcombiner
