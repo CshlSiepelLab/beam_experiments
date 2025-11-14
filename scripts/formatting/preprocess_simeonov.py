@@ -185,7 +185,7 @@ summary_df.to_csv(f"{summary_outdir}/simeonov_clone_summary_stats.csv", index=Fa
 # Subset to interesting clones that will have phylogenetic information and tissues to model migration graphs for
 subset_df = summary_df[
     (summary_df['num_cells'] > 2) & 
-    (summary_df['num_cells'] < 500) & 
+    (summary_df['num_cells'] < 300) & 
     (summary_df['num_edits'] > 0) & 
     (summary_df['num_tissues'] > 1) & 
     (summary_df['num_phylogenetically_informative_muts'] > 0)
