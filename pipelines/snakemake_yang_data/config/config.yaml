@@ -1,14 +1,14 @@
 # set path to data dirs
-inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/simeonov_preprocess_2021_pancreatic_cancer_data/reformatted_raw_data
+inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/yang_preprocess_2022_lung_cancer_data
 
 # set where output should go (data is also copied there initially to retain original data in raw form)
-outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/simeonov_results_2021_pancreatic_cancer_data
+outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/yang_results_2022_lung_cancer_data
 
 # Set path to file with clones to keep
-clonesToKeep: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/simeonov_preprocess_2021_pancreatic_cancer_data/simeonov_clone_summary_stats_subset.csv
+clonesToKeep: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/yang_preprocess_2022_lung_cancer_data/yang_clone_summary_stats_subset.tsv
 
 # primary tissue name
-primaryTissue: PT
+primaryTissue: T
 
 # set path to the beam model xml template file
 gtrXml: /grid/siepel/home/staklins/projects/crispr_barcode/beam/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
@@ -19,7 +19,12 @@ thresholds: [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99]
 
 # set the length of the experiment
 # for simeonov et al data, both laster "approximately 5 weeks", so we will set this in days
-experimentTime: 35
+experimentTime:
+  3457_Apc_T1: 185
+  3519_Lkb1_T1: 110
+  3508_Apc_T2: 185
+  3513_NT_T1: 181
+  3457_Apc_T4: 185
 
 # set the desired mcmc chain length and number of chains to run in parallel
 mcmcLength: 500000000

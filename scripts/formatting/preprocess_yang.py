@@ -155,7 +155,7 @@ for fam, expanded_collapsed_char_matrix in expanded_collapsed_char_matrices.item
 
 # Output expanded tissues dfs
 for fam, expanded_tissues_df in expanded_tissues_dfs.items():
-    expanded_tissues_df.to_csv(f"{outdir}/{fam}_expanded_collapsed_tissues.tsv", sep=",", index=False, header=False)
+    expanded_tissues_df.to_csv(f"{outdir}/{fam}_expanded_collapsed_tissues.csv", sep=",", index=False, header=False)
 
 # Output successive matrices
 for fam, successive_matrix in successive_matrices.items():
@@ -242,7 +242,7 @@ for fam, df in collapsed_char_matrices.items():
 
 summary_df = pd.DataFrame(summary_rows)
 summary_df.sort_values(by='num_cells', ascending=False, inplace=True)
-summary_df.to_csv(f"{outdir}/yang_clone_summary_stats.csv", index=False, sep='\t')
+summary_df.to_csv(f"{outdir}/yang_clone_summary_stats.tsv", index=False, sep='\t')
 
 # Subset to interesting clones that will have phylogenetic information and tissues to model migration graphs for
 subset_df = summary_df[
@@ -252,6 +252,6 @@ subset_df = summary_df[
     (summary_df['num_tissues'] > 1) & 
     (summary_df['num_phylogenetically_informative_muts'] > 0)
     ]
-subset_df.to_csv(f"{outdir}/yang_clone_summary_stats_subset.csv", index=False, sep='\t')
+subset_df.to_csv(f"{outdir}/yang_clone_summary_stats_subset.tsv", index=False, sep='\t')
 
 

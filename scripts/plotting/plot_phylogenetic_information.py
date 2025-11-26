@@ -4,13 +4,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-variable_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/phylogenetic_information_to_cell_ratio_variable_rates.csv"
-quinn_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/quinn_2021_lung_cancer_data/phylogenetic_information_to_cell_ratio_quinn.csv"
-serio_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/serio_prostate_cancer_data/phylogenetic_information_to_cell_ratio_serio.csv"
-simeonov_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/simeonov_2021_pancreatic_cancer_data/phylogenetic_information_to_cell_ratio_simeonov.csv"
-yang_file = "/grid/siepel/home/staklins/stored_results/beam/latest_results/yang_2022_lung_cancer_data/phylogenetic_information_to_cell_ratio_yang.csv"
+variable_file = "/grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24/phylogenetic_information_to_cell_ratio_variable_rates.csv"
+quinn_file = "/grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/quinn_2021_lung_cancer_data/phylogenetic_information_to_cell_ratio_quinn.csv"
+serio_file = "/grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/serio_prostate_cancer_data/phylogenetic_information_to_cell_ratio_serio.csv"
+simeonov_file = "/grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/simeonov_preprocess_2021_pancreatic_cancer_data/phylogenetic_information_to_cell_ratio_simeonov.csv"
+yang_file = "/grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/yang_preprocess_2022_lung_cancer_data/phylogenetic_information_to_cell_ratio_yang.csv"
 
-outfile = "/grid/siepel/home/staklins/stored_results/beam/latest_results/serio_prostate_cancer_data/phylogenetic_information_to_cell_ratio.pdf"
+outfile = "/grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/serio_prostate_cancer_data/phylogenetic_information_to_cell_ratio.pdf"
 
 
 variable_data = pd.read_csv(variable_file)
@@ -59,7 +59,7 @@ ax3.set_ylabel('Count', fontsize=fs)
 # Plot for simeonov
 sns.histplot(data=simeonov_data, 
             x='informative_muts_to_cell_ratio',
-            ax=ax4, kde=False, bins=30, color='grey')
+            ax=ax4, kde=False, bins=15, color='grey')
 ax4.set_title('Pancreatic cancer dataset', fontsize=fs)
 ax4.set_xlabel('Ratio of phylogenetically informative mutations to cells', fontsize=fs)
 ax4.set_ylabel('Count', fontsize=fs)
@@ -67,8 +67,8 @@ ax4.set_ylabel('Count', fontsize=fs)
 # Plot for yang
 sns.histplot(data=yang_data, 
             x='informative_muts_to_cell_ratio',
-            ax=ax5, kde=False, bins=15, color='grey')
-ax5.set_title('Lung cancer dataset (yang)', fontsize=fs)
+            ax=ax5, kde=False, bins=10, color='grey')
+ax5.set_title('Additional lung cancer dataset', fontsize=fs)
 ax5.set_xlabel('Ratio of phylogenetically informative mutations to cells', fontsize=fs)
 ax5.set_ylabel('Count', fontsize=fs)
 

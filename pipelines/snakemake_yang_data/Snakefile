@@ -18,15 +18,17 @@ outdir = config['outdir']
 
 rule all:
     input:
-        expand("{outdir}/mach2/{clone}/PT-G-0.graph", clone=clones, outdir=outdir),
+        expand("{outdir}/mach2/{clone}/T-G-0.graph", clone=clones, outdir=outdir),
         expand("{outdir}/beam_gtr/{clone}/terminal_{num}.log", clone=clones, outdir=outdir, num=range(1, config['numChains']+1)),
+        expand("{outdir}/beam_gtr/{clone}/combined.log", clone=clones, outdir=outdir),
         expand("{outdir}/beam_gtr_ns/{clone}/terminal_{num}.log", clone=clones, num=range(1, 101), outdir=outdir),
         expand("{outdir}/beam_random_ns/{clone}/terminal_{num}.log", clone=clones, num=range(1, 101), outdir=outdir),
 
 
+
 rule runCassiopeia:
     input:
-         matrix = indir + "/{clone}_matrix_expanded.tsv"
+         matrix = indir + "/{clone}_successive_character_matrix.tsv"
     output:
         "{outdir}/cassiopeia_greedy/{clone}/cassiopeia_greedy_inferred.nwk"
     params:
@@ -42,9 +44,9 @@ rule runCassiopeia:
 
 rule runLAML:
     input:
-        matrix = indir + "/{clone}_matrix_expanded.tsv",
+        matrix = indir + "/{clone}_successive_character_matrix.tsv",
         casTree = "{outdir}/cassiopeia_greedy/{clone}/cassiopeia_greedy_inferred.nwk",
-        mutationPriors = indir + "/{clone}_mut_priors.txt"
+        mutationPriors = indir + "/{clone}_successive_mut_priors.txt"
     output:
         lamlTree = "{outdir}/laml/{clone}/laml_trees.nwk",
         lamlAnnotations = "{outdir}/laml/{clone}/laml_annotations.txt",
@@ -53,7 +55,7 @@ rule runLAML:
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/laml/{clone}",
-        experimentTime = config['experimentTime'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.clone],
         threads = 10,
         mem = "1G"
     singularity:
@@ -95,9 +97,9 @@ rule runLAML:
 
 rule runBeamGtr:
     input:
-        fasta = indir + "/{clone}_matrix_expanded_beam.fasta",
-        tissues = indir + "/{clone}_tissues_expanded.txt",
-        editRates = indir + "/{clone}_mut_freqs.txt",
+        fasta = indir + "/{clone}.fasta",
+        tissues = indir + "/{clone}_expanded_collapsed_tissues.csv",
+        editRates = indir + "/{clone}_successive_mut_freqs.txt",
         lamlTree = "{outdir}/laml/{clone}/laml_trees.nwk"
     output:
         terminalLog = "{outdir}/beam_gtr/{clone}/terminal_{num}.log",
@@ -106,7 +108,7 @@ rule runBeamGtr:
     params:
         xml = config['gtrXml'],
         fileDir = "{outdir}/beam_gtr/{clone}",
-        experimentTime = config['experimentTime'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.clone],
         mcmclength = config['mcmcLength'],
         primaryTissue = config['primaryTissue'],
         threads = 5,
@@ -187,47 +189,47 @@ rule runBeamGtr:
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
 
-# rule combineBeamChains:
-#     input:
-#         terminalLog = lambda wildcards: expand("{outdir}/beam_gtr/{mouse}/{cp}/terminal_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, cp=wildcards.cp, outdir=wildcards.outdir),
-#         beamLogs = lambda wildcards: expand("{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.log", num=range(1, config['numChains']+1), mouse=wildcards.mouse, cp=wildcards.cp, outdir=wildcards.outdir),
-#         beamResults = lambda wildcards: expand("{outdir}/beam_gtr/{mouse}/{cp}/chain_{num}.trees", num=range(1, config['numChains']+1), mouse=wildcards.mouse, cp=wildcards.cp, outdir=wildcards.outdir),
-#     output:
-#         combinedLog = "{outdir}/beam_gtr/{mouse}/{cp}/combined.log",
-#         combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees"
-#     params:
-#         logcombiner = config['logcombiner'],
-#         essCutoff = config['essCutoff'],
-#         treeannotator = config['treeannotator'],
-#         threads = 1,
-#         mem = '1G'
-#     shell:
-#         """
-#         # find chains that have converged based on ess threshold specified
-#         log_files=""
-#         trees_files=""
-#         ess_convergences=()
-#         for file in {input.beamLogs}; do
-#             terminal_log=$(echo $file | sed 's/chain_/terminal_/')
+rule combineBeamChains:
+    input:
+        terminalLog = lambda wildcards: expand("{outdir}/beam_gtr/{clone}/terminal_{num}.log", num=range(1, config['numChains']+1), clone=wildcards.clone, outdir=wildcards.outdir),
+        beamLogs = lambda wildcards: expand("{outdir}/beam_gtr/{clone}/chain_{num}.log", num=range(1, config['numChains']+1), clone=wildcards.clone, outdir=wildcards.outdir),
+        beamResults = lambda wildcards: expand("{outdir}/beam_gtr/{clone}/chain_{num}.trees", num=range(1, config['numChains']+1), clone=wildcards.clone, outdir=wildcards.outdir),
+    output:
+        combinedLog = "{outdir}/beam_gtr/{clone}/combined.log",
+        combinedTrees = "{outdir}/beam_gtr/{clone}/combined.trees"
+    params:
+        logcombiner = config['logcombiner'],
+        essCutoff = config['essCutoff'],
+        treeannotator = config['treeannotator'],
+        threads = 1,
+        mem = '1G'
+    shell:
+        """
+        # find chains that have converged based on ess threshold specified
+        log_files=""
+        trees_files=""
+        ess_convergences=()
+        for file in {input.beamLogs}; do
+            terminal_log=$(echo $file | sed 's/chain_/terminal_/')
             
-#             ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
-#             if (( $(echo "$ess_convergence > {params.essCutoff}" | bc -l) )); then
-#                 log_files+="-log $file "
-#                 trees_file=$(echo $file | sed 's/\.log$/.trees/')
-#                 trees_files+="-log $trees_file "
-#             else
-#                 echo "$file did not converge, so not including it in the final output"
-#             fi
-#         done
+            ess_convergence=$(grep "Msamples" $terminal_log | tail -n 1 | sed 's/^ *//;s/ *$//' | tr -s ' ' | cut -d' ' -f3)
+            if (( $(echo "$ess_convergence > {params.essCutoff}" | bc -l) )); then
+                log_files+="-log $file "
+                trees_file=$(echo $file | sed 's/\.log$/.trees/')
+                trees_files+="-log $trees_file "
+            else
+                echo "$file did not converge, so not including it in the final output"
+            fi
+        done
 
-#         # combine logs and trees that passed
-#         if [ -n "$log_files" ]; then
-#             {params.logcombiner} $log_files -o {output.combinedLog}
-#             {params.logcombiner} $trees_files -o {output.combinedTrees}
-#         else
-#             echo "No chains passed the ESS threshold of {params.essCutoff}, so not combining any chains"
-#         fi
-#         """
+        # combine logs and trees that passed
+        if [ -n "$log_files" ]; then
+            {params.logcombiner} $log_files -o {output.combinedLog}
+            {params.logcombiner} $trees_files -o {output.combinedTrees}
+        else
+            echo "No chains passed the ESS threshold of {params.essCutoff}, so not combining any chains"
+        fi
+        """
 
 # rule beamPostprocessing:
 #     input:
@@ -316,7 +318,7 @@ rule runBeamGtr:
 rule prepMach2:
     input:
         lamlTreeNoBranchLengths = "{outdir}/laml/{clone}/laml_trees_no_branch_lengths.nwk",
-        tissues = indir + "/{clone}_tissues_expanded.txt",
+        tissues = indir + "/{clone}_expanded_collapsed_tissues.csv",
     output:
         tissuesTsv = "{outdir}/mach2/{clone}/leaf_tissues.tsv",
         labeling = "{outdir}/mach2/{clone}/laml_trees_no_branch_lengths.labeling",
@@ -349,7 +351,7 @@ rule runMach2:
         colors = "{outdir}/mach2/{clone}/laml_trees_no_branch_lengths_colors.txt",
         tree = "{outdir}/mach2/{clone}/laml_trees_no_branch_lengths.tree",
     output:
-        mach2graph = "{outdir}/mach2/{clone}/PT-G-0.graph",
+        mach2graph = "{outdir}/mach2/{clone}/T-G-0.graph",
     params:
         scripts = config['scripts'],
         outputdir = "{outdir}/mach2/{clone}",
@@ -390,7 +392,7 @@ rule runMach2:
 
 # rule gatherMach2Results:
 #     input:
-#         mach2graph = "{outdir}/mach2/{mouse}/{cp}/PT-G-0.graph"
+#         mach2graph = "{outdir}/mach2/{mouse}/{cp}/T-G-0.graph"
 #     output:
 #         mach2Combined = "{outdir}/mach2/{mouse}/{cp}/graph_results_combined.txt",
 #         mach2Consensus = "{outdir}/mach2/{mouse}/{cp}/consensus_graph.txt",
@@ -467,12 +469,11 @@ rule runMach2:
 #         done
 #         """
 
-
 rule runBeamGtrNs:
     input:
-        fasta = indir + "/{clone}_matrix_expanded_beam.fasta",
-        tissues = indir + "/{clone}_tissues_expanded.txt",
-        editRates = indir + "/{clone}_mut_freqs.txt",
+        fasta = indir + "/{clone}.fasta",
+        tissues = indir + "/{clone}_expanded_collapsed_tissues.csv",
+        editRates = indir + "/{clone}_successive_mut_freqs.txt",
         lamlTree = "{outdir}/laml/{clone}/laml_trees.nwk"
     output:
         terminalLog = "{outdir}/beam_gtr_ns/{clone}/terminal_{num}.log",
@@ -481,7 +482,7 @@ rule runBeamGtrNs:
     params:
         xml = config['gtrXml'],
         fileDir = "{outdir}/beam_gtr_ns/{clone}",
-        experimentTime = lambda wildcards: config['experimentTime'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.clone],
         primaryTissue = config['primaryTissue'],
         threads = 5,
         mem = '2G'
@@ -567,9 +568,9 @@ rule runBeamGtrNs:
 
 rule runBeamRandomNs:
     input:
-        fasta = indir + "/{clone}_matrix_expanded_beam.fasta",
-        tissues = indir + "/{clone}_tissues_expanded.txt",
-        editRates = indir + "/{clone}_mut_freqs.txt",
+        fasta = indir + "/{clone}.fasta",
+        tissues = indir + "/{clone}_expanded_collapsed_tissues.csv",
+        editRates = indir + "/{clone}_successive_mut_freqs.txt",
         lamlTree = "{outdir}/laml/{clone}/laml_trees.nwk"
     output:
         terminalLog = "{outdir}/beam_random_ns/{clone}/terminal_{num}.log",
@@ -578,7 +579,7 @@ rule runBeamRandomNs:
     params:
         xml = config['randomXml'],
         fileDir = "{outdir}/beam_random_ns/{clone}",
-        experimentTime = lambda wildcards: config['experimentTime'],
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.clone],
         primaryTissue = config['primaryTissue'],
         threads = 5,
         mem = '2G'
@@ -661,5 +662,3 @@ rule runBeamRandomNs:
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
-
-

@@ -3,7 +3,7 @@ __default__:
   mem: '{params.mem}'
   logout: '{outdir}/job_logs/{wildcards.sim}/{rule}.out'
   logerror: '{outdir}/job_logs/{wildcards.sim}/{rule}.err'
-  runtime: 240:00:00
+  runtime: 500:00:00
 
 plotPrecisionRecall:
   logout: '{outdir}/job_logs/{rule}.out'

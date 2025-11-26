@@ -1,22 +1,32 @@
 
 # set path to data dirs
-inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/data/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_22_24
+# inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/data/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_22_24
 # inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/data/variable_migration_and_mutation_rates_8_19_24
+# inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/data/heritable_silencing_001_11_16_25_uniform_50cells_50sites_0.0025mut_10-6mig_data_from_8_22_24
+# inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/data/heritable_silencing_005_11_16_25_uniform_50cells_50sites_0.0025mut_10-6mig_data_from_8_22_24
+# inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/data/heritable_silencing_01_11_16_25_uniform_50cells_50sites_0.0025mut_10-6mig_data_from_8_22_24
+# inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/data/migration_windows_sim_data_mig1e-5_11_20_25
+inputpath: /grid/siepel/home/staklins/projects/crispr_barcode/data/m_hub_sims_11_25_25
 
 # set where output should go
 # outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24
 # outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/variable_migration_and_mutation_rates_data_8_19_24
+# outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/heritable_silencing_001_11_16_25_uniform_50cells_50sites_0.0025mut_10-6mig_data_from_8_22_24
+# outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/heritable_silencing_005_11_16_25_uniform_50cells_50sites_0.0025mut_10-6mig_data_from_8_22_24
+# outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/heritable_silencing_01_11_16_25_uniform_50cells_50sites_0.0025mut_10-6mig_data_from_8_22_24
+# outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/migration_windows_sim_data_mig1e-5_11_20_25
+outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/m_hub_sims_11_25_25
 
 # Output directories for special runs with the ground truth tree OR cassiopeia-greedy topology/laml branch lengths used for other methods, which requires some manual modifications to the Snakemake workflow
-outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24/ground_truth_tree_runs_11_10_25
+# outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24/ground_truth_tree_runs_11_10_25
 # outdir: /grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/uniform_50cells_50sites_0.0025mut_10-6mig_data_8_24_24/cas_greedy_tree_runs_11_10_25
 
 # mutation priors for being fixed in Q matrix
 mutationPriors: /grid/siepel/home/staklins/projects/crispr_barcode/data/uniform_50cells_50sites_0.005mut_10-6mig_data_7_24_24/mutation_priors.csv
 
 # set path to the beam model xml template files
-gtrXml: /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
-randomXml: /grid/siepel/home/staklins/projects/crispr_barcode/bayesian_phylogenetic_metastasis/inputs/beam_random_mcmc_template.xml
+gtrXml: /grid/siepel/home/staklins/projects/crispr_barcode/beam/bayesian_phylogenetic_metastasis/inputs/beam_gtr_mcmc_template.xml
+randomXml: /grid/siepel/home/staklins/projects/crispr_barcode/beam/bayesian_phylogenetic_metastasis/inputs/beam_random_mcmc_template.xml
 
 # primary tissue name
 primaryTissue: P
@@ -25,7 +35,7 @@ primaryTissue: P
 generations: 250
 
 # set the desired mcmc chain length and number of chains to run in parallel
-mcmcLength: 5000000
+mcmcLength: 10000000
 numChains: 3
 
 # set the minimum ess to include a chain in the combined output across chains (default: 200)
