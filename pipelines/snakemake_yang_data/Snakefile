@@ -13,6 +13,8 @@ if spec is None:
 interesting_clones_df = pd.read_csv(config['clonesToKeep'], sep='\t', index_col=0)
 clones = set(interesting_clones_df.index.tolist())
 
+# clones=set(['3513_NT_T1'])
+
 indir = config['inputpath']
 outdir = config['outdir']
 
@@ -20,9 +22,10 @@ rule all:
     input:
         expand("{outdir}/mach2/{clone}/T-G-0.graph", clone=clones, outdir=outdir),
         expand("{outdir}/beam_gtr/{clone}/terminal_{num}.log", clone=clones, outdir=outdir, num=range(1, config['numChains']+1)),
-        expand("{outdir}/beam_gtr/{clone}/combined.log", clone=clones, outdir=outdir),
-        expand("{outdir}/beam_gtr_ns/{clone}/terminal_{num}.log", clone=clones, num=range(1, 101), outdir=outdir),
-        expand("{outdir}/beam_random_ns/{clone}/terminal_{num}.log", clone=clones, num=range(1, 101), outdir=outdir),
+        expand("{outdir}/beam_gtr/{clone}/all_consensus_classifications.csv", clone=clones, outdir=outdir),
+        expand("{outdir}/mach2/{clone}/mach2_consensus_classifications.csv", clone=clones, outdir=outdir),
+        # expand("{outdir}/beam_gtr_ns/{clone}/terminal_{num}.log", clone=clones, num=range(1, 1001), outdir=outdir),
+        # expand("{outdir}/beam_random_ns/{clone}/terminal_{num}.log", clone=clones, num=range(1, 1001), outdir=outdir),
 
 
 
@@ -231,88 +234,87 @@ rule combineBeamChains:
         fi
         """
 
-# rule beamPostprocessing:
-#     input:
-#         combinedTrees = "{outdir}/beam_gtr/{mouse}/{cp}/combined.trees",
-#         combinedLog = "{outdir}/beam_gtr/{mouse}/{cp}/combined.log"
-#     output:
-#         graphPosterior = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_prob_graph.csv",
-#         probabilityPlot = "{outdir}/beam_gtr/{mouse}/{cp}/probability_migration_graph.pdf",
-#         samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined_migration_graph_1.pdf",
-#         migrationCountMatrix = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_count_matrix.csv",
-#         mutualInformation = "{outdir}/beam_gtr/{mouse}/{cp}/posterior_trees_migration_mutual_information.txt",
-#         metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl",
-#         metastasisTimingPlot = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing_prob.pdf",
-#     params:
-#         scripts = config['scripts'],
-#         primaryTissue = config['primaryTissue'],
-#         outprefix_thresholded = "{outdir}/beam_gtr/{mouse}/{cp}/thresholded_migration_graph",
-#         outprefix_samples = "{outdir}/beam_gtr/{mouse}/{cp}/combined",
-#         outprefix_metastasis_timing = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing",
-#         experimentTime = lambda wildcards: config['experimentTime'][wildcards.mouse],
-#         numSamples = 10,
-#         consensusTimingThreshold = 0.5,
-#         threads = 5,
-#         mem = "1G"
-#     shell:
-#         """
-#         if [ ! -s {input.combinedTrees} ]; then
-#             echo "Combined trees file is empty. Exiting."
-#             touch {output.graphPosterior}
-#         else
-#             thresholds="0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99"
+rule beamPostprocessing:
+    input:
+        combinedTrees = "{outdir}/beam_gtr/{clone}/combined.trees",
+        combinedLog = "{outdir}/beam_gtr/{clone}/combined.log"
+    output:
+        graphPosterior = "{outdir}/beam_gtr/{clone}/posterior_prob_graph.csv",
+        probabilityPlot = "{outdir}/beam_gtr/{clone}/probability_migration_graph.pdf",
+        samples = "{outdir}/beam_gtr/{clone}/combined_migration_graph_1.pdf",
+        migrationCountMatrix = "{outdir}/beam_gtr/{clone}/posterior_trees_migration_count_matrix.csv",
+        mutualInformation = "{outdir}/beam_gtr/{clone}/posterior_trees_migration_mutual_information.txt",
+        metastasisTiming = "{outdir}/beam_gtr/{clone}/metastasis_timing.pkl",
+    params:
+        scripts = config['scripts'],
+        primaryTissue = config['primaryTissue'],
+        outprefix_thresholded = "{outdir}/beam_gtr/{clone}/thresholded_migration_graph",
+        outprefix_samples = "{outdir}/beam_gtr/{clone}/combined",
+        outprefix_metastasis_timing = "{outdir}/beam_gtr/{clone}/metastasis_timing",
+        experimentTime = lambda wildcards: config['experimentTime'][wildcards.clone],
+        numSamples = 10,
+        consensusTimingThreshold = 0.5,
+        threads = 50,
+        mem = "1G"
+    shell:
+        """
+        if [ ! -s {input.combinedTrees} ]; then
+            echo "Combined trees file is empty. Exiting."
+            touch {output.graphPosterior}
+        else
+            thresholds="0.4,0.5,0.6,0.7,0.8,0.9,0.95,0.99"
             
-#             python {params.scripts}/formatting/beam_postprocessing.py \
-#                 {input.combinedTrees} \
-#                 {input.combinedLog} \
-#                 {params.primaryTissue} \
-#                 {output.graphPosterior} \
-#                 {params.threads} \
-#                 {output.probabilityPlot} \
-#                 $thresholds \
-#                 {params.outprefix_thresholded} \
-#                 {params.outprefix_samples} \
-#                 {params.numSamples} \
-#                 {params.experimentTime} \
-#                 {output.migrationCountMatrix} \
-#                 {output.mutualInformation} \
-#                 {params.outprefix_metastasis_timing} \
-#                 {params.consensusTimingThreshold}
-#         fi
-#         """
+            python {params.scripts}/formatting/beam_postprocessing.py \
+                {input.combinedTrees} \
+                {input.combinedLog} \
+                {params.primaryTissue} \
+                {output.graphPosterior} \
+                {params.threads} \
+                {output.probabilityPlot} \
+                $thresholds \
+                {params.outprefix_thresholded} \
+                {params.outprefix_samples} \
+                {params.numSamples} \
+                {params.experimentTime} \
+                {output.migrationCountMatrix} \
+                {output.mutualInformation} \
+                {params.outprefix_metastasis_timing} \
+                {params.consensusTimingThreshold}
+        fi
+        """
 
 
-# rule getExpectedClassificationsAndTimes:
-#     input:
-#         metastasisTiming = "{outdir}/beam_gtr/{mouse}/{cp}/metastasis_timing.pkl",
-#     output:
-#         allClassifications = "{outdir}/beam_gtr/{mouse}/{cp}/all_consensus_classifications.csv",
-#         allTimes = "{outdir}/beam_gtr/{mouse}/{cp}/all_expected_migration_times_no_multiedge_combined.csv",
-#     params:
-#         primaryTissue = config['primaryTissue'],
-#         thresholds = config['thresholds'],
-#         outprefix = "{outdir}/beam_gtr/{mouse}/{cp}/{mouse}_{cp}",
-#         scripts = config['scripts'],
-#         threads = 1,
-#         mem = "1G"
-#     shell:
-#         """
-#         echo "name,met_to_met,met_to_primary,threshold" > {output.allClassifications}
-#         echo "name,source,target,time,threshold" > {output.allTimes}
+rule getExpectedClassificationsAndTimes:
+    input:
+        metastasisTiming = "{outdir}/beam_gtr/{clone}/metastasis_timing.pkl",
+    output:
+        allClassifications = "{outdir}/beam_gtr/{clone}/all_consensus_classifications.csv",
+        allTimes = "{outdir}/beam_gtr/{clone}/all_expected_migration_times_no_multiedge_combined.csv",
+    params:
+        primaryTissue = config['primaryTissue'],
+        thresholds = config['thresholds'],
+        outprefix = "{outdir}/beam_gtr/{clone}/{clone}",
+        scripts = config['scripts'],
+        threads = 1,
+        mem = "1G"
+    shell:
+        """
+        echo "name,met_to_met,met_to_primary,threshold" > {output.allClassifications}
+        echo "name,source,target,time,threshold" > {output.allTimes}
 
-#         for threshold in {params.thresholds}; do
-#             python {params.scripts}/formatting/get_consensus_times_and_classifications.py {input.metastasisTiming} {params.primaryTissue} $threshold {params.outprefix}
+        for threshold in {params.thresholds}; do
+            python {params.scripts}/formatting/get_consensus_times_and_classifications.py {input.metastasisTiming} {params.primaryTissue} $threshold {params.outprefix}
 
-#             formatted_threshold=$(echo "$threshold * 100" | bc | awk '{{printf "%.0f", $0}}')
-#             tail -n +2 {params.outprefix}_consensus_classifications_$formatted_threshold.csv | awk -v t=$threshold '{{print $0","t}}' >> {output.allClassifications}
-#             tail -n +2 {params.outprefix}_expected_migration_times_no_multiedge_$formatted_threshold.csv | awk -v t=$threshold '{{print $0","t}}' >> {output.allTimes}
+            formatted_threshold=$(echo "$threshold * 100" | bc | awk '{{printf "%.0f", $0}}')
+            tail -n +2 {params.outprefix}_consensus_classifications_$formatted_threshold.csv | awk -v t=$threshold '{{print $0","t}}' >> {output.allClassifications}
+            tail -n +2 {params.outprefix}_expected_migration_times_no_multiedge_$formatted_threshold.csv | awk -v t=$threshold '{{print $0","t}}' >> {output.allTimes}
 
-#             # clean up
-#             rm {params.outprefix}_consensus_classifications_$formatted_threshold.csv
-#             rm {params.outprefix}_expected_migration_times_no_multiedge_$formatted_threshold.csv
-#             rm {params.outprefix}_expected_migration_times_all_$formatted_threshold.csv
-#         done
-#         """
+            # clean up
+            rm {params.outprefix}_consensus_classifications_$formatted_threshold.csv
+            rm {params.outprefix}_expected_migration_times_no_multiedge_$formatted_threshold.csv
+            rm {params.outprefix}_expected_migration_times_all_$formatted_threshold.csv
+        done
+        """
 
 
 rule prepMach2:
@@ -390,84 +392,84 @@ rule runMach2:
         fi
         """
 
-# rule gatherMach2Results:
-#     input:
-#         mach2graph = "{outdir}/mach2/{mouse}/{cp}/T-G-0.graph"
-#     output:
-#         mach2Combined = "{outdir}/mach2/{mouse}/{cp}/graph_results_combined.txt",
-#         mach2Consensus = "{outdir}/mach2/{mouse}/{cp}/consensus_graph.txt",
-#     params:
-#         scripts = config['scripts'],
-#         outputdir = "{outdir}/mach2/{mouse}/{cp}",
-#         threads = 1,
-#         mem = '1G',
-#     shell:
-#         """
-#         # get all graph files
-#         results=$(find $(dirname {input.mach2graph}) -name "*.graph")
+rule gatherMach2Results:
+    input:
+        mach2graph = "{outdir}/mach2/{clone}/T-G-0.graph"
+    output:
+        mach2Combined = "{outdir}/mach2/{clone}/graph_results_combined.txt",
+        mach2Consensus = "{outdir}/mach2/{clone}/consensus_graph.txt",
+    params:
+        scripts = config['scripts'],
+        outputdir = "{outdir}/mach2/{clone}",
+        threads = 1,
+        mem = '1G',
+    shell:
+        """
+        # get all graph files
+        results=$(find $(dirname {input.mach2graph}) -name "*.graph")
 
-#         # combine all results
-#         echo "result_num,source,target,count" > {output.mach2Combined}
-#         for file in $results; do
-#             result_num=$(basename $file | cut -d'-' -f3 | cut -d'.' -f1)
-#             while IFS= read -r line; do
-#                 echo "$result_num,$(echo $line | tr ' ' ',')" >> {output.mach2Combined}
-#             done < "$file"
-#         done
+        # combine all results
+        echo "result_num,source,target,count" > {output.mach2Combined}
+        for file in $results; do
+            result_num=$(basename $file | cut -d'-' -f3 | cut -d'.' -f1)
+            while IFS= read -r line; do
+                echo "$result_num,$(echo $line | tr ' ' ',')" >> {output.mach2Combined}
+            done < "$file"
+        done
 
-#         # get the probability weighted edge consensus graph
-#         python {params.scripts}/formatting/convert_mach2_results_to_consensus_graph.py {output.mach2Combined} {output.mach2Consensus}
-#         """
+        # get the probability weighted edge consensus graph
+        python {params.scripts}/formatting/convert_mach2_results_to_consensus_graph.py {output.mach2Combined} {output.mach2Consensus}
+        """
 
-# rule getMach2Classifications:
-#     input:
-#         mach2Consensus = "{outdir}/mach2/{mouse}/{cp}/consensus_graph.txt",
-#     output:
-#         mach2Classifications = "{outdir}/mach2/{mouse}/{cp}/mach2_consensus_classifications.csv",
-#     params:
-#         primaryTissue = config['primaryTissue'],
-#         consensusThresholds = [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99],
-#         scripts = config['scripts'],
-#         threads = 1,
-#         mem = '1G',
-#     shell:
-#         """
-#         echo "name,threshold,met_to_met,met_to_primary" > {output.mach2Classifications}
+rule getMach2Classifications:
+    input:
+        mach2Consensus = "{outdir}/mach2/{clone}/consensus_graph.txt",
+    output:
+        mach2Classifications = "{outdir}/mach2/{clone}/mach2_consensus_classifications.csv",
+    params:
+        primaryTissue = config['primaryTissue'],
+        consensusThresholds = [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99],
+        scripts = config['scripts'],
+        threads = 1,
+        mem = '1G',
+    shell:
+        """
+        echo "name,threshold,met_to_met,met_to_primary" > {output.mach2Classifications}
 
-#         for consensusThreshold in {params.consensusThresholds}; do
+        for consensusThreshold in {params.consensusThresholds}; do
 
-#             met_to_primary=False
-#             met_to_met=False
+            met_to_primary=False
+            met_to_met=False
 
-#             if [ ! -s {input.mach2Consensus} ]; then
-#                 echo "Must be false classifications since the consensus graph is empty, indicating mach2 did not run due to only one tissue in labeling input."
-#             else
-#                 while IFS= read -r line; do
-#                     if [ "$met_to_met" = "True" ] && [ "$met_to_primary" = "True" ]; then
-#                         continue
-#                     fi
+            if [ ! -s {input.mach2Consensus} ]; then
+                echo "Must be false classifications since the consensus graph is empty, indicating mach2 did not run due to only one tissue in labeling input."
+            else
+                while IFS= read -r line; do
+                    if [ "$met_to_met" = "True" ] && [ "$met_to_primary" = "True" ]; then
+                        continue
+                    fi
 
-#                     migration=$(echo $line | cut -d',' -f1)
-#                     freq=$(echo $line | cut -d',' -f2)
+                    migration=$(echo $line | cut -d',' -f1)
+                    freq=$(echo $line | cut -d',' -f2)
 
-#                     if (( $(echo "$freq > $consensusThreshold" | bc -l) )); then
-#                         source=$(echo $migration | cut -d'_' -f1)
-#                         target=$(echo $migration | cut -d'_' -f2)
+                    if (( $(echo "$freq > $consensusThreshold" | bc -l) )); then
+                        source=$(echo $migration | cut -d'_' -f1)
+                        target=$(echo $migration | cut -d'_' -f2)
 
-#                         if [ "$target" = "{params.primaryTissue}" ]; then
-#                             met_to_primary=True
-#                         fi
+                        if [ "$target" = "{params.primaryTissue}" ]; then
+                            met_to_primary=True
+                        fi
 
-#                         if [ "$source" != "{params.primaryTissue}" ] && [ "$target" != "{params.primaryTissue}" ]; then
-#                             met_to_met=True
-#                         fi
-#                     fi
-#                 done < {input.mach2Consensus}
-#             fi
+                        if [ "$source" != "{params.primaryTissue}" ] && [ "$target" != "{params.primaryTissue}" ]; then
+                            met_to_met=True
+                        fi
+                    fi
+                done < {input.mach2Consensus}
+            fi
 
-#             echo "{wildcards.mouse}_{wildcards.cp},$consensusThreshold,$met_to_met,$met_to_primary" >> {output.mach2Classifications}
-#         done
-#         """
+            echo "{wildcards.clone},$consensusThreshold,$met_to_met,$met_to_primary" >> {output.mach2Classifications}
+        done
+        """
 
 rule runBeamGtrNs:
     input:

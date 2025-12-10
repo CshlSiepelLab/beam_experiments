@@ -1,7 +1,7 @@
 
 import sys
 
-from beam.posterior_processing import get_consensus_times_and_classifications
+from beam_sup.posterior_processing import get_consensus_times_and_classifications
 
 
 file_path = sys.argv[1]

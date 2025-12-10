@@ -4,6 +4,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
+import matplotlib as mpl
+mpl.rcParams["font.family"] = "sans-serif"
+mpl.rcParams["font.sans-serif"] = ["DejaVu Sans"]
+mpl.rcParams["pdf.fonttype"] = 42
+mpl.rcParams["ps.fonttype"] = 42
+
+
 
 def plot_bayes_factors(file_path, outfile, bin_width=1, threshold=1.1):
     df = pd.read_csv(file_path)
