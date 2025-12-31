@@ -20,12 +20,12 @@ rule all:
         expand("{outdir}/true_trees/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
         # expand("{outdir}/true_trees/{sim}/true_tissue_migration_graph.pdf", sim=sims, outdir=outdir),
         # expand("{outdir}/machina/{sim}/machina_tree_all_tissue_labels.nwk", sim=sims, outdir=outdir),
-        expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_consensus_migration_graph.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
+        # expand("{outdir}/metient/{sim}/{sim}_{primaryTissue}_consensus_migration_graph.txt", sim=sims, outdir=outdir, primaryTissue=config['primaryTissue']),
         # expand("{outdir}/pathfinder/{sim}/clone_aln_all_output_counts.txt", sim=sims, outdir=outdir),
-        expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
+        # expand("{outdir}/mach2/{sim}/consensus_graph.txt", outdir=outdir, sim=sims),
         expand("{outdir}/random_consensus_parsimony_tissue_inference/{sim}/random_tissues.nwk", sim=sims, outdir=outdir),
         expand("{outdir}/beam_gtr/{sim}/probability_migration_graph.pdf", sim=sims, outdir=outdir),
-        f"{outdir}/precision_recall_curve/precision_recall.pdf",
+        # f"{outdir}/precision_recall_curve/precision_recall.pdf",
         # expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 101), outdir=outdir),
         # expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 101), outdir=outdir),
 
@@ -190,9 +190,19 @@ rule runBeam:
         # remove node names from newick and the origin node
         newick=$(cat {input.lamlTreeOriginal} | sed 's/node[0-9]*:/:/g' | sed 's/^.//' | sed 's/..$//')
 
+        # Set sampling frequency to draw 10,000 samples based on chain length specified
+        samplefreq=$(( {params.mcmclength} / 10000 ))
+
+        # If a previous state file exists, resume the run from there
+        if [[ -f "{params.fileDir}/{wildcards.num}.xml.state" ]]; then
+            runflag="-resume"
+        else
+            runflag="-overwrite"
+        fi
+
         beast \
         -threads {params.threads} \
-        -overwrite \
+        $runflag \
         -working \
         -D inName={wildcards.sim} \
         -D fileDir={params.inFileDir} \
@@ -203,6 +213,7 @@ rule runBeam:
         -D numTissueRates=\"$numTissueRates\" \
         -D numTissues=\"$numTissues\" \
         -D mcmclength={params.mcmclength} \
+        -D samplefreq=\"$samplefreq\" \
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
@@ -260,6 +271,7 @@ rule beamPostprocessing:
         samples = "{outdir}/beam_gtr/{sim}/combined_migration_graph_1.pdf",
         migrationCountMatrix = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_count_matrix.csv",
         mutualInformation = "{outdir}/beam_gtr/{sim}/posterior_trees_migration_mutual_information.txt",
+        metastasisTiming = "{outdir}/beam_gtr/{sim}/metastasis_timing.pkl",
     params:
         scripts = config['scripts'],
         primaryTissue = config['primaryTissue'],
@@ -269,8 +281,8 @@ rule beamPostprocessing:
         experimentTime = config['generations'],
         numSamples = 10,
         consensusTimingThreshold = 0.5,
-        threads = 5,
-        mem = "1G"
+        threads = 50,
+        mem = "5G"
     shell:
         """
         if [ ! -s {input.combinedTrees} ]; then

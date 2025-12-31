@@ -167,7 +167,7 @@
 
 
     <!-- loggers -->
-        <logger id="tracelog" spec="Logger" fileName="$(outname).log" logEvery="10000" model="@posterior" sanitiseHeaders="true" sort="smart">
+        <logger id="tracelog" spec="Logger" fileName="$(outname).log" logEvery="$(samplefreq)" model="@posterior" sanitiseHeaders="true" sort="smart">
             <log idref="posterior"/>
             <log idref="likelihood"/>
             <log idref="prior"/>
@@ -184,14 +184,14 @@
             <log idref="piPrimaryTissueFreq"/>
         </logger>
 
-        <logger id="screenlog" spec="Logger" logEvery="10000">
+        <logger id="screenlog" spec="Logger" logEvery="$(samplefreq)">
             <log idref="posterior"/>
             <log id="ESS" spec="util.ESS" arg="@posterior"/>
             <log idref="likelihood"/>
             <log idref="prior"/>
         </logger>
 
-        <logger id="treeWithTraitLogger" spec="Logger" fileName="$(outname).trees" logEvery="10000" mode="tree">
+        <logger id="treeWithTraitLogger" spec="Logger" fileName="$(outname).trees" logEvery="$(samplefreq)" mode="tree">
                 <log id="treeWithTraitLoggerItem" spec="beastclassic.evolution.tree.TreeWithTraitLogger" tree="@tree">
                     <metadata idref="traitLikelihood"/>
                 </log>
