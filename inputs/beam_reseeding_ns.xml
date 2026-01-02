@@ -36,12 +36,12 @@
     
 <!-- input data -->
 <data  id="alignment" spec="feast.fileio.AlignmentFromFasta" fileName="$(fileDir)/$(inName).fasta">
-    <userDataType spec="beam.datatype.EditData" nrOfStates="$(numEditRatesPlusTwo)"/>
+    <userDataType spec="beam.datatype.EditData"/>
 </data>
 
 <data id="tissue" spec="beastclassic.evolution.alignment.AlignmentFromTrait">
     <traitSet id="traitset" spec="feast.fileio.TraitSetFromXSV" fileName="$(fileDir)/$(inName)_tip_tissues.csv" taxa="@taxonset" taxonNameCol="0" skipFirstRow="false" sep="," traitname="discrete"/>
-    <userDataType id="codeMap" spec="beast.base.evolution.datatype.UserDataType" codeMap="$(tissueCodeMap)" codelength="-1" states="$(numTissues)"/>
+    <userDataType id="tissueDatatype" spec="beam.datatype.TissueData" primaryTissue="$(primaryTissue)" otherTissues="$(otherTissues)"/>
 </data>
 
 <run id="mcmc" spec="beast.gss.NS" chainLength="100000000" particleCount="1" subChainLength="10000" epsilon="1e-10">
@@ -49,15 +49,11 @@
             <stateNode id="tree" spec="beam.tree.BeamStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)">
                 <taxonset id="taxonset" spec="TaxonSet" alignment="@alignment"/>
             </stateNode>
-
-            <parameter id="editRate" spec="parameter.RealParameter" estimate="false" name="stateNode" lower="0.0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
             <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.001</parameter>
             <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">0.01</parameter>
-
             <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" lower="0.0" dimension="$(numTissueRates)" name="stateNode">1.0</parameter>
             <parameter id="traitClockRate" spec="parameter.RealParameter" name="stateNode">0.01</parameter>
             <parameter id="piPrimaryTissueFreq" spec="parameter.RealParameter" dimension="1" estimate="true" lower="0.0" upper="1.0" name="stateNode">0.50</parameter>
-
             <parameter id="birthRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1.0">0.006</parameter>
             <parameter id="deathRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1.0">0.0001</parameter>
 
@@ -119,7 +115,8 @@
                 <distribution id="treeLikelihood" spec="beam.likelihood.BeamIrreversibleTreeLikelihood" origin="$(generations).0001" data="@alignment" tree="@tree">
                     <siteModel spec="SiteModel" id="siteModel" mutationRate="1.0" gammaCategoryCount="1">
                         <substModel id="substModel" spec="beam.substitutionmodel.BeamMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate">
-                            <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1.0 0 0" estimate="false"/>
+                            <editRates spec="parameter.RealParameter" estimate="false" name="stateNode" lower="0.0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
+                            <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0" estimate="false"/>
                         </substModel>
                     </siteModel>
                     <branchRateModel spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c"/>
@@ -128,9 +125,7 @@
                 <distribution id="traitLikelihood" spec="beam.likelihood.BeamBeagleAncestralTissueLikelihood" origin="$(generations).0001" tag="location" tree="@tree" data="@tissue">
                     <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1" mutationRate="1.0">
                         <substModel id="substModelMigration" spec="beam.substitutionmodel.BeamPrimaryMetReseedingAllTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue" pi="@piPrimaryTissueFreq">
-                            <frequencies id="traitfreqs.s:tissue" spec="Frequencies">
-                                <parameter id="traitfrequencies.s:tissue" spec="parameter.RealParameter" dimension="$(numTissues)" name="frequencies">$(tissueRootFreqs)</parameter>
-                            </frequencies>
+                            <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="$(tissueRootFreqs)" estimate="false"/>
                         </substModel>
                     </siteModel>
                     <branchRateModel id="StrictClockModel.c:tissue" spec="beast.base.evolution.branchratemodel.StrictClockModel" clock.rate="@traitClockRate"/>
@@ -176,7 +171,7 @@
             <log idref="clockRate.c"/>
             <log idref="relativeGeoRates.s:tissue"/>
             <log idref="traitClockRate"/>
-            <log id="tissueSubstModelLogger" spec="beam.substitutionmodel.BeamTissueSubstitutionModelLogger" dataType="@codeMap" model="@substModelMigration"/>
+            <log id="tissueSubstModelLogger" spec="beam.substitutionmodel.BeamTissueSubstitutionModelLogger" dataType="@tissueDatatype" model="@substModelMigration"/>
             <log idref="treeLikelihood"/>
             <log idref="traitLikelihood"/>
             <log idref="birthRate"/>
@@ -197,7 +192,7 @@
                 </log>
         </logger>
 
-    <operatorschedule id="OperatorSchedule" spec="OperatorSchedule"/>
+    <operatorschedule id="OperatorSchedule" spec="kernel.BactrianOperatorSchedule"/>
 </run>
 
 </beast>

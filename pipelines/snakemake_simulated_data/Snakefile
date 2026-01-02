@@ -15,6 +15,8 @@ def get_sims():
 sims = get_sims()
 outdir = config['outdir']
 
+# sims = ['3573']  # Manual change to limit sims for testing
+
 rule all:
     input:
         expand("{outdir}/true_trees/{sim}/tissue_labeled_tree.nwk", sim=sims, outdir=outdir),
@@ -28,6 +30,7 @@ rule all:
         # f"{outdir}/precision_recall_curve/precision_recall.pdf",
         # expand("{outdir}/beam_gtr_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 101), outdir=outdir),
         # expand("{outdir}/beam_random_ns/{sim}/terminal_{num}.log", sim=sims, num=range(1, 101), outdir=outdir),
+        # expand("{outdir}/vine/{sim}/vine_trees.nwk", sim=sims, outdir=outdir),
 
 
 rule runCassiopeia:
@@ -156,7 +159,6 @@ rule runBeam:
         initialEditRates=$(cat {input.editRates} | tr '\\n' ' ')
         array=($initialEditRates)
         numEditRates=${{#array[@]}}
-        numEditRatesPlusTwo=$(( numEditRates + 2 ))
 
         # format tissue information
         unique_tissues=$(cat {input.tissues} | cut -d',' -f2 | sort | uniq)
@@ -168,21 +170,12 @@ rule runBeam:
             numTissues=$(( numTissues + 1 ))
         fi
         tissueRootFreqs=$(for i in $(seq 1 $numTissues); do if [[ "$i" = "1" ]]; then echo -n "1 "; else echo -n "0 "; fi; done)
-
         numTissueRates=$(( ((numTissues * numTissues) - numTissues) / 2 ))
 
-        tissueCodeMap=""
-        trailingCodeMap="? = "
-        i=0
-        for tissue in $sorted_unique_tissues; do
-            tissueCodeMap+="$tissue=$i,"
-            trailingCodeMap+="$i "
-            i=$((i+1))
-        done
-        tissueCodeMap+="${{trailingCodeMap}}"
+        other_tissues="{params.primaryTissue} $(echo $unique_tissues | tr ' ' '\n' | grep -v '^{params.primaryTissue}$' | tr '\n' ',')"
 
         # for some reason this cannot be taken in at the command line, likely because the = signs are problematic and not taken as a single string
-        sed -i "s/\$(tissueCodeMap)/$tissueCodeMap/g" {params.fileDir}/{wildcards.num}.xml
+        sed -i "s/\$(otherTissues)/$other_tissues/g" {params.fileDir}/{wildcards.num}.xml
         sed -i "s/\$(initialEditRates)/$initialEditRates/g" {params.fileDir}/{wildcards.num}.xml
         sed -i "s/\$(tissueRootFreqs)/$tissueRootFreqs/g" {params.fileDir}/{wildcards.num}.xml
 
@@ -208,10 +201,9 @@ rule runBeam:
         -D fileDir={params.inFileDir} \
         -D newick=\"$newick\" \
         -D generations={params.generations} \
+        -D primaryTissue=\"{params.primaryTissue}\" \
         -D numEditRates=\"$numEditRates\" \
-        -D numEditRatesPlusTwo=\"$numEditRatesPlusTwo\" \
         -D numTissueRates=\"$numTissueRates\" \
-        -D numTissues=\"$numTissues\" \
         -D mcmclength={params.mcmclength} \
         -D samplefreq=\"$samplefreq\" \
         -D outname=chain_{wildcards.num} \
@@ -257,6 +249,7 @@ rule combineBeamChains:
             {params.logcombiner} $trees_files -o {output.combinedTrees}
         else
             echo "No chains passed the ESS threshold of {params.essCutoff}, so not combining any chains"
+            # rm {input.terminalLog}  # Temporary to reset beam runs
         fi
         """
 
@@ -860,3 +853,29 @@ rule runBeamRandomNs:
         -D outname=chain_{wildcards.num} \
         {params.fileDir}/{wildcards.num}.xml > {output.terminalLog}
         """
+
+rule runVine:
+    input:
+        sim_matrix = lambda wildcards : glob.glob(os.path.join(config['inputpath'], wildcards.sim, "*_indel_character_matrix.tsv")),
+        tissues = "{outdir}/beam/{sim}/{sim}_tip_tissues.csv",
+        casTree = "{outdir}/cassiopeia_greedy/{sim}/cassiopeia_greedy_inferred.nwk"
+    output:
+        vineTrees = "{outdir}/vine/{sim}/vine_trees.nwk",
+        vineTissueTrees = "{outdir}/vine/{sim}/vine_tissue_trees.nex",
+        vineTissueGraphs = "{outdir}/vine/{sim}/vine_tissue_graphs.dot"
+    params:
+        primaryTissue = config['primaryTissue'],
+        threads = 1,
+        mem = '100G'
+    # singularity:
+    #     f"{config['containers']}/vine.sif"
+    shell:
+        """
+        vine {input.sim_matrix} -i CRISPR --crispr-mutprior EMPIRICAL --tree {input.casTree} --migration {input.tissues} --primary {params.primaryTissue} --sample-graphs {output.vineTissueGraphs} --labeled-trees {output.vineTissueTrees} --logfile {outdir}/vine/{wildcards.sim}/vine.log > {output.vineTrees}
+        """
+        # vine {input.sim_matrix} -i CRISPR --crispr-mutprior EMPIRICAL --tree {input.casTree} --logfile {outdir}/vine/{wildcards.sim}/vine.log > {output.vineTrees}
+        # --crispr-modtype GLOBAL
+
+        # Not working for migration
+        # vine {input.sim_matrix} -i CRISPR --crispr-mutprior EMPIRICAL --tree {input.casTree} --migration {input.tissues} --primary {params.primaryTissue} --logfile {outdir}/vine/{wildcards.sim}/vine.log > {output.vineTrees}
+        # vine {input.sim_matrix} -i CRISPR --crispr-mutprior EMPIRICAL --tree {input.casTree} --migration {input.tissues} --primary {params.primaryTissue} --sample-graphs {output.vineTissueGraphs} --labeled-trees {output.vineTissueTrees} --logfile {outdir}/vine/{wildcards.sim}/vine.log > {output.vineTrees}
