@@ -1,37 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-
-<beast beautitemplate='MultiTypeBirthDeath' beautistatus='' namespace="beast.core:beast.evolution.alignment
-    :beast.evolution.tree.coalescent:beast.core.util
-    :beast.evolution.nuc
-    :beast.evolution.operators
-    :beast.evolution.sitemodel
-    :beast.evolution.substitutionmodel
-    :beast.base.evolution.alignment
-    :beast.pkgmgmt
-    :beast.base.core
-    :beast.base.inference
-    :beast.base.evolution.tree.coalescent
-    :beast.base.core
-    :beast.base.inference.util
-    :beast.evolution.nuc
-    :beast.base.evolution.operator
-    :beast.base.inference.operator
-    :beast.base.evolution.sitemodel
-    :beast.base.evolution.substitutionmodel
-    :beast.base.evolution.likelihood
-    :beam" required="BEAST.base" version="2.7">
+<beast beautitemplate='MultiTypeBirthDeath' beautistatus='' namespace="beast.base.evolution.alignment:beast.base.inference:beast.base.evolution.operator:beast.base.inference.operator:beast.base.evolution.sitemodel" required="BEAST.base" version="2.7">
 
 <!-- syntactic sugar -->
 <map name="Uniform" >beast.base.inference.distribution.Uniform</map>
 <map name="Exponential" >beast.base.inference.distribution.Exponential</map>
-<map name="LogNormal" >beast.base.inference.distribution.LogNormalDistributionModel</map>
-<map name="Normal" >beast.base.inference.distribution.Normal</map>
-<map name="Beta" >beast.base.inference.distribution.Beta</map>
-<map name="Gamma" >beast.base.inference.distribution.Gamma</map>
-<map name="LaplaceDistribution" >beast.base.inference.distribution.LaplaceDistribution</map>
 <map name="prior" >beast.base.inference.distribution.Prior</map>
-<map name="InverseGamma" >beast.base.inference.distribution.InverseGamma</map>
-<map name="OneOnX" >beast.base.inference.distribution.OneOnX</map>
 
     
 <!-- input data -->
@@ -49,14 +21,13 @@
             <stateNode id="tree" spec="beam.tree.BeamStartingTreeFromNewick" taxa="@alignment" IsLabelledNewick="true" adjustTipHeights="true" newick="$(newick)">
                 <taxonset id="taxonset" spec="TaxonSet" alignment="@alignment"/>
             </stateNode>
-            <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1000">0.001</parameter>
+            <parameter id="silencingRate" spec="parameter.RealParameter" dimension="1" lower="0" name="stateNode" upper="1000">0.001</parameter>
             <parameter id="clockRate.c" spec="parameter.RealParameter" name="stateNode">0.01</parameter>
-            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" lower="0.0" dimension="$(numTissueRates)" name="stateNode">1.0</parameter>
+            <parameter id="relativeGeoRates.s:tissue" spec="parameter.RealParameter" lower="0" dimension="$(numTissueRates)" name="stateNode">1</parameter>
             <parameter id="traitClockRate" spec="parameter.RealParameter" name="stateNode">0.01</parameter>
-            <parameter id="piPrimaryTissueFreq" spec="parameter.RealParameter" dimension="1" estimate="true" lower="0.0" upper="1.0" name="stateNode">0.50</parameter>
-            <parameter id="birthRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1.0">0.006</parameter>
-            <parameter id="deathRate" spec="parameter.RealParameter" dimension="1" lower="0.0" name="stateNode" upper="1.0">0.0001</parameter>
-
+            <parameter id="piPrimaryTissueFreq" spec="parameter.RealParameter" dimension="1" estimate="true" lower="0" upper="1" name="stateNode">0.5</parameter>
+            <parameter id="birthRate" spec="parameter.RealParameter" dimension="1" lower="0" name="stateNode" upper="1">0.006</parameter>
+            <parameter id="deathRate" spec="parameter.RealParameter" dimension="1" lower="0" name="stateNode" upper="1">0.0001</parameter>
         </state>
         
         
@@ -66,8 +37,8 @@
 
                 <distribution id="birthDeathSamplingModel" spec="bdsky.evolution.speciation.BirthDeathSkylineModel"
                           conditionOnSurvival="True" tree="@tree" origin="$(generations).0001" contemp="true"
-                          birthRate="@birthRate" deathRate="@deathRate" rho="1.0"
-                          samplingRate="0.0">
+                          birthRate="@birthRate" deathRate="@deathRate" rho="1"
+                          samplingRate="0">
                 </distribution>
 
                 <prior id="silencingRatePrior" name="distribution" x="@silencingRate">
@@ -84,7 +55,7 @@
 
                 <prior id="relativeGeoRatesPrior.s:tissue" name="distribution" x="@relativeGeoRates.s:tissue">
                     <Exponential name="distr">
-                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">1.0</parameter>
+                        <parameter spec="parameter.RealParameter" estimate="false" name="mean">1</parameter>
                     </Exponential>
                 </prior>
 
@@ -95,15 +66,15 @@
                 </prior>
 
                 <prior id="piPrimaryTissueFreqPrior" name="distribution" x="@piPrimaryTissueFreq">
-                    <Uniform name="distr" lower="0.0" upper="1.0"/>
+                    <Uniform name="distr" lower="0" upper="1"/>
                 </prior>
 
                 <prior id="birthRatePrior" name="distribution" x="@birthRate">
-                    <Uniform name="distr" lower="0.0" upper="1.0"/>
+                    <Uniform name="distr" lower="0" upper="1"/>
                 </prior>
                 
                 <prior id="deathRatePrior" name="distribution" x="@deathRate">
-                    <Uniform name="distr" lower="0.0" upper="1.0"/>
+                    <Uniform name="distr" lower="0" upper="1"/>
                 </prior>
 
 
@@ -113,9 +84,9 @@
             <distribution id="likelihood" spec="CompoundDistribution" useThreads="true">
                 
                 <distribution id="treeLikelihood" spec="beam.likelihood.BeamIrreversibleTreeLikelihood" origin="$(generations).0001" data="@alignment" tree="@tree">
-                    <siteModel spec="SiteModel" id="siteModel" mutationRate="1.0" gammaCategoryCount="1">
+                    <siteModel spec="SiteModel" id="siteModel" mutationRate="1" gammaCategoryCount="1">
                         <substModel id="substModel" spec="beam.substitutionmodel.BeamMutationSubstitutionModel" silencingRate="@silencingRate">
-                            <editRates spec="parameter.RealParameter" estimate="false" name="stateNode" lower="0.0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
+                            <editRates spec="parameter.RealParameter" estimate="false" name="stateNode" lower="0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
                             <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0" estimate="false"/>
                         </substModel>
                     </siteModel>
@@ -123,7 +94,7 @@
                 </distribution>
                 
                 <distribution id="traitLikelihood" spec="beam.likelihood.BeamBeagleAncestralTissueLikelihood" origin="$(generations).0001" tag="location" tree="@tree" data="@tissue">
-                    <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1" mutationRate="1.0">
+                    <siteModel id="geoSiteModel.s:tissue" spec="SiteModel" gammaCategoryCount="1" mutationRate="1">
                         <substModel id="substModelMigration" spec="beam.substitutionmodel.BeamGtrTissueSubstitutionModel" rates="@relativeGeoRates.s:tissue" pi="@piPrimaryTissueFreq">
                             <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="$(tissueRootFreqs)" estimate="false"/>
                         </substModel>
@@ -136,26 +107,26 @@
         </distribution>
         
     <!-- tree operators -->
-    <operator  spec="Uniform" tree="@tree" weight="30.0"/>
-    <operator  spec="SubtreeSlide" tree="@tree" weight="3.0"/>
-    <operator spec="SubtreeSlide" tree="@tree" weight="3.0" size="30"/>
-    <operator  spec="Exchange" isNarrow="false" tree="@tree" weight="30.0"/>
+    <operator  spec="Uniform" tree="@tree" weight="30"/>
+    <operator  spec="SubtreeSlide" tree="@tree" weight="3"/>
+    <operator spec="SubtreeSlide" tree="@tree" weight="3" size="30"/>
+    <operator  spec="Exchange" isNarrow="false" tree="@tree" weight="30"/>
 
     <!-- operators on phylogenetic parameters-->
-    <operator id="clockRateScaler" spec="ScaleOperator" parameter="@clockRate.c" scaleFactor="0.8" weight="3.0"/>
-    <operator id="silencingRateScaler" spec="ScaleOperator" parameter="@silencingRate" scaleFactor="0.8" weight="3.0"/>
+    <operator id="clockRateScaler" spec="ScaleOperator" parameter="@clockRate.c" scaleFactor="0.8" weight="3"/>
+    <operator id="silencingRateScaler" spec="ScaleOperator" parameter="@silencingRate" scaleFactor="0.8" weight="3"/>
         
     <!-- operators on ancestral state model sparameters -->
-    <operator id="georateScaler.s:tissue" spec="ScaleOperator" parameter="@relativeGeoRates.s:tissue" scaleAllIndependently="true" scaleFactor="0.99" weight="30.0"/>
-    <operator id="tissueClockRateScaler" spec="ScaleOperator" parameter="@traitClockRate" scaleFactor="0.8" weight="3.0"/>
-    <operator id="piPrimaryTissueFreqScaler" spec="ScaleOperator" parameter="@piPrimaryTissueFreq" scaleFactor="0.8" weight="3.0"/>
+    <operator id="georateScaler.s:tissue" spec="ScaleOperator" parameter="@relativeGeoRates.s:tissue" scaleAllIndependently="true" scaleFactor="0.99" weight="30"/>
+    <operator id="tissueClockRateScaler" spec="ScaleOperator" parameter="@traitClockRate" scaleFactor="0.8" weight="3"/>
+    <operator id="piPrimaryTissueFreqScaler" spec="ScaleOperator" parameter="@piPrimaryTissueFreq" scaleFactor="0.8" weight="3"/>
     
 
     <!-- Operators on phylodynamic parameters -->
-    <operator id="birthRateScaler" spec="ScaleOperator" parameter="@birthRate" scaleFactor="0.8" weight="3.0"/>
-    <operator id="deathRateScaler" spec="ScaleOperator" parameter="@deathRate" scaleFactor="0.8" weight="3.0"/>
+    <operator id="birthRateScaler" spec="ScaleOperator" parameter="@birthRate" scaleFactor="0.8" weight="3"/>
+    <operator id="deathRateScaler" spec="ScaleOperator" parameter="@deathRate" scaleFactor="0.8" weight="3"/>
 
-    <operator id="updownBD" spec="UpDownOperator" scaleFactor="0.8" weight="30.0">
+    <operator id="updownBD" spec="UpDownOperator" scaleFactor="0.8" weight="30">
          <up idref="birthRate"/>
          <down idref="deathRate"/>
     </operator>
