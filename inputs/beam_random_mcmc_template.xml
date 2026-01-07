@@ -77,7 +77,7 @@
                 <distribution id="treeLikelihood" spec="beam.likelihood.BeamIrreversibleTreeLikelihood" origin="$(generations).0001" data="@alignment" tree="@tree">
                     <siteModel spec="SiteModel" id="siteModel" mutationRate="1" gammaCategoryCount="1">
                         <substModel id="substModel" spec="beam.substitutionmodel.BeamMutationSubstitutionModel" editRates="@editRate" silencingRate="@silencingRate">
-                            <editRates spec="parameter.RealParameter" estimate="false" name="stateNode" lower="0" dimension="$(numEditRates)">$(initialEditRates)</parameter>
+                            <editRates spec="parameter.RealParameter" estimate="false" dimension="$(numEditRates)">$(initialEditRates)</editRates>
                             <frequencies spec="beast.base.evolution.substitutionmodel.Frequencies" frequencies="1 0 0" estimate="false"/>
                         </substModel>
                     </siteModel>
