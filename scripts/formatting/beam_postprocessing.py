@@ -25,7 +25,7 @@ consensus_timing_threshold = float(sys.argv[15])
 start_time = time.time()
 
 # load in data
-results = BeamResults(beam_trees, beam_log, primary_tissue=primary_tissue, total_time=origin_time, cores=cores)
+results = BeamResults(trees_file=beam_trees, log_file=beam_log, primary_tissue=primary_tissue, total_time=origin_time, cores=cores)
 print("Loaded in data. Time elapsed: %.2f seconds" % (time.time() - start_time))
 
 # get consensus graph and write to file
@@ -45,7 +45,7 @@ results.sample_and_plot_trees(n=num_samples, output_prefix=outprefix_samples)
 print("Sampled and plotted trees. Time elapsed: %.2f seconds" % (time.time() - start_time))
 
 # Get migration count matrix and mutual information
-results.compute_posterior_mutual_info(output_file_matrix = output_file_matrix, output_file_information = output_file_information, threads = cores)
+results.compute_posterior_mutual_info(output_file_matrix = output_file_matrix, output_file_information = output_file_information)
 print("Computed migration matrix and mutual information. Time elapsed: %.2f seconds" % (time.time() - start_time))
 
 # Get metastasis timing plot

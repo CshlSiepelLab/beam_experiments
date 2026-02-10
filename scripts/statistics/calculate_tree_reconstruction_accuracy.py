@@ -60,8 +60,9 @@ true_tree_file = sys.argv[1]    # Simulated nwk file from direct output
 laml_tree_file = sys.argv[2]     # LAML inferred tree in nwk format from direct output
 cassiopeia_tree_file = sys.argv[3]  # Cassiopeia-greedy inferred tree in nwk format
 beam_trees_file = sys.argv[4]   # BEAM posterior trees in nexus format
-outfile = sys.argv[5]
-pathfinder_tree_file = sys.argv[6]  # PathFinder nj inferred tree in nwk format (optional)
+vine_trees_file = sys.argv[5]   # VINE posterior trees in nexus or nwk format
+outfile = sys.argv[6]
+pathfinder_tree_file = sys.argv[7]  # PathFinder nj inferred tree in nwk format (optional)
 
 true_tree = preprocess_tree_file(true_tree_file)
 laml_tree = preprocess_tree_file(laml_tree_file, tns=true_tree.taxon_namespace)
@@ -85,6 +86,7 @@ else:
 laml_rf, laml_normalized_rf, laml_is_true_tree = calculate_rf_distance(true_tree, laml_tree)
 cassiopeia_rf, cassiopeia_normalized_rf, cassiopeia_is_true_tree = calculate_rf_distance(true_tree, cassiopeia_tree)
 
+# BEAM processing
 tns = dendropy.TaxonNamespace()
 beam_trees = dendropy.TreeList.get(path=beam_trees_file, schema="nexus", preserve_underscores=True, taxon_namespace=tns)
 
@@ -106,6 +108,25 @@ for beam_tree in beam_trees:
     if beam_is_true_tree:
         beam_contains_true_tree = True
 
+# VINE processing
+vine_tns = dendropy.TaxonNamespace()
+if vine_trees_file.endswith("nex") or vine_trees_file.endswith("nexus"):
+    vine_trees = dendropy.TreeList.get(path=vine_trees_file, schema="nexus", preserve_underscores=True, taxon_namespace=vine_tns)
+else:
+    vine_trees = dendropy.TreeList.get(path=vine_trees_file, schema="newick", preserve_underscores=True, taxon_namespace=vine_tns)
+    
+per_vine_tree_prob = 1/len(vine_trees)
+
+vine_posterior_rf = 0
+vine_posterior_normalized_rf = 0
+vine_contains_true_tree = False
+for vine_tree in vine_trees:
+    vine_tree = preprocess_tree(vine_tree, true_tree.taxon_namespace)
+    vine_rf, vine_normalized_rf, vine_is_true_tree = calculate_rf_distance(true_tree, vine_tree)
+    vine_posterior_rf += vine_rf * per_vine_tree_prob
+    vine_posterior_normalized_rf += vine_normalized_rf * per_vine_tree_prob
+    if vine_is_true_tree:
+        vine_contains_true_tree = True
 
 # Create a random binary rooted control tree with same taxa as a control measure
 num_tips = len(true_tree.leaf_nodes())
@@ -115,7 +136,7 @@ random_tree = preprocess_tree(random_tree, true_tree.taxon_namespace)
 random_rf, random_normalized_rf, random_is_true_tree = calculate_rf_distance(true_tree, random_tree)
 
 with open(outfile, 'w') as f:
-    f.write("laml_rf,laml_normalized_rf,laml_is_true_tree,cassiopeia_rf,cassiopeia_normalized_rf,cassiopeia_is_true_tree,beam_posterior_rf,beam_posterior_normalized_rf,beam_contains_true_tree,pathfinder_rf,pathfinder_normalized_rf,pathfinder_is_true_tree,random_rf,random_normalized_rf,random_is_true_tree\n")
-    f.write(f"{laml_rf},{laml_normalized_rf},{laml_is_true_tree},{cassiopeia_rf},{cassiopeia_normalized_rf},{cassiopeia_is_true_tree},{posterior_rf},{posterior_normalized_rf},{beam_contains_true_tree},{pathfinder_rf},{pathfinder_normalized_rf},{pathfinder_is_true_tree},{random_rf},{random_normalized_rf},{random_is_true_tree}\n")
+    f.write("laml_rf,laml_normalized_rf,laml_is_true_tree,cassiopeia_rf,cassiopeia_normalized_rf,cassiopeia_is_true_tree,beam_posterior_rf,beam_posterior_normalized_rf,beam_contains_true_tree,pathfinder_rf,pathfinder_normalized_rf,pathfinder_is_true_tree,random_rf,random_normalized_rf,random_is_true_tree,vine_posterior_rf,vine_posterior_normalized_rf,vine_contains_true_tree\n")
+    f.write(f"{laml_rf},{laml_normalized_rf},{laml_is_true_tree},{cassiopeia_rf},{cassiopeia_normalized_rf},{cassiopeia_is_true_tree},{posterior_rf},{posterior_normalized_rf},{beam_contains_true_tree},{pathfinder_rf},{pathfinder_normalized_rf},{pathfinder_is_true_tree},{random_rf},{random_normalized_rf},{random_is_true_tree},{vine_posterior_rf},{vine_posterior_normalized_rf},{vine_contains_true_tree}\n")
 
     

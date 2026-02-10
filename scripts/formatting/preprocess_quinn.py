@@ -91,7 +91,7 @@ def convert_quinn_allele_table_to_successive_matrix(
     )
 
     with open(
-        f"{outdir}/{lineage}_original_chracter_int_to_mutation_string_dict.txt", "w"
+        f"{outdir}/{lineage}_original_character_int_to_mutation_string_dict.txt", "w"
     ) as f:
         f.write(f"site_num,char_int,mut_str\n")
         for key, value in mut_dict.items():

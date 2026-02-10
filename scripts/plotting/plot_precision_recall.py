@@ -185,7 +185,7 @@ outdir = sys.argv[3]
 # make a file to record performance statistics for all sim datasets
 outfile_metrics = f"{outdir}/metrics.csv"
 with open(outfile_metrics, "w") as file:
-    header = "sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Fitch-Hartigan_f1,Fitch-Hartigan_recall,Fitch-Hartigan_precision,PathFinder_f1,PathFinder_recall,PathFinder_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,MACH2_f1,MACH2_recall,MACH2_precision,Metient_f1,Metient_recall,Metient_precision,Metient_bestSol_f1,Metient_bestSol_recall,Metient_bestSol_precision,BEAM_f1,BEAM_recall,BEAM_precision\n"
+    header = "sim,Random_f1,Random_recall,Random_precision,Consensus_f1,Consensus_recall,Consensus_precision,Fitch-Hartigan_f1,Fitch-Hartigan_recall,Fitch-Hartigan_precision,PathFinder_f1,PathFinder_recall,PathFinder_precision,MACHINA_f1,MACHINA_recall,MACHINA_precision,MACH2_f1,MACH2_recall,MACH2_precision,Metient_f1,Metient_recall,Metient_precision,Metient_bestSol_f1,Metient_bestSol_recall,Metient_bestSol_precision,BEAM_f1,BEAM_recall,BEAM_precision,VINE_f1,VINE_recall,VINE_precision\n"
     file.write(header)
 
 pathfinder_precisions = np.full(len(dirs), np.nan)
@@ -203,6 +203,7 @@ parsimony_recalls = np.full(len(dirs), np.nan)
 metient_all_thresh_rows = []
 mach2_all_thresh_rows = []
 all_thresh_rows = []
+vine_all_thresh_rows = []
 i = 0
 
 for true_tree_file in dirs:
@@ -226,6 +227,7 @@ for true_tree_file in dirs:
     # metient_file=f"/grid/siepel/home/staklins/stored_results/beam/latest_results/snakemake_performance_uniform_50cells_50sites_data_7_24_24/metient_calibrate_80_ideal_sims_8_15_25/calibrate/{sim}_migration_graphs.txt"
     
     beast_posterior_file = f"{dir}/beam_gtr/{sim}/posterior_prob_graph.csv"
+    vine_posterior_file = f"{dir}/vine/{sim}/vine_probability_graph.csv"
     consensus_file = (
         f"{dir}/random_consensus_parsimony_tissue_inference/{sim}/consensus_tissues.nwk"
     )
@@ -388,10 +390,25 @@ for true_tree_file in dirs:
             posterior_threshold_metrics(posterior_prob_graph, true_counts, sim)
         )
         all_thresh_rows.extend(rows)
+    
+    # process vine posterior
+    vine_post_prob_f1 = float("nan")
+    vine_post_prob_recall = float("nan")
+    vine_post_prob_precision = float("nan")
+    if os.path.exists(vine_posterior_file):
+        vine_posterior_prob_graph = {}
+        with open(vine_posterior_file, "r") as file:
+            for line in file.readlines():
+                line = line.strip().split(",")
+                vine_posterior_prob_graph[line[0]] = float(line[1])
+        thresh_prec_rec, rows, vine_post_prob_f1, vine_post_prob_recall, vine_post_prob_precision = (
+            posterior_threshold_metrics(vine_posterior_prob_graph, true_counts, sim)
+        )
+        vine_all_thresh_rows.extend(rows)
 
     # write metrics used for the plot to a file
     with open(outfile_metrics, "a") as file:
-        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{parsimony_f1},{parsimony_recall},{parsimony_precision},{pathfinder_f1},{pathfinder_recall},{pathfinder_precision},{machina_f1},{machina_recall},{machina_precision},{mach2_f1},{mach2_recall},{mach2_precision},{metient_f1},{metient_recall},{metient_precision},{metient_f1_top},{metient_recall_top},{metient_precision_top},{post_prob_f1},{post_prob_recall},{post_prob_precision}\n"
+        data = f"{sim},{random_f1},{random_recall},{random_precision},{consensus_f1},{consensus_recall},{consensus_precision},{parsimony_f1},{parsimony_recall},{parsimony_precision},{pathfinder_f1},{pathfinder_recall},{pathfinder_precision},{machina_f1},{machina_recall},{machina_precision},{mach2_f1},{mach2_recall},{mach2_precision},{metient_f1},{metient_recall},{metient_precision},{metient_f1_top},{metient_recall_top},{metient_precision_top},{post_prob_f1},{post_prob_recall},{post_prob_precision},{vine_post_prob_f1},{vine_post_prob_recall},{vine_post_prob_precision}\n"
         file.write(data)
 
     i += 1
@@ -399,6 +416,7 @@ for true_tree_file in dirs:
 metient_all_thresh_df = pd.DataFrame(metient_all_thresh_rows)
 mach2_all_thresh_df = pd.DataFrame(mach2_all_thresh_rows)
 all_thresh_df = pd.DataFrame(all_thresh_rows)
+vine_all_thresh_df = pd.DataFrame(vine_all_thresh_rows)
 
 # save intermediate variables to a file for later re-plotting
 with open(f"{outdir}/precision_recall_vars.pkl", "wb") as file:
@@ -417,13 +435,14 @@ with open(f"{outdir}/precision_recall_vars.pkl", "wb") as file:
             metient_all_thresh_df,
             mach2_all_thresh_df,
             all_thresh_df,
+            vine_all_thresh_df,
         ],
         file,
     )
 
 # # optionally open from pickle file and avoid recalculations above
 # with open(f"{outdir}/precision_recall_vars.pkl", "rb") as file:
-#     pathfinder_precisions, pathfinder_recalls, machina_precisions, machina_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, metient_all_thresh_df, mach2_all_thresh_df, all_thresh_df = pickle.load(file)
+#     pathfinder_precisions, pathfinder_recalls, machina_precisions, machina_recalls, random_precisions, random_recalls, consensus_precisions, consensus_recalls, parsimony_precisions, parsimony_recalls, metient_all_thresh_df, mach2_all_thresh_df, all_thresh_df, vine_all_thresh_df = pickle.load(file)
 
 # make an overall averaged precision/recall curve
 outfile = f"{outdir}/precision_recall.pdf"
@@ -439,7 +458,8 @@ avg_consensus_precision = float("nan")
 avg_consensus_recall = float("nan")
 avg_parsimony_precision = float("nan")
 avg_parsimony_recall = float("nan")
-
+avg_vine_precision = float("nan")
+avg_vine_recall = float("nan")
 
 if np.any(pathfinder_precisions):
     avg_pathfinder_precision = np.nanmean(pathfinder_precisions)
@@ -469,6 +489,7 @@ if np.any(parsimony_recalls):
 avg_df = pd.DataFrame()
 avg_mach2_df = pd.DataFrame()
 avg_metient_df = pd.DataFrame()
+avg_vine_df = pd.DataFrame()
 
 if not all_thresh_df.empty:
     avg_df = (
@@ -494,6 +515,16 @@ if not metient_all_thresh_df.empty:
         f"{outdir}/metient_all_threshold_stats.csv", index=False
     )
 
+if not vine_all_thresh_df.empty:
+    avg_vine_df = (
+        vine_all_thresh_df.groupby("Threshold")[["precision", "recall"]]
+        .mean()
+        .reset_index()
+    )
+    vine_all_thresh_df.to_csv(
+        f"{outdir}/vine_all_threshold_stats.csv", index=False
+    )
+
 size = 500
 textsize = 20
 plt.figure(figsize=(7, 4.8))
@@ -504,6 +535,8 @@ if not avg_df.empty:
         facecolors='red', edgecolors='red', label='BEAM 0.5', s=size/3, marker='o')
     plt.scatter(avg_df[avg_df['Threshold'] == 0.90]["recall"], avg_df[avg_df['Threshold'] == 0.90]["precision"],
         facecolors='red', edgecolors='red', label='BEAM 0.9', s=size/3, marker='s')
+if not avg_vine_df.empty:
+    plt.plot(avg_vine_df["recall"], avg_vine_df["precision"], color="deeppink", label="VINE")
 if not avg_mach2_df.empty:
     # plt.scatter(avg_mach2_df['recall'], avg_mach2_df['precision'], c=avg_mach2_df['Threshold'], cmap='viridis', s=25, marker='x')
     plt.plot(avg_mach2_df["recall"], avg_mach2_df["precision"], color="navy", label="MACH2")
