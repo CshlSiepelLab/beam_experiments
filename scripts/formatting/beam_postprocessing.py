@@ -1,6 +1,6 @@
 
 import sys
-from beam_sup import BeamResults
+from graphposterior import PosteriorResults
 
 import time
 
@@ -25,7 +25,7 @@ consensus_timing_threshold = float(sys.argv[15])
 start_time = time.time()
 
 # load in data
-results = BeamResults(trees_file=beam_trees, log_file=beam_log, primary_tissue=primary_tissue, total_time=origin_time, cores=cores)
+results = PosteriorResults(trees_file=beam_trees, log_file=beam_log, primary_tissue=primary_tissue, total_time=origin_time, cores=cores)
 print("Loaded in data. Time elapsed: %.2f seconds" % (time.time() - start_time))
 
 # get consensus graph and write to file

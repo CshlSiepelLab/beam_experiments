@@ -2,11 +2,11 @@ import os
 import sys
 import glob
 
-# Make sure beam_sup is availabe
+# Make sure graphposterior is availabe
 import importlib.util
-spec = importlib.util.find_spec("beam_sup")
+spec = importlib.util.find_spec("graphposterior")
 if spec is None:
-    print(f"The required package beam_sup is NOT installed, so the pipeline will not run. Exiting.")
+    print(f"The required package graphposterior is NOT installed, so the pipeline will not run. Exiting.")
     sys.exit(1)
 
 # get mouse ids and fastq files from input fastq dir

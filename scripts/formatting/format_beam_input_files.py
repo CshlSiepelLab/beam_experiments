@@ -1,7 +1,7 @@
 
 import sys
 
-from beam_sup.format_inputs import format_beam_inputs
+from graphposterior.format_inputs import format_beam_inputs
 
 
 indel_matrix_file = sys.argv[1]

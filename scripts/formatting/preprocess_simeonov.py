@@ -3,7 +3,7 @@ from glob import glob
 import os
 import pandas as pd
 
-from beam_sup.matrix_utils import count_informative_characters, expand_clones_with_multiple_tissues
+from graphposterior.matrix_utils import count_informative_characters, expand_clones_with_multiple_tissues
 
 
 def convert_simeonov_barcode_file_to_indel_matrix(input_file, output_file):

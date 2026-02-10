@@ -2,7 +2,7 @@
 import sys
 import os
 
-from beam_sup.posterior_processing import sample_beast_trees_and_append_tissue_to_names
+from graphposterior.posterior_processing import sample_beast_trees_and_append_tissue_to_names
 
 nexus_file = sys.argv[1]
 

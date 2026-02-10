@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 import cassiopeia as cas
 
-from .matrix_utils import convert_matrix_to_row_successive_matrix
+from graphposterior.matrix_utils import convert_matrix_to_row_successive_matrix
 
 
 def convert_quinn_allele_table_to_successive_matrix(

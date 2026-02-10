@@ -6,7 +6,7 @@ import pandas as pd
 import pickle
 import cassiopeia as cas
 
-from beam_sup.matrix_utils import convert_matrix_to_row_successive_matrix, count_informative_characters, expand_clones_with_multiple_tissues, collapse_character_matrix
+from graphposterior.matrix_utils import convert_matrix_to_row_successive_matrix, count_informative_characters, expand_clones_with_multiple_tissues, collapse_character_matrix
 
 # Where to output processed files
 outdir = "/grid/siepel/home/staklins/projects/crispr_barcode/results/beam/latest_results/yang_preprocess_2022_lung_cancer_data"

@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 from ete3 import Tree
 
-from beam_sup.migration_inference import label_tissues_fitch_parsimony
+from graphposterior.migration_inference import label_tissues_fitch_parsimony
 
 
 # User inputs

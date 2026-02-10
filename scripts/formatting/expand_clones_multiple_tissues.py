@@ -3,7 +3,7 @@ import sys
 import os
 import pandas as pd
 
-from beam_sup.matrix_utils import expand_clones_with_multiple_tissues
+from graphposterior.matrix_utils import expand_clones_with_multiple_tissues
 
 # inputs
 matrix_file = sys.argv[1]

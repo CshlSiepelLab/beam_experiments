@@ -4,7 +4,7 @@ import sys
 import pandas as pd
 import numpy as np
 
-from beam_sup.matrix_utils import calculate_avg_informative_characters
+from graphposterior.matrix_utils import calculate_avg_informative_characters
 
 
 

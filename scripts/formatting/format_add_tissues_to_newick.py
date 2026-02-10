@@ -1,7 +1,7 @@
 
 import os, sys
 
-from beam_sup.tree_utils import annotate_tree_with_tissues
+from graphposterior.tree_utils import annotate_tree_with_tissues
 
 
 

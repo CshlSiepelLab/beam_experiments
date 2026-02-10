@@ -1,7 +1,7 @@
 
 import sys
 
-from beam_sup.tree_utils import get_mig_comig_counts_and_topologies_from_nwk
+from graphposterior.tree_utils import get_mig_comig_counts_and_topologies_from_nwk
 
 newick_file = sys.argv[1]
 primary_tissue = sys.argv[2]

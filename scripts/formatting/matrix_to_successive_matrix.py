@@ -3,7 +3,7 @@ import sys
 import os
 import pandas as pd
 
-from beam_sup.matrix_utils import convert_matrix_to_row_successive_matrix
+from graphposterior.matrix_utils import convert_matrix_to_row_successive_matrix
 
 char_matrix_file = sys.argv[1]
 mut_dict_file = sys.argv[2]

@@ -6,7 +6,7 @@ import ete3
 from Bio import Phylo
 from io import StringIO
 
-from beam_sup.tree_utils import get_mig_comig_counts_and_topologies_from_nwk
+from graphposterior.tree_utils import get_mig_comig_counts_and_topologies_from_nwk
 
 
 sim_name = sys.argv[1]

@@ -3,11 +3,11 @@ import sys
 import glob
 import pandas as pd
 
-# Make sure beam_sup is availabe
+# Make sure graphposterior is availabe
 import importlib.util
-spec = importlib.util.find_spec("beam_sup")
+spec = importlib.util.find_spec("graphposterior")
 if spec is None:
-    print(f"The required package beam_sup is NOT installed, so the pipeline will not run. Exiting.")
+    print(f"The required package graphposterior is NOT installed, so the pipeline will not run. Exiting.")
     sys.exit(1)
 
 interesting_clones_df = pd.read_csv(config['clonesToKeep'], sep='\t', index_col=0)
